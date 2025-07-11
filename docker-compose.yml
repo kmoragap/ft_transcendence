@@ -1,14 +1,31 @@
-version: '3'
+#version: '3'
 services:
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: youruser
-      POSTGRES_PASSWORD: securepass
-      POSTGRES_DB: pongdb
-  backend:
-    build: ./backend
-    depends_on: [db]
-  frontend:
-    build: ./frontend
-    depends_on: [backend]
+  auth:
+    build: ./backend/auth
+    volumes:
+      - ./backend/auth/db.sqlite:/app/auth-db.sqlite
+    ports:
+      - "3001:3000"  #TODO: could be changed
+
+  chat:
+    build: ./backend/chat
+    volumes:
+      - ./backend/chat/db.sqlite:/app/chat-db.sqlite
+    ports:
+      - "3002:3000"
+
+  pong:
+    build: ./backend/pong
+    volumes:
+      - ./backend/pong/db.sqlite:/app/pong-db.sqlite
+    ports:
+      - "3003:3000"
+
+  users:
+    build: ./backend/users
+    volumes:
+      - ./backend/users/db.sqlite:/app/users-db.sqlite
+    ports:
+      - "3004:3000"
+
+  # Add ELK and monitoring services later

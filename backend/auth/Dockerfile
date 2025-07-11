@@ -10,4 +10,6 @@ COPY . .
 
 RUN npx prisma generate
 
-CMD ["node", "src/index.ts"]  
+RUN npm install -g ts-node
+
+CMD ["ts-node", "src/index.ts"]

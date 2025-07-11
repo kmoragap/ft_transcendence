@@ -1,0 +1,14 @@
+version: '3'
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: youruser
+      POSTGRES_PASSWORD: securepass
+      POSTGRES_DB: pongdb
+  backend:
+    build: ./backend
+    depends_on: [db]
+  frontend:
+    build: ./frontend
+    depends_on: [backend]

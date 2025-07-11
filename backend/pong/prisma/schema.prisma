@@ -1,0 +1,16 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./pong-db.sqlite" // points to service's db file
+}
+
+// simple placeholder
+model Match {
+    id      Int    @id @default(autoincrement())
+    player1 String
+    player2 String
+    score   String
+}

@@ -3,28 +3,28 @@ services:
   auth:
     build: ./backend/auth
     volumes:
-      - ./backend/auth/db.sqlite:/app/auth-db.sqlite
+      - ./backend/auth/prisma/auth-db.sqlite:/app/auth-db.sqlite
     ports:
-      - "3001:3000"  #TODO: could be changed
+      - "3001:3000"
 
   chat:
     build: ./backend/chat
     volumes:
-      - ./backend/chat/db.sqlite:/app/chat-db.sqlite
+      - ./backend/chat/prisma/chat-db.sqlite:/app/chat-db.sqlite
     ports:
       - "3002:3000"
 
   pong:
     build: ./backend/pong
     volumes:
-      - ./backend/pong/db.sqlite:/app/pong-db.sqlite
+      - ./backend/pong/prisma/pong-db.sqlite:/app/pong-db.sqlite
     ports:
       - "3003:3000"
 
   users:
     build: ./backend/users
     volumes:
-      - ./backend/users/db.sqlite:/app/users-db.sqlite
+      - ./backend/users/prisma/users-db.sqlite:/app/users-db.sqlite
     ports:
       - "3004:3000"
 

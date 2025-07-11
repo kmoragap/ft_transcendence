@@ -1,0 +1,15 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./auth-db.sqlite"
+}
+
+model Session {
+    id        Int      @id @default(autoincrement())
+    userId    Int
+    token     String // For JWT storage
+    expiresAt DateTime
+}

@@ -1,0 +1,15 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./chat-db.sqlite"
+}
+
+model Message {
+    id        Int      @id @default(autoincrement())
+    content   String
+    senderId  Int // Reference user via API
+    timestamp DateTime @default(now())
+}

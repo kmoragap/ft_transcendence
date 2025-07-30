@@ -1,0 +1,33 @@
+{
+  "name": "ft_trancendence",
+  "version": "1.0.0",
+  "description": "Final 42 School Project",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:css\" \"vite\"",
+    "dev:css": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css --watch",
+    "build:css": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vaismand/ft_trancendence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vaismand/ft_trancendence/issues"
+  },
+  "homepage": "https://github.com/vaismand/ft_trancendence#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
+    "vite": "^7.0.6"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.11"
+  }
+}

@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'McLaren';
+  src: url('/assets/fonts/McLaren-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer base {
+  body {
+    margin: 0;
+  }
+}
+
+@layer components {
+  .title {
+    display: table;
+    font-size: 85px;
+    text-align: center;
+    width: 75%;
+    margin: 40px auto;
+  }
+
+  .first_line,
+  .mid_line,
+  .last_line {
+    display: table-cell;
+    position: relative;
+  }
+
+  .first_line {
+    width: 30%;
+    top: 60px !important;
+    background-image: linear-gradient(90deg, transparent, #66fcf1);
+    background-size: 100% 2px;
+    background-position: 0 0, 0 100%;
+    background-repeat: no-repeat;
+  }
+
+  .mid_line {
+    color: #66fcf1;
+    padding: 0 5px;
+    white-space: nowrap;
+    text-shadow:
+      0 0 0.6rem #66fcf1,
+      0 0 1.5rem #66fcf1,
+      -0.2rem 0.1rem 1rem #66fcf1,
+      0.2rem 0.1rem 1rem #66fcf1,
+      0 -0.5rem 2rem #66fcf1,
+      0 0.5rem 3rem #66fcf1;
+    animation: shine 2s forwards, flicker 3s infinite;
+  }
+
+  .last_line {
+    width: 30%;
+    top: 60px !important;
+    background-image: linear-gradient(90deg, #66fcf1, transparent);
+    background-size: 100% 2px;
+    background-position: 0 0, 0 100%;
+    background-repeat: no-repeat;
+  }
+
+  .flicker {
+    animation: shine 4s forwards, blink 3s 2s infinite;
+  }
+
+  .fast-flicker {
+    animation: shine 2s forwards, blink 10s 1s infinite;
+  }
+}
+
+@layer utilities {
+  @keyframes shine {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+      opacity: 1;
+      text-shadow:
+        0 0 0.6rem #66fcf1,
+        0 0 1.5rem #66fcf1,
+        -0.2rem 0.1rem 1rem #66fcf1,
+        0.2rem 0.1rem 1rem #66fcf1,
+        0 -0.5rem 2rem #66fcf1,
+        0 0.5rem 3rem #66fcf1;
+    }
+    20%, 24%, 55% {
+      opacity: 0.3;
+      text-shadow: none;
+    }
+  }
+
+  @keyframes blink {
+    0%, 22%, 36%, 75% {
+      text-shadow:
+        0 0 0.6rem #66fcf1,
+        0 0 1.5rem #66fcf1,
+        -0.2rem 0.1rem 1rem #66fcf1,
+        0.2rem 0.1rem 1rem #66fcf1,
+        0 -0.5rem 2rem #66fcf1,
+        0 0.5rem 3rem #66fcf1;
+    }
+    28%, 33%, 82%, 97% {
+      text-shadow: none;
+    }
+  }
+}

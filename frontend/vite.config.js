@@ -1,0 +1,8 @@
+export default {
+  root: '.',
+  server: {
+    port: 5173,
+    host: '0.0.0.0',  // 👈 expose to Docker host
+    open: false
+  }
+}

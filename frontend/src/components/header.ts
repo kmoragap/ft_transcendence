@@ -2,7 +2,7 @@ import { t, loadLanguage } from './../i18n';
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
-  header.className = 'px-[40px] py-[20px] bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-10';
+  header.className = 'px-[40px] py-[10px] bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-10';
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
   const ul = document.createElement('ul');

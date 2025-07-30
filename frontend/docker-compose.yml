@@ -1,11 +1,14 @@
-version: '3.8'
+version: "3.9"
 
 services:
   frontend:
-    build: .
-    container_name: ft_transcendence_frontend
-    volumes:
-      - .:/app
+    platform: linux/amd64  # Ensures compatibility with both macOS and Ubuntu
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "5173:5173"  # if you later add Vite or dev server
+      - "5173:5173"
+    volumes:
+      - .:/app:cached
+      - /app/node_modules   # Avoid overriding node_modules with host version
     command: npm run dev

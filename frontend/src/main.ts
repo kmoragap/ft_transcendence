@@ -2,6 +2,7 @@ import { renderHeader } from './components/header.ts';
 import { renderFooter } from './components/footer.ts';
 import { renderHome } from './views/home';
 import { renderLogin } from './views/login';
+import { renderRegistration } from './views/register.ts';
 import { loadLanguage, updateText } from './i18n';
 
 export function navigate(path: string) {
@@ -11,6 +12,9 @@ export function navigate(path: string) {
   switch (path) {
     case '/login':
       app.appendChild(renderLogin());
+      break;
+    case '/register':
+      app.appendChild(renderRegistration());
       break;
     default:
       app.appendChild(renderHome());

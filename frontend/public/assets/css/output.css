@@ -45,9 +45,6 @@
 .mt-\[10px\] {
   margin-top: 10px;
 }
-.mt-\[20\%\] {
-  margin-top: 20%;
-}
 .mt-\[auto\] {
   margin-top: auto;
 }
@@ -59,6 +56,9 @@
 }
 .ml-\[15px\] {
   margin-left: 15px;
+}
+.block {
+  display: block;
 }
 .flex {
   display: flex;
@@ -75,6 +75,18 @@
 .w-full {
   width: 100%;
 }
+.max-w-\[200px\] {
+  max-width: 200px;
+}
+.max-w-\[250px\] {
+  max-width: 250px;
+}
+.max-w-\[300px\] {
+  max-width: 300px;
+}
+.max-w-\[400px\] {
+  max-width: 400px;
+}
 .flex-grow {
   flex-grow: 1;
 }
@@ -89,14 +101,26 @@
 .transform {
   transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
 }
+.cursor-pointer {
+  cursor: pointer;
+}
 .list-none {
   list-style-type: none;
 }
 .flex-col {
   flex-direction: column;
 }
+.flex-row {
+  flex-direction: row;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
 .items-center {
   align-items: center;
+}
+.justify-between {
+  justify-content: space-between;
 }
 .justify-center {
   justify-content: center;
@@ -127,11 +151,11 @@
 .bg-\[\#031b1b\] {
   background-color: #031b1b;
 }
-.bg-\[\#66fcf1\] {
-  background-color: #66fcf1;
-}
 .bg-\[rgba\(0\,0\,0\,0\.7\)\] {
   background-color: rgba(0,0,0,0.7);
+}
+.bg-\[rgba\(102\,252\,241\,0\.1\)\] {
+  background-color: rgba(102,252,241,0.1);
 }
 .bg-gradient-to-r {
   --tw-gradient-position: to right in oklab;
@@ -139,6 +163,14 @@
 }
 .from-\[\#1f7474\] {
   --tw-gradient-from: #1f7474;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.from-\[\#66fcf1\] {
+  --tw-gradient-from: #66fcf1;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.to-\[\#1f7474\] {
+  --tw-gradient-to: #1f7474;
   --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
 }
 .to-\[\#031b1b\] {
@@ -175,8 +207,8 @@
 .py-\[20px\] {
   padding-block: 20px;
 }
-.py-\[30px\] {
-  padding-block: 30px;
+.py-\[40px\] {
+  padding-block: 40px;
 }
 .text-center {
   text-align: center;
@@ -206,8 +238,18 @@
 .text-\[\#66fcf1\] {
   color: #66fcf1;
 }
+.text-\[center\] {
+  color: center;
+}
 .uppercase {
   text-transform: uppercase;
+}
+.no-underline {
+  text-decoration-line: none;
+}
+.shadow-\[0_4px_10px_rgba\(0\,0\,0\,0\.5\)\] {
+  --tw-shadow: 0 4px 10px var(--tw-shadow-color, rgba(0,0,0,0.5));
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
 }
 .transition-shadow {
   transition-property: box-shadow;
@@ -242,6 +284,13 @@
 @layer base {
   body {
     margin: 0;
+  }
+  h1 {
+    font-family: 'McLaren', sans-serif;
+    color: #66fcf1;
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+    font-weight: 700;
   }
 }
 @layer components {
@@ -400,10 +449,6 @@
   syntax: "*";
   inherits: false;
 }
-@property --tw-duration {
-  syntax: "*";
-  inherits: false;
-}
 @property --tw-shadow {
   syntax: "*";
   inherits: false;
@@ -469,6 +514,10 @@
   inherits: false;
   initial-value: 0 0 #0000;
 }
+@property --tw-duration {
+  syntax: "*";
+  inherits: false;
+}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
@@ -491,7 +540,6 @@
       --tw-gradient-via-position: 50%;
       --tw-gradient-to-position: 100%;
       --tw-font-weight: initial;
-      --tw-duration: initial;
       --tw-shadow: 0 0 #0000;
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;
@@ -506,6 +554,7 @@
       --tw-ring-offset-width: 0px;
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-duration: initial;
     }
   }
 }

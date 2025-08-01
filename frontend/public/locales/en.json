@@ -4,5 +4,10 @@
 	"username": "Username",
 	"password": "Password",
 	"logout": "Logout",
-	"submit": "Submit"
+	"submit": "Submit",
+	"register": "Register",
+	"login_42": "Login with 42",
+	"registration": "Registration",
+	"email": "Email",
+	"firstname": "First Name"
 }

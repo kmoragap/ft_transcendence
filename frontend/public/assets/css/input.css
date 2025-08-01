@@ -13,6 +13,13 @@
   body {
     margin: 0;
   }
+  h1 {
+    font-family: 'McLaren', sans-serif;
+    color: #66fcf1;
+    margin-block-start: 0!important;
+    margin-block-end: 0!important;
+    font-weight: 700;
+  }
 }
 
 @layer components {

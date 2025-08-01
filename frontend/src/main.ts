@@ -1,36 +1,7 @@
 import { renderHeader } from './components/header.ts';
 import { renderFooter } from './components/footer.ts';
-import { renderHome } from './views/home';
-import { renderLogin } from './views/login';
-import { renderGame } from './views/game.ts';
-import { renderRegistration } from './views/register.ts';
+import { navigate } from './router.ts';
 import { loadLanguage, updateText } from './i18n';
-
-export function navigate(path: string) {
-  const app = document.getElementById('app')!;
-  app.innerHTML = '';
-
-  switch (path) {
-    case '/login':
-      app.appendChild(renderLogin());
-      break;
-    case '/register':
-      app.appendChild(renderRegistration());
-      break;
-    case '/game':
-      // Only render the game view if the user is logged in
-      // if (!localStorage.getItem('token')) {
-      //   app.appendChild(renderLogin());
-      //   return;
-      // }
-      // If the user is logged in, render the game view
-      app.appendChild(renderGame());
-      break;
-    default:
-      app.appendChild(renderHome());
-  }
-  updateText();
-}
 
 function buildShell() {
   // 1) Body background

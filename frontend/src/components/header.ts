@@ -8,7 +8,7 @@ export function renderHeader(): HTMLElement {
   const ul = document.createElement('ul');
   ul.classList.add('flex', 'justify-end', 'list-none');
 
-  ['home', 'login'].forEach(key => {
+  ['home', 'game', 'login'].forEach(key => {
     const li = document.createElement('li');
     li.classList.add('ml-[1.25rem]', 'font-[mclaren]', 'font-[700]', 'text-[23px]', 'text-[#66fcf1]');
     li.setAttribute('data-i18n', key);

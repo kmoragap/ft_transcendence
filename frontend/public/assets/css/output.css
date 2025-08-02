@@ -125,6 +125,9 @@
 .rounded-\[6px\] {
   border-radius: 6px;
 }
+.rounded-full {
+  border-radius: calc(infinity * 1px);
+}
 .border {
   border-style: var(--tw-border-style);
   border-width: 1px;

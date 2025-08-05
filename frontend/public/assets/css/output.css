@@ -36,8 +36,8 @@
 .mx-auto {
   margin-inline: auto;
 }
-.mt-\[8px\] {
-  margin-top: 8px;
+.my-auto {
+  margin-block: auto;
 }
 .mt-\[10\%\] {
   margin-top: 10%;
@@ -56,9 +56,6 @@
 }
 .ml-\[1\.25rem\] {
   margin-left: 1.25rem;
-}
-.ml-\[15px\] {
-  margin-left: 15px;
 }
 .block {
   display: block;
@@ -97,6 +94,9 @@
 }
 .transform {
   transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+}
+.cursor-not-allowed {
+  cursor: not-allowed;
 }
 .cursor-pointer {
   cursor: pointer;
@@ -186,6 +186,9 @@
 .px-\[40px\] {
   padding-inline: 40px;
 }
+.px-\[50px\] {
+  padding-inline: 50px;
+}
 .py-\[1px\] {
   padding-block: 1px;
 }
@@ -237,6 +240,9 @@
 }
 .no-underline {
   text-decoration-line: none;
+}
+.opacity-50 {
+  opacity: 50%;
 }
 .shadow-\[0_4px_10px_rgba\(0\,0\,0\,0\.5\)\] {
   --tw-shadow: 0 4px 10px var(--tw-shadow-color, rgba(0,0,0,0.5));

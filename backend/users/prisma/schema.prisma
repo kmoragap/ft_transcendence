@@ -4,13 +4,14 @@ generator client {
 
 datasource db {
     provider = "sqlite"
-    url      = "file:./users-db.sqlite"
+    url      = "file:./prisma/users-db.sqlite"
 }
 
 model User {
     id        Int      @id @default(autoincrement())
     username  String   @unique
     email     String   @unique
-    password  String // Always hash this in code!
+    firstname String
+    password  String
     createdAt DateTime @default(now())
 }

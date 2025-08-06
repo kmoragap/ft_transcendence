@@ -111,7 +111,7 @@ export function renderRegistration(): HTMLElement {
     const password = (form.querySelector('#password') as HTMLInputElement).value;
 
     try {
-      const res = await fetch('http://localhost:3000/auth/register', {
+      const res = await fetch('http://localhost:3001/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, firstname, password }),
@@ -124,7 +124,7 @@ export function renderRegistration(): HTMLElement {
       }
 
       alert('Registration successful! You can now log in.');
-      window.location.href = '/login';
+      window.location.href = '#/login';
     } catch (err) {
       console.error(err);
       alert('An unexpected error occurred.');

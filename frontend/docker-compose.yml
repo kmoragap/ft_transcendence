@@ -1,6 +1,13 @@
 version: "3.9"
 
 services:
+  auth:
+    build:
+      context: ../backend/auth
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
   frontend:
     platform: linux/amd64  # Ensures compatibility with both macOS and Ubuntu
     build:
@@ -12,3 +19,5 @@ services:
       - .:/app:cached
       - /app/node_modules   # Avoid overriding node_modules with host version
     command: npm run dev
+    depends_on:
+      - auth

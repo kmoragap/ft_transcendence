@@ -10,5 +10,6 @@
 	"registration": "Registration",
 	"email": "Email",
 	"firstname": "First Name",
-	"game": "Game"
+	"game": "Game",
+	"profile": "Profile"
 }

@@ -1,11 +1,18 @@
 import fastify from 'fastify';
 import jwt from '@fastify/jwt';
+import cors from '@fastify/cors';
 import authRoutes from './modules/auth.routes';
 import prisma from './utils/prisma';
 
 const server = fastify({ logger: true });
 
-// register jwt
+server.register(cors, {
+  origin: 'http://localhost:5173',          
+  methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
+});
+
 server.register(jwt, {
   secret: process.env.JWT_SECRET || 'change-this-in-prod'
 });
@@ -16,8 +23,7 @@ declare module 'fastify' {
   }
 }
 
-// decorate fastify with the auth
-server.decorate('authenticate', async function (request: any, reply: any) {
+server.decorate('authenticate', async function (request, reply) {
   try {
     await request.jwtVerify();
   } catch (err) {

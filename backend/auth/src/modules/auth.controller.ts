@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import prisma from '../utils/prisma'
 
 //function to comunicate with the users services
-async function getUserByEmail(email: string)
+export async function getUserByEmail(email: string)
 {
     try {
     const response = await fetch(`http://users:3000/api/users/by-email/${email}`);

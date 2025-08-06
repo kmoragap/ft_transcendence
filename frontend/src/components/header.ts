@@ -6,21 +6,20 @@ export function renderHeader(): HTMLElement {
   header.className = 'px-[40px] py-[10px] bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-10';
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
-  // render function closes over `header`
   function updateHeader() {
-    // clear out old content
     header.innerHTML = '';
 
-    // build nav + lang + user
     const ul = document.createElement('ul');
     ul.classList.add('flex', 'justify-end', 'items-center', 'list-none');
 
-    // nav links
     const links = ['home', 'game'];
     const { isAuthenticated, currentUser } = store.getState();
 
-    // if not authed, show "login"
-    if (!isAuthenticated) links.push('login');
+    if (!isAuthenticated) {
+      links.push('login');
+    } else {
+      links.push('profile', 'logout');
+    }
 
     links.forEach(key => {
       const li = document.createElement('li');
@@ -30,13 +29,28 @@ export function renderHeader(): HTMLElement {
       li.setAttribute('data-i18n', key);
       li.textContent = t(key);
       li.style.cursor = 'pointer';
+
       li.addEventListener('click', () => {
-        location.hash = `/${key}`;
+        switch (key) {
+          case 'logout':
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            store.dispatch({ type: 'LOGOUT' });
+            location.hash = '/home';
+            break;
+
+          case 'profile':
+            location.hash = '/profile';
+            break;
+
+          default:
+            location.hash = `/${key}`;
+        }
       });
+
       ul.appendChild(li);
     });
 
-    // language selector
     const langLi = document.createElement('li');
     langLi.classList.add('ml-[1.25rem]');
     const langSelect = document.createElement('select');
@@ -62,10 +76,10 @@ export function renderHeader(): HTMLElement {
       updateHeader();
     });
     langLi.appendChild(langSelect);
-    ul.appendChild(langLi);
 
     if (isAuthenticated && currentUser) {
       const userLi = document.createElement('li');
+      const avatarUrl = currentUser.avatarUrl || '/assets/images/avatar.jpg';
       userLi.classList.add('ml-[1.25rem]', 'flex', 'items-center', 'text-[#66fcf1]');
       userLi.innerHTML = `
         <span class="font-[mclaren] font-[700] text-[23px]">
@@ -73,13 +87,20 @@ export function renderHeader(): HTMLElement {
         </span>
       `;
       const img = document.createElement('img');
-      img.src = currentUser.avatarUrl;
+      img.src = avatarUrl;
+      img.width = 32;
+      img.height = 32;
+      img.style.marginLeft = '10px';
+      img.loading = 'lazy';
       img.alt = 'avatar';
       img.className = 'h-8 w-8 rounded-full ml-2';
+      img.onerror = () => {
+        img.src = '../../public/assets/img/avatar.jpg';
+      };
       userLi.appendChild(img);
       ul.appendChild(userLi);
     }
-
+    ul.appendChild(langLi);
     header.appendChild(ul);
   }
 

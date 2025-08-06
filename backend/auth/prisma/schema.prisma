@@ -4,12 +4,13 @@ generator client {
 
 datasource db {
     provider = "sqlite"
-    url      = "file:./auth-db.sqlite"
+    url      = "file:./prisma/auth-db.sqlite"
 }
 
 model Session {
     id        Int      @id @default(autoincrement())
-    userId    Int
-    token     String // For JWT storage
+    userId    Int // ->reference to user in users service
+    token     String   @unique
     expiresAt DateTime
+    createdAt DateTime @default(now())
 }

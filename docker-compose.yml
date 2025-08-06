@@ -1,31 +1,41 @@
-#version: '3'
 services:
   auth:
     build: ./backend/auth
     volumes:
-      - ./backend/auth/prisma/auth-db.sqlite:/app/auth-db.sqlite
+      - ./backend/auth/prisma/auth-db.sqlite:/app/prisma/auth-db.sqlite
     ports:
       - "3001:3000"
+    environment:
+      - JWT_SECRET=change-this-in-prod
+      - NODE_ENV=development
+    depends_on:
+      - users
 
   chat:
     build: ./backend/chat
     volumes:
-      - ./backend/chat/prisma/chat-db.sqlite:/app/chat-db.sqlite
+      - ./backend/chat/prisma/chat-db.sqlite:/app/prisma/chat-db.sqlite
     ports:
       - "3002:3000"
+    depends_on:
+      - auth
+      - users
 
   pong:
     build: ./backend/pong
     volumes:
-      - ./backend/pong/prisma/pong-db.sqlite:/app/pong-db.sqlite
+      - ./backend/pong/prisma/pong-db.sqlite:/app/prisma/pong-db.sqlite
     ports:
       - "3003:3000"
+    depends_on:
+      - auth
+      - users
 
   users:
     build: ./backend/users
     volumes:
-      - ./backend/users/prisma/users-db.sqlite:/app/users-db.sqlite
+      - ./backend/users/prisma/users-db.sqlite:/app/prisma/users-db.sqlite
     ports:
       - "3004:3000"
-
-  # Add ELK and monitoring services later
+    environment:
+      - NODE_ENV=development

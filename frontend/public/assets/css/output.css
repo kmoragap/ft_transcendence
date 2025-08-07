@@ -12,8 +12,14 @@
 .relative {
   position: relative;
 }
+.top-1\/2 {
+  top: calc(1/2 * 100%);
+}
 .top-\[50\%\] {
   top: 50%;
+}
+.left-1\/2 {
+  left: calc(1/2 * 100%);
 }
 .left-\[50\%\] {
   left: 50%;
@@ -109,6 +115,12 @@
 }
 .items-center {
   align-items: center;
+}
+.justify-around {
+  justify-content: space-around;
+}
+.justify-between {
+  justify-content: space-between;
 }
 .justify-center {
   justify-content: center;
@@ -206,6 +218,9 @@
 }
 .text-center {
   text-align: center;
+}
+.text-left {
+  text-align: left;
 }
 .font-\[mclaren\] {
   font-family: mclaren;

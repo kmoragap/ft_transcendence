@@ -39,6 +39,7 @@ services:
       - "3004:3000"
     environment:
       - NODE_ENV=development
+      - USERS_URL=http://users:3000 
   frontend:
     build:
       context: ./frontend

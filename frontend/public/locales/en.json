@@ -2,6 +2,7 @@
 	"home": "Home",
 	"login": "Login",
 	"username": "Username",
+	"username_or_email": "Username or Email",
 	"password": "Password",
 	"logout": "Logout",
 	"submit": "Submit",

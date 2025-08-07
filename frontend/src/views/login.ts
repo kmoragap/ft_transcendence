@@ -8,28 +8,32 @@ export function renderLogin(): HTMLElement {
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
-      <h1 data-i18n="login" class="text-[70px] font-bold uppercase">Login</h1>
+      <h1 data-i18n="login" class="text-[70px] font-bold uppercase">
+        ${t('login')}
+      </h1>
     </div>
     <form
       id="login-form"
       novalidate
-      class="mt-[10px] flex flex-col items-center py-[40px] px-[40px] bg-[rgba(102,252,241,0.1)] rounded-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+      class="mt-[10px] flex flex-col items-center py-[40px] px-[40px]
+             bg-[rgba(102,252,241,0.1)] rounded-[6px]
+             shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
     >
       <div class="w-full mb-[10px]">
         <input
-          id="email"
-          type="email"
-          name="email"
+          id="identifier"
+          type="text"
+          name="identifier"
           autocomplete="username"
-          data-i18n-placeholder="username"
-          placeholder="..."
+          data-i18n-placeholder="username_or_email"
+          placeholder="${t('username_or_email')}"
           required
           aria-required="true"
           aria-invalid="false"
-          aria-describedby="email-error"
+          aria-describedby="identifier-error"
           class="px-[20px] py-[8px] border-0 rounded-[6px]"
         />
-        <p id="email-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
+        <p id="identifier-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
 
       <div class="w-full mb-[20px]">
@@ -39,7 +43,7 @@ export function renderLogin(): HTMLElement {
           name="password"
           autocomplete="current-password"
           data-i18n-placeholder="password"
-          placeholder="..."
+          placeholder="${t('password')}"
           required
           aria-required="true"
           aria-invalid="false"
@@ -51,92 +55,114 @@ export function renderLogin(): HTMLElement {
 
       <button
         type="submit"
-        class="w-full cursor-pointer text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[mclaren] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300"
+        class="w-full cursor-pointer text-[18px] font-[700]
+               px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474]
+               text-[#031b1b] border-0 rounded-[6px]
+               hover:bg-[#45a8a8] font-[mclaren]
+               hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]
+               transition-shadow duration-300"
         data-i18n="submit"
       >
-        Submit
+        ${t('submit')}
       </button>
 
-      <button class="bg-gradient-to-r from-[#66fcf1] to-[#1f7474] mt-[10px] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[mclaren] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]">
+      <button
+        class="bg-gradient-to-r from-[#66fcf1] to-[#1f7474]
+               mt-[10px] border-0 rounded-[6px]
+               hover:bg-[#45a8a8] font-[mclaren]
+               hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]"
+      >
         <a
           href="#/login_42"
-          class="block px-[30px] py-[8px] no-underline text-[#031b1b] text-[18px] font-[700]"
+          class="block px-[30px] py-[8px] no-underline text-[#031b1b]
+                 text-[18px] font-[700]"
           data-i18n="login_42"
         >
-          Login with 42
+          ${t('login_42')}
         </a>
       </button>
 
-      <button class="w-full bg-gradient-to-r from-[#66fcf1] to-[#1f7474] mt-[10px] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[mclaren] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]">
+      <button
+        class="w-full bg-gradient-to-r from-[#66fcf1] to-[#1f7474]
+               mt-[10px] border-0 rounded-[6px]
+               hover:bg-[#45a8a8] font-[mclaren]
+               hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]"
+      >
         <a
           href="#/register"
-          class="block px-[30px] py-[8px] no-underline text-[#031b1b] text-[18px] font-[700] text-[center]"
+          class="block px-[30px] py-[8px] no-underline text-[#031b1b]
+                 text-[18px] font-[700] text-[center]"
           data-i18n="register"
         >
-          Register
+          ${t('register')}
         </a>
       </button>
     </form>
   `;
 
   const form = section.querySelector<HTMLFormElement>('#login-form')!;
-  const emailInput = form.querySelector<HTMLInputElement>('#email')!;
-  const passwordInput = form.querySelector<HTMLInputElement>('#password')!;
+  const identifierInput = form.querySelector<HTMLInputElement>('#identifier')!;
+  const passwordInput   = form.querySelector<HTMLInputElement>('#password')!;
 
   form.addEventListener('submit', async (e) => {
-	e.preventDefault();
+    e.preventDefault();
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
-	if (!form.checkValidity()) {
-		form.reportValidity();
-		return;
-	}
+    const identifier = identifierInput.value.trim();
+    const password   = passwordInput.value;
 
-	const email = emailInput.value.trim();
-	const password = passwordInput.value;
+    // Build payload so backend can accept either email or username
+    const payload: Record<string, string> = { password };
+    if (identifier.includes('@')) {
+      payload.email = identifier;
+    } else {
+      payload.username = identifier;
+    }
 
-	try {
-		const res = await fetch('/api/auth/login', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ email, password }),
-		});
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-		if (!res.ok) {
-			const { message } = await res.json();
-			alert(`Login failed: ${message}`);
-			return;
-		}
+      if (!res.ok) {
+        // get a sensible error message
+        let msg = res.statusText;
+        try {
+          const err = await res.json();
+          msg = err.message || err.error || msg;
+        } catch {}
+        alert(`Login failed: ${msg}`);
+        return;
+      }
 
-		const { token, refresh } = await res.json();
-		localStorage.setItem('accessToken', token);
-		localStorage.setItem('refreshToken', refresh);
+      const { token, refresh } = await res.json();
+      localStorage.setItem('accessToken',  token);
+      localStorage.setItem('refreshToken', refresh);
 
-		const meRes = await fetch('/api/auth/me', {
-			headers: { Authorization: `Bearer ${token}` }
-		});
-		if (!meRes.ok) {
-			console.error('Failed to fetch profile', await meRes.text());
-			window.location.hash = '/';
-			return;
-		}
-		const user = await meRes.json() as {
-			username: string;
-			avatarUrl: string;
-			language: string;
-		};
+      // Fetch current user
+      const meRes = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!meRes.ok) {
+        console.error('Failed to fetch profile', await meRes.text());
+        window.location.hash = '/';
+        return;
+      }
+      const user = await meRes.json();
+      store.dispatch({ type: 'LOGIN', payload: user });
 
-		store.dispatch({
-			type: 'LOGIN',
-			payload: user
-		});
-
-		alert('Login successful!');
-		window.location.hash = '/';
-	} catch (err) {
-		console.error(err);
-		alert('An unexpected error occurred.');
-	}
-	});
+      alert('Login successful!');
+      window.location.hash = '/';
+    } catch (err) {
+      console.error(err);
+      alert('An unexpected error occurred.');
+    }
+  });
 
   return section;
 }

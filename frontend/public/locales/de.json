@@ -2,6 +2,7 @@
   "home": "Startseite",
   "login": "Anmelden",
   "username": "Benutzername",
+  "username_or_email": "Benutzername oder E-Mail",
   "password": "Passwort",
   "logout": "Abmelden",
   "submit": "Einreichen",

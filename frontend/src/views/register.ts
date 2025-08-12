@@ -5,7 +5,7 @@ import { attachValidation } from './../form-validation';
 export function renderRegistration(): HTMLElement {
   const section = document.createElement('section');
   section.className =
-    'flex flex-col m-0 mt-[10%] items-center justify-center h-full text-center relative z-[3] font-[mclaren] text-[#66fcf1]';
+    'flex flex-col m-0 mt-[10%] items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
@@ -86,7 +86,7 @@ export function renderRegistration(): HTMLElement {
 
       <button
         type="submit"
-        class="w-full cursor-pointer text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[mclaren] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300 opacity-50 cursor-not-allowed"
+        class="w-full cursor-pointer text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300 opacity-50 cursor-not-allowed"
       >
         <span data-i18n="submit">Submit</span>
       </button>

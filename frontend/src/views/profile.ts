@@ -1,5 +1,11 @@
 import { store } from '../store';
 
+let isSessionRestored = false;
+
+export function setProfileSessionRestored() {
+  isSessionRestored = true;
+}
+
 export interface UserProfile {
   username: string
   email: string
@@ -24,6 +30,18 @@ function getCurrentUser(): UserProfile {
   const state = store.getState();
   const currentUser = state.currentUser;
   
+
+  
+  if (!isSessionRestored) {
+    return {
+      username: 'Loading...',
+      email: 'Loading...',
+      name: 'Loading...',
+      avatarUrl: '/assets/img/avatar.jpg',
+      ...getStaticStats()
+    };
+  }
+  
   if (!currentUser) {
     return {
       username: 'Guest',
@@ -36,7 +54,7 @@ function getCurrentUser(): UserProfile {
   
   return {
     username: currentUser.username,
-    email: currentUser.email || 'user@example.com',
+    email: currentUser.email || `${currentUser.username}@example.com`,
     name: currentUser.username,
     avatarUrl: currentUser.avatarUrl || '/assets/img/avatar.jpg',
     ...getStaticStats()
@@ -55,14 +73,6 @@ export function renderProfile(): HTMLElement {
     'z-[3] text-[#66fcf1] font-[jura]',
     ''
   ].join(' ')
-
-  const updateUserData = () => {
-    user = getCurrentUser();
-    section.innerHTML = getViewHTML();
-    bindViewEvents();
-  };
-
-  store.subscribe(updateUserData);
 
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
@@ -87,31 +97,31 @@ export function renderProfile(): HTMLElement {
         </div>
  
         <div class="grid grid-cols-2 gap-4 mb-6">
-          <div class="bg-[rgba(102,252,241,0.05)] rounded-lg p-4 text-center">
+          <div class="p-4 text-center">
             <div class="text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
             <div class="text-sm text-gray-300">Wins</div>
           </div>
-          <div class="bg-[rgba(102,252,241,0.05)] rounded-lg p-4 text-center">
+          <div class="p-4 text-center">
             <div class="text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
             <div class="text-sm text-gray-300">Losses</div>
           </div>
-          <div class="bg-[rgba(102,252,241,0.05)] rounded-lg p-4 text-center">
+          <div class="p-4 text-center">
             <div class="text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
             <div class="text-sm text-gray-300">Total Games</div>
           </div>
-          <div class="bg-[rgba(102,252,241,0.05)] rounded-lg p-4 text-center">
+          <div class="p-4 text-center">
             <div class="text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
             <div class="text-sm text-gray-300">Win Rate</div>
           </div>
-        </div>
-        
-        <div class="flex flex-col gap-3">
-          <button id="edit-btn" class="btn w-auto px-8 mb-[10px] mt-[10px]">
-            Edit Profile
-          </button>
-          <button id="refresh-stats-btn" class="btn w-auto px-8">
-            Refresh Stats
-          </button>
+          </div>
+          <div class="flex flex-col gap-3">
+            <button id="edit-btn" class="cursor-pointer mt-[10px] text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
+              Edit Profile
+            </button>
+            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
+              Refresh Stats
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -162,6 +172,19 @@ export function renderProfile(): HTMLElement {
     </div>
   `
 
+  const updateUserData = () => {
+    user = getCurrentUser();
+    section.innerHTML = getViewHTML();
+    bindViewEvents();
+  };
+
+  updateUserData();
+  store.subscribe(updateUserData);
+  
+  setTimeout(() => {
+    updateUserData();
+  }, 500);
+
   function bindViewEvents() {
     const editBtn = section.querySelector('#edit-btn') as HTMLButtonElement
     const refreshStatsBtn = section.querySelector('#refresh-stats-btn') as HTMLButtonElement
@@ -207,9 +230,6 @@ export function renderProfile(): HTMLElement {
       bindViewEvents()
     })
   }
-
-  section.innerHTML = getViewHTML()
-  bindViewEvents()
 
   return section
 }

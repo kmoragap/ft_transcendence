@@ -1,12 +1,26 @@
 import { t, loadLanguage } from './../i18n';
 import { store } from '../store';
 
+let isSessionRestored = false;
+let updateHeaderCallback: (() => void) | null = null;
+
+export function setSessionRestored() {
+  isSessionRestored = true;
+  if (updateHeaderCallback) {
+    updateHeaderCallback();
+  }
+}
+
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
   header.className = 'px-[40px] py-[10px] bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-10';
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
   function updateHeader() {
+    if (!isSessionRestored) {
+      header.innerHTML = '';
+      return;
+    }
     header.innerHTML = '';
 
     const ul = document.createElement('ul');
@@ -79,7 +93,7 @@ export function renderHeader(): HTMLElement {
 
     if (isAuthenticated && currentUser) {
       const userLi = document.createElement('li');
-      const avatarUrl = currentUser.avatarUrl || '/assets/images/avatar.jpg';
+      const avatarUrl = currentUser.avatarUrl || '/assets/img/avatar.jpg';
       userLi.classList.add('ml-[1.25rem]', 'flex', 'items-center', 'text-[#66fcf1]');
       userLi.innerHTML = `
         <span class="font-[jura] font-[700] text-[23px]">
@@ -95,7 +109,7 @@ export function renderHeader(): HTMLElement {
       img.alt = 'avatar';
       img.className = 'h-8 w-8 rounded-full ml-2';
       img.onerror = () => {
-        img.src = '../../public/assets/img/avatar.jpg';
+        img.src = '/assets/img/avatar.jpg';
       };
       userLi.appendChild(img);
       ul.appendChild(userLi);
@@ -104,6 +118,7 @@ export function renderHeader(): HTMLElement {
     header.appendChild(ul);
   }
 
+  updateHeaderCallback = updateHeader;
   updateHeader();
   store.subscribe(updateHeader);
 

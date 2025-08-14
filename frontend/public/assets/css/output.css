@@ -39,6 +39,9 @@
 .container {
   width: 100%;
 }
+.m-\[0\] {
+  margin: 0;
+}
 .mx-auto {
   margin-inline: auto;
 }
@@ -56,6 +59,9 @@
 }
 .mt-\[auto\] {
   margin-top: auto;
+}
+.mr-\[10px\] {
+  margin-right: 10px;
 }
 .mb-\[10px\] {
   margin-bottom: 10px;
@@ -78,8 +84,11 @@
 .hidden {
   display: none;
 }
-.h-\[300px\] {
-  height: 300px;
+.h-\[70vh\] {
+  height: 70vh;
+}
+.h-\[calc\(70vh-50px\)\] {
+  height: calc(70vh - 50px);
 }
 .h-full {
   height: 100%;
@@ -87,14 +96,17 @@
 .min-h-screen {
   min-height: 100vh;
 }
-.w-\[500px\] {
-  width: 500px;
+.w-\[100px\] {
+  width: 100px;
 }
 .w-auto {
   width: auto;
 }
 .w-full {
   width: 100%;
+}
+.max-w-\[1100px\] {
+  max-width: 1100px;
 }
 .flex-grow {
   flex-grow: 1;
@@ -128,6 +140,9 @@
 .items-center {
   align-items: center;
 }
+.justify-between {
+  justify-content: space-between;
+}
 .justify-center {
   justify-content: center;
 }
@@ -142,6 +157,9 @@
 }
 .rounded-\[6px\] {
   border-radius: 6px;
+}
+.rounded-\[10px\] {
+  border-radius: 10px;
 }
 .rounded-full {
   border-radius: calc(infinity * 1px);
@@ -158,8 +176,15 @@
   border-style: var(--tw-border-style);
   border-width: 4px;
 }
+.border-b {
+  border-bottom-style: var(--tw-border-style);
+  border-bottom-width: 1px;
+}
 .border-\[\#66fcf1\] {
   border-color: #66fcf1;
+}
+.border-\[rgba\(102\,252\,241\,0\.15\)\] {
+  border-color: rgba(102,252,241,0.15);
 }
 .border-transparent {
   border-color: transparent;
@@ -170,11 +195,14 @@
 .bg-\[rgba\(0\,0\,0\,0\.7\)\] {
   background-color: rgba(0,0,0,0.7);
 }
+.bg-\[rgba\(3\,27\,27\,0\.8\)\] {
+  background-color: rgba(3,27,27,0.8);
+}
 .bg-\[rgba\(102\,252\,241\,0\.1\)\] {
   background-color: rgba(102,252,241,0.1);
 }
-.bg-\[rgba\(102\,252\,241\,0\.05\)\] {
-  background-color: rgba(102,252,241,0.05);
+.bg-\[rgba\(102\,252\,241\,0\.15\)\] {
+  background-color: rgba(102,252,241,0.15);
 }
 .bg-gradient-to-r {
   --tw-gradient-position: to right in oklab;
@@ -235,6 +263,9 @@
 .py-\[40px\] {
   padding-block: 40px;
 }
+.pl-\[10px\] {
+  padding-left: 10px;
+}
 .text-center {
   text-align: center;
 }
@@ -247,11 +278,17 @@
 .font-\[pressstart2p\] {
   font-family: pressstart2p;
 }
+.text-\[14px\] {
+  font-size: 14px;
+}
 .text-\[16px\] {
   font-size: 16px;
 }
 .text-\[18px\] {
   font-size: 18px;
+}
+.text-\[22px\] {
+  font-size: 22px;
 }
 .text-\[23px\] {
   font-size: 23px;
@@ -291,6 +328,15 @@
 .shadow-\[0_4px_10px_rgba\(0\,0\,0\,0\.5\)\] {
   --tw-shadow: 0 4px 10px var(--tw-shadow-color, rgba(0,0,0,0.5));
   box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.shadow-\[0_10px_30px_rgba\(0\,0\,0\,0\.5\)\] {
+  --tw-shadow: 0 10px 30px var(--tw-shadow-color, rgba(0,0,0,0.5));
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.transition {
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events;
+  transition-timing-function: var(--tw-ease, ease);
+  transition-duration: var(--tw-duration, 0s);
 }
 .transition-all {
   transition-property: all;
@@ -332,6 +378,13 @@
   &:hover {
     @media (hover: hover) {
       background-color: #45a8a8;
+    }
+  }
+}
+.hover\:bg-\[rgba\(102\,252\,241\,0\.25\)\] {
+  &:hover {
+    @media (hover: hover) {
+      background-color: rgba(102,252,241,0.25);
     }
   }
 }
@@ -440,28 +493,24 @@
   }
   .btn {
     width: 100%;
-    cursor: pointer;
+    margin-top: 10px;
+    border: 0;
     border-radius: 6px;
-    border-style: var(--tw-border-style);
-    border-width: 0px;
-    padding-inline: 30px;
-    padding-block: 8px;
-    font-family: jura;
-    font-size: 18px;
-    --tw-font-weight: 700;
-    font-weight: 700;
-    color: #031b1b;
-    background: linear-gradient(to right, #66fcf1, #7ffcf7, #1f7474);
-    background-size: 200% 200%;
-    background-position: left;
-    transition: all 0.3s ease-in-out;
+    font-family: 'Jura', sans-serif;
+    background: linear-gradient(to right, #66fcf1, #1f7474);
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
   }
   .btn:hover {
+    background-color: #45a8a8;
     box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
-    animation: gradient-move 1.5s linear infinite;
   }
-  .btn-constant {
-    animation: gradient-move 3s linear infinite;
+  .btn a {
+    display: block;
+    padding: 8px 30px;
+    text-decoration: none;
+    color: #031b1b;
+    font-size: 18px;
+    font-weight: 700;
   }
 }
 @layer utilities {

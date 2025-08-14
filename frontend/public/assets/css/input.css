@@ -101,22 +101,27 @@
   }
 
   .btn {
-    @apply w-full cursor-pointer text-[18px] font-[700] font-[jura]
-           px-[30px] py-[8px] text-[#031b1b] border-0 rounded-[6px];
-    
-    background: linear-gradient(to right, #66fcf1, #7ffcf7, #1f7474);
-    background-size: 200% 200%;
-    background-position: left;
-    transition: all 0.3s ease-in-out;
+    width: 100%;
+    margin-top: 10px;
+    border: 0;
+    border-radius: 6px;
+    font-family: 'Jura', sans-serif;
+    background: linear-gradient(to right, #66fcf1, #1f7474);
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
   }
 
   .btn:hover {
+    background-color: #45a8a8;
     box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
-    animation: gradient-move 1.5s linear infinite;
   }
 
-  .btn-constant {
-    animation: gradient-move 3s linear infinite;
+  .btn a {
+    display: block;
+    padding: 8px 30px;
+    text-decoration: none;
+    color: #031b1b;
+    font-size: 18px;
+    font-weight: 700;
   }
 }
 

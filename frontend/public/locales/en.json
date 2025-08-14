@@ -12,5 +12,6 @@
 	"email": "Email",
 	"firstname": "First Name",
 	"game": "Game",
-	"profile": "Profile"
+	"profile": "Profile",
+	"exit": "Exit"
 }

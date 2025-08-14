@@ -1,8 +1,8 @@
 import { renderHome } from './views/home.ts';
 import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';
-import { renderGame } from './views/game.ts';
 import { renderProfile } from './views/profile.ts';
+import { renderGame, destroyGameView } from './views/game';
 import { updateText } from './i18n';
 
 const routes: Record<string, () => HTMLElement> = {
@@ -23,4 +23,11 @@ export function navigate(path: string) {
   app.appendChild(renderFn());
 
   updateText();
+}
+
+function cleanupGameView() {
+  const leavingGame = window.location.pathname === '/game' && routes['/game'];
+  if (leavingGame) {
+    destroyGameView();
+  }
 }

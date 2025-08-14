@@ -1,7 +1,11 @@
-import { renderHeader } from './components/header.ts';
+import { renderHeader, setSessionRestored } from './components/header.ts';
 import { renderFooter } from './components/footer.ts';
 import { navigate } from './router.ts';
 import { loadLanguage, updateText } from './i18n';
+import { store } from './store';
+import { setProfileSessionRestored } from './views/profile.ts';
+
+let isSessionRestored = false;
 
 function buildShell() {
   // 1) Body background
@@ -27,8 +31,43 @@ function buildShell() {
   document.body.appendChild(footer);
 }
 
+async function restoreSession() {
+  const token = localStorage.getItem('accessToken');
+  
+  if (!token) {
+    isSessionRestored = true;
+    setSessionRestored();
+    setProfileSessionRestored();
+    return;
+  }
+
+  try {
+    const meRes = await fetch('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    if (meRes.ok) {
+      const user = await meRes.json();
+      store.dispatch({ type: 'LOGIN', payload: user });
+    } else {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
+  } catch (err) {
+    console.error('Failed to restore session:', err);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  } finally {
+    isSessionRestored = true;
+    setSessionRestored();
+    setProfileSessionRestored();
+  }
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   buildShell();
+
+  await restoreSession();
 
   const saved = localStorage.getItem('lang') || 'en';
   await loadLanguage(saved);

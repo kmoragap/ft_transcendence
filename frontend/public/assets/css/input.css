@@ -3,6 +3,27 @@
 @tailwind utilities;
 
 @font-face {
+  font-family: 'PressStart2P';
+  src: url('/assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Jura';
+  src: url('/assets/fonts/Jura-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'VT323';
+  src: url('/assets/fonts/VT323-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
   font-family: 'McLaren';
   src: url('/assets/fonts/McLaren-Regular.ttf') format('truetype');
   font-weight: normal;
@@ -14,7 +35,7 @@
     margin: 0;
   }
   h1 {
-    font-family: 'McLaren', sans-serif;
+    font-family: 'jura', sans-serif;
     color: #66fcf1;
     margin-block-start: 0!important;
     margin-block-end: 0!important;
@@ -39,8 +60,8 @@
   }
 
   .first_line {
-    width: 30%;
-    top: 60px !important;
+    width: 25%;
+    top: 40px !important;
     background-image: linear-gradient(90deg, transparent, #66fcf1);
     background-size: 100% 2px;
     background-position: 0 0, 0 100%;
@@ -50,6 +71,7 @@
   .mid_line {
     color: #66fcf1;
     padding: 0 5px;
+    padding-left: 10px;
     white-space: nowrap;
     text-shadow:
       0 0 0.6rem #66fcf1,
@@ -62,8 +84,8 @@
   }
 
   .last_line {
-    width: 30%;
-    top: 60px !important;
+    width: 25%;
+    top: 40px !important;
     background-image: linear-gradient(90deg, #66fcf1, transparent);
     background-size: 100% 2px;
     background-position: 0 0, 0 100%;
@@ -76,6 +98,30 @@
 
   .fast-flicker {
     animation: shine 2s forwards, blink 10s 1s infinite;
+  }
+
+  .btn {
+    width: 100%;
+    margin-top: 10px;
+    border: 0;
+    border-radius: 6px;
+    font-family: 'Jura', sans-serif;
+    background: linear-gradient(to right, #66fcf1, #1f7474);
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+
+  .btn:hover {
+    background-color: #45a8a8;
+    box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
+  }
+
+  .btn a {
+    display: block;
+    padding: 8px 30px;
+    text-decoration: none;
+    color: #031b1b;
+    font-size: 18px;
+    font-weight: 700;
   }
 }
 
@@ -93,12 +139,12 @@
     0%, 18%, 22%, 25%, 53%, 57%, 100% {
       opacity: 1;
       text-shadow:
-        0 0 0.6rem #66fcf1,
-        0 0 1.5rem #66fcf1,
-        -0.2rem 0.1rem 1rem #66fcf1,
-        0.2rem 0.1rem 1rem #66fcf1,
-        0 -0.5rem 2rem #66fcf1,
-        0 0.5rem 3rem #66fcf1;
+        0 0 0.3rem #66fcf1,
+        0 0 0.8rem #66fcf1,
+        -0.1rem 0.05rem 0.5rem #66fcf1,
+        0.1rem 0.05rem 0.5rem #66fcf1,
+        0 -0.25rem 1rem #66fcf1,
+        0 0.25rem 1.5rem #66fcf1;
     }
     20%, 24%, 55% {
       opacity: 0.3;
@@ -109,15 +155,27 @@
   @keyframes blink {
     0%, 22%, 36%, 75% {
       text-shadow:
-        0 0 0.6rem #66fcf1,
-        0 0 1.5rem #66fcf1,
-        -0.2rem 0.1rem 1rem #66fcf1,
-        0.2rem 0.1rem 1rem #66fcf1,
-        0 -0.5rem 2rem #66fcf1,
-        0 0.5rem 3rem #66fcf1;
+        0 0 0.3rem #66fcf1,
+        0 0 0.8rem #66fcf1,
+        -0.1rem 0.05rem 0.5rem #66fcf1,
+        0.1rem 0.05rem 0.5rem #66fcf1,
+        0 -0.25rem 1rem #66fcf1,
+        0 0.25rem 1.5rem #66fcf1;
     }
     28%, 33%, 82%, 97% {
       text-shadow: none;
+    }
+  }
+
+  @keyframes gradient-move {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
     }
   }
 }

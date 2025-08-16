@@ -1,12 +1,19 @@
 // ../workspace/backend/pong/src/pong.ts
 var canvas = document.getElementById("board");
 var ctx = canvas.getContext("2d");
+var win = document.getElementsByName("window");
 var scoreP1TB = document.getElementById("p1score");
 var scoreP2TB = document.getElementById("p2score");
 var keys = {};
-var bg = "green";
-var p1Col = "red";
-var p2Col = "yellow";
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - scoreP1TB.offsetHeight;
+var bg = "black";
+var p1InnerCol = "white";
+var p1OuterCol = "grey";
+var p1CornerCol = "red";
+var p2InnerCol = "white";
+var p2OuterCol = "grey";
+var p2CornerCol = "red";
 var uiCol = "white";
 var ballCol = "blue";
 var singlePlayer = true;
@@ -22,13 +29,16 @@ var maxScore;
 var ball;
 var ballY;
 var Paddle = class {
-  constructor(posX, posY, color) {
-    this._del = 0;
+  constructor(posX, posY, innerColor, outerColor, cornerColor) {
     this._goTime = 0;
     this._moveSpeed = canvas.height / 400;
     this._posX = posX;
     this._posY = posY;
-    this._color = color;
+    this._innerColor = innerColor;
+    this._outerColor = outerColor;
+    this._cornerColor = cornerColor;
+    if (ctx) {
+    }
   }
   go(go) {
     this._goTime = go;
@@ -45,20 +55,64 @@ var Paddle = class {
   getMoveSpeed() {
     return this._moveSpeed;
   }
-  draw(color) {
+  draw() {
     if (ctx) {
       ctx.beginPath();
-      if (color == bg) this._del = this._moveSpeed;
-      else this._del = 0;
-      ctx.fillStyle = color;
-      ctx.rect(this._posX, this._posY - this._del, paddleWidth, paddleHeight + 2 * this._del);
+      if (this._paddleGrad != null)
+        ctx.fillStyle = this._paddleGrad;
+      ctx.fillRect(this._posX, this._posY + paddleWidth, paddleWidth, paddleHeight - paddleWidth * 2);
+      this._paddleGrad = ctx.createLinearGradient(this._posX, this._posY, this._posX + paddleWidth, this._posY);
+      this._paddleGrad.addColorStop(0, this._outerColor);
+      this._paddleGrad.addColorStop(0.5, this._innerColor);
+      this._paddleGrad.addColorStop(1, this._outerColor);
+      this._topCornerGrad = ctx.createRadialGradient(this._posX + 10, this._posY, paddleWidth / 7, this._posX, this._posY, paddleWidth);
+      this._topCornerGrad.addColorStop(0, "white");
+      this._topCornerGrad.addColorStop(0.75, this._cornerColor);
+      this._bottomCornerGrad = ctx.createRadialGradient(this._posX + 10, this._posY + paddleHeight, paddleWidth / 7, this._posX, this._posY + paddleHeight, paddleWidth);
+      this._bottomCornerGrad.addColorStop(0, "white");
+      this._bottomCornerGrad.addColorStop(0.75, this._cornerColor);
+      if (this._posX == 0) {
+        ctx.beginPath();
+        ctx.fillStyle = this._topCornerGrad;
+        ctx.moveTo(this._posX, this._posY + paddleWidth);
+        ctx.arc(this._posX, this._posY + paddleWidth, paddleWidth, -Math.PI / 2, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = this._bottomCornerGrad;
+        ctx.moveTo(this._posX, this._posY + paddleHeight - paddleWidth);
+        ctx.arc(this._posX, this._posY + paddleHeight - paddleWidth, paddleWidth, 0, Math.PI / 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+      if (this._posX != 0) {
+        ctx.beginPath();
+        ctx.fillStyle = this._topCornerGrad;
+        ctx.moveTo(this._posX + paddleWidth, this._posY + paddleWidth);
+        ctx.arc(this._posX + paddleWidth, this._posY + paddleWidth, paddleWidth, Math.PI, Math.PI * 3 / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = this._bottomCornerGrad;
+        ctx.moveTo(this._posX + paddleWidth, this._posY + paddleHeight - paddleWidth);
+        ctx.arc(this._posX + paddleWidth, this._posY + paddleHeight - paddleWidth, paddleWidth, Math.PI / 2, Math.PI);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+  erase() {
+    if (ctx) {
+      ctx.beginPath();
+      ctx.fillStyle = bg;
+      ctx.rect(this._posX - 1, this._posY - 1, paddleWidth + 2, paddleHeight + 2);
       ctx.fill();
     }
   }
   move(dir) {
-    this.draw(bg);
+    this.erase();
     this._posY += dir;
-    this.draw(this._color);
+    this.draw();
   }
   hit() {
     if (ballY >= this._posY && ballY <= this._posY + paddleHeight) return true;
@@ -67,13 +121,13 @@ var Paddle = class {
 };
 var Ball = class {
   constructor(color) {
-    this._del = 0;
     this._goTime = 0;
     this._ballSpeed = canvas.width / 2;
     this._x = canvas.width / 2;
+    this._dirX = 0;
+    this._dirY = 0;
     this._size = canvas.width / 80;
     this._color = color;
-    this._del = 0;
   }
   go(go) {
     this._goTime = go;
@@ -90,13 +144,24 @@ var Ball = class {
   setDirY(dir) {
     this._dirY = dir;
   }
-  draw(color) {
+  erase() {
     if (ctx) {
       ctx.beginPath();
-      if (color === bg) this._del = 1;
-      else this._del = 0;
-      ctx.ellipse(this._x, ballY, this._size + this._del, this._size + this._del, 0, 0, Math.PI * 2);
-      ctx.fillStyle = color;
+      ctx.ellipse(this._x, ballY, this._size + 1, this._size + 1, 0, 0, Math.PI * 2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+    }
+  }
+  draw() {
+    if (ctx) {
+      ctx.beginPath();
+      this._grad = ctx.createRadialGradient(this._x - this._size / 3, ballY - this._size / 3, this._size / 10, this._x, ballY, this._size);
+      this._grad.addColorStop(0, "white");
+      this._grad.addColorStop(0.3, this._color);
+      this._grad.addColorStop(0.5, this._color);
+      this._grad.addColorStop(0.95, "black");
+      ctx.ellipse(this._x, ballY, this._size, this._size, 0, 0, Math.PI * 2);
+      ctx.fillStyle = this._grad;
       ctx.fill();
     }
   }
@@ -154,12 +219,12 @@ var Ball = class {
     }
   }
   move() {
-    this.draw(bg);
+    this.erase();
     this.midline();
     this.checkPaddle();
     this.checkWalls();
     this.advanceBall();
-    this.draw(this._color);
+    this.draw();
   }
 };
 function moveP1() {
@@ -201,6 +266,12 @@ document.addEventListener("keyup", (ev) => {
     p2Dir = 0;
     keys[ev.key] = false;
   }
+  if (ev.key == "Escape") {
+    keys[ev.key] = false;
+    ball.stop();
+    p1.stop();
+    p2.stop();
+  }
 });
 function startRound() {
   if (ctx) {
@@ -211,8 +282,8 @@ function startRound() {
   scoreP1TB.value = String(score1);
   scoreP2TB.value = String(score2);
   ball = new Ball(ballCol);
-  p1 = new Paddle(0, canvas.height / 2 - paddleHeight / 2, p1Col);
-  p2 = new Paddle(canvas.width - paddleWidth, canvas.height / 2 - paddleHeight / 2, p2Col);
+  p1 = new Paddle(0, canvas.height / 2 - paddleHeight / 2, p1InnerCol, p1OuterCol, p1CornerCol);
+  p2 = new Paddle(canvas.width - paddleWidth, canvas.height / 2 - paddleHeight / 2, p2InnerCol, p2OuterCol, p2CornerCol);
   p1.move(0);
   p2.move(0);
   ballY = canvas.height / 2;
@@ -224,12 +295,13 @@ function startRound() {
   ball.go(setInterval(() => ball.move(), 5));
 }
 function startGame() {
+  document.getElementById("board")?.focus();
   p1Dir = 0;
   p2Dir = 0;
   score1 = 0;
   score2 = 0;
   maxScore = 3;
-  paddleWidth = canvas.width / 40;
+  paddleWidth = canvas.width / 60;
   paddleHeight = canvas.height / 5;
   startRound();
 }

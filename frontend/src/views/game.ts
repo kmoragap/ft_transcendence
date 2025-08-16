@@ -4,7 +4,7 @@ let iframeRef: HTMLIFrameElement | null = null;
 
 export function renderGame(): HTMLElement {
   const section = document.createElement('section');
-  section.className = 'relative m-0 mt-[10%] flex items-center justify-center h-[70vh] text-center z-[3]';
+  section.className = 'w-full relative m-0 mt-[10%] flex items-center justify-center text-center z-[3]';
 
   section.innerHTML = `
     <div class="w-full max-w-[1100px] h-[70vh] rounded-[10px] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">

@@ -22,8 +22,7 @@ export function renderGame(): HTMLElement {
   iframeRef = section.querySelector('#pong-frame') as HTMLIFrameElement;
 
   section.querySelector('#game-exit')?.addEventListener('click', () => {
-    window.history.pushState({}, '', '/home');
-    window.dispatchEvent(new Event('popstate'));
+    window.location.href = '#/home';
   });
 
   return section;

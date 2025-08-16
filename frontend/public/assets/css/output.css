@@ -1,4 +1,4 @@
-/*! tailwindcss v4.1.11 | MIT License | https://tailwindcss.com */
+/*! tailwindcss v4.1.12 | MIT License | https://tailwindcss.com */
 @layer properties;
 .pointer-events-none {
   pointer-events: none;
@@ -93,6 +93,12 @@
 .h-full {
   height: 100%;
 }
+.max-h-\[calc\(100vh-120px\)\] {
+  max-height: calc(100vh - 120px);
+}
+.max-h-\[calc\(100vh-200px\)\] {
+  max-height: calc(100vh - 200px);
+}
 .min-h-screen {
   min-height: 100vh;
 }
@@ -107,6 +113,12 @@
 }
 .max-w-\[1100px\] {
   max-width: 1100px;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-shrink-0 {
+  flex-shrink: 0;
 }
 .flex-grow {
   flex-grow: 1;

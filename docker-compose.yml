@@ -48,7 +48,8 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/app:cached
+      - .:/workspace:ro
       - /app/node_modules
-    command: npm run dev
+    command: bash -lc "npm run prepare:pong && npm run dev"
     depends_on:
       - auth

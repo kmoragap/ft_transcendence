@@ -107,15 +107,12 @@ export async function registerHandler(
   }
 }
 
-// Login handler now supports email or username
 export async function loginHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
   const body = request.body as Record<string, any>;
   const password = String(body.password || "");
-
-  // Determine identifier
   const identifier: string | undefined =
     typeof body.username === "string"
       ? body.username
@@ -132,24 +129,20 @@ export async function loginHandler(
   }
 
   try {
-    // 1) Lookup user by email vs username
     const user =
       identifier.includes("@")
         ? await getUserByEmail(identifier)
         : await getUserByUsername(identifier);
 
-    // 2) Validate
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return reply.code(401).send({ message: "Invalid credentials" });
     }
 
-    // 3) Sign JWT
     const token = request.server.jwt.sign(
       { userId: user.id, email: user.email },
       { expiresIn: "24h" }
     );
 
-    // 4) Record session
     await prisma.session.create({
       data: {
         userId: user.id,
@@ -174,7 +167,6 @@ export async function loginHandler(
   }
 }
 
-// Logout & token verification unchanged
 export async function logoutHandler(
   request: FastifyRequest,
   reply: FastifyReply

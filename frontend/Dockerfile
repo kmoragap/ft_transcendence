@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (including optional native ones like rollup or parcel)
-RUN npm install --include=optional
+RUN npm install --include=optional && npm install -D esbuild
 
 # Copy the rest of your project
 COPY . .

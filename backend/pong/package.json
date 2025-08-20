@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "main": "src/index.ts",
     "scripts": {
-        "start": "node src/index.ts"
+        "start": "node src/index.ts",
+        "startGame": "node.src/index.ts"
     },
     "devDependencies": {
         "@types/node": "^24.0.13",

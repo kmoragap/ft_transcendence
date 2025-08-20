@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Pong</title>
+	<style>
+		textarea {
+			resize: none;
+			background: transparent;
+			color: #66fcf1;
+			border: none;
+			font-family: 'jura', sans-serif;
+			font-size: 25px;
+		}
+		.scoreboard {
+			display: flex;
+			justify-content: center;
+			color: #66fcf1;
+			font-family: 'jura', sans-serif;
+			font-size: 25px;
+		}
+		.p1score {direction: rtl;}
+		canvas {
+			display: block;
+			left: 0;
+			top: 0;
+			height: 100%;
+			width: 100%;
+		}
+</style>
+</head>
+<body>
+	<div class = "scoreboard">
+	<textarea id = "p1score" class = "p1score" rows = "1" cols = "2" disabled>0</textarea> : <textarea id = "p2score" class = "p2score" rows = "1" cols = "2" disabled>0</textarea></div>
+	<canvas id = "board" tabindex = "1"></canvas>
+</body>
+<script type="module" src = "pong/pong.js"></script>
+</html>

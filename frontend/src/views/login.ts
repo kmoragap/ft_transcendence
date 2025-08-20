@@ -4,7 +4,7 @@ import { store } from '../store';
 export function renderLogin(): HTMLElement {
   const section = document.createElement('section');
   section.className =
-    'flex flex-col m-0 mt-[10%] items-center justify-center h-full text-center relative z-[3] font-[mclaren] text-[#66fcf1]';
+    'flex flex-col m-0 mt-[10%] items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
@@ -55,27 +55,17 @@ export function renderLogin(): HTMLElement {
 
       <button
         type="submit"
-        class="w-full cursor-pointer text-[18px] font-[700]
-               px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474]
-               text-[#031b1b] border-0 rounded-[6px]
-               hover:bg-[#45a8a8] font-[mclaren]
-               hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]
-               transition-shadow duration-300"
+        class="btn py-[10px] text-[18px] font-[700]"
         data-i18n="submit"
       >
         ${t('submit')}
       </button>
 
       <button
-        class="bg-gradient-to-r from-[#66fcf1] to-[#1f7474]
-               mt-[10px] border-0 rounded-[6px]
-               hover:bg-[#45a8a8] font-[mclaren]
-               hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]"
+        class="btn"
       >
         <a
           href="#/login_42"
-          class="block px-[30px] py-[8px] no-underline text-[#031b1b]
-                 text-[18px] font-[700]"
           data-i18n="login_42"
         >
           ${t('login_42')}
@@ -83,15 +73,10 @@ export function renderLogin(): HTMLElement {
       </button>
 
       <button
-        class="w-full bg-gradient-to-r from-[#66fcf1] to-[#1f7474]
-               mt-[10px] border-0 rounded-[6px]
-               hover:bg-[#45a8a8] font-[mclaren]
-               hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]"
+        class="btn"
       >
         <a
           href="#/register"
-          class="block px-[30px] py-[8px] no-underline text-[#031b1b]
-                 text-[18px] font-[700] text-[center]"
           data-i18n="register"
         >
           ${t('register')}
@@ -114,7 +99,6 @@ export function renderLogin(): HTMLElement {
     const identifier = identifierInput.value.trim();
     const password   = passwordInput.value;
 
-    // Build payload so backend can accept either email or username
     const payload: Record<string, string> = { password };
     if (identifier.includes('@')) {
       payload.email = identifier;
@@ -130,7 +114,6 @@ export function renderLogin(): HTMLElement {
       });
 
       if (!res.ok) {
-        // get a sensible error message
         let msg = res.statusText;
         try {
           const err = await res.json();
@@ -144,7 +127,6 @@ export function renderLogin(): HTMLElement {
       localStorage.setItem('accessToken',  token);
       localStorage.setItem('refreshToken', refresh);
 
-      // Fetch current user
       const meRes = await fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -4,6 +4,8 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import * as bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
 
+
+//TODO: everthing should be rewrite with zod to make some check before creating or saving the data
 // Helpers to fetch from users service
 export async function getUserByEmail(email: string) {
   try {
@@ -60,6 +62,7 @@ export async function registerHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
+  //TODO: convert this to a type like publicUserInfo
   const { username, email, firstname, password } = request.body as {
     username: string;
     email: string;

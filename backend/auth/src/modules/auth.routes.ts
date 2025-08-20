@@ -22,6 +22,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   );
 
   // ─── who-am-I endpoint ────────────────────────────────────────────────────────
+  //TODO: move this to the controller
   fastify.get(
     '/me',
     { preHandler: [fastify.authenticate] },
@@ -34,11 +35,14 @@ export default async function authRoutes(fastify: FastifyInstance) {
         return;
       }
 
-      return {
-        username:  user.username,
-        avatarUrl: user.avatarUrl,
-        language:  user.language,
-      };
+    return {
+      message: "Hi",
+      user: {
+        username: user.username,
+        firstname: user.firstname,
+        email: user.email,
+      },
+    };
     }
   );
 }

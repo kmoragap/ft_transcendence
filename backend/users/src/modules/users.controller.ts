@@ -15,7 +15,7 @@ export async function createUserHandler(request: FastifyRequest, reply: FastifyR
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { username, email, firstname, password: hashedPassword },
+      data: { username, email, firstname, password: hashedPassword }, //TODO: check this warning
     });
     return { id: user.id, username: user.username, firstname: user.firstname };
 

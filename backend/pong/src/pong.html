@@ -20,6 +20,7 @@
 			font-size: 25px;
 		}
 		.p1score {direction: rtl;}
+		.p1name {direction: rtl;}
 		canvas {
 			display: block;
 			left: 0;
@@ -31,12 +32,18 @@
 </head>
 <body>
 	<div id = "config"
+		/*names*/
+		name_p1 = 		"Ford Prefect"
+		name_p2 = 		"Zaphod Beeblebrox"
 	
 		/*colors*/
 		innerBg =		"green"
 		outerBg = 		"black"
 		uiCol =			"white"
-		ballCol =		"blue"
+		ballR =			"0"
+		ballG =			"0"
+		ballB =			"255"
+		trailLength = 	"20"
 		
 		p1InnerCol =	"white"
 		p1OuterCol =	"grey"
@@ -61,7 +68,10 @@
 		p2Down = 		"ArrowDown"
 	></div>
 	<div class = "scoreboard">
-	<textarea id = "p1score" class = "p1score" rows = "1" cols = "2" disabled>0</textarea> : <textarea id = "p2score" class = "p2score" rows = "1" cols = "2" disabled>0</textarea></div>
+	<textarea id = "p1name" class = "p1name" rows = "1" cols = "30" disabled> Player 1</textarea>
+	<textarea id = "p1score" class = "p1score" rows = "1" cols = "2" disabled>0</textarea> : <textarea id = "p2score" class = "p2score" rows = "1" cols = "2" disabled>0</textarea>
+	<textarea id = "p2name" class = "p2name" rows = "1" cols = "30" disabled> Player 2</textarea>
+	</div>
 	<canvas id = "board" tabindex = "1"></canvas>
 </body>
 <script type = "module" src = "pong/pong.js"></script>

@@ -3,6 +3,10 @@ export type gameData = {
 	ctx: CanvasRenderingContext2D;
 	scoreP1TB: HTMLTextAreaElement;
 	scoreP2TB: HTMLTextAreaElement;
+	nameP1TB: HTMLTextAreaElement;
+	nameP2TB: HTMLTextAreaElement;
+	p1Name: string;
+	p2Name: string;
 	
 	singlePlayer: boolean;
 	maxScore: number;
@@ -11,7 +15,11 @@ export type gameData = {
 	
 	bg: CanvasGradient;
 	uiCol: string;
+	ballR: string;
+	ballG: string;
+	ballB: string;
 	ballCol: string;
+	trailLength: number;
 	p1InnerCol: string;
 	p1OuterCol: string;
 	p1CornerCol: string;
@@ -30,7 +38,6 @@ export type gameData = {
 	
 	ballSpeed: number;
 	ballSize: number;
-	ballY: number;
 	
 	score1: number;
 	score2: number;
@@ -53,6 +60,10 @@ export async function loadConfig(): Promise<void> {
 		ctx: ctx,
 		scoreP1TB: document.getElementById("p1score") as HTMLTextAreaElement,
 		scoreP2TB: document.getElementById("p2score") as HTMLTextAreaElement,
+		nameP1TB: document.getElementById("p1name") as HTMLTextAreaElement,
+		nameP2TB: document.getElementById("p2name") as HTMLTextAreaElement,
+		p1Name: config.getAttribute("name_p1") || "",
+		p2Name: config.getAttribute("name_p2") || "",
 		
 		singlePlayer: false,
 		maxScore: parseInt(config.getAttribute("maxScore") || "10", 10),
@@ -61,7 +72,11 @@ export async function loadConfig(): Promise<void> {
 		
 		bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
 		uiCol: config.getAttribute("uiCol") || "",
-		ballCol: config.getAttribute("ballCol") || "",
+		ballR: config.getAttribute("ballR") || "",
+		ballG: config.getAttribute("ballG") || "",
+		ballB: config.getAttribute("ballB") || "",
+		ballCol: "",
+		trailLength: parseInt(config.getAttribute("trailLength") || "20", 10),
 		p1InnerCol: config.getAttribute("p1InnerCol") || "",
 		p1OuterCol: config.getAttribute("p1OuterCol") || "",
 		p1CornerCol: config.getAttribute("p1CornerCol") || "",
@@ -80,22 +95,23 @@ export async function loadConfig(): Promise<void> {
 		
 		ballSpeed: 2,
 		ballSize: 80,
-		ballY: 0,
 	
 		score1: 0,
 		score2: 0,
 	}
-
+	loadData.nameP1TB.value = loadData.p1Name;
+	loadData.nameP2TB.value = loadData.p2Name;
 	loadData.canvas.width = window.innerWidth;
 	loadData.canvas.height = window.innerHeight - loadData.scoreP1TB.offsetHeight * 2;
 	loadData.paddleWidth = canvas.width / 60;
 	loadData.paddleHeight = canvas.height / 5;
 	loadData.bg = ctx.createLinearGradient(0, 0, canvas.width, 0);
-	var innerBg: string = config.getAttribute("innerBg") || "";
-	var outerBg: string = config.getAttribute("outerBg") || "";
+	const innerBg: string = config.getAttribute("innerBg") || "";
+	const outerBg: string = config.getAttribute("outerBg") || "";
 	loadData.bg.addColorStop(0, outerBg);
 	loadData.bg.addColorStop(0.5, innerBg);
 	loadData.bg.addColorStop(1, outerBg);
+	loadData.ballCol = `rgba(${loadData.ballR}, ${loadData.ballG}, ${loadData.ballB}, 255)`;
 
 	if (config.getAttribute("singlePlayer") == "true") loadData.singlePlayer = true;
 	if (Math.floor(Math.random() * 2)) loadData.serve = -1;

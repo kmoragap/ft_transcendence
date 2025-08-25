@@ -13,5 +13,14 @@
   "firstname": "Vorname",
   "game": "Spiel",
   "profile": "Profil",
-  "exit": "Beenden"
+  "exit": "Beenden",
+  "accessibility": "Barrierefreiheit",
+  "theme": "Thema",
+  "high_contrast": "Hoher Kontrast",
+  "text_size": "Textgröße",
+  "small": "Klein",
+  "default": "Standard",
+  "large": "Groß",
+  "x_large": "Extra Groß",
+  "xx_large": "Doppelt Extra Groß"
 }

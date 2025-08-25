@@ -1,9 +1,10 @@
-import { renderHeader, setSessionRestored } from './components/header.ts';
-import { renderFooter } from './components/footer.ts';
-import { navigate } from './router.ts';
+import { renderHeader, setSessionRestored } from './components/header';
+import { renderFooter } from './components/footer';
+import { navigate } from './router';
 import { initI18n } from './i18n';
 import { store } from './store';
-import { setProfileSessionRestored } from './views/profile.ts';
+import { setProfileSessionRestored } from './views/profile';
+import { initA11yTheme } from './utils/a11y';
 
 let isSessionRestored = false;
 
@@ -69,6 +70,7 @@ async function restoreSession() {
 window.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   buildShell();
+  initA11yTheme();
   await restoreSession();
   navigate(location.hash.slice(1) || '/');
 });

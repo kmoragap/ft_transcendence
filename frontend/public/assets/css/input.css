@@ -41,6 +41,28 @@
     margin-block-end: 0!important;
     font-weight: 700;
   }
+  //high-contrast theme
+  html.hc { color-scheme: dark; }
+  html.hc body { background:#000 !important; color:#fff !important; }
+
+  html.hc header, html.hc footer, html.hc main, html.hc section, html.hc nav {
+    background-image:none !important;
+    background-color:#000 !important;
+    border-color:#fff !important;
+  }
+
+  html.hc a { color:#00e5ff !important; text-decoration:underline !important; }
+
+  html.hc button, html.hc input, html.hc select, html.hc textarea {
+    background-color:#000 !important;
+    color:#fff !important;
+    border:2px solid #fff !important;
+  }
+
+  html.hc :focus-visible {
+    outline:3px solid #fff !important;
+    outline-offset:3px !important;
+  }
 }
 
 @layer components {

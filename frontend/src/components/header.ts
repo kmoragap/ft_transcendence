@@ -1,5 +1,6 @@
 import { t, loadLanguage } from './../i18n';
 import { store } from '../store';
+import { renderA11yControls } from './a11y-switcher';
 
 let isSessionRestored = false;
 let updateHeaderCallback: (() => void) | null = null;
@@ -115,6 +116,7 @@ export function renderHeader(): HTMLElement {
       ul.appendChild(userLi);
     }
     ul.appendChild(langLi);
+    ul.appendChild(renderA11yControls());
     header.appendChild(ul);
   }
 

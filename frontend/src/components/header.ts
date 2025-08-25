@@ -39,7 +39,7 @@ export function renderHeader(): HTMLElement {
     links.forEach(key => {
       const li = document.createElement('li');
       li.classList.add(
-        'ml-[1.25rem]', 'font-[jura]', 'font-[600]', 'text-[26px]', 'text-[#66fcf1]'
+        'ml-[1.25rem]', 'font-[jura]', 'font-[600]', 'text-[1.625rem]', 'text-[#66fcf1]'
       );
       li.setAttribute('data-i18n', key);
       li.textContent = t(key);
@@ -71,7 +71,7 @@ export function renderHeader(): HTMLElement {
     const langSelect = document.createElement('select');
     langSelect.id = 'language-switcher';
     langSelect.className =
-      'px-[2px] py-[1px] mt-[6px] bg-[#031b1b] text-[#66fcf1] border border-[#66fcf1] rounded-[5px]';
+      'px-[2px] py-[1px] mt-[6px] bg-[#0a2b2b] text-[#66fcf1] border border-[#66fcf1] rounded-[5px]';
     const languages = [
       { code: 'en', label: 'EN' },
       { code: 'de', label: 'DE' },
@@ -97,7 +97,7 @@ export function renderHeader(): HTMLElement {
       const avatarUrl = currentUser.avatarUrl || '/assets/img/avatar.jpg';
       userLi.classList.add('ml-[1.25rem]', 'flex', 'items-center', 'text-[#66fcf1]');
       userLi.innerHTML = `
-        <span class="font-[jura] font-[700] text-[23px]">
+        <span class="font-[jura] font-[700] text-[1.4375rem]">
           ${currentUser.username}
         </span>
       `;

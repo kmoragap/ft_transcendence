@@ -17,7 +17,7 @@ function buildShell() {
   document.body.appendChild(overlay);
 
   const header = renderHeader();
-  header.classList.add('relative', 'z-10');
+  header.classList.add('relative', 'z-100');
   document.body.appendChild(header);
 
   const main = document.createElement('main');

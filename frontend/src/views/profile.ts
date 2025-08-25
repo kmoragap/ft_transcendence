@@ -115,10 +115,10 @@ export function renderProfile(): HTMLElement {
           </div>
           </div>
           <div class="flex flex-col gap-3">
-            <button id="edit-btn" class="cursor-pointer mt-[10px] text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
+            <button id="edit-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
               Edit Profile
             </button>
-            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
+            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
               Refresh Stats
             </button>
           </div>

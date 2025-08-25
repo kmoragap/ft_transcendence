@@ -1,11 +1,10 @@
 import { toggleHighContrast, getA11yState, setTextScale } from '../utils/a11y';
-import { updateText } from '../i18n';
+import { updateText, t } from '../i18n';
 
 export function renderA11yControls(): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'relative ml-3';
 
-  // ── Trigger styled like a select ─────────────────────────────────────────────
   const trigger = document.createElement('button');
   trigger.type = 'button';
   trigger.className = [
@@ -28,7 +27,7 @@ export function renderA11yControls(): HTMLElement {
   panel.id = 'a11y-menu';
   panel.setAttribute('role', 'menu');
   panel.className = [
-    'absolute w-[180px] right-[0] top-[full] mt-2 w-64 z-[50]',
+    'absolute w-[180px] right-[0] mt-2 w-64 z-[1000]',
     'rounded-[5px] border border-[rgba(102,252,241,0.35)]',
     'shadow-[0_10px_30px_rgba(0,0,0,0.6)] bg-[#0a2b2b]',
     'p-2 hidden'
@@ -36,9 +35,9 @@ export function renderA11yControls(): HTMLElement {
 
   const label = (txtKey: string) => {
     const el = document.createElement('div');
-    el.className = 'px-2 pt-1 pb-2 text-xs uppercase tracking-wide bg-[#0a2b2b] text-[#9fe7e3]';
+    el.className = 'px-2 pt-1 pb-2 text-xs uppercase tracking-wide bg-[#0a2b2b] z-[1000] text-[#9fe7e3]';
     el.setAttribute('data-i18n', txtKey);
-    el.textContent = txtKey;
+    el.textContent = t(txtKey);
     return el;
   };
 
@@ -46,12 +45,14 @@ export function renderA11yControls(): HTMLElement {
     const row = document.createElement('button');
     row.type = 'button';
     row.setAttribute('role', 'menuitemradio');
-    row.className = 'w-full flex items-center justify-between px-3 py-2 rounded bg-[#0a2b2b] text-[#66fcf1] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+    row.className = 'w-full flex items-center justify-between px-3 py-2 rounded bg-[#0a2b2b] text-[#66fcf1] z-[1000] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
     row.innerHTML = `
-      <span data-i18n="${labelKey}">${labelKey}</span>
+      <span data-i18n="${labelKey}">${t(labelKey)}</span>
       <span class="opacity-90 text-sm bg-[#0a2b2b]">${Math.round(scale * 100)}%</span>
     `;
-    row.addEventListener('click', () => {
+    row.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       setTextScale(scale);
       syncUI();
       close();
@@ -65,10 +66,12 @@ export function renderA11yControls(): HTMLElement {
   hcRow.setAttribute('role', 'menuitemcheckbox');
   hcRow.className = 'w-full flex items-center justify-between px-[3px] py-2 rounded bg-[#0a2b2b] text-[#66fcf1] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
   hcRow.innerHTML = `
-    <span data-i18n="high_contrast">High contrast</span>
+    <span data-i18n="high_contrast">${t('high_contrast')}</span>
     <span class="opacity-90 text-sm" data-state>Off</span>
   `;
-  hcRow.addEventListener('click', () => {
+  hcRow.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     toggleHighContrast();
     syncUI();
     // keep menu open (like a select with checkboxes), or close if you prefer:
@@ -108,7 +111,12 @@ export function renderA11yControls(): HTMLElement {
     document.removeEventListener('mousedown', onClickOutside);
     document.removeEventListener('keydown', onKeyNav);
   };
-  const onClickOutside = (e: MouseEvent) => { if (!wrap.contains(e.target as Node)) close(); };
+  const onClickOutside = (e: MouseEvent) => { 
+    const target = e.target as Node;
+    if (!wrap.contains(target)) {
+      close();
+    }
+  };
   const focusables = () => Array.from(panel.querySelectorAll<HTMLElement>('[role="menuitemradio"],[role="menuitemcheckbox"]'));
   const onKeyNav = (e: KeyboardEvent) => {
     const items = focusables();
@@ -145,5 +153,6 @@ export function renderA11yControls(): HTMLElement {
   syncUI();
 
   wrap.append(trigger, panel);
+  updateText();
   return wrap;
 }

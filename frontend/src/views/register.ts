@@ -9,7 +9,7 @@ export function renderRegistration(): HTMLElement {
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
-      <h1 data-i18n="registration" class="text-[70px] font-bold uppercase">Registration</h1>
+      <h1 data-i18n="registration" class="text-[4.375rem] font-bold uppercase">Registration</h1>
     </div>
     <form
       id="register-form"
@@ -86,7 +86,7 @@ export function renderRegistration(): HTMLElement {
 
       <button
         type="submit"
-        class="btn py-[10px] text-[18px] font-[700] cursor-not-allowed"
+        class="btn py-[10px] text-[1.125rem] font-[700] cursor-not-allowed"
       >
         <span data-i18n="submit">Submit</span>
       </button>

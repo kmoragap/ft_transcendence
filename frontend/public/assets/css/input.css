@@ -63,12 +63,84 @@
     outline:3px solid #fff !important;
     outline-offset:3px !important;
   }
+
+  /* Select dropdown styling */
+  select option {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  /* Ensure dropdown options maintain dark background */
+  select option:hover,
+  select option:focus,
+  select option:active,
+  select option:checked {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  /* Additional specificity for browser compatibility */
+  select#language-switcher option {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  /* Force dark background for all select elements */
+  select {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  /* Custom dropdown button styling for accessibility menu */
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"] {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  [role="menuitemradio"]:hover,
+  [role="menuitemcheckbox"]:hover,
+  [role="menuitemradio"]:focus,
+  [role="menuitemcheckbox"]:focus,
+  [role="menuitemradio"]:active,
+  [role="menuitemcheckbox"]:active {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  /* Ensure all button elements in the accessibility menu have dark background */
+  #a11y-menu button {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
+  
+  #a11y-menu button:hover,
+  #a11y-menu button:focus,
+  #a11y-menu button:active {
+    background-color: #0a2b2b !important;
+    color: #66fcf1 !important;
+  }
+  
+  /* Ensure the accessibility dropdown is above everything */
+  #a11y-menu {
+    position: absolute !important;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure the dropdown container has proper stacking context */
+  .relative.ml-3 {
+    position: relative !important;
+    z-index: 1000 !important;
+  }
 }
 
 @layer components {
   .title {
     display: table;
-    font-size: 85px;
+    font-size: 5.3125rem; /* 85px / 16px = 5.3125rem */
     text-align: center;
     width: 75%;
     margin: 40px auto;
@@ -142,7 +214,7 @@
     padding: 8px 30px;
     text-decoration: none;
     color: #031b1b;
-    font-size: 18px;
+    font-size: 1.125rem; /* 18px / 16px = 1.125rem */
     font-weight: 700;
   }
 }

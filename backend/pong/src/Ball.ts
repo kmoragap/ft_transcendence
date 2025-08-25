@@ -30,7 +30,9 @@ export default class Ball {
 
 	public go(go: number): void {this._goTime = go;}
 	public stop(): void {clearTimeout(this._goTime);}
+	public getX(): number {return this._x;}
 	public getY(): number {return this._y;}
+	public getSize(): number {return this._size;}
 	public getDirX(): number {return this._dirX;}
 	public setDirX(dir: number): void {this._dirX = dir;}
 	public setDirY(dir: number): void {this._dirY = dir;}
@@ -110,8 +112,8 @@ export default class Ball {
 	}
 
 	private checkPaddle(): void {
-		if (this._x > 0 && this._x < data.paddleWidth + this._size && p1.hit()) this.collision(p1);
-		if (this._x >= data.canvas.width - this._size - data.paddleWidth && this._x < data.canvas.width - this._size && p2.hit()) this.collision(p2);
+		if (p1.hitX() && p1.hitY()) this.collision(p1);
+		if (p2.hitX() && p2.hitY()) this.collision(p2);
 	}
 
 	private checkWalls(): void {
@@ -138,9 +140,14 @@ export default class Ball {
 	}
 
 	private advanceBall(): void {
-		for (let i = 0; i < this._ballSpeed; i++) {
+		var stop: boolean = false;
+		for (let i = 0; i < this._ballSpeed && !stop; i++) {
 			this._x += this._dirX;
 			this._y += this._dirY;
+			if (this._x < ball.getSize()) stop = true;
+			if (this._x >= data.canvas.width - ball.getSize()) stop = true;
+			if (this._dirX < 0 && p1.hitX() && p1.hitY()) stop = true;
+			if (this._dirX >= 0 && p2.hitX() && p2.hitY()) stop = true;
 		}
 	}
 

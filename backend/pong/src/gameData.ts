@@ -100,6 +100,10 @@ export async function loadConfig(): Promise<void> {
 		score2: 0,
 	}
 	loadData.nameP1TB.value = loadData.p1Name;
+	if (config.getAttribute("singlePlayer") == "true") {
+		loadData.singlePlayer = true;
+		loadData.p2Name = "Marvin";
+	}
 	loadData.nameP2TB.value = loadData.p2Name;
 	loadData.canvas.width = window.innerWidth;
 	loadData.canvas.height = window.innerHeight - loadData.scoreP1TB.offsetHeight * 2;
@@ -112,8 +116,6 @@ export async function loadConfig(): Promise<void> {
 	loadData.bg.addColorStop(0.5, innerBg);
 	loadData.bg.addColorStop(1, outerBg);
 	loadData.ballCol = `rgba(${loadData.ballR}, ${loadData.ballG}, ${loadData.ballB}, 255)`;
-
-	if (config.getAttribute("singlePlayer") == "true") loadData.singlePlayer = true;
 	if (Math.floor(Math.random() * 2)) loadData.serve = -1;
 
 	switch (config.getAttribute("ballSpeed")) {

@@ -48,7 +48,7 @@ export function movePlayer(player: Paddle, up: string, down: string): void {
 }
 
 export function moveAI(ball: Ball): void {
-	if (!p2.hit() && ball.getDirX() > 0) {
+	if (!p2.hitY() && ball.getDirX() > 0) {
 		if (p2.getPosY() <= ball.getY() && p2.getPosY() > 0) p2.setDir(p2.getDir() + p2.getMoveSpeed());
 		else if (p2.getPosY() + data.paddleHeight > ball.getY() && p2.getPosY() <= data.canvas.height - data.paddleHeight) p2.setDir(p2.getDir() - p2.getMoveSpeed());
 	}

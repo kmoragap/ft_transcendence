@@ -95,13 +95,20 @@ export default class Paddle {
 		this.draw();
 	}
 
-	public hit(): boolean {
+	public hitY(): boolean {
 		if (ball.getY() >= this._posY - data.canvas.width / data.ballSize && ball.getY() <= this._posY + data.paddleHeight + data.canvas.width / data.ballSize) return true;
 		else return false;
 	}
 
+	public hitX(): boolean {
+		if (!this._posX) {
+			if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
+		} else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
+		return false;
+	}
+
 	public scoreText(score: number): void {
-		data.ctx.font = `bold ${data.canvas.height/6}px Arial`;
+		data.ctx.font = `bold ${data.canvas.height/6}px system-ui`;
 		data.ctx.fillStyle = this._topCornerGrad;
 		data.ctx.strokeStyle = this._paddleGrad;
 		data.ctx.lineWidth = data.canvas.height/60;

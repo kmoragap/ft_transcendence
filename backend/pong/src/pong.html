@@ -4,23 +4,20 @@
 	<meta charset="UTF-8">
 	<title>Pong</title>
 	<style>
+		html,body{
+			margin:0;
+			height:100%;
+		}
 		textarea {
 			resize: none;
 			background: transparent;
 			color: #66fcf1;
 			border: none;
 			font-family: 'jura', sans-serif;
+			font: 600 14px/1.2 system-ui;
 			font-size: 25px;
+			font-weight:700;
 		}
-		.scoreboard {
-			display: flex;
-			justify-content: center;
-			color: #66fcf1;
-			font-family: 'jura', sans-serif;
-			font-size: 25px;
-		}
-		.p1score {direction: rtl;}
-		.p1name {direction: rtl;}
 		canvas {
 			display: block;
 			left: 0;
@@ -28,6 +25,16 @@
 			height: 100%;
 			width: 100%;
 		}
+		.scoreboard {
+			display: flex;
+			justify-content: center;
+			color: #66fcf1;
+			font-family: 'jura', sans-serif;
+			font: 600 14px/1.2 system-ui;
+			font-size: 25px;
+			padding:.5rem;
+		}
+		.p1score, .p1name {direction: rtl;}
 </style>
 </head>
 <body>
@@ -54,7 +61,7 @@
 		p2CornerCol =	"red"
 		
 		/*game vars*/
-		singlePlayer =	"false"
+		singlePlayer =	"true"
 		ballSpeed =		"standard"	/*glacial, slow, standard, fast, insane*/
 		ballSize = 		"normal"	/*tiny, small, normal, big, huge*/
 		paddleSpeed =	"standard"	/*glacial, slow, standard, fast, insane*/
@@ -67,12 +74,16 @@
 		p2Up = 			"ArrowUp"
 		p2Down = 		"ArrowDown"
 	></div>
-	<div class = "scoreboard">
-	<textarea id = "p1name" class = "p1name" rows = "1" cols = "30" disabled> Player 1</textarea>
-	<textarea id = "p1score" class = "p1score" rows = "1" cols = "2" disabled>0</textarea> : <textarea id = "p2score" class = "p2score" rows = "1" cols = "2" disabled>0</textarea>
-	<textarea id = "p2name" class = "p2name" rows = "1" cols = "30" disabled> Player 2</textarea>
+	<div id="app">
+		<div class="scoreboard">
+			<textarea id="p1name" class="p1name" rows="1" cols="30" disabled> Player 1</textarea>
+			<textarea id="p1score" class="p1score" rows="1" cols="2" disabled>0</textarea>
+			:
+			<textarea id="p2score" class="p2score" rows="1" cols="2" disabled>0</textarea>
+			<textarea id="p2name" class="p2name" rows="1" cols="30" disabled> Player 2</textarea>
+		</div>
+		<canvas id="board" tabindex="1"></canvas>
 	</div>
-	<canvas id = "board" tabindex = "1"></canvas>
 </body>
 <script type = "module" src = "pong/pong.js"></script>
 </html>

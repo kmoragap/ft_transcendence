@@ -33,10 +33,8 @@ export function startRound(): void {
 	p1.draw();
 	p2.draw();
 	p1.go(window.setInterval(() => movePlayer(p1, data.p1Up, data.p1Down), 20));
-	if (data.singlePlayer) {
+	if (data.singlePlayer)
 		p2.go(window.setInterval(() => moveAI(ball), 20));
-		data.nameP2TB.value = "Computer";
-	}
 	else p2.go(window.setInterval(() => movePlayer(p2, data.p2Up, data.p2Down), 20));
 	ball.go(window.setInterval(() => ball.move(), 5));
 }

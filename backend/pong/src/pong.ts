@@ -262,7 +262,7 @@ document.addEventListener("keydown", (ev) => {
 
 document.addEventListener("keyup", (ev) => {
 	if (ev.key == "Shift" || ev.key == "Control") {
-		if (ev.location == 1) p1Dir = 0;
+		if (ev.location == 1) p1Dir = 0;else console.log("Player 2 wins!");
 		keys[ev.key] = false;
 	}
 	if (ev.key == "ArrowUp" || ev.key == "ArrowDown") {

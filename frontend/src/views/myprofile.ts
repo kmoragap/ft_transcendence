@@ -62,7 +62,7 @@ function getCurrentUser(): UserProfile {
 
 let user: UserProfile = getCurrentUser();
 
-export function renderProfile(): HTMLElement {
+export function renderMyProfile(): HTMLElement {
   const section = document.createElement('section')
   section.className = [
     'flex flex-col w-full h-full absolute',
@@ -76,7 +76,7 @@ export function renderProfile(): HTMLElement {
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
       <div class="title">
-        <span class="mid_line">PROFILE</span>
+        <span class="mid_line">MY PROFILE</span>
       </div>
       
       <div class="bg-[rgba(102,252,241,0.1)] rounded-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.5)] p-8 w-80 px-[60px] py-[20px]">

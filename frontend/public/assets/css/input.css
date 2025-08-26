@@ -81,8 +81,10 @@
   
   /* Additional specificity for browser compatibility */
   select#language-switcher option {
-    background-color: #0a2b2b !important;
+    background-color: transparent !important;
     color: #66fcf1 !important;
+    border: none;
+    box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
   
   /* Force dark background for all select elements */

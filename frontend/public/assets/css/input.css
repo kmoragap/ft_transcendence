@@ -68,13 +68,11 @@
     outline-offset:3px !important;
   }
 
-  /* Select dropdown styling */
   select option {
     background-color: #0a2b2b !important;
     color: #66fcf1 !important;
   }
   
-  /* Ensure dropdown options maintain dark background */
   select option:hover,
   select option:focus,
   select option:active,
@@ -83,21 +81,22 @@
     color: #66fcf1 !important;
   }
   
-  /* Additional specificity for browser compatibility */
   select#language-switcher option {
     background-color: transparent !important;
     color: #66fcf1 !important;
-    border: none;
+    border: none!important;
     box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
-  
-  /* Force dark background for all select elements */
+
+  select#language-switcher option:hover {
+    background: rgba(102, 252, 241, 0.15) !important;
+  }
+
   select {
     background-color: #0a2b2b !important;
     color: #66fcf1 !important;
   }
   
-  /* Custom dropdown button styling for accessibility menu */
   [role="menuitemradio"],
   [role="menuitemcheckbox"] {
     background-color: #0a2b2b !important;
@@ -125,7 +124,7 @@
   #a11y-menu button:hover,
   #a11y-menu button:focus,
   #a11y-menu button:active {
-    background-color: #0a2b2b !important;
+    background-color: rgba(102, 252, 241, 0.15) !important;
     color: #66fcf1 !important;
   }
   
@@ -134,6 +133,8 @@
     position: absolute !important;
     z-index: 1000 !important;
     pointer-events: auto !important;
+    border: none;
+    box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
   
   /* Ensure the dropdown container has proper stacking context */

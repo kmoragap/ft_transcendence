@@ -5,7 +5,7 @@ import { attachValidation } from './../form-validation';
 export function renderRegistration(): HTMLElement {
   const section = document.createElement('section');
   section.className =
-    'flex flex-col m-0 mt-[10%] items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
+    'flex flex-col m-0 items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">

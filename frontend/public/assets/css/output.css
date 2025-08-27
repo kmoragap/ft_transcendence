@@ -77,9 +77,6 @@
 .mt-\[6px\] {
   margin-top: 6px;
 }
-.mt-\[10\%\] {
-  margin-top: 10%;
-}
 .mt-\[10px\] {
   margin-top: 10px;
 }
@@ -178,9 +175,6 @@
 .cursor-pointer {
   cursor: pointer;
 }
-.resize {
-  resize: both;
-}
 .list-none {
   list-style-type: none;
 }
@@ -245,9 +239,6 @@
 }
 .border-\[rgba\(102\,252\,241\,0\.15\)\] {
   border-color: rgba(102,252,241,0.15);
-}
-.border-\[rgba\(102\,252\,241\,0\.35\)\] {
-  border-color: rgba(102,252,241,0.35);
 }
 .border-transparent {
   border-color: transparent;
@@ -482,6 +473,13 @@
     }
   }
 }
+.hover\:bg-\[\#66fcf1\]\/15 {
+  &:hover {
+    @media (hover: hover) {
+      background-color: color-mix(in oklab, #66fcf1 15%, transparent);
+    }
+  }
+}
 .hover\:shadow-\[0_4px_10px_rgba\(102\,252\,241\,0\.5\)\] {
   &:hover {
     @media (hover: hover) {
@@ -605,8 +603,11 @@
   select#language-switcher option {
     background-color: transparent !important;
     color: #66fcf1 !important;
-    border: none;
+    border: none !important;
     box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
+  }
+  select#language-switcher option:hover {
+    background: rgba(102, 252, 241, 0.15) !important;
   }
   select {
     background-color: #0a2b2b !important;
@@ -627,13 +628,15 @@
     pointer-events: auto !important;
   }
   #a11y-menu button:hover, #a11y-menu button:focus, #a11y-menu button:active {
-    background-color: #0a2b2b !important;
+    background-color: rgba(102, 252, 241, 0.15) !important;
     color: #66fcf1 !important;
   }
   #a11y-menu {
     position: absolute !important;
     z-index: 1000 !important;
     pointer-events: auto !important;
+    border: none;
+    box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
   .relative.ml-3 {
     position: relative !important;

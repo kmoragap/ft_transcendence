@@ -107,12 +107,6 @@
 .h-full {
   height: 100%;
 }
-.max-h-\[calc\(100vh-120px\)\] {
-  max-height: calc(100vh - 120px);
-}
-.max-h-\[calc\(100vh-200px\)\] {
-  max-height: calc(100vh - 200px);
-}
 .min-h-screen {
   min-height: 100vh;
 }
@@ -127,12 +121,6 @@
 }
 .max-w-\[1100px\] {
   max-width: 1100px;
-}
-.flex-1 {
-  flex: 1;
-}
-.flex-shrink-0 {
-  flex-shrink: 0;
 }
 .flex-grow {
   flex-grow: 1;
@@ -208,10 +196,6 @@
 .border-b {
   border-bottom-style: var(--tw-border-style);
   border-bottom-width: 1px;
-}
-.border-none {
-  --tw-border-style: none;
-  border-style: none;
 }
 .border-\[\#66fcf1\] {
   border-color: #66fcf1;
@@ -353,11 +337,6 @@
 .shadow-\[0_10px_30px_rgba\(0\,0\,0\,0\.5\)\] {
   --tw-shadow: 0 10px 30px var(--tw-shadow-color, rgba(0,0,0,0.5));
   box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-}
-.transition {
-  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events;
-  transition-timing-function: var(--tw-ease, ease);
-  transition-duration: var(--tw-duration, 0s);
 }
 .transition-all {
   transition-property: all;

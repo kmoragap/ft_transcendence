@@ -1,5 +1,4 @@
 import fastify from 'fastify';
-import prisma from './utils/prisma';
 
 const server = fastify({ logger: true });
 
@@ -18,7 +17,3 @@ const start = async () => {
 };
 
 start();
-process.on('SIGINT', async () => {
-  await prisma.$disconnect();
-  process.exit(0);
-});

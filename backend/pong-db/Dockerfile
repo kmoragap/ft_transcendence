@@ -9,6 +9,7 @@ RUN npm clean-install
 COPY . .
 
 RUN npx prisma generate
+RUN npx prisma db push
 
 RUN npm install -g ts-node
 

@@ -10,26 +10,27 @@ services:
       - NODE_ENV=development
     depends_on:
       - users
+    networks:
+      - app-network  
 
-  chat:
-    build: ./backend/chat
-    volumes:
-      - ./backend/chat/prisma/chat-db.sqlite:/app/prisma/chat-db.sqlite
+  pong-db:
+    build: ./backend/pong-db
+    ports:
+      - "3003:3000"
+    networks:
+      - app-network
+
+
+  pong:
+    build: ./backend/pong
     ports:
       - "3002:3000"
     depends_on:
       - auth
       - users
-
-  pong:
-    build: ./backend/pong
-    volumes:
-      - ./backend/pong/prisma/pong-db.sqlite:/app/prisma/pong-db.sqlite
-    ports:
-      - "3003:3000"
-    depends_on:
-      - auth
-      - users
+      - pong-db
+    networks:
+      - app-network
 
   users:
     build: ./backend/users
@@ -40,6 +41,8 @@ services:
     environment:
       - NODE_ENV=development
       - USERS_URL=http://users:3000 
+    networks:
+      - app-network
   frontend:
     build:
       context: ./frontend
@@ -53,3 +56,9 @@ services:
     command: bash -lc "npm run prepare:pong && npm run dev"
     depends_on:
       - auth
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

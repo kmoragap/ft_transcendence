@@ -58,53 +58,45 @@ async function createUser(
 }
 
 // Registration handler
-export async function registerHandler(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
-  //TODO: convert this to a type like publicUserInfo
-  const { username, email, firstname, password } = request.body as {
-    username: string;
-    email: string;
-    firstname: string;
-    password: string;
-  };
-
-  try {
-    // 1) Create user record in users service
-    const user = await createUser(username, email, firstname, password);
-
-    // 2) Sign JWT
-    const token = request.server.jwt.sign(
-      { userId: user.id, email },
-      { expiresIn: "24h" }
-    );
-
-    // 3) Record session
-    await prisma.session.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    });
-
-    return {
-      message: "Registration successful",
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        firstname: user.firstname,
-        email,
-      },
+export async function registerHandler(request: FastifyRequest, reply: FastifyReply) {
+    const { username, email, firstname, password } = request.body as {
+        username: string;
+        email: string;
+        firstname: string;
+        password: string;
     };
-  } catch (err: any) {
-    console.error("Error during registration:", err);
-    return reply
-      .code(400)
-      .send({ message: err.message || "Registration failed" });
-  }
+
+    try {
+        // 1.create the users in the users services
+        const user = await createUser(username, email, firstname, password);
+
+        // 2.generate the jwt
+        const token = request.server.jwt.sign(
+            {
+                userId: user.id, // now string instead of number
+                email: email
+            },
+            { expiresIn: '24h' }
+        );
+
+        // 3.save the session
+        await prisma.session.create({
+            data: {
+                userId: user.id, // now string
+                token,
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            },
+        });
+
+        return {
+            message: 'Registration successful',
+            token,
+            user: { id: user.id, username: user.username, firstname: user.firstname, email: email }
+        };
+    } catch (error: any) {
+        console.error('Error during registration:', error);
+        return reply.code(400).send({ message: error.message || 'Registration failed' });
+    }
 }
 
 export async function loginHandler(
@@ -172,7 +164,7 @@ export async function logoutHandler(
   reply: FastifyReply
 ) {
   try {
-    const decoded = (await request.jwtVerify()) as { userId: number };
+    const decoded = (await request.jwtVerify()) as { userId: string };
     const token = request.headers.authorization?.replace("Bearer ", "");
     if (token) {
       await prisma.session.deleteMany({
@@ -185,46 +177,35 @@ export async function logoutHandler(
   }
 }
 
-export async function verifyTokenHandler(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function verifyTokenHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const decoded = (await request.jwtVerify()) as {
-      userId: number;
-      email: string;
-    };
-    const token = request.headers.authorization?.replace("Bearer ", "");
+    const decoded = await request.jwtVerify() as { userId: string, email: string }; // string instead of number
+    const token = request.headers.authorization?.replace('Bearer ', '');
 
-    if (!token) {
-      return reply.code(401).send({ message: "No token provided" });
+    if (token) {
+      const session = await prisma.session.findFirst({
+        where: { token, userId: decoded.userId }
+      });
+
+      if (!session || session.expiresAt < new Date()) {
+        return reply.code(401).send({ error: 'Invalid or expired token' });
+      }
+
+      // obtain updated info from user
+      const user = await getUserByEmail(decoded.email);
+      if (!user) {
+        return reply.code(401).send({ error: 'User not found' });
+      }
+
+      return {
+        valid: true,
+        user: { id: user.id, username: user.username, firstname: user.firstname, email: user.email }
+      };
     }
 
-    const session = await prisma.session.findFirst({
-      where: { token, userId: decoded.userId },
-    });
-    if (!session || session.expiresAt < new Date()) {
-      return reply
-        .code(401)
-        .send({ message: "Invalid or expired token" });
-    }
-
-    // Refresh user data
-    const user = await getUserByEmail(decoded.email);
-    if (!user) {
-      return reply.code(401).send({ message: "User not found" });
-    }
-
-    return {
-      valid: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        firstname: user.firstname,
-        email: user.email,
-      },
-    };
-  } catch (err) {
-    return reply.code(401).send({ message: "Invalid token" });
+    return reply.code(401).send({ error: 'No token provided' });
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    return reply.code(401).send({ error: 'Invalid token' });
   }
 }

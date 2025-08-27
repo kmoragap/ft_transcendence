@@ -7,11 +7,33 @@ datasource db {
     url      = "file:./prisma/users-db.sqlite"
 }
 
+//TODO: check the id of all models in schema bc it should be more komplex, like a string...
 model User {
-    id        Int      @id @default(autoincrement())
-    username  String   @unique
-    email     String   @unique
-    firstname String
-    password  String
-    createdAt DateTime @default(now())
+    id              String            @id @default(cuid())
+    username        String            @unique
+    email           String            @unique
+    firstname       String
+    password        String
+    createdAt       DateTime          @default(now())
+    // pong stats
+    gamesPlayed     Int               @default(0)
+    gamesWon        Int               @default(0)
+    totalScore      Int               @default(0)
+    UserGameHistory UserGameHistory[]
+
+    @@map("users")
+}
+
+model UserGameHistory {
+    id         String   @id @default(cuid())
+    userId     String
+    gameId     String // id of pong match in pong-db
+    isWinner   Boolean
+    score      Int
+    opponentId String?
+    playedAt   DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@map("user_game_history")
 }

@@ -12,7 +12,7 @@ export function renderGame(): HTMLElement {
         <h2 class="pl-[10px] font-[jura] text-[#66fcf1] text-[1.375rem] uppercase" data-i18n="game">Game</h2>
         <button id="game-exit" class="btn py-[8px] m-[0] mr-[10px] text-lg font-[700] w-[100px] cursor-[pointer]" data-i18n="exit">Exit</button>
       </div>
-      <div id="game-root" class="w-full h-[calc(70vh-50px)]">
+      <div id="game-root" class="w-full h-[calc(60vh-50px)]">
         <iframe id="pong-frame" class="w-full h-full" src="/pong.html"></iframe>
       </div>
     </div>

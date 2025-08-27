@@ -28,14 +28,14 @@ export function renderA11yControls(): HTMLElement {
   panel.setAttribute('role', 'menu');
   panel.className = [
     'absolute w-[180px] right-[0] mt-2 w-64 z-[1000]',
-    'rounded-[5px] border border-[rgba(102,252,241,0.35)]',
+    'rounded-[5px] border-[0]',
     'shadow-[0_10px_30px_rgba(0,0,0,0.6)] bg-[#0a2b2b]',
-    'p-2 hidden'
+    'py-[5px] hidden'
   ].join(' ');
 
   const label = (txtKey: string) => {
     const el = document.createElement('div');
-    el.className = 'px-2 pt-1 pb-2 text-xs uppercase tracking-wide bg-[#0a2b2b] z-[1000] text-[#9fe7e3]';
+    el.className = 'px-[2px] py-[5px] text-xs uppercase tracking-wide bg-[#0a2b2b] z-[1000] text-[#9fe7e3]';
     el.setAttribute('data-i18n', txtKey);
     el.textContent = t(txtKey);
     return el;
@@ -45,10 +45,10 @@ export function renderA11yControls(): HTMLElement {
     const row = document.createElement('button');
     row.type = 'button';
     row.setAttribute('role', 'menuitemradio');
-    row.className = 'w-full flex items-center justify-between px-3 py-2 rounded bg-[#0a2b2b] text-[#66fcf1] z-[1000] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+    row.className = 'w-full flex items-center justify-between px-[3px] py-[5px] rounded bg-[#0a2b2b] text-[#66fcf1] z-[100] border-[0] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
     row.innerHTML = `
       <span data-i18n="${labelKey}">${t(labelKey)}</span>
-      <span class="opacity-90 text-sm bg-[#0a2b2b]">${Math.round(scale * 100)}%</span>
+      <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15">${Math.round(scale * 100)}%</span>
     `;
     row.addEventListener('mousedown', (e) => {
       e.preventDefault();
@@ -64,18 +64,16 @@ export function renderA11yControls(): HTMLElement {
   const hcRow = document.createElement('button');
   hcRow.type = 'button';
   hcRow.setAttribute('role', 'menuitemcheckbox');
-  hcRow.className = 'w-full flex items-center justify-between px-[3px] py-2 rounded bg-[#0a2b2b] text-[#66fcf1] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+  hcRow.className = 'w-full flex items-center justify-between px-[3px] py-[2px] border-[0] rounded bg-[#0a2b2b] hover:bg-[#66fcf1]/15 text-[#66fcf1] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
   hcRow.innerHTML = `
     <span data-i18n="high_contrast">${t('high_contrast')}</span>
-    <span class="opacity-90 text-sm" data-state>Off</span>
+    <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15" data-state>Off</span>
   `;
   hcRow.addEventListener('mousedown', (e) => {
     e.preventDefault();
     e.stopPropagation();
     toggleHighContrast();
     syncUI();
-    // keep menu open (like a select with checkboxes), or close if you prefer:
-    // close(); trigger.focus();
   });
 
   panel.append(
@@ -85,7 +83,6 @@ export function renderA11yControls(): HTMLElement {
     mkRadioRow('large', 1.15),
     mkRadioRow('x_large', 1.30),
     mkRadioRow('xx_large', 1.50),
-    document.createElement('hr'),
     label('theme'),
     hcRow
   );

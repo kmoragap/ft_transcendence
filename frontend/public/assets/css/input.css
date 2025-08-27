@@ -33,6 +33,10 @@
 @layer base {
   body {
     margin: 0;
+    font-family: 'Jura', sans-serif;
+  }
+  button {
+    font-family: 'Jura', sans-serif;
   }
   h1 {
     font-family: 'jura', sans-serif;
@@ -64,13 +68,11 @@
     outline-offset:3px !important;
   }
 
-  /* Select dropdown styling */
   select option {
     background-color: #0a2b2b !important;
     color: #66fcf1 !important;
   }
   
-  /* Ensure dropdown options maintain dark background */
   select option:hover,
   select option:focus,
   select option:active,
@@ -79,21 +81,22 @@
     color: #66fcf1 !important;
   }
   
-  /* Additional specificity for browser compatibility */
   select#language-switcher option {
     background-color: transparent !important;
     color: #66fcf1 !important;
-    border: none;
+    border: none!important;
     box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
-  
-  /* Force dark background for all select elements */
+
+  select#language-switcher option:hover {
+    background: rgba(102, 252, 241, 0.15) !important;
+  }
+
   select {
     background-color: #0a2b2b !important;
     color: #66fcf1 !important;
   }
   
-  /* Custom dropdown button styling for accessibility menu */
   [role="menuitemradio"],
   [role="menuitemcheckbox"] {
     background-color: #0a2b2b !important;
@@ -121,7 +124,7 @@
   #a11y-menu button:hover,
   #a11y-menu button:focus,
   #a11y-menu button:active {
-    background-color: #0a2b2b !important;
+    background-color: rgba(102, 252, 241, 0.15) !important;
     color: #66fcf1 !important;
   }
   
@@ -130,6 +133,8 @@
     position: absolute !important;
     z-index: 1000 !important;
     pointer-events: auto !important;
+    border: none;
+    box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
   
   /* Ensure the dropdown container has proper stacking context */
@@ -219,8 +224,37 @@
     font-size: 1.125rem; /* 18px / 16px = 1.125rem */
     font-weight: 700;
   }
+  .scoreboard {
+			display: flex;
+			justify-content: center;
+			color: #66fcf1;
+			font-family: 'jura', sans-serif;
+			font: 600 14px/1.2 system-ui;
+			font-size: 25px;
+			padding:.5rem;
+	}
+	.p1score, .p1name {
+    direction: rtl;
+  }
+  canvas#board {
+			display: block;
+			width: 100%;
+			height: 100%;
+			image-rendering: pixelated;
+			image-rendering: crisp-edges;
+			outline: none;	
+  }
+  textarea.game-text {
+    resize: none;
+    background: transparent;
+    color: #66fcf1;
+    border: none;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 25px;
+    font-weight:700;
+  }
 }
-
 @layer utilities {
   @keyframes shine {
     0% {

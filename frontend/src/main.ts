@@ -5,11 +5,12 @@ import { initI18n } from './i18n';
 import { store } from './store';
 import { setProfileSessionRestored } from './views/myprofile';
 import { initA11yTheme } from './utils/a11y';
+import { destroyGameView } from './views/game';
 
 let isSessionRestored = false;
 
 function buildShell() {
-  document.body.className = 'flex flex-col overflow-hidden min-h-screen bg-cover bg-center text-white m-0 p-0 z-0 relative';
+  document.body.className = 'flex flex-col font-Jura overflow-hidden min-h-screen bg-cover bg-center text-white m-0 p-0 z-0 relative';
   document.body.style.backgroundImage = "url('/assets/img/bg.webp')";
 
   const overlay = document.createElement('div');

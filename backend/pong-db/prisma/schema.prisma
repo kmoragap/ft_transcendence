@@ -1,0 +1,32 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./prisma/pong-db.sqlite"
+}
+
+model Game {
+    id          String     @id @default(cuid())
+    player1Id   String
+    player2Id   String
+    player1Name String
+    player2Name String
+    score1      Int        @default(0)
+    score2      Int        @default(0)
+    maxScore    Int        @default(3)
+    status      GameStatus @default(WAITING)
+    winnerId    String?
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+
+    @@map("games")
+}
+
+enum GameStatus {
+    WAITING
+    IN_PROGRESS
+    FINISHED
+}

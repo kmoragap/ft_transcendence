@@ -8,9 +8,11 @@ datasource db {
 }
 
 model Session {
-    id        Int      @id @default(autoincrement())
-    userId    Int // ->reference to user in users service
+    id        String   @id @default(cuid())
+    userId    String // ->reference to user in users service
     token     String   @unique
     expiresAt DateTime
     createdAt DateTime @default(now())
+
+    @@map("sessions")
 }

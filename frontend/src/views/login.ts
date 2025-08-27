@@ -4,11 +4,11 @@ import { store } from '../store';
 export function renderLogin(): HTMLElement {
   const section = document.createElement('section');
   section.className =
-    'flex flex-col m-0 mt-[10%] items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
+    'flex flex-col m-0 items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
-      <h1 data-i18n="login" class="text-[70px] font-bold uppercase">
+      <h1 data-i18n="login" class="text-[4.375rem] font-bold uppercase">
         ${t('login')}
       </h1>
     </div>
@@ -55,7 +55,7 @@ export function renderLogin(): HTMLElement {
 
       <button
         type="submit"
-        class="btn py-[10px] text-[18px] font-[700]"
+        class="btn py-[10px] text-[1.125rem] font-[700]"
         data-i18n="submit"
       >
         ${t('submit')}

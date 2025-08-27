@@ -1,10 +1,14 @@
 import { renderHome } from './views/home.ts';
 import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';
-import { renderProfile } from './views/profile.ts';
+import { renderMyProfile } from './views/myprofile.ts';
+import { renderDashboard } from './views/dashboard.ts';
 import { renderGame, destroyGameView } from './views/game';
 import { updateText } from './i18n';
 import { ensureA11yScaffold, announce, setPageTitleAndFocus } from './utils/a11y.ts';
+import { store } from './store.ts';
+
+const protectedRoutes = new Set<string>(['/myprofile']);
 
 const routes: Record<string, () => HTMLElement> = {
   '/': renderHome,
@@ -12,7 +16,8 @@ const routes: Record<string, () => HTMLElement> = {
   '/login': renderLogin,
   '/register': renderRegistration,
   '/game': renderGame,
-  '/profile': renderProfile,
+  '/myprofile': renderMyProfile,
+  '/dashboard': renderDashboard
 };
 
 const titles: Record<string, string> = {
@@ -21,11 +26,19 @@ const titles: Record<string, string> = {
   '/login': 'Login',
   '/register': 'Registration',
   '/game': 'Game',
+  '/myprofile': 'My Profile',
+  '/dashboard': 'Dashboard'
 };
 
 ensureA11yScaffold();
 
 export function navigate(path: string) {
+  if (protectedRoutes.has(path) && !store.getState().isAuthenticated) {
+    if (location.hash !== '#/home') {
+      location.hash = '/home';
+    }
+    return;
+  }
   const app = document.getElementById('app');
   if (!app) return;
 
@@ -40,9 +53,9 @@ export function navigate(path: string) {
   updateText();
 }
 
-function cleanupGameView() {
-  const leavingGame = window.location.pathname === '/game' && routes['/game'];
-  if (leavingGame) {
-    destroyGameView();
-  }
-}
+// function cleanupGameView() {
+//   const leavingGame = window.location.pathname === '/game' && routes['/game'];
+//   if (leavingGame) {
+//     destroyGameView();
+//   }
+// }

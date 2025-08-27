@@ -1,4 +1,4 @@
-export function renderHome(): HTMLElement {
+export function renderDashboard(): HTMLElement {
   const section = document.createElement('section');
   section.className = 'flex flex-col w-full h-full absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center z-[3] font-[pressstart2p]';
 

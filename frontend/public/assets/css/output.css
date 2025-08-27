@@ -53,6 +53,9 @@
 .z-\[3\] {
   z-index: 3;
 }
+.z-\[100\] {
+  z-index: 100;
+}
 .z-\[1000\] {
   z-index: 1000;
 }
@@ -119,8 +122,8 @@
 .h-\[2rem\] {
   height: 2rem;
 }
-.h-\[calc\(70vh-50px\)\] {
-  height: calc(70vh - 50px);
+.h-\[calc\(60vh-50px\)\] {
+  height: calc(60vh - 50px);
 }
 .h-full {
   height: 100%;
@@ -325,6 +328,9 @@
 }
 .py-\[2px\] {
   padding-block: 2px;
+}
+.py-\[5px\] {
+  padding-block: 5px;
 }
 .py-\[8px\] {
   padding-block: 8px;
@@ -551,6 +557,10 @@
 @layer base {
   body {
     margin: 0;
+    font-family: 'Jura', sans-serif;
+  }
+  button {
+    font-family: 'Jura', sans-serif;
   }
   h1 {
     font-family: 'jura', sans-serif;
@@ -691,6 +701,36 @@
     text-decoration: none;
     color: #031b1b;
     font-size: 1.125rem;
+    font-weight: 700;
+  }
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    color: #66fcf1;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 25px;
+    padding: .5rem;
+  }
+  .p1score, .p1name {
+    direction: rtl;
+  }
+  canvas#board {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    outline: none;
+  }
+  textarea.game-text {
+    resize: none;
+    background: transparent;
+    color: #66fcf1;
+    border: none;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 25px;
     font-weight: 700;
   }
 }

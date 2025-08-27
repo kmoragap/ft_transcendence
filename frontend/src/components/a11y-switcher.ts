@@ -35,7 +35,7 @@ export function renderA11yControls(): HTMLElement {
 
   const label = (txtKey: string) => {
     const el = document.createElement('div');
-    el.className = 'px-2 pt-1 pb-2 text-xs uppercase tracking-wide bg-[#0a2b2b] z-[1000] text-[#9fe7e3]';
+    el.className = 'px-[2px] py-[5px] text-xs uppercase tracking-wide bg-[#0a2b2b] z-[1000] text-[#9fe7e3]';
     el.setAttribute('data-i18n', txtKey);
     el.textContent = t(txtKey);
     return el;
@@ -45,7 +45,7 @@ export function renderA11yControls(): HTMLElement {
     const row = document.createElement('button');
     row.type = 'button';
     row.setAttribute('role', 'menuitemradio');
-    row.className = 'w-full flex items-center justify-between px-3 py-2 rounded bg-[#0a2b2b] text-[#66fcf1] z-[1000] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+    row.className = 'w-full flex items-center justify-between px-[3px] py-[5px] rounded bg-[#0a2b2b] text-[#66fcf1] z-[100] border-[0] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
     row.innerHTML = `
       <span data-i18n="${labelKey}">${t(labelKey)}</span>
       <span class="opacity-90 text-sm bg-[#0a2b2b]">${Math.round(scale * 100)}%</span>
@@ -74,8 +74,6 @@ export function renderA11yControls(): HTMLElement {
     e.stopPropagation();
     toggleHighContrast();
     syncUI();
-    // keep menu open (like a select with checkboxes), or close if you prefer:
-    // close(); trigger.focus();
   });
 
   panel.append(

@@ -1,9 +1,10 @@
-import { renderHeader, setSessionRestored } from './components/header.ts';
-import { renderFooter } from './components/footer.ts';
-import { navigate } from './router.ts';
+import { renderHeader, setSessionRestored } from './components/header';
+import { renderFooter } from './components/footer';
+import { navigate } from './router';
 import { initI18n } from './i18n';
 import { store } from './store';
-import { setProfileSessionRestored } from './views/profile.ts';
+import { setProfileSessionRestored } from './views/myprofile';
+import { initA11yTheme } from './utils/a11y';
 
 let isSessionRestored = false;
 
@@ -16,20 +17,23 @@ function buildShell() {
   document.body.appendChild(overlay);
 
   const header = renderHeader();
-  header.classList.add('relative', 'z-10');
+  header.classList.add('relative', 'z-100', 'shrink-0');
   document.body.appendChild(header);
 
   const main = document.createElement('main');
   main.id = 'main';
-  main.className = 'relative z-10 flex-grow container mx-auto mt-8 px-4 focus:outline-none';
+  main.className = 'relative z-10 flex-1 focus:outline-none flex flex-col';
+  const inner = document.createElement('div');
+  inner.className = 'container mx-auto px-4 flex-1 flex flex-col';
   const app = document.createElement('div');
   app.id = 'app';
-  app.className = 'w-full h-full flex flex-col items-center justify-center';
-  main.appendChild(app);
+  app.className = 'w-full flex-1 flex flex-col items-center justify-center';
+  inner.appendChild(app);
+  main.appendChild(inner);
   document.body.appendChild(main);
 
   const footer = renderFooter();
-  footer.classList.add('relative', 'z-10');
+  footer.classList.add('relative', 'z-10', 'shrink-0');
   document.body.appendChild(footer);
 }
 
@@ -69,6 +73,7 @@ async function restoreSession() {
 window.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   buildShell();
+  initA11yTheme();
   await restoreSession();
   navigate(location.hash.slice(1) || '/');
 });

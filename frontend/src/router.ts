@@ -1,7 +1,7 @@
 import { renderHome } from './views/home.ts';
 import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';
-import { renderProfile } from './views/profile.ts';
+import { renderMyProfile } from './views/myprofile.ts';
 import { renderGame, destroyGameView } from './views/game';
 import { updateText } from './i18n';
 import { ensureA11yScaffold, announce, setPageTitleAndFocus } from './utils/a11y.ts';
@@ -12,7 +12,7 @@ const routes: Record<string, () => HTMLElement> = {
   '/login': renderLogin,
   '/register': renderRegistration,
   '/game': renderGame,
-  '/profile': renderProfile,
+  '/myprofile': renderMyProfile,
 };
 
 const titles: Record<string, string> = {

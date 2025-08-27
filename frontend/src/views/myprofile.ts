@@ -29,9 +29,8 @@ function getStaticStats(): { wins: number; losses: number; totalGames: number; w
 function getCurrentUser(): UserProfile {
   const state = store.getState();
   const currentUser = state.currentUser;
-  
+  const currentUserEmail = currentUser?.email || (currentUser ? `${currentUser.username}@example.com` : 'guest@example.com');
 
-  
   if (!isSessionRestored) {
     return {
       username: 'Loading...',
@@ -54,7 +53,7 @@ function getCurrentUser(): UserProfile {
   
   return {
     username: currentUser.username,
-    email: currentUser.email || `${currentUser.username}@example.com`,
+    email: currentUserEmail || `${currentUser.username}@example.com`,
     name: currentUser.username,
     avatarUrl: currentUser.avatarUrl || '/assets/img/avatar.jpg',
     ...getStaticStats()
@@ -63,7 +62,7 @@ function getCurrentUser(): UserProfile {
 
 let user: UserProfile = getCurrentUser();
 
-export function renderProfile(): HTMLElement {
+export function renderMyProfile(): HTMLElement {
   const section = document.createElement('section')
   section.className = [
     'flex flex-col w-full h-full absolute',
@@ -77,7 +76,7 @@ export function renderProfile(): HTMLElement {
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
       <div class="title">
-        <span class="mid_line">PROFILE</span>
+        <span class="mid_line">MY PROFILE</span>
       </div>
       
       <div class="bg-[rgba(102,252,241,0.1)] rounded-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.5)] p-8 w-80 px-[60px] py-[20px]">
@@ -115,10 +114,10 @@ export function renderProfile(): HTMLElement {
           </div>
           </div>
           <div class="flex flex-col gap-3">
-            <button id="edit-btn" class="cursor-pointer mt-[10px] text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
+            <button id="edit-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
               Edit Profile
             </button>
-            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-[18px] font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
+            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
               Refresh Stats
             </button>
           </div>

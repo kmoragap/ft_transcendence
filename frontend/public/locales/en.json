@@ -13,5 +13,15 @@
 	"firstname": "First Name",
 	"game": "Game",
 	"profile": "Profile",
-	"exit": "Exit"
+	"my_profile": "My Profile",
+	"exit": "Exit",
+	"accessibility": "Accessibility",
+	"theme": "Theme",
+	"high_contrast": "High Contrast",
+	"text_size": "Text Size",
+	"small": "Small",
+	"default": "Default",
+	"large": "Large",
+	"x_large": "Extra Large",
+	"xx_large": "Double Extra Large"
 }

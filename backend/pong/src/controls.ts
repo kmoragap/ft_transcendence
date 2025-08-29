@@ -2,11 +2,12 @@ import { data } from "./gameData";
 import { p1 } from "./pong";
 import { p2 } from "./pong";
 import { ball } from "./pong";
-import Ball from "./Ball";
-import Paddle from "./Paddle";
+import { startGame } from "./pong";
 
 export function controlKeys(): void {
 	document.addEventListener("keydown", (ev) => {
+		if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
+			ev.preventDefault();
 		if (ev.key == "Shift" || ev.key == "Control") {
 			if (ev.location == 1) data.keys[ev.key] = true;
 		}
@@ -16,16 +17,16 @@ export function controlKeys(): void {
 	document.addEventListener("keyup", (ev) => {
 		if (ev.key == "Shift" || ev.key == "Control") {
 			if (ev.location == 1) {
-				if (ev.key == data.p1Up || ev.key == data.p1Down) p1.setDir(0);
-				else if (ev.key == data.p2Up || ev.key == data.p2Down) p2.setDir(0);
+				if (ev.key == data.p1.up || ev.key == data.p1.down) p1.setDir(0);
+				else if (ev.key == data.p2.up || ev.key == data.p2.down) p2.setDir(0);
 			}
 			data.keys[ev.key] = false;
 		} else {
-			if (ev.key == data.p1Up || ev.key == data.p1Down) {
+			if (ev.key == data.p1.up || ev.key == data.p1.down) {
 				p1.setDir(0);
 				data.keys[ev.key] = false;
 			}
-			if (ev.key == data.p2Up || ev.key == data.p2Down) {
+			if (ev.key == data.p2.up || ev.key == data.p2.down) {
 				p2.setDir(0);
 				data.keys[ev.key] = false;
 			}
@@ -37,21 +38,4 @@ export function controlKeys(): void {
 			p2.stop();
 		}
 	});
-}
-
-export function movePlayer(player: Paddle, up: string, down: string): void {
-	if (data.keys[up])
-		if (player.getPosY() > 0) player.setDir(player.getDir() - player.getMoveSpeed()); else player.setDir(0);
-	if (data.keys[down]) 
-		if (player.getPosY() <= data.canvas.height - data.paddleHeight) player.setDir(player.getDir() + player.getMoveSpeed()); else player.setDir(0);
-	player.move();
-}
-
-export function moveAI(ball: Ball): void {
-	if (!p2.hitY() && ball.getDirX() > 0) {
-		if (p2.getPosY() <= ball.getY() && p2.getPosY() > 0) p2.setDir(p2.getDir() + p2.getMoveSpeed());
-		else if (p2.getPosY() + data.paddleHeight > ball.getY() && p2.getPosY() <= data.canvas.height - data.paddleHeight) p2.setDir(p2.getDir() - p2.getMoveSpeed());
-	}
-	else p2.setDir(0);
-	p2.move();
 }

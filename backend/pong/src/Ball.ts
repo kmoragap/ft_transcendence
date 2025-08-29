@@ -12,28 +12,39 @@ interface TrailPoint {
 }
 
 export default class Ball {
+	private _go: boolean = false;
 	private _goTime: number = 0;
 	private _ballSpeed: number = data.canvas.width / data.ballSpeed;
 	private _x: number = data.canvas.width / 2;
 	private _y: number = data.canvas.height / 2;
-	private _dirX: number = 0.01 * data.serve;
-	private _dirY: number = 0;
+	private _dirY: number = ((Math.random() * 30) - 15) / 10000;
+	private _dirX: number = (0.01 - this._dirY) * data.serve;
 	private _size: number = data.canvas.width / data.ballSize;
 	private _grad!: CanvasGradient;
 	private _trailPoints: TrailPoint[] = [];
-	private trailFade = 30 / data.trailLength;
+	private _trailFade = 30 / data.trailLength;
 
 	constructor() {
 		this._x = data.canvas.width / 2;
 		this._y = data.canvas.height / 2;
 	}
 
-	public go(go: number): void {this._goTime = go;}
-	public stop(): void {clearTimeout(this._goTime);}
+	public go(): void {
+		this._goTime = window.setInterval(() => this.move(), 5);
+		this._go = true;
+	}
+	public stop(): void {
+		window.clearTimeout(this._goTime);
+		this._go = false;
+		this._dirX = 0;
+		this._dirY = 0;
+	}
+	public isGo(): boolean { return this._go;}
 	public getX(): number {return this._x;}
 	public getY(): number {return this._y;}
 	public getSize(): number {return this._size;}
 	public getDirX(): number {return this._dirX;}
+	public getDirY(): number {return this._dirY;}
 	public setDirX(dir: number): void {this._dirX = dir;}
 	public setDirY(dir: number): void {this._dirY = dir;}
 
@@ -76,7 +87,7 @@ export default class Ball {
 			data.ctx.fillStyle = `rgb(${data.ballR} ${data.ballG} ${data.ballB} / ${opacity}%`;
 			data.ctx.fill();
 			data.ctx.closePath();
-			opacity += this.trailFade;
+			opacity += this._trailFade;
 		}
 		this._trailPoints = this._trailPoints.slice(0, data.trailLength);
 	}
@@ -94,19 +105,12 @@ export default class Ball {
 	}
 
 	private collision(paddle: Paddle): void {
-		var angle: number = Math.abs(Math.atan2(this._dirY, this._dirX) - Math.PI);
-		const hitPosition = (this._y - (paddle.getPosY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
+		const hitPosition = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
 		const clampedHit = Math.max(-0.7, Math.min(0.7, hitPosition));
-		const isRightPaddle = paddle.getPosX() > (data.canvas.width / 2);
-		const baseAngle = isRightPaddle ? Math.PI : 0;
-		const variationAngle = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4) + baseAngle;
-		if (isRightPaddle) {
-			this._x = data.canvas.width - this._size - data.paddleWidth - 1;
-			angle += variationAngle - Math.PI;
-		} else {
-			this._x = this._size + data.paddleWidth + 1;
-			angle += variationAngle;
-		}
+		const isRightPaddle = paddle.getX() > (data.canvas.width / 2);
+		var variationAngle: number = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4);
+		var angle: number = Math.atan2(this._dirY / 2, -this._dirX);
+		angle += variationAngle;
 		this._dirX = (Math.cos(angle)) / 100;
 		this._dirY = (Math.sin(angle)) / 100;
 	}
@@ -122,18 +126,18 @@ export default class Ball {
 			p1.stop();
 			p2.stop();
 			if (this._x <= this._size) {
-				data.score2++;
-				data.scoreP2TB.value = String(data.score2);
-				setTimeout(() => p2.scoreText(data.score2), 100);
+				data.p2.score++;
+				data.p2.scoreTB.value = String(data.p2.score);
+				setTimeout(() => p2.scoreText(), 100);
 				data.serve = -1;
 			}
 			if (this._x >= data.canvas.width - this._size) {
-				data.score1++;
-				data.scoreP1TB.value = String(data.score1);
-				setTimeout(() => p1.scoreText(data.score1), 100);
+				data.p1.score++;
+				data.p1.scoreTB.value = String(data.p1.score);
+				setTimeout(() => p1.scoreText(), 100);
 				data.serve = 1;
 			}
-			if (data.score1 < data.maxScore && data.score2 < data.maxScore) setTimeout(startRound, 2000);
+			if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 2000);
 			else endGame();
 		}
 		if (this._y <= this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
@@ -152,9 +156,11 @@ export default class Ball {
 	}
 
 	public move(): void {
-		this.checkPaddle();
-		this.checkWalls();
-		this.advanceBall();
-		this.draw();
+		if (this._go) {
+			this.checkPaddle();
+			this.checkWalls();
+			this.advanceBall();
+			this.draw();
+		}
 	}
 }

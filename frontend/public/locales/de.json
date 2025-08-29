@@ -23,5 +23,7 @@
   "default": "Standard",
   "large": "Groß",
   "x_large": "Extra Groß",
-  "xx_large": "Doppelt Extra Groß"
+  "xx_large": "Doppelt Extra Groß",
+  "scores": "punktet",
+  "wins": "gewinnt"
 }

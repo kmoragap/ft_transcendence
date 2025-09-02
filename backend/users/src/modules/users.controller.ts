@@ -8,19 +8,31 @@ function isValidCuid(id: string): boolean {
 }
 
 export async function createUserHandler(request: FastifyRequest, reply: FastifyReply) {
-  const { username, email, firstname, password } = request.body as {
+  const { username, email, firstname, password, avatarUrl } = request.body as {
     username: string;
     email: string;
     firstname: string;
     password: string;
+    avatarUrl?: string;
   };
   
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { username, email, firstname, password: hashedPassword },
+      data: { 
+        username, 
+        email, 
+        firstname, 
+        password: hashedPassword,
+        avatarUrl: avatarUrl || "/assets/img/avatar.jpg"
+      },
     });
-    return { id: user.id, username: user.username, firstname: user.firstname };
+    return { 
+      id: user.id, 
+      username: user.username, 
+      firstname: user.firstname,
+      avatarUrl: user.avatarUrl
+    };
 
   } catch (error: any) {
     console.log("Error creating the user: ", error);
@@ -90,9 +102,42 @@ export async function getUserByEmailHandler(request: FastifyRequest, reply: Fast
       return reply.code(404).send({ error: 'User not found' });
     }
     
-    return user;
+    return {
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      password: user.password
+    };
   } catch (error) {
     console.error('Error fetching user by email:', error);
+    return reply.code(500).send({ error: 'Failed to fetch user' });
+  }
+}
+
+export async function getUserByUsernameHandler(request: FastifyRequest, reply: FastifyReply) {
+  const { username } = request.params as { username: string };
+  
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username }
+    });
+    
+    if (!user) {
+      return reply.code(404).send({ error: 'User not found' });
+    }
+    
+    return {
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      password: user.password
+    };
+  } catch (error) {
+    console.error('Error fetching user by username:', error);
     return reply.code(500).send({ error: 'Failed to fetch user' });
   }
 }

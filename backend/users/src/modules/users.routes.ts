@@ -3,7 +3,8 @@ import {
   createUserHandler, 
   deleteUserHandler, 
   getUsersHandler, 
-  getUserByEmailHandler 
+  getUserByEmailHandler,
+  getUserByUsernameHandler
 } from '../modules/users.controller';
 import { authenticateToken } from '../modules/users.middleware';
 import { getUserStats, updateUserStats, getUsersByIds } from './users.controller';
@@ -12,6 +13,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // public routes
   fastify.post('/', createUserHandler);  // user registartion
   fastify.get('/by-email/:email', getUserByEmailHandler); // for the auth service
+  fastify.get('/by-username/:username', getUserByUsernameHandler); // for the auth service
   
   // protected routes
   fastify.get('/', { preHandler: [authenticateToken] }, getUsersHandler);

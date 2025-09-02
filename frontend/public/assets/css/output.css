@@ -1,4 +1,4 @@
-/*! tailwindcss v4.1.12 | MIT License | https://tailwindcss.com */
+/*! tailwindcss v4.1.11 | MIT License | https://tailwindcss.com */
 @layer properties;
 .pointer-events-none {
   pointer-events: none;
@@ -149,6 +149,9 @@
 .max-w-\[1100px\] {
   max-width: 1100px;
 }
+.max-w-\[1200px\] {
+  max-width: 1200px;
+}
 .flex-1 {
   flex: 1;
 }
@@ -184,8 +187,14 @@
 .flex-col {
   flex-direction: column;
 }
+.flex-row {
+  flex-direction: row;
+}
 .items-center {
   align-items: center;
+}
+.items-stretch {
+  align-items: stretch;
 }
 .justify-between {
   justify-content: space-between;
@@ -199,8 +208,17 @@
 .justify-items-center {
   justify-items: center;
 }
+.gap-x-\[30px\] {
+  column-gap: 30px;
+}
 .overflow-hidden {
   overflow: hidden;
+}
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+.overflow-y-auto {
+  overflow-y: auto;
 }
 .rounded-\[5px\] {
   border-radius: 5px;
@@ -251,6 +269,9 @@
 }
 .bg-\[rgba\(3\,27\,27\,0\.8\)\] {
   background-color: rgba(3,27,27,0.8);
+}
+.bg-\[rgba\(30\,41\,40\,0\.7\)\] {
+  background-color: rgba(30,41,40,0.7);
 }
 .bg-\[rgba\(102\,252\,241\,0\.1\)\] {
   background-color: rgba(102,252,241,0.1);
@@ -331,6 +352,9 @@
 }
 .py-\[20px\] {
   padding-block: 20px;
+}
+.py-\[30px\] {
+  padding-block: 30px;
 }
 .py-\[40px\] {
   padding-block: 40px;
@@ -567,7 +591,7 @@
     margin-block-end: 0 !important;
     font-weight: 700;
   }
-  //high-contrast theme html.hc {
+  html.hc {
     color-scheme: dark;
   }
   html.hc body {
@@ -735,6 +759,29 @@
     font: 600 14px/1.2 system-ui;
     font-size: 25px;
     font-weight: 700;
+  }
+  label.game-text {
+    resize: none;
+    background: transparent;
+    color: #66fcf1;
+    border: none;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  input.game-text {
+    resize: none;
+    background: transparent;
+    color: #369B5F;
+    border: none;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  color.game-text {
+    border: none;
   }
 }
 @layer utilities {

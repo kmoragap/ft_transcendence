@@ -1,4 +1,5 @@
 import { store } from '../store';
+import {  } from '../i18n';
 
 let isSessionRestored = false;
 
@@ -29,7 +30,6 @@ function getStaticStats(): { wins: number; losses: number; totalGames: number; w
 function getCurrentUser(): UserProfile {
   const state = store.getState();
   const currentUser = state.currentUser;
-  const currentUserEmail = currentUser?.email || (currentUser ? `${currentUser.username}@example.com` : 'guest@example.com');
 
   if (!isSessionRestored) {
     return {
@@ -53,8 +53,8 @@ function getCurrentUser(): UserProfile {
   
   return {
     username: currentUser.username,
-    email: currentUserEmail || `${currentUser.username}@example.com`,
-    name: currentUser.username,
+    email: currentUser.email,
+    name: currentUser.firstname || currentUser.username,
     avatarUrl: currentUser.avatarUrl || '/assets/img/avatar.jpg',
     ...getStaticStats()
   };
@@ -75,26 +75,56 @@ export function renderMyProfile(): HTMLElement {
 
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
-      <div class="title">
-        <span class="mid_line">MY PROFILE</span>
+  <div class="title">
+    <span class="mid_line" data-i18n="my_profile">MY PROFILE</span>
+  </div>
+
+  <section class="w-full
+                  rounded-[10px] shadow-[0_10px_30px_rgba(0,0,0,0.5)]
+                  max-w-[1200px] mx-auto px-[60px] py-[30px]">
+    <div class="flex flex-row items-stretch gap-x-[30px]">
+      <!-- Card 1 -->
+      <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-[6px] flex-1
+                  shadow-[0_4px_10px_rgba(0,0,0,0.5)] px-[30px] py-[20px]">
+        <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
+        <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]"></div>
       </div>
-      
-      <div class="bg-[rgba(102,252,241,0.1)] rounded-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.5)] p-8 w-80 px-[60px] py-[20px]">
+
+      <!-- Card 2 -->
+      <div class="bg-[rgba(102,252,241,0.1)] rounded-[6px] flex-1
+                  shadow-[0_4px_10px_rgba(0,0,0,0.5)] px-[60px] py-[20px]">
         <div class="flex flex-col items-center space-y-4 mb-6">
           <div class="relative group">
-            <img src="${user.avatarUrl}"
-                 alt="${user.username}'s avatar"
+            <img src="${user.avatarUrl}" alt="${user.username}'s avatar"
                  class="w-24 h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110" />
             <div class="absolute inset-0 rounded-full border-4 border-transparent group-hover:border-[#66fcf1] transition-all duration-300"></div>
           </div>
-          
           <div class="text-center">
             <h2 class="text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
             <p class="text-lg text-gray-300 mb-1">${user.name}</p>
             <p class="text-sm text-gray-400">${user.email}</p>
           </div>
+          <div class="flex flex-col gap-3">
+            <button id="edit-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px]
+                    bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px]
+                    hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]
+                    transition-shadow duration-300">
+              Edit Profile
+            </button>
+            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px]
+                    bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px]
+                    hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)]
+                    transition-shadow duration-300">
+              Refresh Stats
+            </button>
+          </div>
         </div>
- 
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-[rgba(102,252,241,0.1)] rounded-[6px] flex-1
+                  shadow-[0_4px_10px_rgba(0,0,0,0.5)] px-[60px] py-[20px]">
+        <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div class="p-4 text-center">
             <div class="text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
@@ -112,18 +142,11 @@ export function renderMyProfile(): HTMLElement {
             <div class="text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
             <div class="text-sm text-gray-300">Win Rate</div>
           </div>
-          </div>
-          <div class="flex flex-col gap-3">
-            <button id="edit-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
-              Edit Profile
-            </button>
-            <button id="refresh-stats-btn" class="cursor-pointer mt-[10px] text-lg font-[700] px-[30px] py-[8px] bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-[6px] hover:bg-[#45a8a8] font-[jura] hover:shadow-[0_4px_10px_rgba(102,252,241,0.5)] transition-shadow duration-300">
-              Refresh Stats
-            </button>
-          </div>
         </div>
       </div>
     </div>
+  </section>
+</div>
   `
 
   const getEditHTML = () => `
@@ -169,6 +192,7 @@ export function renderMyProfile(): HTMLElement {
         </div>
       </form>
     </div>
+  </div>
   `
 
   const updateUserData = () => {

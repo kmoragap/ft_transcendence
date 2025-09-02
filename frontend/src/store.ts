@@ -1,8 +1,9 @@
 type User = {
   username: string;
   email: string;
-  avatarUrl: string;
-  language: string;
+  firstname: string;
+  avatarUrl?: string;
+  language?: string;
 };
 
 type State = {

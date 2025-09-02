@@ -36,12 +36,10 @@ export default async function authRoutes(fastify: FastifyInstance) {
       }
 
     return {
-      message: "Hi",
-      user: {
-        username: user.username,
-        firstname: user.firstname,
-        email: user.email,
-      },
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
     };
     }
   );

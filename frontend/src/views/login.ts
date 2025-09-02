@@ -123,19 +123,12 @@ export function renderLogin(): HTMLElement {
         return;
       }
 
-      const { token, refresh } = await res.json();
+      const { token, refresh, username, firstname, email, avatarUrl } = await res.json();
       localStorage.setItem('accessToken',  token);
       localStorage.setItem('refreshToken', refresh);
 
-      const meRes = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!meRes.ok) {
-        console.error('Failed to fetch profile', await meRes.text());
-        window.location.hash = '/';
-        return;
-      }
-      const user = await meRes.json();
+      // Use the user data from login response directly
+      const user = { username, firstname, email, avatarUrl };
       store.dispatch({ type: 'LOGIN', payload: user });
 
       alert('Login successful!');

@@ -146,12 +146,10 @@ export async function loginHandler(
     return {
       message: "Login successful",
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        firstname: user.firstname,
-        email: user.email,
-      },
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
     };
   } catch (err) {
     console.error("Error during login:", err);
@@ -199,7 +197,10 @@ export async function verifyTokenHandler(request: FastifyRequest, reply: Fastify
 
       return {
         valid: true,
-        user: { id: user.id, username: user.username, firstname: user.firstname, email: user.email }
+        username: user.username,
+        firstname: user.firstname,
+        email: user.email,
+        avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
       };
     }
 

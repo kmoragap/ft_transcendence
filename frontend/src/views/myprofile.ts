@@ -30,7 +30,6 @@ function getStaticStats(): { wins: number; losses: number; totalGames: number; w
 function getCurrentUser(): UserProfile {
   const state = store.getState();
   const currentUser = state.currentUser;
-  const currentUserEmail = currentUser?.email || (currentUser ? `${currentUser.username}@example.com` : 'guest@example.com');
 
   if (!isSessionRestored) {
     return {
@@ -54,8 +53,8 @@ function getCurrentUser(): UserProfile {
   
   return {
     username: currentUser.username,
-    email: currentUserEmail || `${currentUser.username}@example.com`,
-    name: currentUser.username,
+    email: currentUser.email,
+    name: currentUser.firstname || currentUser.username,
     avatarUrl: currentUser.avatarUrl || '/assets/img/avatar.jpg',
     ...getStaticStats()
   };

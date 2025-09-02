@@ -27,9 +27,12 @@ export default defineConfig({
     open: false,
     proxy: {
       '/api': {
-        target: 'http://auth:3000',
+        target: 'http://localhost',
         changeOrigin: true,
       },
+    },
+    hmr: {
+      host: 'localhost'
     },
     fs: { strict: false },
   },

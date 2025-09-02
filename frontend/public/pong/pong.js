@@ -1,4 +1,4 @@
-// src/gameData.ts
+// ../workspace/backend/pong/src/gameData.ts
 var data;
 function loadPlayer(scoreTB, nameTB, name, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
@@ -148,7 +148,7 @@ async function loadConfig() {
   data = loadData;
 }
 
-// src/controls.ts
+// ../workspace/backend/pong/src/controls.ts
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
     if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
@@ -183,7 +183,7 @@ function controlKeys() {
   });
 }
 
-// ../../frontend/src/i18n.ts
+// ../workspace/frontend/src/i18n.ts
 var translations = {};
 var currentLang = "en";
 async function loadLanguage(lang) {
@@ -234,7 +234,7 @@ async function initI18n() {
   await loadLanguage(saved);
 }
 
-// src/Paddle.ts
+// ../workspace/backend/pong/src/Paddle.ts
 var Paddle = class {
   constructor(x, p) {
     this._dir = 0;
@@ -442,7 +442,7 @@ var Paddle = class {
   }
 };
 
-// src/Ball.ts
+// ../workspace/backend/pong/src/Ball.ts
 var Ball = class {
   constructor() {
     this._go = false;
@@ -599,7 +599,7 @@ var Ball = class {
   }
 };
 
-// src/pong.ts
+// ../workspace/backend/pong/src/pong.ts
 var p1;
 var p2;
 var ball;

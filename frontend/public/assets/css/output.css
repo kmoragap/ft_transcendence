@@ -567,7 +567,7 @@
     margin-block-end: 0 !important;
     font-weight: 700;
   }
-  //high-contrast theme html.hc {
+  html.hc {
     color-scheme: dark;
   }
   html.hc body {
@@ -735,6 +735,29 @@
     font: 600 14px/1.2 system-ui;
     font-size: 25px;
     font-weight: 700;
+  }
+  label.game-text {
+    resize: none;
+    background: transparent;
+    color: #66fcf1;
+    border: none;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  input.game-text {
+    resize: none;
+    background: transparent;
+    color: #369B5F;
+    border: none;
+    font-family: 'jura', sans-serif;
+    font: 600 14px/1.2 system-ui;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  color.game-text {
+    border: none;
   }
 }
 @layer utilities {

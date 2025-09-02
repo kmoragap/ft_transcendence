@@ -12,10 +12,15 @@ server.register(cors, {
     if (!origin) return callback(null, true);
     
     // origins allowed
-    const allowedOrigins: (string | RegExp)[] = [
+    const allowedOrigins = [
+      'http://localhost:5173',           // dev
       'http://localhost',                // nginx local
+      'http://localhost:80',             // nginx local with port
+      /^http:\/\/192\.168\.\d+\.\d+$/,  // local net
+      /^http:\/\/10\.\d+\.\d+\.\d+$/,   // alternative local net
     ];
     
+    // check if the origin is allowed
     const isAllowed = allowedOrigins.some(allowed => {
       if (typeof allowed === 'string') {
         return origin === allowed;

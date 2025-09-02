@@ -1,7 +1,8 @@
 import { data } from "./gameData";
 import { ball } from "./pong";
-import { t } from "./../../../frontend/src/i18n";
+import Ball from "./Ball";
 import { playerData } from "./gameData";
+import { erase, quarterCorner, halfCorner, pxl } from "./Paddle.draw";
 
 export default class Paddle {
 	private _x: number;
@@ -48,6 +49,10 @@ export default class Paddle {
 	public getY(): number {return this._y;}
 	public getX2(): number {return this._x + data.paddleWidth;}
 	public getY2(): number {return this._y + data.paddleHeight;}
+	public getPG(): CanvasGradient {return this._paddleGrad;}
+	public getTCG(): CanvasGradient {return this._topCornerGrad;}
+	public getBCG(): CanvasGradient {return this._bottomCornerGrad;}
+	public getPlr(): playerData {return this._p;}
 	public getDir(): number {return this._dir;}
 	public setDir(dir: number) {this._dir = dir;}
 	public getMoveSpeed(): number {return this._moveSpeed;}
@@ -59,109 +64,38 @@ export default class Paddle {
 		data.ctx.fillStyle = this._paddleGrad;
 		data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
 
-		//define corner grad
+		//define corner grads
 		this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
 		this._topCornerGrad.addColorStop(0, "white");
 		this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
 		this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
 		this._bottomCornerGrad.addColorStop(0, "white");
 		this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
-		if (!this._p.isAi) {
-			//left paddle corner
-			if (this._x < data.canvas.width / 2) {
-				data.ctx.beginPath();
-				data.ctx.fillStyle = this._topCornerGrad;
-				data.ctx.moveTo(this._x, this._y + data.paddleWidth);
-				data.ctx.arc(this._x, this._y + data.paddleWidth, data.paddleWidth, -Math.PI / 2, 0);
-				data.ctx.closePath();
-				data.ctx.fill();
-				data.ctx.beginPath();
-				data.ctx.fillStyle = this._bottomCornerGrad;
-				data.ctx.moveTo(this._x, this.getY2() - data.paddleWidth);
-				data.ctx.arc(this._x, this.getY2() - data.paddleWidth, data.paddleWidth, 0, Math.PI / 2);
-				data.ctx.closePath();
-				data.ctx.fill();
-			} else {
-			//right paddle corner
-				data.ctx.beginPath();
-				data.ctx.fillStyle = this._topCornerGrad;
-				data.ctx.moveTo(this.getX2(), this._y + data.paddleWidth);
-				data.ctx.arc(this.getX2(), this._y + data.paddleWidth, data.paddleWidth, Math.PI, Math.PI * 3 / 2);
-				data.ctx.closePath();
-				data.ctx.fill();
-				data.ctx.beginPath();
-				data.ctx.fillStyle = this._bottomCornerGrad;
-				data.ctx.moveTo(this.getX2(), this.getY2() - data.paddleWidth);
-				data.ctx.arc(this.getX2(), this.getY2() - data.paddleWidth, data.paddleWidth, Math.PI / 2, Math.PI);
-				data.ctx.closePath();
-				data.ctx.fill();
-			}
-		} else {
-		//rounded paddle corner
-			data.ctx.beginPath();
-			data.ctx.fillStyle = this._topCornerGrad;
-			data.ctx.moveTo(this._x + data.paddleWidth / 2, this._y + data.paddleWidth);
-			data.ctx.arc(this._x + data.paddleWidth / 2, this._y + data.paddleWidth, data.paddleWidth / 2, 0, Math.PI, true);
-			data.ctx.closePath();
-			data.ctx.fill();
-			data.ctx.beginPath();
-			data.ctx.fillStyle = this._bottomCornerGrad;
-			data.ctx.moveTo(this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth);
-			data.ctx.arc(this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth, data.paddleWidth / 2, 0, Math.PI);
-			data.ctx.closePath();
-			data.ctx.fill();
-		}
-	}
-
-	public erase(): void {
-		data.ctx.beginPath();
-		data.ctx.fillStyle = data.bg;
-		data.ctx.rect(this._x - 1, this._y - 1, data.paddleWidth + 2, data.paddleHeight + 2);
-		data.ctx.fill();
+		
+		if (!this._p.isAi) quarterCorner(this);
+		 else halfCorner(this);
 	}
 
 	public move(): void {
-		this.erase();
+		erase(this);
 		this._y += this._dir * this._moveSpeed;
 		if (this._y < 0) this._y = 0;
 		if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
 		this.draw();
 	}
 
-	public hitY(): boolean {
+	public hitY(ball: Ball): boolean {
 		if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
 		else return false;
 	}
 
-	public hitX(): boolean {
+	public hitX(ball: Ball): boolean {
 		if (!this._x) {
 			if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
 		} else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
 		return false;
 	}
 
-	public scoreText(): void {
-		data.showingText = true;
-		data.ctx.font = `bold ${data.canvas.height/6}px system-ui`;
-		data.ctx.fillStyle = this._topCornerGrad;
-		data.ctx.strokeStyle = this._paddleGrad;
-		data.ctx.lineWidth = data.canvas.height/60;
-		data.ctx.textAlign = "center";
-		data.ctx.textBaseline = "bottom";
-		data.ctx.strokeText(`${this._p.name}`, data.canvas.width/2, data.canvas.height/2);
-		data.ctx.fillText(`${this._p.name}`, data.canvas.width/2, data.canvas.height/2);
-		data.ctx.textBaseline = "top";
-		const scores: string = t('scores') + "!";
-		const wins: string = t('wins') + "!";
-		if (this._p.score != data.maxScore) {
-			data.ctx.strokeText(scores, data.canvas.width/2, data.canvas.height/2);
-			data.ctx.fillText(scores, data.canvas.width/2, data.canvas.height/2);
-		} else {
-			data.ctx.strokeText(wins, data.canvas.width/2, data.canvas.height/2);
-			data.ctx.fillText(wins, data.canvas.width/2, data.canvas.height/2);
-		}
-	}
-	
 	private movePaddle(): void {
 		if (data.keys[this._p.up])
 			if (this._y > 0) this._dir = -1; else this._dir = 0;
@@ -186,12 +120,6 @@ export default class Paddle {
 		}
 	}
 
-	private pxl(x: number, y: number): void {
-		data.ctx.beginPath();
-		data.ctx.moveTo(x, y);
-		data.ctx.lineTo(x + 1, y + 1);
-		data.ctx.stroke();
-	}
 
 	public calcTarget(): void {
 		var x: number = ball.getX();
@@ -202,11 +130,11 @@ export default class Paddle {
 		while ((ball.getDirX() <= 0 && this._x < data.canvas.width / 2) && x > data.paddleWidth + ball.getSize()
 		|| (ball.getDirX() > 0 && this._x > data.canvas.width / 2) && x < data.canvas.width - ball.getSize() - data.paddleWidth) {
 			if (y < ball.getSize() || y > data.canvas.height - ball.getSize()) dy *= -1;
-			x += dx * 100;
-			y += dy * 100;
+			x += dx * 10;
+			y += dy * 10;
+			draw++;
 			if (data.showAiPath) {
-				draw++;
-				if (draw == 20) {draw = 0; this.pxl(x, y);}
+				if (draw == 5) {draw = 0; pxl(x, y);}
 			}
 		}
 		if (y != ball.getY()) {

@@ -1,10 +1,10 @@
-interface UserData {
+export interface UserData {
   id: string;
   username: string;
   email: string;
 }
 
-interface UserStats {
+export interface UserStats {
   id: string;
   username: string;
   gamesPlayed: number;

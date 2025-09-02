@@ -1,10 +1,11 @@
-// ../workspace/backend/pong/src/gameData.ts
+// src/gameData.ts
 var data;
-function loadPlayer(scoreTB, nameTB, name, isAi, up, down, innerCol, outercol, cornerCol) {
+function loadPlayer(scoreTB, nameTB, name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
     scoreTB,
     nameTB,
     name,
+    id,
     score: 0,
     isAi,
     up,
@@ -47,6 +48,8 @@ async function loadConfig() {
       loadTA("p1score"),
       loadTA("p1name"),
       loadIn("name_p1"),
+      "",
+      //player ID
       loadInB("p1Ai"),
       loadIn("p1Up"),
       loadIn("p1Down"),
@@ -58,6 +61,8 @@ async function loadConfig() {
       loadTA("p2score"),
       loadTA("p2name"),
       loadIn("name_p2"),
+      "",
+      //player ID
       loadInB("p2Ai"),
       loadIn("p2Up"),
       loadIn("p2Down"),
@@ -66,7 +71,7 @@ async function loadConfig() {
       loadIn("p2CornerCol")
     ),
     paddleSpeed: 40,
-    ballSpeed: 3,
+    ballSpeed: 10,
     ballSize: 80,
     showAiPath: loadInB("showAiPath"),
     maxScore: parseInt(loadIn("maxScore") || "10", 10),
@@ -79,7 +84,8 @@ async function loadConfig() {
     ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
     serve: Math.floor(Math.random() * 2) ? -1 : 1,
     keys: {},
-    showingText: false
+    showingText: false,
+    gameID: ""
   };
   loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
   loadData.bg.addColorStop(0, loadIn("outerBg"));
@@ -107,22 +113,22 @@ async function loadConfig() {
   }
   switch (loadIn("ballSpeed")) {
     case "glacial":
-      loadData.ballSpeed = 10;
+      loadData.ballSpeed = 15;
       break;
     case "slow":
-      loadData.ballSpeed = 5;
+      loadData.ballSpeed = 12;
       break;
     case "standard":
-      loadData.ballSpeed = 3;
+      loadData.ballSpeed = 10;
       break;
     case "fast":
-      loadData.ballSpeed = 2;
+      loadData.ballSpeed = 8;
       break;
     case "insane":
-      loadData.ballSpeed = 1;
+      loadData.ballSpeed = 6;
       break;
     default:
-      loadData.ballSpeed = 3;
+      loadData.ballSpeed = 10;
       break;
   }
   switch (loadIn("ballSize")) {
@@ -148,7 +154,7 @@ async function loadConfig() {
   data = loadData;
 }
 
-// ../workspace/backend/pong/src/controls.ts
+// src/controls.ts
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
     if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
@@ -160,30 +166,32 @@ function controlKeys() {
   document.addEventListener("keyup", (ev) => {
     if (ev.key == "Shift" || ev.key == "Control") {
       if (ev.location == 1) {
-        if (ev.key == data.p1.up || ev.key == data.p1.down) p1.setDir(0);
-        else if (ev.key == data.p2.up || ev.key == data.p2.down) p2.setDir(0);
+        if (ev.key == data.p1.up || ev.key == data.p1.down) pad[0].setDir(0);
+        else if (ev.key == data.p2.up || ev.key == data.p2.down) pad[1].setDir(0);
       }
       data.keys[ev.key] = false;
     } else {
       if (ev.key == data.p1.up || ev.key == data.p1.down) {
-        p1.setDir(0);
+        pad[0].setDir(0);
         data.keys[ev.key] = false;
       }
       if (ev.key == data.p2.up || ev.key == data.p2.down) {
-        p2.setDir(0);
+        pad[1].setDir(0);
         data.keys[ev.key] = false;
       }
     }
     if (ev.key == "Escape") {
       data.keys[ev.key] = false;
       ball.stop();
-      p1.stop();
-      p2.stop();
+      for (let i = 0; i < pad.length; i++) {
+        pad[0].stop();
+        pad.shift();
+      }
     }
   });
 }
 
-// ../workspace/frontend/src/i18n.ts
+// ../../frontend/src/i18n.ts
 var translations = {};
 var currentLang = "en";
 async function loadLanguage(lang) {
@@ -234,7 +242,81 @@ async function initI18n() {
   await loadLanguage(saved);
 }
 
-// ../workspace/backend/pong/src/Paddle.ts
+// src/Paddle.draw.ts
+function quarterCorner(pad2) {
+  if (pad2.getX() < data.canvas.width / 2) {
+    data.ctx.beginPath();
+    data.ctx.fillStyle = pad2.getTCG();
+    data.ctx.moveTo(pad2.getX(), pad2.getY() + data.paddleWidth);
+    data.ctx.arc(pad2.getX(), pad2.getY() + data.paddleWidth, data.paddleWidth, -Math.PI / 2, 0);
+    data.ctx.closePath();
+    data.ctx.fill();
+    data.ctx.beginPath();
+    data.ctx.fillStyle = pad2.getBCG();
+    data.ctx.moveTo(pad2.getX(), pad2.getY2() - data.paddleWidth);
+    data.ctx.arc(pad2.getX(), pad2.getY2() - data.paddleWidth, data.paddleWidth, 0, Math.PI / 2);
+    data.ctx.closePath();
+    data.ctx.fill();
+  } else {
+    data.ctx.beginPath();
+    data.ctx.fillStyle = pad2.getTCG();
+    data.ctx.moveTo(pad2.getX2(), pad2.getY() + data.paddleWidth);
+    data.ctx.arc(pad2.getX2(), pad2.getY() + data.paddleWidth, data.paddleWidth, Math.PI, Math.PI * 3 / 2);
+    data.ctx.closePath();
+    data.ctx.fill();
+    data.ctx.beginPath();
+    data.ctx.fillStyle = pad2.getBCG();
+    data.ctx.moveTo(pad2.getX2(), pad2.getY2() - data.paddleWidth);
+    data.ctx.arc(pad2.getX2(), pad2.getY2() - data.paddleWidth, data.paddleWidth, Math.PI / 2, Math.PI);
+    data.ctx.closePath();
+    data.ctx.fill();
+  }
+}
+function halfCorner(pad2) {
+  data.ctx.beginPath();
+  data.ctx.fillStyle = pad2.getTCG();
+  data.ctx.moveTo(pad2.getX() + data.paddleWidth / 2, pad2.getY() + data.paddleWidth);
+  data.ctx.arc(pad2.getX() + data.paddleWidth / 2, pad2.getY() + data.paddleWidth, data.paddleWidth / 2, 0, Math.PI, true);
+  data.ctx.closePath();
+  data.ctx.fill();
+  data.ctx.beginPath();
+  data.ctx.fillStyle = pad2.getBCG();
+  data.ctx.moveTo(pad2.getX() + data.paddleWidth / 2, pad2.getY2() - data.paddleWidth);
+  data.ctx.arc(pad2.getX() + data.paddleWidth / 2, pad2.getY2() - data.paddleWidth, data.paddleWidth / 2, 0, Math.PI);
+  data.ctx.closePath();
+  data.ctx.fill();
+}
+function erase(pad2) {
+  data.ctx.beginPath();
+  data.ctx.fillStyle = data.bg;
+  data.ctx.rect(pad2.getX() - 1, pad2.getY() - 1, data.paddleWidth + 2, data.paddleHeight + 2);
+  data.ctx.fill();
+}
+function scoreText(p, wins) {
+  data.showingText = true;
+  data.ctx.font = `bold ${data.canvas.height / 6}px system-ui`;
+  data.ctx.fillStyle = p.getTCG();
+  data.ctx.strokeStyle = p.getPG();
+  data.ctx.lineWidth = data.canvas.height / 60;
+  data.ctx.textAlign = "center";
+  data.ctx.textBaseline = "bottom";
+  data.ctx.strokeText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
+  data.ctx.fillText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
+  data.ctx.textBaseline = "top";
+  var line2;
+  if (wins) line2 = t("wins") + "!";
+  else line2 = t("scores") + "!";
+  data.ctx.strokeText(line2, data.canvas.width / 2, data.canvas.height / 2);
+  data.ctx.fillText(line2, data.canvas.width / 2, data.canvas.height / 2);
+  endRound();
+}
+function pxl(x, y) {
+  data.ctx.beginPath();
+  data.ctx.rect(x, y, 1, 1);
+  data.ctx.stroke();
+}
+
+// src/Paddle.ts
 var Paddle = class {
   constructor(x, p) {
     this._dir = 0;
@@ -276,6 +358,18 @@ var Paddle = class {
   getY2() {
     return this._y + data.paddleHeight;
   }
+  getPG() {
+    return this._paddleGrad;
+  }
+  getTCG() {
+    return this._topCornerGrad;
+  }
+  getBCG() {
+    return this._bottomCornerGrad;
+  }
+  getPlr() {
+    return this._p;
+  }
   getDir() {
     return this._dir;
   }
@@ -298,92 +392,25 @@ var Paddle = class {
     this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
     this._bottomCornerGrad.addColorStop(0, "white");
     this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
-    if (!this._p.isAi) {
-      if (this._x < data.canvas.width / 2) {
-        data.ctx.beginPath();
-        data.ctx.fillStyle = this._topCornerGrad;
-        data.ctx.moveTo(this._x, this._y + data.paddleWidth);
-        data.ctx.arc(this._x, this._y + data.paddleWidth, data.paddleWidth, -Math.PI / 2, 0);
-        data.ctx.closePath();
-        data.ctx.fill();
-        data.ctx.beginPath();
-        data.ctx.fillStyle = this._bottomCornerGrad;
-        data.ctx.moveTo(this._x, this.getY2() - data.paddleWidth);
-        data.ctx.arc(this._x, this.getY2() - data.paddleWidth, data.paddleWidth, 0, Math.PI / 2);
-        data.ctx.closePath();
-        data.ctx.fill();
-      } else {
-        data.ctx.beginPath();
-        data.ctx.fillStyle = this._topCornerGrad;
-        data.ctx.moveTo(this.getX2(), this._y + data.paddleWidth);
-        data.ctx.arc(this.getX2(), this._y + data.paddleWidth, data.paddleWidth, Math.PI, Math.PI * 3 / 2);
-        data.ctx.closePath();
-        data.ctx.fill();
-        data.ctx.beginPath();
-        data.ctx.fillStyle = this._bottomCornerGrad;
-        data.ctx.moveTo(this.getX2(), this.getY2() - data.paddleWidth);
-        data.ctx.arc(this.getX2(), this.getY2() - data.paddleWidth, data.paddleWidth, Math.PI / 2, Math.PI);
-        data.ctx.closePath();
-        data.ctx.fill();
-      }
-    } else {
-      data.ctx.beginPath();
-      data.ctx.fillStyle = this._topCornerGrad;
-      data.ctx.moveTo(this._x + data.paddleWidth / 2, this._y + data.paddleWidth);
-      data.ctx.arc(this._x + data.paddleWidth / 2, this._y + data.paddleWidth, data.paddleWidth / 2, 0, Math.PI, true);
-      data.ctx.closePath();
-      data.ctx.fill();
-      data.ctx.beginPath();
-      data.ctx.fillStyle = this._bottomCornerGrad;
-      data.ctx.moveTo(this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth);
-      data.ctx.arc(this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth, data.paddleWidth / 2, 0, Math.PI);
-      data.ctx.closePath();
-      data.ctx.fill();
-    }
-  }
-  erase() {
-    data.ctx.beginPath();
-    data.ctx.fillStyle = data.bg;
-    data.ctx.rect(this._x - 1, this._y - 1, data.paddleWidth + 2, data.paddleHeight + 2);
-    data.ctx.fill();
+    if (!this._p.isAi) quarterCorner(this);
+    else halfCorner(this);
   }
   move() {
-    this.erase();
+    erase(this);
     this._y += this._dir * this._moveSpeed;
     if (this._y < 0) this._y = 0;
     if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
     this.draw();
   }
-  hitY() {
-    if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
+  hitY(ball2) {
+    if (ball2.getY() >= this._y - data.canvas.width / data.ballSize && ball2.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
     else return false;
   }
-  hitX() {
+  hitX(ball2) {
     if (!this._x) {
-      if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
-    } else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
+      if (ball2.getX() < data.paddleWidth + ball2.getSize()) return true;
+    } else if (ball2.getX() >= data.canvas.width - data.paddleWidth - ball2.getSize() && ball2.getX() < data.canvas.width - ball2.getSize()) return true;
     return false;
-  }
-  scoreText() {
-    data.showingText = true;
-    data.ctx.font = `bold ${data.canvas.height / 6}px system-ui`;
-    data.ctx.fillStyle = this._topCornerGrad;
-    data.ctx.strokeStyle = this._paddleGrad;
-    data.ctx.lineWidth = data.canvas.height / 60;
-    data.ctx.textAlign = "center";
-    data.ctx.textBaseline = "bottom";
-    data.ctx.strokeText(`${this._p.name}`, data.canvas.width / 2, data.canvas.height / 2);
-    data.ctx.fillText(`${this._p.name}`, data.canvas.width / 2, data.canvas.height / 2);
-    data.ctx.textBaseline = "top";
-    const scores = t("scores") + "!";
-    const wins = t("wins") + "!";
-    if (this._p.score != data.maxScore) {
-      data.ctx.strokeText(scores, data.canvas.width / 2, data.canvas.height / 2);
-      data.ctx.fillText(scores, data.canvas.width / 2, data.canvas.height / 2);
-    } else {
-      data.ctx.strokeText(wins, data.canvas.width / 2, data.canvas.height / 2);
-      data.ctx.fillText(wins, data.canvas.width / 2, data.canvas.height / 2);
-    }
   }
   movePaddle() {
     if (data.keys[this._p.up])
@@ -409,12 +436,6 @@ var Paddle = class {
       }
     }
   }
-  pxl(x, y) {
-    data.ctx.beginPath();
-    data.ctx.moveTo(x, y);
-    data.ctx.lineTo(x + 1, y + 1);
-    data.ctx.stroke();
-  }
   calcTarget() {
     var x = ball.getX();
     var y = ball.getY();
@@ -423,13 +444,13 @@ var Paddle = class {
     var draw = 0;
     while (ball.getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + ball.getSize() || ball.getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - ball.getSize() - data.paddleWidth) {
       if (y < ball.getSize() || y > data.canvas.height - ball.getSize()) dy *= -1;
-      x += dx * 100;
-      y += dy * 100;
+      x += dx * 10;
+      y += dy * 10;
+      draw++;
       if (data.showAiPath) {
-        draw++;
-        if (draw == 20) {
+        if (draw == 5) {
           draw = 0;
-          this.pxl(x, y);
+          pxl(x, y);
         }
       }
     }
@@ -442,7 +463,7 @@ var Paddle = class {
   }
 };
 
-// ../workspace/backend/pong/src/Ball.ts
+// src/Ball.ts
 var Ball = class {
   constructor() {
     this._go = false;
@@ -450,8 +471,8 @@ var Ball = class {
     this._ballSpeed = data.canvas.width / data.ballSpeed;
     this._x = data.canvas.width / 2;
     this._y = data.canvas.height / 2;
-    this._dirY = (Math.random() * 30 - 15) / 1e4;
-    this._dirX = (0.01 - this._dirY) * data.serve;
+    this._dirY = (Math.random() * 30 - 15) / 1e3;
+    this._dirX = (0.1 - this._dirY) * data.serve;
     this._size = data.canvas.width / data.ballSize;
     this._trailPoints = [];
     this._trailFade = 30 / data.trailLength;
@@ -459,7 +480,7 @@ var Ball = class {
     this._y = data.canvas.height / 2;
   }
   go() {
-    this._goTime = window.setInterval(() => this.move(), 5);
+    this._goTime = window.setInterval(() => this.move(), 20);
     this._go = true;
   }
   stop() {
@@ -498,16 +519,16 @@ var Ball = class {
     data.ctx.fillStyle = data.bg;
     data.ctx.fill();
   }
-  draw() {
+  draw(ball2) {
     this.drawTrail();
-    this._grad = data.ctx.createRadialGradient(this._x - this._size / 2, this._y - this._size / 2, this._size / 10, this._x, this._y, this._size);
-    this._grad.addColorStop(0, "white");
-    this._grad.addColorStop(0.3, data.ballCol);
-    this._grad.addColorStop(0.6, data.ballCol);
-    this._grad.addColorStop(1, "black");
+    var grad = data.ctx.createRadialGradient(ball2.getX() - ball2.getSize() / 2, ball2.getY() - ball2.getSize() / 2, ball2.getSize() / 10, ball2.getX(), ball2.getY(), ball2.getSize());
+    grad.addColorStop(0, "white");
+    grad.addColorStop(0.3, data.ballCol);
+    grad.addColorStop(0.6, data.ballCol);
+    grad.addColorStop(1, "black");
     data.ctx.beginPath();
     data.ctx.ellipse(this._x, this._y, this._size, this._size, 0, 0, Math.PI * 2);
-    data.ctx.fillStyle = this._grad;
+    data.ctx.fillStyle = grad;
     data.ctx.fill();
     data.ctx.closePath();
   }
@@ -549,34 +570,31 @@ var Ball = class {
     var variationAngle = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4);
     var angle = Math.atan2(this._dirY / 2, -this._dirX);
     angle += variationAngle;
-    this._dirX = Math.cos(angle) / 100;
-    this._dirY = Math.sin(angle) / 100;
+    this._dirX = Math.cos(angle) / 10;
+    this._dirY = Math.sin(angle) / 10;
   }
   checkPaddle() {
-    if (p1.hitX() && p1.hitY()) this.collision(p1);
-    if (p2.hitX() && p2.hitY()) this.collision(p2);
+    for (let i = 0; i < pad.length; i++)
+      if (ball.isGo() && pad[i].hitX(ball) && pad[i].hitY(ball))
+        this.collision(pad[i]);
   }
   checkWalls() {
     if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
       ball.stop();
-      p1.stop();
-      p2.stop();
       if (this._x <= this._size) {
         data.p2.score++;
         data.p2.scoreTB.value = String(data.p2.score);
-        setTimeout(() => p2.scoreText(), 100);
+        if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
         data.serve = -1;
       }
       if (this._x >= data.canvas.width - this._size) {
         data.p1.score++;
         data.p1.scoreTB.value = String(data.p1.score);
-        setTimeout(() => p1.scoreText(), 100);
+        if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
         data.serve = 1;
       }
-      if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 2e3);
-      else endGame();
     }
-    if (this._y <= this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
+    if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
   }
   advanceBall() {
     var stop = false;
@@ -585,8 +603,8 @@ var Ball = class {
       this._y += this._dirY;
       if (this._x < ball.getSize()) stop = true;
       if (this._x >= data.canvas.width - ball.getSize()) stop = true;
-      if (this._dirX < 0 && p1.hitX() && p1.hitY()) stop = true;
-      if (this._dirX >= 0 && p2.hitX() && p2.hitY()) stop = true;
+      if (this._dirX < 0 && pad[0].hitX(ball) && pad[0].hitY(ball)) stop = true;
+      if (this._dirX >= 0 && pad[1].hitX(ball) && pad[1].hitY(ball)) stop = true;
     }
   }
   move() {
@@ -594,21 +612,70 @@ var Ball = class {
       this.checkPaddle();
       this.checkWalls();
       this.advanceBall();
-      this.draw();
+      this.draw(ball);
     }
   }
 };
 
-// ../workspace/backend/pong/src/pong.ts
-var p1;
-var p2;
+// src/services/gameService.ts
+var GameService = class {
+  constructor() {
+    this.baseUrl = "http://localhost:3002/api/pong";
+  }
+  async createGame(gameData) {
+    try {
+      const response = await fetch(`${this.baseUrl}/games`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameData)
+      });
+      if (!response.ok) throw new Error("Failed to create game");
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating game:", error);
+      return null;
+    }
+  }
+  async updateScore(gameId, score1, score2) {
+    try {
+      const response = await fetch(`${this.baseUrl}/games/${gameId}/score`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score1, score2 })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("Error updating score:", error);
+      return false;
+    }
+  }
+  async finishGame(gameId, score1, score2, winnerId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score1, score2, winnerId })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("Error finishing game:", error);
+      return false;
+    }
+  }
+};
+var gameService = new GameService();
+
+// src/pong.ts
+var pad = [];
 var ball;
 document.getElementById("gameMenu").addEventListener("submit", function(e) {
   e.preventDefault();
   if (!data.showingText) {
     if (ball) ball.stop();
-    if (p1) p1.stop();
-    if (p2) p2.stop();
+    for (let i = 0; i < pad.length; i++) {
+      pad[0].stop();
+      pad.shift();
+    }
     setTimeout(() => startGame(), 1e3);
   }
 });
@@ -645,27 +712,38 @@ function initBoard() {
   data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
   data.ctx.fill();
   ball = new Ball();
-  p1 = new Paddle(0, data.p1);
-  p2 = new Paddle(data.canvas.width - data.paddleWidth, data.p2);
+  pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
 }
 function startRound() {
   initBoard();
-  p1.go();
-  p2.go();
+  pad[0].go();
+  pad[1].go();
   setTimeout(() => ball.go(), 250);
 }
-function endGame() {
+function endRound() {
+  ball.stop();
+  for (let i = 0; i < pad.length; i++) {
+    pad[i].stop();
+    pad.unshift();
+  }
+  if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 1500);
+  else endGame();
+}
+async function endGame() {
+  var winner;
   if (data.p1.score > data.p2.score)
-    console.log("Player 1 wins!");
-  else console.log("Player 2 wins!");
+    winner = data.p1.name;
+  else winner = data.p2.name;
   data.showingText = false;
+  const res = await gameService.finishGame(data.gameID, data.p1.score, data.p2.score, winner);
+  console.log(res);
 }
 startGame();
 export {
   ball,
   endGame,
-  p1,
-  p2,
+  endRound,
+  pad,
   startGame,
   startRound
 };

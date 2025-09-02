@@ -1,10 +1,7 @@
 import Paddle from "./Paddle";
+import { scoreText } from "./Paddle.draw";
 import { data } from "./gameData";
-import { p1 } from "./pong";
-import { p2 } from "./pong";
-import { ball } from "./pong";
-import { startRound } from "./pong";
-import { endGame } from "./pong";
+import { pad, ball } from "./pong";
 
 interface TrailPoint {
 	x: number;
@@ -17,10 +14,9 @@ export default class Ball {
 	private _ballSpeed: number = data.canvas.width / data.ballSpeed;
 	private _x: number = data.canvas.width / 2;
 	private _y: number = data.canvas.height / 2;
-	private _dirY: number = ((Math.random() * 30) - 15) / 10000;
-	private _dirX: number = (0.01 - this._dirY) * data.serve;
+	private _dirY: number = ((Math.random() * 30) - 15) / 1000;
+	private _dirX: number = (0.1 - this._dirY) * data.serve;
 	private _size: number = data.canvas.width / data.ballSize;
-	private _grad!: CanvasGradient;
 	private _trailPoints: TrailPoint[] = [];
 	private _trailFade = 30 / data.trailLength;
 
@@ -30,7 +26,7 @@ export default class Ball {
 	}
 
 	public go(): void {
-		this._goTime = window.setInterval(() => this.move(), 5);
+		this._goTime = window.setInterval(() => this.move(), 20);
 		this._go = true;
 	}
 	public stop(): void {
@@ -39,7 +35,7 @@ export default class Ball {
 		this._dirX = 0;
 		this._dirY = 0;
 	}
-	public isGo(): boolean { return this._go;}
+	public isGo(): boolean {return this._go;}
 	public getX(): number {return this._x;}
 	public getY(): number {return this._y;}
 	public getSize(): number {return this._size;}
@@ -55,18 +51,18 @@ export default class Ball {
 		data.ctx.fill();
 	}
 
-	private draw(): void {
+	private draw(ball: Ball): void {
 		this.drawTrail();
 		//define grad
-		this._grad = data.ctx.createRadialGradient(this._x - this._size / 2, this._y - this._size / 2, this._size / 10, this._x, this._y, this._size);
-		this._grad.addColorStop(0, "white");
-		this._grad.addColorStop(0.3, data.ballCol);
-		this._grad.addColorStop(0.6, data.ballCol);
-		this._grad.addColorStop(1, "black");
+		var grad:CanvasGradient = data.ctx.createRadialGradient(ball.getX() - ball.getSize() / 2, ball.getY() - ball.getSize() / 2, ball.getSize() / 10, ball.getX(), ball.getY(), ball.getSize());
+		grad.addColorStop(0, "white");
+		grad.addColorStop(0.3, data.ballCol);
+		grad.addColorStop(0.6, data.ballCol);
+		grad.addColorStop(1, "black");
 		//draw ball
 		data.ctx.beginPath();
 		data.ctx.ellipse(this._x, this._y, this._size, this._size, 0, 0, Math.PI * 2);
-		data.ctx.fillStyle = this._grad;
+		data.ctx.fillStyle = grad;
 		data.ctx.fill();
 		data.ctx.closePath();
 	}
@@ -111,36 +107,33 @@ export default class Ball {
 		var variationAngle: number = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4);
 		var angle: number = Math.atan2(this._dirY / 2, -this._dirX);
 		angle += variationAngle;
-		this._dirX = (Math.cos(angle)) / 100;
-		this._dirY = (Math.sin(angle)) / 100;
+		this._dirX = (Math.cos(angle)) / 10;
+		this._dirY = (Math.sin(angle)) / 10;
 	}
 
 	private checkPaddle(): void {
-		if (p1.hitX() && p1.hitY()) this.collision(p1);
-		if (p2.hitX() && p2.hitY()) this.collision(p2);
+		for (let i: number = 0; i < pad.length; i++)
+			if (ball.isGo() && pad[i].hitX(ball) && pad[i].hitY(ball))
+				this.collision(pad[i]);
 	}
 
 	private checkWalls(): void {
 		if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
 			ball.stop();
-			p1.stop();
-			p2.stop();
 			if (this._x <= this._size) {
 				data.p2.score++;
 				data.p2.scoreTB.value = String(data.p2.score);
-				setTimeout(() => p2.scoreText(), 100);
+				if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
 				data.serve = -1;
 			}
 			if (this._x >= data.canvas.width - this._size) {
 				data.p1.score++;
 				data.p1.scoreTB.value = String(data.p1.score);
-				setTimeout(() => p1.scoreText(), 100);
+				if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
 				data.serve = 1;
 			}
-			if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 2000);
-			else endGame();
 		}
-		if (this._y <= this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
+		if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
 	}
 
 	private advanceBall(): void {
@@ -150,8 +143,8 @@ export default class Ball {
 			this._y += this._dirY;
 			if (this._x < ball.getSize()) stop = true;
 			if (this._x >= data.canvas.width - ball.getSize()) stop = true;
-			if (this._dirX < 0 && p1.hitX() && p1.hitY()) stop = true;
-			if (this._dirX >= 0 && p2.hitX() && p2.hitY()) stop = true;
+			if (this._dirX < 0 && pad[0].hitX(ball) && pad[0].hitY(ball)) stop = true;
+			if (this._dirX >= 0 && pad[1].hitX(ball) && pad[1].hitY(ball)) stop = true;
 		}
 	}
 
@@ -160,7 +153,7 @@ export default class Ball {
 			this.checkPaddle();
 			this.checkWalls();
 			this.advanceBall();
-			this.draw();
+			this.draw(ball);
 		}
 	}
 }

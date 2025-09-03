@@ -14,7 +14,7 @@ interface UserStats {
 }
 
 class UserService {
-  private baseUrl = 'http://localhost:3003/api';
+  private baseUrl = '/api';
 
   async getUserById(userId: string): Promise<UserData | null> {
     try {

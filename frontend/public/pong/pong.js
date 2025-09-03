@@ -599,6 +599,72 @@ var Ball = class {
   }
 };
 
+// ../workspace/backend/pong/src/services/gameService.ts
+var GameService = class {
+  constructor() {
+    this.baseUrl = "/api/pong";
+  }
+  async createGame(gameData) {
+    console.log("Fetching to:", `${this.baseUrl}/games`);
+    try {
+      const response = await fetch(`${this.baseUrl}/games`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameData)
+      });
+      console.log("Response status:", response.status);
+      if (!response.ok) throw new Error("Failed to create game");
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating game:", error);
+      return null;
+    }
+  }
+  async createAIGame(playerData) {
+    try {
+      const gameData = {
+        player1Id: playerData.playerId,
+        player2Id: "ai_opponent",
+        player1Name: playerData.playerName,
+        player2Name: "IA_OPPONENT",
+        maxScore: playerData.maxScore || 5,
+        gameType: "vs_ai"
+      };
+      return await this.createGame(gameData);
+    } catch (error) {
+      console.error("Error creating AI game:", error);
+      return null;
+    }
+  }
+  async updateScore(gameId, score1, score2) {
+    try {
+      const response = await fetch(`${this.baseUrl}/games/${gameId}/score`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score1, score2 })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("Error updating score:", error);
+      return false;
+    }
+  }
+  async finishGame(gameId, score1, score2, winnerId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score1, score2, winnerId })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("Error finishing game:", error);
+      return false;
+    }
+  }
+};
+var gameService = new GameService();
+
 // ../workspace/backend/pong/src/pong.ts
 var p1;
 var p2;
@@ -660,6 +726,19 @@ function endGame() {
   else console.log("Player 2 wins!");
   data.showingText = false;
 }
+async function testCreateGame() {
+  const gameData = {
+    player1Id: "player1-id",
+    player2Id: "player2-id",
+    player1Name: "Player One",
+    player2Name: "Player Two",
+    maxScore: 5,
+    gameType: "VS_HUMAN"
+  };
+  const result = await gameService.createGame(gameData);
+  console.log("Resultado de crear juego:", result);
+}
+testCreateGame();
 startGame();
 export {
   ball,

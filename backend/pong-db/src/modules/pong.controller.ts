@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../utils/prisma';
+import { Oponent } from '@prisma/client';  // Agregar import si no está
 
 interface CreateGameBody {
   player1Id: string;
@@ -7,6 +8,7 @@ interface CreateGameBody {
   player1Name: string;
   player2Name: string;
   maxScore?: number;
+  gameType: Oponent
 }
 
 interface UpdateScoreBody {
@@ -25,15 +27,25 @@ export const createGame = async (
   reply: FastifyReply
 ) => {
   try {
-    const { player1Id, player2Id, player1Name, player2Name, maxScore = 3 } = request.body;
+    const { 
+      player1Id, 
+      player2Id, 
+      player1Name, 
+      player2Name, 
+      maxScore = 3,
+      gameType = Oponent.VS_HUMAN,
+    } = request.body;
+    const finalPlayer2Id = gameType === Oponent.VS_AI ? 'ai_opponent' : player2Id;
+    const finalPlayer2Name = gameType === Oponent.VS_AI ? 'IA_OPPONENT' : player2Name; //TODO: check this bc could be that an user take the same name
     
     const game = await prisma.game.create({
       data: {
         player1Id,
-        player2Id,
+        player2Id: finalPlayer2Id,
         player1Name,
-        player2Name,
+        player2Name: finalPlayer2Name,
         maxScore,
+        gameType,
       }
     });
     

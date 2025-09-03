@@ -24,6 +24,42 @@ export function renderHeader(): HTMLElement {
     }
     header.innerHTML = '';
 
+    const bar = document.createElement('div');
+    bar.className = 'flex items-center justify-between';
+
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'flex items-center gap-2';
+    const searchBtn = document.createElement('button');
+    searchBtn.type = 'button';
+    searchBtn.className = 'inline-flex items-center justify-center w-[36px] h-[36px] border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+    searchBtn.setAttribute('aria-label', t('search_users') || 'Search users');
+
+    searchBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M21 21l-4.2-4.2M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+              stroke="#66fcf1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'search';
+    searchInput.placeholder = t('search_users') || 'Search users…';
+    searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
+    searchInput.className = [
+      'w-[180px] focus:w-[260px] transition-[width] duration-200',
+      'h-[36px] px-[10px] rounded-[8px]',
+      'bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60',
+      'border border-[#66fcf1]/30 focus:border-[#66fcf1]/60',
+      'outline-none font-[jura]'
+    ].join(' ');
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') e.preventDefault();
+    });
+
+    searchWrap.appendChild(searchBtn);
+    searchWrap.appendChild(searchInput);
+
     const ul = document.createElement('ul');
     ul.classList.add('flex', 'justify-end', 'items-center', 'list-none');
 
@@ -181,7 +217,9 @@ export function renderHeader(): HTMLElement {
     }
     ul.appendChild(langLi);
     ul.appendChild(renderA11yControls());
-    header.appendChild(ul);
+    bar.appendChild(searchWrap);
+    bar.appendChild(ul);
+    header.appendChild(bar);
   }
 
   updateHeaderCallback = updateHeader;

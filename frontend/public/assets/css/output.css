@@ -119,6 +119,9 @@
 .h-\[2rem\] {
   height: 2rem;
 }
+.h-\[36px\] {
+  height: 36px;
+}
 .h-\[calc\(60vh-0px\)\] {
   height: calc(60vh - 0px);
 }
@@ -134,11 +137,11 @@
 .w-\[2rem\] {
   width: 2rem;
 }
+.w-\[36px\] {
+  width: 36px;
+}
 .w-\[100px\] {
   width: 100px;
-}
-.w-\[140px\] {
-  width: 140px;
 }
 .w-\[150px\] {
   width: 150px;
@@ -279,6 +282,9 @@
 .border-\[\#66fcf1\] {
   border-color: #66fcf1;
 }
+.border-\[\#66fcf1\]\/30 {
+  border-color: color-mix(in oklab, #66fcf1 30%, transparent);
+}
 .border-\[rgba\(102\,252\,241\,0\.15\)\] {
   border-color: rgba(102,252,241,0.15);
 }
@@ -310,6 +316,9 @@
   background-color: rgba(102,252,241,0.12);
 }
 .bg-\[transparent\] {
+  background-color: transparent;
+}
+.bg-transparent {
   background-color: transparent;
 }
 .bg-gradient-to-r {
@@ -404,9 +413,6 @@
 .py-\[40px\] {
   padding-block: 40px;
 }
-.pl-\[10px\] {
-  padding-left: 10px;
-}
 .text-center {
   text-align: center;
 }
@@ -419,9 +425,6 @@
 .font-\[pressstart2p\] {
   font-family: pressstart2p;
 }
-.text-\[1\.1rem\] {
-  font-size: 1.1rem;
-}
 .text-\[1\.2rem\] {
   font-size: 1.2rem;
 }
@@ -430,9 +433,6 @@
 }
 .text-\[1\.125rem\] {
   font-size: 1.125rem;
-}
-.text-\[1\.375rem\] {
-  font-size: 1.375rem;
 }
 .text-\[1\.625rem\] {
   font-size: 1.625rem;
@@ -443,18 +443,8 @@
 .text-\[1\.4375rem\] {
   font-size: 1.4375rem;
 }
-.text-\[1rem\] {
-  font-size: 1rem;
-}
-.text-\[2rem\] {
-  font-size: 2rem;
-}
 .text-\[4\.375rem\] {
   font-size: 4.375rem;
-}
-.font-\[2rem\] {
-  --tw-font-weight: 2rem;
-  font-weight: 2rem;
 }
 .font-\[600\] {
   --tw-font-weight: 600;
@@ -481,6 +471,11 @@
 }
 .underline {
   text-decoration-line: underline;
+}
+.placeholder-\[\#66fcf1\]\/60 {
+  &::placeholder {
+    color: color-mix(in oklab, #66fcf1 60%, transparent);
+  }
 }
 .opacity-0 {
   opacity: 0%;
@@ -523,6 +518,11 @@
   transition-timing-function: var(--tw-ease, ease);
   transition-duration: var(--tw-duration, 0s);
 }
+.transition-\[width\] {
+  transition-property: width;
+  transition-timing-function: var(--tw-ease, ease);
+  transition-duration: var(--tw-duration, 0s);
+}
 .transition-all {
   transition-property: all;
   transition-timing-function: var(--tw-ease, ease);
@@ -538,9 +538,17 @@
   transition-timing-function: var(--tw-ease, ease);
   transition-duration: var(--tw-duration, 0s);
 }
+.duration-200 {
+  --tw-duration: 200ms;
+  transition-duration: 200ms;
+}
 .duration-300 {
   --tw-duration: 300ms;
   transition-duration: 300ms;
+}
+.outline-none {
+  --tw-outline-style: none;
+  outline-style: none;
 }
 .\[prepare\:pong\] {
   prepare: pong;
@@ -608,6 +616,16 @@
     overflow: visible;
     clip: auto;
     white-space: normal;
+  }
+}
+.focus\:w-\[260px\] {
+  &:focus {
+    width: 260px;
+  }
+}
+.focus\:border-\[\#66fcf1\]\/60 {
+  &:focus {
+    border-color: color-mix(in oklab, #66fcf1 60%, transparent);
   }
 }
 .focus\:ring-2 {

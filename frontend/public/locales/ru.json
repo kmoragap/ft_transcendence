@@ -27,5 +27,11 @@
   "scores": "забивает",
   "wins": "побеждает",
   "social": "Социальный",
-  "game_statistics": "Игровая статистика"
+  "game_statistics": "Игровая статистика",
+  "create_tournament": "Создать турнир",
+  "join_tournament": "Присоединиться к турниру",
+  "coming_soon": "Скоро",
+  "single_play": "Одиночная игра",
+  "multiplayer": "Многопользовательская игра",
+  "back_to_modes": "Назад к режимам"
 }

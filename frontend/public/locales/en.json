@@ -27,5 +27,11 @@
 	"scores": "scores",
 	"wins": "wins",
 	"social": "Social",
-	"game_statistics": "Game Statistics"
+	"game_statistics": "Game Statistics",
+	"create_tournament": "Create Tournament",
+	"join_tournament": "Join Tournament",
+	"coming_soon": "Coming Soon",
+	"single_play": "Single Play",
+	"multiplayer": "Multiplayer",
+	"back_to_modes": "Back to Modes"
 }

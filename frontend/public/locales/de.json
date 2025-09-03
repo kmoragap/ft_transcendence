@@ -27,5 +27,11 @@
   "scores": "punktet",
   "wins": "gewinnt",
   "social": "Sozial",
-  "game_statistics": "Spielstatistiken"
+  "game_statistics": "Spielstatistiken",
+  "create_tournament": "Turnier erstellen",
+  "join_tournament": "Turnier beitreten",
+  "coming_soon": "Demnächst",
+  "single_play": "Einzelspiel",
+  "multiplayer": "Mehrspieler",
+  "back_to_modes": "Zurück zu den Modi"
 }

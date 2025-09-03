@@ -1,4 +1,59 @@
-// src/gameData.ts
+// ../workspace/backend/pong/src/services/userService.ts
+var UserService = class {
+  constructor() {
+    this.baseUrl = "http://localhost:3003/api";
+  }
+  async getUserById(userId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}`);
+      if (!response.ok) throw new Error("User not found");
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  }
+  async getUsersByIds(userIds) {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userIds })
+      });
+      if (!response.ok) throw new Error("Failed to fetch users");
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return [];
+    }
+  }
+  async getUserStats(userId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}/stats`);
+      if (!response.ok) throw new Error("Stats not found");
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      return null;
+    }
+  }
+  async updateUserStats(userId, gameData) {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/${userId}/stats`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameData)
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("Error updating user stats:", error);
+      return false;
+    }
+  }
+};
+var userService = new UserService();
+
+// ../workspace/backend/pong/src/gameData.ts
 var data;
 function loadPlayer(scoreTB, nameTB, name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
@@ -35,6 +90,8 @@ async function loadConfig() {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
+  const users = ["test", "test2"];
+  const ud = await userService.getUsersByIds(users);
   var canvas = document.getElementById("board");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - loadTA("p1score").clientHeight;
@@ -154,7 +211,7 @@ async function loadConfig() {
   data = loadData;
 }
 
-// src/controls.ts
+// ../workspace/backend/pong/src/controls.ts
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
     if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
@@ -191,7 +248,7 @@ function controlKeys() {
   });
 }
 
-// ../../frontend/src/i18n.ts
+// ../workspace/frontend/src/i18n.ts
 var translations = {};
 var currentLang = "en";
 async function loadLanguage(lang) {
@@ -242,7 +299,7 @@ async function initI18n() {
   await loadLanguage(saved);
 }
 
-// src/Paddle.draw.ts
+// ../workspace/backend/pong/src/Paddle.draw.ts
 function quarterCorner(pad2) {
   if (pad2.getX() < data.canvas.width / 2) {
     data.ctx.beginPath();
@@ -316,7 +373,7 @@ function pxl(x, y) {
   data.ctx.stroke();
 }
 
-// src/Paddle.ts
+// ../workspace/backend/pong/src/Paddle.ts
 var Paddle = class {
   constructor(x, p) {
     this._dir = 0;
@@ -463,7 +520,7 @@ var Paddle = class {
   }
 };
 
-// src/Ball.ts
+// ../workspace/backend/pong/src/Ball.ts
 var Ball = class {
   constructor() {
     this._go = false;
@@ -617,7 +674,7 @@ var Ball = class {
   }
 };
 
-// src/services/gameService.ts
+// ../workspace/backend/pong/src/services/gameService.ts
 var GameService = class {
   constructor() {
     this.baseUrl = "http://localhost:3002/api/pong";
@@ -665,7 +722,7 @@ var GameService = class {
 };
 var gameService = new GameService();
 
-// src/pong.ts
+// ../workspace/backend/pong/src/pong.ts
 var pad = [];
 var ball;
 document.getElementById("gameMenu").addEventListener("submit", function(e) {
@@ -735,9 +792,20 @@ async function endGame() {
     winner = data.p1.name;
   else winner = data.p2.name;
   data.showingText = false;
-  const res = await gameService.finishGame(data.gameID, data.p1.score, data.p2.score, winner);
-  console.log(res);
 }
+async function testCreateGame() {
+  const gameData = {
+    player1Id: "player1-id",
+    player2Id: "player2-id",
+    player1Name: "Player One",
+    player2Name: "Player Two",
+    maxScore: 5,
+    gameType: "VS_HUMAN"
+  };
+  const result = await gameService.createGame(gameData);
+  console.log("Result test:", result);
+}
+testCreateGame();
 startGame();
 export {
   ball,

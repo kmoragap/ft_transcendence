@@ -90,4 +90,18 @@ export async function endGame() {
 	//console.log(res);
 }
 
+//testcase for the game
+async function testCreateGame() {
+  const gameData = {
+    player1Id: 'player1-id',
+    player2Id: 'player2-id',
+    player1Name: 'Player One',
+    player2Name: 'Player Two',
+    maxScore: 5,
+    gameType: 'VS_HUMAN' as const
+  };
+  const result = await gameService.createGame(gameData);
+  console.log('Result test:', result);
+}
+testCreateGame();
 startGame();

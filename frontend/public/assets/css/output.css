@@ -137,9 +137,6 @@
 .w-\[100px\] {
   width: 100px;
 }
-.w-\[140px\] {
-  width: 140px;
-}
 .w-\[150px\] {
   width: 150px;
 }
@@ -167,9 +164,6 @@
 .flex-1 {
   flex: 1;
 }
-.flex-shrink {
-  flex-shrink: 1;
-}
 .shrink-0 {
   flex-shrink: 0;
 }
@@ -192,9 +186,6 @@
 }
 .cursor-pointer {
   cursor: pointer;
-}
-.resize {
-  resize: both;
 }
 .list-none {
   list-style-type: none;
@@ -404,9 +395,6 @@
 .py-\[40px\] {
   padding-block: 40px;
 }
-.pl-\[10px\] {
-  padding-left: 10px;
-}
 .text-center {
   text-align: center;
 }
@@ -419,9 +407,6 @@
 .font-\[pressstart2p\] {
   font-family: pressstart2p;
 }
-.text-\[1\.1rem\] {
-  font-size: 1.1rem;
-}
 .text-\[1\.2rem\] {
   font-size: 1.2rem;
 }
@@ -430,9 +415,6 @@
 }
 .text-\[1\.125rem\] {
   font-size: 1.125rem;
-}
-.text-\[1\.375rem\] {
-  font-size: 1.375rem;
 }
 .text-\[1\.625rem\] {
   font-size: 1.625rem;
@@ -443,18 +425,8 @@
 .text-\[1\.4375rem\] {
   font-size: 1.4375rem;
 }
-.text-\[1rem\] {
-  font-size: 1rem;
-}
-.text-\[2rem\] {
-  font-size: 2rem;
-}
 .text-\[4\.375rem\] {
   font-size: 4.375rem;
-}
-.font-\[2rem\] {
-  --tw-font-weight: 2rem;
-  font-weight: 2rem;
 }
 .font-\[600\] {
   --tw-font-weight: 600;
@@ -478,9 +450,6 @@
 }
 .uppercase {
   text-transform: uppercase;
-}
-.underline {
-  text-decoration-line: underline;
 }
 .opacity-0 {
   opacity: 0%;
@@ -513,10 +482,6 @@
 .shadow-\[0_10px_30px_rgba\(0\,0\,0\,0\.6\)\] {
   --tw-shadow: 0 10px 30px var(--tw-shadow-color, rgba(0,0,0,0.6));
   box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-}
-.outline {
-  outline-style: var(--tw-outline-style);
-  outline-width: 1px;
 }
 .transition {
   transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events;
@@ -1071,11 +1036,6 @@
   inherits: false;
   initial-value: 0 0 #0000;
 }
-@property --tw-outline-style {
-  syntax: "*";
-  inherits: false;
-  initial-value: solid;
-}
 @property --tw-duration {
   syntax: "*";
   inherits: false;
@@ -1131,7 +1091,6 @@
       --tw-ring-offset-width: 0px;
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
-      --tw-outline-style: solid;
       --tw-duration: initial;
       --tw-scale-x: 1;
       --tw-scale-y: 1;

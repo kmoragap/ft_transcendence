@@ -1,4 +1,4 @@
-export interface GameData {
+interface GameData {
   id: string;
   player1Id: string;
   player2Id: string;

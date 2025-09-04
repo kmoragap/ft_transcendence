@@ -4,7 +4,7 @@ import { controlKeys } from "./controls";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { initI18n } from "./../../../frontend/src/i18n";
-
+import { gameService } from "./services/gameService";
 export let p1: Paddle;
 export let p2: Paddle;
 export let ball: Ball;
@@ -72,4 +72,19 @@ export function endGame(): void {
 	//submit score to DB and exit
 }
 
+
+//testcase for the game
+async function testCreateGame() {
+  const gameData = {
+    player1Id: 'player1-id',
+    player2Id: 'player2-id',
+    player1Name: 'Player One',
+    player2Name: 'Player Two',
+    maxScore: 5,
+    gameType: 'VS_HUMAN' as const
+  };
+  const result = await gameService.createGame(gameData);
+  console.log('Result test:', result);
+}
+//testCreateGame();
 startGame();

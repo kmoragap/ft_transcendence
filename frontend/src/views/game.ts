@@ -7,24 +7,27 @@ type GameMode = 'menu' | 'single' | 'multi';
 export function renderGame(): HTMLElement {
   const section = document.createElement('section');
   section.className =
-    'w-full flex-1 relative m-0 flex items-center justify-items-center justify-center text-center z-[3]';
+    'w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10';
 
   section.innerHTML = `
-    <div class="w-full max-w-[1100px] flex-1 rounded-[10px] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
-     <div class="flex items-center justify-between px-[10px] py-[10px] border-b border-[rgba(102,252,241,0.15)]">
+     <h1 class="title uppercase">
+        <span class="mid_line" data-i18n="pong">PONG</span>
+      </h1>
+          <div class="w-full max-w-7xl rounded-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
+     <div class="flex items-center justify-between px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
-        class="btn py-[8px] px-[10px] w-[auto] m-[0] text-[1.2rem] font-[700] cursor-[pointer] invisible pointer-events-none"
+        class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
         aria-hidden="true"
         data-i18n="back_to_modes">
         Back
       </button>
       <button id="game-exit"
-        class="btn py-[8px] m-[0 text-[1.2rem] font-[700] w-[100px] cursor-[pointer]"
+        class="btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer"
         data-i18n="exit">
         Exit
       </button>
     </div>
-      <div id="game-root" class="flex flex-col justify-center items-center w-full min-h-[320px] relative"></div>
+      <div id="game-root" class="flex flex-col justify-center items-center w-full min-h-80 relative"></div>
     </div>
   `;
 
@@ -67,13 +70,13 @@ export function renderGame(): HTMLElement {
 
   function renderMenuHTML() {
     return `
-      <div class="p-[24px] flex flex-col justify-center items-center h-full">
-        <div class="grid grid-cols-2 gap-[16px] max-w-[700px] mx-auto">
+      <div class="p-6 flex flex-col justify-center items-center h-full">
+        <div class="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
           <button
             id="btn-create"
-            class="px-[24px] py-[16px] rounded-[8px] border border-[rgba(102,252,241,0.15)]
-                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-[700] text-[1.5rem]
-                  shadow-[0_4px_10px_rgba(0,0,0,0.4)]
+            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
+                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-2xl
+                  shadow-lg
                   cursor-not-allowed opacity-50"
             aria-disabled="true"
             title="${t('coming_soon') || 'Coming soon'}"
@@ -83,9 +86,9 @@ export function renderGame(): HTMLElement {
           </button>
           <button
             id="btn-join"
-            class="px-[24px] py-[16px] rounded-[8px] border border-[rgba(102,252,241,0.15)]
-                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-[700] text-[1.5rem]
-                  shadow-[0_4px_10px_rgba(0,0,0,0.4)]
+            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
+                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-2xl
+                  shadow-lg
                   cursor-not-allowed opacity-50"
             aria-disabled="true"
             title="${t('coming_soon') || 'Coming soon'}"
@@ -95,20 +98,20 @@ export function renderGame(): HTMLElement {
           </button>
           <button
             id="btn-single"
-            class="px-[24px] py-[16px] rounded-[8px] border border-[rgba(102,252,241,0.25)]
-                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-[700] text-[1.5rem]
-                  shadow-[0_6px_16px_rgba(0,0,0,0.5)]
-                  hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-[2px] focus:ring-[#66fcf1]/40"
+            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
+                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-2xl
+                  shadow-xl
+                  hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
             data-i18n="single_play"
           >
             Single play
           </button>
           <button
             id="btn-multi"
-            class="px-[24px] py-[16px] rounded-[8px] border border-[rgba(102,252,241,0.25)]
-                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-[700] text-[1.5rem]
-                  shadow-[0_6px_16px_rgba(0,0,0,0.5)]
-                  hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-[2px] focus:ring-[#66fcf1]/40"
+            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
+                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-2xl
+                  shadow-lg
+                  hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
             data-i18n="multiplayer"
           >
             Multiplayer
@@ -127,7 +130,7 @@ export function renderGame(): HTMLElement {
   function renderIframeHTML(mode: Exclude<GameMode, 'menu'>) {
     const src = mode === 'single' ? '/pong.html?mode=single' : '/pong.html?mode=multi';
     return `
-      <div class="w-full h-[calc(60vh-0px)]"> 
+      <div class="w-full h-[60vh]"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
       </div>
     `;

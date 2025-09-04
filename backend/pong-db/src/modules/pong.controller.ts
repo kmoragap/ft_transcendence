@@ -116,3 +116,85 @@ export const getGame = async (
     return reply.status(500).send({ error: 'Failed to get game' });
   }
 };
+
+export const listLatestGames = async (
+  request: FastifyRequest<{ Querystring: { take?: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const takeNum = Math.min(Math.max(parseInt(request.query.take ?? '5', 10) || 5, 1), 50);
+
+    const games = await prisma.game.findMany({
+      where: { status: 'FINISHED' },
+      orderBy: { createdAt: 'desc' },
+      take: takeNum,
+      select: {
+        id: true,
+        player1Id: true,
+        player2Id: true,
+        player1Name: true,
+        player2Name: true,
+        score1: true,
+        score2: true,
+        maxScore: true,
+        winnerId: true,
+        gameType: true,
+        createdAt: true,
+      }
+    });
+
+    return reply.send(games);
+  } catch (error) {
+    request.log.error(error);
+    return reply.status(500).send({ error: 'Failed to list latest games' });
+  }
+};
+
+export const leaderboard = async (
+  request: FastifyRequest<{ Querystring: { limit?: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const limit = Math.min(Math.max(parseInt(request.query.limit ?? '5', 10) || 5, 1), 50);
+
+    const grouped = await prisma.game.groupBy({
+      by: ['winnerId'],
+      where: { status: 'FINISHED', NOT: { winnerId: null } },
+      _count: { winnerId: true },
+      orderBy: { _count: { winnerId: 'desc' } },
+      take: limit,
+    });
+
+    const results = [];
+    for (const g of grouped) {
+      const lastGame = await prisma.game.findFirst({
+        where: {
+          status: 'FINISHED',
+          OR: [{ player1Id: g.winnerId! }, { player2Id: g.winnerId! }],
+        },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          player1Id: true, player2Id: true,
+          player1Name: true, player2Name: true,
+        }
+      });
+
+      let displayName = g.winnerId; // fallback
+      if (lastGame) {
+        if (lastGame.player1Id === g.winnerId) displayName = lastGame.player1Name;
+        if (lastGame.player2Id === g.winnerId) displayName = lastGame.player2Name;
+      }
+
+      results.push({
+        playerId: g.winnerId,
+        name: displayName,
+        wins: g._count.winnerId,
+      });
+    }
+
+    return reply.send(results);
+  } catch (error) {
+    request.log.error(error);
+    return reply.status(500).send({ error: 'Failed to build leaderboard' });
+  }
+};

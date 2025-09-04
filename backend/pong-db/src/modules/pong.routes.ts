@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { createGame, updateScore, finishGame, getGame } from './pong.controller';
+import { createGame, updateScore, finishGame, getGame, leaderboard, listLatestGames } from './pong.controller';
 
 export default async function pongRoutes(fastify: FastifyInstance) {
   // create a new game
@@ -13,4 +13,10 @@ export default async function pongRoutes(fastify: FastifyInstance) {
   
   // finish game
   fastify.put('/games/:id/finish', finishGame);
+
+  // leaderboard route
+  fastify.get('/leaderboard', leaderboard);
+
+  // list latest games
+  fastify.get('/games', listLatestGames);
 }

@@ -1,5 +1,6 @@
 import { t, loadLanguage } from './../i18n';
 import { store } from '../store';
+import { logout } from '../utils/auth';
 import { renderA11yControls } from './a11y-switcher';
 
 let isSessionRestored = false;
@@ -14,7 +15,7 @@ export function setSessionRestored() {
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
-  header.className = 'px-[40px] py-[10px] bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-10';
+  header.className = 'px-10 py-5 bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-50';
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
   function updateHeader() {
@@ -31,7 +32,7 @@ export function renderHeader(): HTMLElement {
     searchWrap.className = 'flex items-center gap-2';
     const searchBtn = document.createElement('button');
     searchBtn.type = 'button';
-    searchBtn.className = 'inline-flex items-center justify-center w-[36px] h-[36px] border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+    searchBtn.className = 'inline-flex items-center justify-center w-9 h-9 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
     searchBtn.setAttribute('aria-label', t('search_users') || 'Search users');
 
     searchBtn.innerHTML = `
@@ -46,8 +47,8 @@ export function renderHeader(): HTMLElement {
     searchInput.placeholder = t('search_users') || 'Search users…';
     searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
     searchInput.className = [
-      'w-[180px] focus:w-[260px] transition-[width] duration-200',
-      'h-[36px] px-[10px] rounded-[8px]',
+      'w-45 focus:w-65 transition-all duration-200',
+      'h-9 px-2.5 rounded-lg',
       'bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60',
       'border border-[#66fcf1]/30 focus:border-[#66fcf1]/60',
       'outline-none font-[jura]'
@@ -63,7 +64,7 @@ export function renderHeader(): HTMLElement {
     const ul = document.createElement('ul');
     ul.classList.add('flex', 'justify-end', 'items-center', 'list-none');
 
-    const links = ['home', 'game'];
+    const links = ['home', 'game', 'dashboard'];
     const { isAuthenticated, currentUser } = store.getState();
 
     if (!isAuthenticated) {
@@ -73,18 +74,16 @@ export function renderHeader(): HTMLElement {
     links.forEach(key => {
       const li = document.createElement('li');
       li.classList.add(
-        'ml-[1.25rem]', 'font-[jura]', 'font-[600]', 'text-[1.625rem]', 'text-[#66fcf1]'
+        'ml-5', 'font-[jura]', 'font-semibold', 'text-xl', 'text-[#66fcf1]'
       );
       li.setAttribute('data-i18n', key);
       li.textContent = t(key);
       li.style.cursor = 'pointer';
 
-      li.addEventListener('click', () => {
+      li.addEventListener('click', async () => {
         switch (key) {
           case 'logout':
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            store.dispatch({ type: 'LOGOUT' });
+            await logout();
             location.hash = '/home';
             break;
 
@@ -101,11 +100,11 @@ export function renderHeader(): HTMLElement {
     });
 
     const langLi = document.createElement('li');
-    langLi.classList.add('ml-[1.25rem]');
+    langLi.classList.add('ml-5');
     const langSelect = document.createElement('select');
     langSelect.id = 'language-switcher';
     langSelect.className =
-      'px-[2px] py-[1px] mt-[6px] bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1] rounded-[5px]';
+      'px-0.5 py-0.5 mt-1.5 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1] rounded-sm';
     const languages = [
       { code: 'en', label: 'EN' },
       { code: 'de', label: 'DE' },
@@ -115,7 +114,7 @@ export function renderHeader(): HTMLElement {
       const option = document.createElement('option');
       option.value = code;
       option.textContent = label;
-      option.className = 'border-[0] bg-[transparent] text-[#66fcf1] hover:bg-[#66fcf1]/10';
+      option.className = 'border-0 bg-transparent text-[#66fcf1] hover:bg-[#66fcf1]/10';
       langSelect.appendChild(option);
     });
     langSelect.value = localStorage.getItem('lang') || 'en';
@@ -129,7 +128,7 @@ export function renderHeader(): HTMLElement {
     
     if (isAuthenticated && currentUser) {
       const userLi = document.createElement('li');
-      userLi.className = 'relative ml-[1.25rem]';
+      userLi.className = 'relative ml-5';
 
       const avatarUrl = currentUser.avatarUrl || '/assets/img/avatar.jpg';
 
@@ -137,36 +136,36 @@ export function renderHeader(): HTMLElement {
       trigger.type = 'button';
       trigger.className = [
         'flex items-center gap-2',
-        'text-[#66fcf1] bg-[transparent] border-[0]',
+        'text-[#66fcf1] bg-transparent border-0',
         'focus-visible:ring-2 focus-visible:ring-[#66fcf1] rounded'
       ].join(' ');
       trigger.setAttribute('aria-haspopup', 'menu');
       trigger.setAttribute('aria-expanded', 'false');
 
       const name = document.createElement('span');
-      name.className = 'font-[jura] font-[700] text-[1.4375rem]';
+      name.className = 'font-[jura] font-bold text-lg';
       name.textContent = currentUser.username;
 
       const img = document.createElement('img');
       img.src = avatarUrl;
       img.alt = t('profile_avatar') || 'Avatar';
-      img.className = 'w-[2rem] h-[2rem] ml-[0.5rem] rounded-full border border-[#66fcf1] object-cover';
+      img.className = 'w-8 h-8 ml-2 rounded-full border border-[#66fcf1] object-cover';
 
       trigger.append(name, img);
 
       const menu = document.createElement('div');
       menu.className = [
-        'absolute right-0 mt-2 w-[150px]',
-        'bg-[rgba(102,252,241,0.1)] rounded-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.5)]',
+        'absolute right-0 mt-2',
+        'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
         'opacity-0 pointer-events-none transition'
       ].join(' ');
       menu.setAttribute('role', 'menu');
 
       menu.innerHTML = `
         <button data-i18n="my_profile" data-action="me"
-          class="block w-full text-center p-[10px] text-[#66fcf1] text-[1.2375rem] font-[jura] font-[700] bg-[transparent] border-[0] rounded-[6px] hover:bg-[#66fcf1]/10">My Profile</button>
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">My Profile</button>
         <button data-i18n="logout" data-action="logout"
-          class="block w-full text-center p-[10px] text-[#66fcf1] text-[1.2375rem] font-[jura] font-[700] bg-[transparent] border-[0] rounded-[6px] hover:bg-[#66fcf1]/10">Logout</button>
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">Logout</button>
       `;
 
       let open = false;
@@ -193,7 +192,7 @@ export function renderHeader(): HTMLElement {
         }
       });
 
-      menu.addEventListener('click', (e) => {
+      menu.addEventListener('click', async (e) => {
         const btn = (e.target as HTMLElement).closest('button');
         if (!btn) return;
         const action = btn.getAttribute('data-action');
@@ -206,7 +205,7 @@ export function renderHeader(): HTMLElement {
 
         if (action === 'logout') {
           setOpen(false);
-          store.dispatch({ type: 'LOGOUT' });
+          await logout();
           location.hash = '/login';
           return;
         }

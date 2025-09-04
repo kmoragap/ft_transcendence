@@ -34,5 +34,17 @@
 	"single_play": "Single Play",
 	"multiplayer": "Multiplayer",
 	"back_to_modes": "Back to Modes",
-	"search_users": "Search Users"
+	"search_users": "Search Users",
+	"dashboard": "Dashboard",
+	"leaderboard": "Leaderboard",
+	"recent_games": "Recent Games",
+	"top_players": "Top Players",
+	"last_5_games": "Last 5 Games",
+	"top_5_players": "Top 5 Players",
+	"no_games": "No games to display.",
+	"no_players": "No players to display.",
+	"loading": "Loading...",
+	"error_loading_data": "Error loading data.",
+	"wins_plural": "wins",
+	"win_plural": "win"
 }

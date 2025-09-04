@@ -17,8 +17,8 @@ server.register(cors, {
       'http://localhost:80',             // nginx local with port
       /^http:\/\/192\.168\.\d+\.\d+$/,  // local net
       /^http:\/\/10\.\d+\.\d+\.\d+$/,   // alternative local net
-      /^http:\/\/172.18.\d+.\d+$/,
     ];
+    
     // check if the origin is allowed
     const isAllowed = allowedOrigins.some(allowed => {
       if (typeof allowed === 'string') {

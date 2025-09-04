@@ -1,5 +1,5 @@
 import { data } from "./gameData";
-import { ball } from "./pong";
+import { balls } from "./pong";
 import Ball from "./Ball";
 import { playerData } from "./gameData";
 import { erase, quarterCorner, halfCorner, pxl } from "./Paddle.draw";
@@ -43,6 +43,9 @@ export default class Paddle {
 		window.clearTimeout(this._aiRecalcTime);
 		window.clearTimeout(this._aiGoTime);
 		window.clearTimeout(this._goTime);
+		this._aiRecalcTime = 0;
+		this._aiGoTime = 0;
+		this._goTime = 0;
 	}
 	
 	public getX(): number {return this._x;}
@@ -57,6 +60,7 @@ export default class Paddle {
 	public setDir(dir: number) {this._dir = dir;}
 	public getMoveSpeed(): number {return this._moveSpeed;}
 	public isAi(): boolean {return this._p.isAi;}
+	public isGo(): number {return this._goTime;}
 
 	public draw(): void {
 		//draw paddle center
@@ -120,28 +124,48 @@ export default class Paddle {
 		}
 	}
 
-
-	public calcTarget(): void {
-		var x: number = ball.getX();
-		var y: number = ball.getY();
-		var dx: number = ball.getDirX();
-		var dy: number = ball.getDirY();
-		var draw = 0;
-		while ((ball.getDirX() <= 0 && this._x < data.canvas.width / 2) && x > data.paddleWidth + ball.getSize()
-		|| (ball.getDirX() > 0 && this._x > data.canvas.width / 2) && x < data.canvas.width - ball.getSize() - data.paddleWidth) {
-			if (y < ball.getSize() || y > data.canvas.height - ball.getSize()) dy *= -1;
-			x += dx * 10;
-			y += dy * 10;
-			draw++;
-			if (data.showAiPath) {
-				if (draw == 5) {draw = 0; pxl(x, y);}
+	private getClosestBall(): number {
+		let closest: number = 0;
+		let closestSteps: number = 0;
+		for (let i: number = 1; i < balls.length; i++) {
+			let steps = 0;
+			let x: number = balls[i].getX();
+			while (x < data.canvas.width || x > 0) {
+				x += balls[i].getX();
+				steps++;
+			}
+			if (steps < closestSteps) {
+				closest = i;
+				closestSteps = steps;
 			}
 		}
-		if (y != ball.getY()) {
-			var dir = 1;
-			if (Math.floor(Math.random() * 2)) dir = -1;
-			var deviation = (Math.random() * data.paddleHeight * 0.75) * dir;
-			this._aiTarget = y + deviation;
+		return closest;
+	}
+
+	public calcTarget(): void {
+		if (this.isGo()) {
+			const t = 0;//this.getClosestBall();
+			var x: number = balls[t].getX();
+			var y: number = balls[t].getY();
+			var dx: number = balls[t].getDirX();
+			var dy: number = balls[t].getDirY();
+			var draw = 0;
+			while ((balls[t].getDirX() <= 0 && this._x < data.canvas.width / 2) && x > data.paddleWidth + balls[t].getSize()
+			|| (balls[t].getDirX() > 0 && this._x > data.canvas.width / 2) && x < data.canvas.width - balls[t].getSize() - data.paddleWidth) {
+				if (y < balls[t].getSize() || y > data.canvas.height - balls[t].getSize()) dy *= -1;
+				x += dx * 10;
+				y += dy * 10;
+				draw++;
+				if (data.showAiPath) {
+					if (draw == 5) {draw = 0; pxl(x, y);}
+				}
+			}
+			if (y != balls[t].getY()) {
+				var dir = 1;
+				if (Math.floor(Math.random() * 2)) dir = -1;
+				var deviation = (Math.random() * data.paddleHeight * 0.75) * dir;
+				this._aiTarget = y + deviation;
+			}
 		}
 	}
 }

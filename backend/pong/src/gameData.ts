@@ -1,4 +1,3 @@
-import { gameService, GameData } from "./services/gameService";
 import { userService } from "./services/userService";
 
 export type playerData = {
@@ -85,8 +84,8 @@ export async function loadConfig(): Promise<void> {
 		else document.addEventListener('DOMContentLoaded', () => resolve());
 	});
 	//load player data from user DB
-	const users: string[] = ["test", "test2"];
-	const ud = await userService.getUsersByIds(users);
+	//const users: string[] = ["test", "test2"];
+	//const ud = await userService.getUsersByIds(users);
 	
 	var canvas = document.getElementById("board") as HTMLCanvasElement;
 	canvas.width = window.innerWidth;

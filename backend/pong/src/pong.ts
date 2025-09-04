@@ -7,25 +7,27 @@ import { initI18n } from "./../../../frontend/src/i18n";
 import { userService, UserData } from "./services/userService";
 import { gameService, GameData } from "./services/gameService";
 
-export let pad: Paddle[] = [];
-export let ball: Ball;
+export let pad: Paddle[] = new Array(2);
+export let balls: Ball[] = [];
 
-document.getElementById('gameMenu')!.addEventListener('submit', function(e) {
-	e.preventDefault();
-	if (!data.showingText) {
-		if (ball) ball.stop();
-		for (let i: number = 0; i < pad.length; i++) {
-			pad[0].stop();
-			pad.shift();
+export function removeBall(index: number): void {
+	let shrunk: Ball[] = [];
+	let newIndex: number = 0;
+	for (let i: number = 0; i < balls.length; i++) {
+		if (i == index) {
+			console.log("removing ball " + i + " of " + balls.length);
+			balls[i].eraseTrail();
+			balls[i].erase(balls[i].getX(), balls[i].getY());
+		} else {
+			shrunk.push(balls[i]);
+			shrunk[newIndex].setIndex(newIndex++);
+		}
 	}
-		setTimeout(() => startGame(), 1000);
-	}
-});
+	balls = shrunk;
+}
 
 export async function startGame() {
 	try {
-
-	
 		await loadConfig();
 		await initI18n();
 		controlKeys();
@@ -58,7 +60,7 @@ function initBoard():void {
 	data.ctx.fillStyle = data.bg;
 	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
 	data.ctx.fill();
-	ball = new Ball();
+	balls.push(new Ball());
 	pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
 }
 
@@ -66,15 +68,18 @@ export function startRound(): void {
 	initBoard();
 	pad[0].go();
 	pad[1].go();
-	setTimeout(() => ball.go(), 250);
+	setTimeout(() => balls[0].go(), 250);
 }
 
 export function endRound(): void {
 	//gameService.updateScore(data.gameID, data.p1.score, data.p2.score);
-	ball.stop();
-	for (let i: number = 0; i < pad.length; i++) {
-		pad[i].stop();
-		pad.unshift();
+	while (balls.length) {
+		balls[0].stop();
+		balls.shift();
+	}
+	while(pad.length) {
+		pad[0].stop();
+		pad.shift();
 	}
 	if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 1500);
 	else endGame();
@@ -103,5 +108,5 @@ async function testCreateGame() {
   const result = await gameService.createGame(gameData);
   console.log('Result test:', result);
 }
-testCreateGame();
+//testCreateGame();
 startGame();

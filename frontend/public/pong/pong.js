@@ -1,59 +1,4 @@
-// ../workspace/backend/pong/src/services/userService.ts
-var UserService = class {
-  constructor() {
-    this.baseUrl = "http://localhost:3003/api";
-  }
-  async getUserById(userId) {
-    try {
-      const response = await fetch(`${this.baseUrl}/users/${userId}`);
-      if (!response.ok) throw new Error("User not found");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      return null;
-    }
-  }
-  async getUsersByIds(userIds) {
-    try {
-      const response = await fetch(`${this.baseUrl}/users/batch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userIds })
-      });
-      if (!response.ok) throw new Error("Failed to fetch users");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      return [];
-    }
-  }
-  async getUserStats(userId) {
-    try {
-      const response = await fetch(`${this.baseUrl}/users/${userId}/stats`);
-      if (!response.ok) throw new Error("Stats not found");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching user stats:", error);
-      return null;
-    }
-  }
-  async updateUserStats(userId, gameData) {
-    try {
-      const response = await fetch(`${this.baseUrl}/users/${userId}/stats`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(gameData)
-      });
-      return response.ok;
-    } catch (error) {
-      console.error("Error updating user stats:", error);
-      return false;
-    }
-  }
-};
-var userService = new UserService();
-
-// ../workspace/backend/pong/src/gameData.ts
+// src/gameData.ts
 var data;
 function loadPlayer(scoreTB, nameTB, name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
@@ -90,8 +35,6 @@ async function loadConfig() {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  const users = ["test", "test2"];
-  const ud = await userService.getUsersByIds(users);
   var canvas = document.getElementById("board");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - loadTA("p1score").clientHeight;
@@ -211,7 +154,15 @@ async function loadConfig() {
   data = loadData;
 }
 
-// ../workspace/backend/pong/src/controls.ts
+// src/controls.ts
+document.getElementById("gameMenu").addEventListener("submit", function(e) {
+  e.preventDefault();
+  if (!data.showingText) {
+    while (balls.length) balls[0].stop();
+    while (pad.length) pad[0].stop();
+    setTimeout(() => startGame(), 1e3);
+  }
+});
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
     if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
@@ -221,34 +172,37 @@ function controlKeys() {
     } else data.keys[ev.key] = true;
   });
   document.addEventListener("keyup", (ev) => {
-    if (ev.key == "Shift" || ev.key == "Control") {
-      if (ev.location == 1) {
-        if (ev.key == data.p1.up || ev.key == data.p1.down) pad[0].setDir(0);
-        else if (ev.key == data.p2.up || ev.key == data.p2.down) pad[1].setDir(0);
-      }
-      data.keys[ev.key] = false;
-    } else {
-      if (ev.key == data.p1.up || ev.key == data.p1.down) {
-        pad[0].setDir(0);
+    if (pad.length) {
+      if (ev.key == "Shift" || ev.key == "Control") {
+        if (ev.location == 1) {
+          if (ev.key == data.p1.up || ev.key == data.p1.down) pad[0].setDir(0);
+          else if (ev.key == data.p2.up || ev.key == data.p2.down) pad[1].setDir(0);
+        }
         data.keys[ev.key] = false;
+      } else {
+        if (ev.key == data.p1.up || ev.key == data.p1.down) {
+          pad[0].setDir(0);
+          data.keys[ev.key] = false;
+        }
+        if (ev.key == data.p2.up || ev.key == data.p2.down) {
+          pad[1].setDir(0);
+          data.keys[ev.key] = false;
+        }
       }
-      if (ev.key == data.p2.up || ev.key == data.p2.down) {
-        pad[1].setDir(0);
+      if (ev.key == "Escape") {
         data.keys[ev.key] = false;
-      }
-    }
-    if (ev.key == "Escape") {
-      data.keys[ev.key] = false;
-      ball.stop();
-      for (let i = 0; i < pad.length; i++) {
-        pad[0].stop();
-        pad.shift();
+        while (balls.length) {
+          balls[0].stop();
+        }
+        while (pad.length) {
+          pad[0].stop();
+        }
       }
     }
   });
 }
 
-// ../workspace/frontend/src/i18n.ts
+// ../../frontend/src/i18n.ts
 var translations = {};
 var currentLang = "en";
 async function loadLanguage(lang) {
@@ -299,7 +253,7 @@ async function initI18n() {
   await loadLanguage(saved);
 }
 
-// ../workspace/backend/pong/src/Paddle.draw.ts
+// src/Paddle.draw.ts
 function quarterCorner(pad2) {
   if (pad2.getX() < data.canvas.width / 2) {
     data.ctx.beginPath();
@@ -373,7 +327,7 @@ function pxl(x, y) {
   data.ctx.stroke();
 }
 
-// ../workspace/backend/pong/src/Paddle.ts
+// src/Paddle.ts
 var Paddle = class {
   constructor(x, p) {
     this._dir = 0;
@@ -402,6 +356,9 @@ var Paddle = class {
     window.clearTimeout(this._aiRecalcTime);
     window.clearTimeout(this._aiGoTime);
     window.clearTimeout(this._goTime);
+    this._aiRecalcTime = 0;
+    this._aiGoTime = 0;
+    this._goTime = 0;
   }
   getX() {
     return this._x;
@@ -439,6 +396,9 @@ var Paddle = class {
   isAi() {
     return this._p.isAi;
   }
+  isGo() {
+    return this._goTime;
+  }
   draw() {
     data.ctx.beginPath();
     data.ctx.fillStyle = this._paddleGrad;
@@ -459,14 +419,14 @@ var Paddle = class {
     if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
     this.draw();
   }
-  hitY(ball2) {
-    if (ball2.getY() >= this._y - data.canvas.width / data.ballSize && ball2.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
+  hitY(ball) {
+    if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
     else return false;
   }
-  hitX(ball2) {
+  hitX(ball) {
     if (!this._x) {
-      if (ball2.getX() < data.paddleWidth + ball2.getSize()) return true;
-    } else if (ball2.getX() >= data.canvas.width - data.paddleWidth - ball2.getSize() && ball2.getX() < data.canvas.width - ball2.getSize()) return true;
+      if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
+    } else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
     return false;
   }
   movePaddle() {
@@ -493,36 +453,57 @@ var Paddle = class {
       }
     }
   }
-  calcTarget() {
-    var x = ball.getX();
-    var y = ball.getY();
-    var dx = ball.getDirX();
-    var dy = ball.getDirY();
-    var draw = 0;
-    while (ball.getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + ball.getSize() || ball.getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - ball.getSize() - data.paddleWidth) {
-      if (y < ball.getSize() || y > data.canvas.height - ball.getSize()) dy *= -1;
-      x += dx * 10;
-      y += dy * 10;
-      draw++;
-      if (data.showAiPath) {
-        if (draw == 5) {
-          draw = 0;
-          pxl(x, y);
-        }
+  getClosestBall() {
+    let closest = 0;
+    let closestSteps = 0;
+    for (let i = 1; i < balls.length; i++) {
+      let steps = 0;
+      let x = balls[i].getX();
+      while (x < data.canvas.width || x > 0) {
+        x += balls[i].getX();
+        steps++;
+      }
+      if (steps < closestSteps) {
+        closest = i;
+        closestSteps = steps;
       }
     }
-    if (y != ball.getY()) {
-      var dir = 1;
-      if (Math.floor(Math.random() * 2)) dir = -1;
-      var deviation = Math.random() * data.paddleHeight * 0.75 * dir;
-      this._aiTarget = y + deviation;
+    return closest;
+  }
+  calcTarget() {
+    if (pad.length && balls.length) {
+      const t2 = 0;
+      var x = balls[t2].getX();
+      var y = balls[t2].getY();
+      var dx = balls[t2].getDirX();
+      var dy = balls[t2].getDirY();
+      var draw = 0;
+      while (balls[t2].getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + balls[t2].getSize() || balls[t2].getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - balls[t2].getSize() - data.paddleWidth) {
+        if (y < balls[t2].getSize() || y > data.canvas.height - balls[t2].getSize()) dy *= -1;
+        x += dx * 10;
+        y += dy * 10;
+        draw++;
+        if (data.showAiPath) {
+          if (draw == 5) {
+            draw = 0;
+            pxl(x, y);
+          }
+        }
+      }
+      if (y != balls[t2].getY()) {
+        var dir = 1;
+        if (Math.floor(Math.random() * 2)) dir = -1;
+        var deviation = Math.random() * data.paddleHeight * 0.75 * dir;
+        this._aiTarget = y + deviation;
+      }
     }
   }
 };
 
-// ../workspace/backend/pong/src/Ball.ts
+// src/Ball.ts
 var Ball = class {
-  constructor() {
+  constructor(...args) {
+    this._index = balls.length;
     this._go = false;
     this._goTime = 0;
     this._ballSpeed = data.canvas.width / data.ballSpeed;
@@ -533,18 +514,18 @@ var Ball = class {
     this._size = data.canvas.width / data.ballSize;
     this._trailPoints = [];
     this._trailFade = 30 / data.trailLength;
-    this._x = data.canvas.width / 2;
-    this._y = data.canvas.height / 2;
+    if (!args.length) {
+      this._x = data.canvas.width / 2;
+      this._y = data.canvas.height / 2;
+    } else {
+      this._x = args[0];
+      this._y = args[1];
+      this._dirX = args[2];
+      this._dirY = args[3];
+    }
   }
-  go() {
-    this._goTime = window.setInterval(() => this.move(), 20);
-    this._go = true;
-  }
-  stop() {
-    window.clearTimeout(this._goTime);
-    this._go = false;
-    this._dirX = 0;
-    this._dirY = 0;
+  setIndex(i) {
+    this._index = i;
   }
   isGo() {
     return this._go;
@@ -570,15 +551,50 @@ var Ball = class {
   setDirY(dir) {
     this._dirY = dir;
   }
+  go() {
+    this._goTime = window.setInterval(() => this.move(), 20);
+    this._go = true;
+  }
+  stop() {
+    window.clearTimeout(this._goTime);
+    this._go = false;
+    this._dirX = 0;
+    this._dirY = 0;
+    removeBall(this._index);
+  }
+  //	private removeBall(): void {
+  //		let shrunk: Ball[] = [];
+  //		let newIndex: number = 0;
+  //		for (let i: number = 0; i < balls.length; i++) {
+  //			if (balls[i] == this) {
+  //			//if (i == index) {
+  //				console.log("stopping ball " + i + " of " + balls.length);
+  //				balls[i].eraseTrail();
+  //				balls[i].erase(balls[i].getX(), balls[i].getY());
+  //			} else {
+  //				shrunk.push(balls[i]);
+  //				//console.log("re-indexing ball " + balls[i]._index + " @ " + newIndex);
+  //				//shrunk[newIndex].setIndex(newIndex++);
+  //			}
+  //		}
+  //		for (let i: number = 0; i < balls.length; i++)
+  //			balls.pop;
+  //		for (let i: number = 0; i < shrunk.length; i++)
+  //			balls.push(shrunk[i]);
+  //	}
   erase(x, y) {
     data.ctx.beginPath();
     data.ctx.ellipse(x, y, this._size + 1, this._size + 1, 0, 0, Math.PI * 2);
     data.ctx.fillStyle = data.bg;
     data.ctx.fill();
   }
-  draw(ball2) {
-    this.drawTrail();
-    var grad = data.ctx.createRadialGradient(ball2.getX() - ball2.getSize() / 2, ball2.getY() - ball2.getSize() / 2, ball2.getSize() / 10, ball2.getX(), ball2.getY(), ball2.getSize());
+  eraseTrail() {
+    for (let i = this._trailPoints.length - 1; i > 0; i--)
+      this.erase(this._trailPoints[i].x, this._trailPoints[i].y);
+  }
+  draw(ball) {
+    if (this._trailPoints) this.drawTrail();
+    var grad = data.ctx.createRadialGradient(ball.getX() - ball.getSize() / 2, ball.getY() - ball.getSize() / 2, ball.getSize() / 10, ball.getX(), ball.getY(), ball.getSize());
     grad.addColorStop(0, "white");
     grad.addColorStop(0.3, data.ballCol);
     grad.addColorStop(0.6, data.ballCol);
@@ -595,8 +611,7 @@ var Ball = class {
       y: this._y
     };
     this._trailPoints.unshift(currentPoint);
-    for (let i = this._trailPoints.length - 1; i > 0; i--)
-      this.erase(this._trailPoints[i].x, this._trailPoints[i].y);
+    this.eraseTrail();
     this.midline(this._trailPoints[this._trailPoints.length - 1].x);
     let opacity = 0;
     for (let i = this._trailPoints.length - 1; i > 0; i--) {
@@ -629,67 +644,98 @@ var Ball = class {
     angle += variationAngle;
     this._dirX = Math.cos(angle) / 10;
     this._dirY = Math.sin(angle) / 10;
-  }
-  checkPaddle() {
-    for (let i = 0; i < pad.length; i++)
-      if (ball.isGo() && pad[i].hitX(ball) && pad[i].hitY(ball))
-        this.collision(pad[i]);
+    spawnMultiball(this);
   }
   checkWalls() {
     if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
-      ball.stop();
-      if (this._x <= this._size) {
-        data.p2.score++;
-        data.p2.scoreTB.value = String(data.p2.score);
-        if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
-        data.serve = -1;
-      }
-      if (this._x >= data.canvas.width - this._size) {
-        data.p1.score++;
-        data.p1.scoreTB.value = String(data.p1.score);
-        if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
-        data.serve = 1;
+      this.stop();
+      this.erase(this._x, this._y);
+      if (balls.length == 1) {
+        if (this._x <= this._size) {
+          data.p2.score++;
+          data.p2.scoreTB.value = String(data.p2.score);
+          if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
+          data.serve = -1;
+        }
+        if (this._x >= data.canvas.width - this._size) {
+          data.p1.score++;
+          data.p1.scoreTB.value = String(data.p1.score);
+          if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
+          data.serve = 1;
+        }
       }
     }
     if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
   }
   advanceBall() {
+    this.erase(this._x, this._y);
     var stop = false;
-    for (let i = 0; i < this._ballSpeed && !stop; i++) {
+    for (let i = 0; i < this._ballSpeed && !stop && this.isGo(); i++) {
       this._x += this._dirX;
       this._y += this._dirY;
-      if (this._x < ball.getSize()) stop = true;
-      if (this._x >= data.canvas.width - ball.getSize()) stop = true;
-      if (this._dirX < 0 && pad[0].hitX(ball) && pad[0].hitY(ball)) stop = true;
-      if (this._dirX >= 0 && pad[1].hitX(ball) && pad[1].hitY(ball)) stop = true;
+      if (this._x < this.getSize()) stop = true;
+      if (this._x >= data.canvas.width - this.getSize()) stop = true;
+      for (let i2 = 0; i2 < pad.length && pad.length; i2++)
+        if (pad[i2].hitX(this) && pad[i2].hitY(this)) {
+          stop = true;
+          this._x -= this._dirX * 2;
+          this._y -= this._dirY * 2;
+          this.collision(pad[i2]);
+        }
     }
   }
   move() {
     if (this._go) {
-      this.checkPaddle();
       this.checkWalls();
       this.advanceBall();
-      this.draw(ball);
+      this.draw(this);
     }
   }
 };
+function spawnMultiball(ball) {
+  let angle = Math.atan2(ball.getDirY(), ball.getDirX());
+  const variation = (Math.random() * 300 - 150) / 1e3;
+  console.log(angle + ", " + variation);
+  angle += variation;
+  let newBall = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);
+  newBall.go();
+  balls.push(newBall);
+}
 
-// ../workspace/backend/pong/src/services/gameService.ts
+// src/services/gameService.ts
 var GameService = class {
   constructor() {
-    this.baseUrl = "http://localhost:3002/api/pong";
+    this.baseUrl = "/api/pong";
   }
   async createGame(gameData) {
+    console.log("Fetching to:", `${this.baseUrl}/games`);
     try {
       const response = await fetch(`${this.baseUrl}/games`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(gameData)
       });
+      console.log("Response status:", response.status);
       if (!response.ok) throw new Error("Failed to create game");
       return await response.json();
     } catch (error) {
       console.error("Error creating game:", error);
+      return null;
+    }
+  }
+  async createAIGame(playerData) {
+    try {
+      const gameData = {
+        player1Id: playerData.playerId,
+        player2Id: "ai_opponent",
+        player1Name: playerData.playerName,
+        player2Name: "IA_OPPONENT",
+        maxScore: playerData.maxScore || 5,
+        gameType: "VS_AI"
+      };
+      return await this.createGame(gameData);
+    } catch (error) {
+      console.error("Error creating AI game:", error);
       return null;
     }
   }
@@ -722,20 +768,24 @@ var GameService = class {
 };
 var gameService = new GameService();
 
-// ../workspace/backend/pong/src/pong.ts
-var pad = [];
-var ball;
-document.getElementById("gameMenu").addEventListener("submit", function(e) {
-  e.preventDefault();
-  if (!data.showingText) {
-    if (ball) ball.stop();
-    for (let i = 0; i < pad.length; i++) {
-      pad[0].stop();
-      pad.shift();
+// src/pong.ts
+var pad = new Array(2);
+var balls = [];
+function removeBall(index) {
+  let shrunk = [];
+  let newIndex = 0;
+  for (let i = 0; i < balls.length; i++) {
+    if (i == index) {
+      console.log("stopping ball " + i + " of " + balls.length);
+      balls[i].eraseTrail();
+      balls[i].erase(balls[i].getX(), balls[i].getY());
+    } else {
+      shrunk.push(balls[i]);
+      shrunk[newIndex].setIndex(newIndex++);
     }
-    setTimeout(() => startGame(), 1e3);
   }
-});
+  balls = shrunk;
+}
 async function startGame() {
   try {
     await loadConfig();
@@ -768,20 +818,23 @@ function initBoard() {
   data.ctx.fillStyle = data.bg;
   data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
   data.ctx.fill();
-  ball = new Ball();
+  balls.push(new Ball());
   pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
 }
 function startRound() {
   initBoard();
   pad[0].go();
   pad[1].go();
-  setTimeout(() => ball.go(), 250);
+  setTimeout(() => balls[0].go(), 250);
 }
 function endRound() {
-  ball.stop();
-  for (let i = 0; i < pad.length; i++) {
-    pad[i].stop();
-    pad.unshift();
+  while (balls.length) {
+    balls[0].stop();
+    balls.shift();
+  }
+  while (pad.length) {
+    pad[0].stop();
+    pad.shift();
   }
   if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 1500);
   else endGame();
@@ -793,25 +846,13 @@ async function endGame() {
   else winner = data.p2.name;
   data.showingText = false;
 }
-async function testCreateGame() {
-  const gameData = {
-    player1Id: "player1-id",
-    player2Id: "player2-id",
-    player1Name: "Player One",
-    player2Name: "Player Two",
-    maxScore: 5,
-    gameType: "VS_HUMAN"
-  };
-  const result = await gameService.createGame(gameData);
-  console.log("Result test:", result);
-}
-testCreateGame();
 startGame();
 export {
-  ball,
+  balls,
   endGame,
   endRound,
   pad,
+  removeBall,
   startGame,
   startRound
 };

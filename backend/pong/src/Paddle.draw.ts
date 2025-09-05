@@ -50,11 +50,14 @@ export function halfCorner(pad: Paddle) {
 	data.ctx.fill();
 }
 
-export function erase(pad: Paddle): void {
+export function midline(): void {
 	data.ctx.beginPath();
-	data.ctx.fillStyle = data.bg;
-	data.ctx.rect(pad.getX() - 1, pad.getY() - 1, data.paddleWidth + 2, data.paddleHeight + 2);
-	data.ctx.fill();
+	data.ctx.lineWidth = 1;
+	data.ctx.moveTo(data.canvas.width / 2, 0);
+	data.ctx.lineTo(data.canvas.width / 2, data.canvas.height);
+	data.ctx.strokeStyle = data.uiCol;
+	data.ctx.stroke();
+	data.ctx.closePath();
 }
 
 export function scoreText(p: Paddle, wins: boolean): void {
@@ -74,10 +77,4 @@ export function scoreText(p: Paddle, wins: boolean): void {
 	data.ctx.strokeText(line2, data.canvas.width/2, data.canvas.height/2);
 	data.ctx.fillText(line2, data.canvas.width/2, data.canvas.height/2);
 	endRound();
-}
-
-export function pxl(x: number, y: number): void {
-	data.ctx.beginPath();
-	data.ctx.rect(x, y, 1, 1);
-	data.ctx.stroke();
 }

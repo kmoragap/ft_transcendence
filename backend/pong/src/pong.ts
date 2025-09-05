@@ -2,27 +2,19 @@ import { data } from "./gameData";
 import { loadConfig } from "./gameData";
 import { controlKeys } from "./controls";
 import Paddle from "./Paddle";
+import { midline } from "./Paddle.draw";
 import Ball from "./Ball";
 import { initI18n } from "./../../../frontend/src/i18n";
-import { userService, UserData } from "./services/userService";
-import { gameService, GameData } from "./services/gameService";
+//import { userService, UserData } from "./services/userService";
+import { gameService } from "./services/gameService";
 
 export let pad: Paddle[] = new Array(2);
 export let balls: Ball[] = [];
 
-export function removeBall(index: number): void {
+export function removeBall(ball: Ball): void {
 	let shrunk: Ball[] = [];
-	let newIndex: number = 0;
-	for (let i: number = 0; i < balls.length; i++) {
-		if (i == index) {
-			console.log("removing ball " + i + " of " + balls.length);
-			balls[i].eraseTrail();
-			balls[i].erase(balls[i].getX(), balls[i].getY());
-		} else {
-			shrunk.push(balls[i]);
-			shrunk[newIndex].setIndex(newIndex++);
-		}
-	}
+	for (let i: number = 0; i < balls.length; i++)
+		if (balls[i] != ball) shrunk.push(balls[i]);
 	balls = shrunk;
 }
 
@@ -55,20 +47,48 @@ function countdown(nr: number, ms: number) {
 	else setTimeout(() => startRound(), ms);
 }
 
-function initBoard():void {
-	data.showingText = false;
-	data.ctx.fillStyle = data.bg;
-	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-	data.ctx.fill();
-	balls.push(new Ball());
-	pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
-}
-
 export function startRound(): void {
 	initBoard();
 	pad[0].go();
 	pad[1].go();
-	setTimeout(() => balls[0].go(), 250);
+	balls[0].go();
+	data.go = true;
+	window.requestAnimationFrame(loop);
+}
+
+function initBoard():void {
+	data.showingText = false;
+	balls.push(new Ball());
+	pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+}
+
+function update(): void {
+	const now = performance.now();
+	if (now - data.lastTime > 1000 / 50) {
+		data.lastTime = now;
+		for (let i: number = 0; i < balls.length; i++) balls[i].move();
+		for (let i: number = 0; i < pad.length; i++) {
+			if (pad[i].isAi()) pad[i].moveAI();
+			else pad[i].movePaddle();
+		}
+	}
+}
+
+function render(): void {
+	data.ctx.fillStyle = data.bg;
+	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+	data.ctx.fill();
+	midline();
+	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
+	for (let i: number = 0; i < balls.length; i++) balls[i].draw();
+}
+
+function loop():void {
+	if (data.go){
+		update();
+		render();
+		window.requestAnimationFrame(loop);
+	}
 }
 
 export function endRound(): void {

@@ -9,9 +9,7 @@ interface TrailPoint {
 }
 
 export default class Ball {
-	private _index: number = balls.length;
 	private _go: boolean = false;
-	private _goTime: number = 0;
 	private _ballSpeed: number = data.canvas.width / data.ballSpeed;
 	private _x: number = data.canvas.width / 2;
 	private _y: number = data.canvas.height / 2;
@@ -19,7 +17,7 @@ export default class Ball {
 	private _dirX: number = (0.1 - this._dirY) * data.serve;
 	private _size: number = data.canvas.width / data.ballSize;
 	private _trailPoints: TrailPoint[] = [];
-	private _trailFade: number = 30 / data.trailLength;
+	private _trailFade: number = 50 / data.trailLength;
 
 	constructor(...args: number[]) {
 		if (!args.length) {
@@ -33,7 +31,7 @@ export default class Ball {
 		}
 	}
 
-	public setIndex(i: number): void {this._index = i;}
+	public go(): void {this._go = true;}
 	public isGo(): boolean {return this._go;}
 	public getX(): number {return this._x;}
 	public getY(): number {return this._y;}
@@ -43,57 +41,17 @@ export default class Ball {
 	public setDirX(dir: number): void {this._dirX = dir;}
 	public setDirY(dir: number): void {this._dirY = dir;}
 
-	public go(): void {
-		this._goTime = window.setInterval(() => this.move(), 20);
-		this._go = true;
-	}
 
 	public stop(): void {
-		window.clearTimeout(this._goTime);
 		this._go = false;
 		this._dirX = 0;
 		this._dirY = 0;
-		removeBall(this._index);
 	}
 
-//	private removeBall(): void {
-//		let shrunk: Ball[] = [];
-//		let newIndex: number = 0;
-//		for (let i: number = 0; i < balls.length; i++) {
-//			if (balls[i] == this) {
-//			//if (i == index) {
-//				console.log("stopping ball " + i + " of " + balls.length);
-//				balls[i].eraseTrail();
-//				balls[i].erase(balls[i].getX(), balls[i].getY());
-//			} else {
-//				shrunk.push(balls[i]);
-//				//console.log("re-indexing ball " + balls[i]._index + " @ " + newIndex);
-//				//shrunk[newIndex].setIndex(newIndex++);
-//			}
-//		}
-//		for (let i: number = 0; i < balls.length; i++)
-//			balls.pop;
-//		for (let i: number = 0; i < shrunk.length; i++)
-//			balls.push(shrunk[i]);
-//	}
-
-	public erase(x: number, y: number): void {
-		data.ctx.beginPath();
-		data.ctx.ellipse(x, y, this._size + 1, this._size + 1, 0, 0, Math.PI * 2);
-		data.ctx.fillStyle = data.bg;
-		data.ctx.fill();
-	}
-
-	public eraseTrail(): void {
-	//	console.log("erasing trail from " + this._trailPoints[0].x + "/" + this._trailPoints[0].y + " to " + this._trailPoints[this._trailPoints.length - 1].x + "/" + this._trailPoints[this._trailPoints.length - 1].y)
-		for (let i = this._trailPoints.length - 1; i > 0; i--) 
-			this.erase(this._trailPoints[i].x, this._trailPoints[i].y);
-	}
-
-	private draw(ball: Ball): void {
+	public draw(): void {
 		if (this._trailPoints) this.drawTrail();
 		//define grad
-		var grad:CanvasGradient = data.ctx.createRadialGradient(ball.getX() - ball.getSize() / 2, ball.getY() - ball.getSize() / 2, ball.getSize() / 10, ball.getX(), ball.getY(), ball.getSize());
+		var grad:CanvasGradient = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
 		grad.addColorStop(0, "white");
 		grad.addColorStop(0.3, data.ballCol);
 		grad.addColorStop(0.6, data.ballCol);
@@ -112,8 +70,6 @@ export default class Ball {
 			y: this._y,
 		};
 		this._trailPoints.unshift(currentPoint);
-		this.eraseTrail();
-		this.midline(this._trailPoints[this._trailPoints.length - 1].x);
 		let opacity: number = 0;
 		for (let i = this._trailPoints.length - 1; i > 0; i--) {
 			data.ctx.beginPath();
@@ -126,18 +82,6 @@ export default class Ball {
 		this._trailPoints = this._trailPoints.slice(0, data.trailLength);
 	}
 
-	private midline(x: number): void {
-		if (x > (data.canvas.width / 2 - this._size * 2) && x < (data.canvas.width / 2 + this._size * 2)) {
-			data.ctx.beginPath();
-			data.ctx.lineWidth = 1;
-			data.ctx.moveTo(data.canvas.width / 2, 0);
-			data.ctx.lineTo(data.canvas.width / 2, data.canvas.height);
-			data.ctx.strokeStyle = data.uiCol;
-			data.ctx.stroke();
-			data.ctx.closePath();
-		}
-	}
-
 	private collision(paddle: Paddle): void {
 		const hitPosition = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
 		const clampedHit = Math.max(-0.7, Math.min(0.7, hitPosition));
@@ -147,16 +91,14 @@ export default class Ball {
 		angle += variationAngle;
 		this._dirX = (Math.cos(angle)) / 10;
 		this._dirY = (Math.sin(angle)) / 10;
-		spawnMultiball(this);
+		if (data.multiball) spawnMultiball(this);
 	}
 
 	private checkWalls(): void {
 		if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
-
-			//console.log(balls.length + " balls, " + pad.length + " paddles");
 			this.stop();
-			this.erase(this._x, this._y);
 			if (balls.length == 1) {
+				data.go = false;
 				if (this._x <= this._size) {
 					data.p2.score++;
 					data.p2.scoreTB.value = String(data.p2.score);
@@ -169,14 +111,13 @@ export default class Ball {
 					if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
 					data.serve = 1;
 				}
-			}// else this.removeBall(this._index);
-			
+			}
+			removeBall(this);
 		}
 		if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
 	}
 
 	private advanceBall(): void {
-		this.erase(this._x, this._y);
 		var stop: boolean = false;
 		for (let i = 0; i < this._ballSpeed && !stop && this.isGo(); i++) {
 			this._x += this._dirX;
@@ -197,18 +138,16 @@ export default class Ball {
 		if (this._go) {
 			this.checkWalls();
 			this.advanceBall();
-			this.draw(this);
 		}
 	}
 }
 
 export function spawnMultiball(ball: Ball) {
 	let angle: number = Math.atan2(ball.getDirY(), ball.getDirX());
-	const variation = (Math.random() * 300 - 150) / 1000;
-	console.log(angle + ", " + variation);
+	let variation: number = ((Math.random() * 40)- 30) / 100;
+	if (Math.floor(Math.random() * 2)) variation *= -1;
 	angle +=  variation;
-	let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);
+	let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);
 	newBall.go();
 	balls.push(newBall);
-	
 }

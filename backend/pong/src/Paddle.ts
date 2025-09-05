@@ -1,8 +1,8 @@
 import { data } from "./gameData";
-import { balls } from "./pong";
+import { pad, balls } from "./pong";
 import Ball from "./Ball";
 import { playerData } from "./gameData";
-import { erase, quarterCorner, halfCorner, pxl } from "./Paddle.draw";
+import { quarterCorner, halfCorner } from "./Paddle.draw";
 
 export default class Paddle {
 	private _x: number;
@@ -34,17 +34,13 @@ export default class Paddle {
 	public go(): void {
 		if (this._p.isAi) {
 			this._aiRecalcTime = window.setInterval(() => this.calcTarget(), 1000);
-			this._aiGoTime = window.setInterval(() => this.moveAI(), 20);
 		}
-		this._goTime = window.setInterval(() => this.movePaddle(), 20);
+		this._goTime = 1;
 	}
 	
 	public stop(): void {
 		window.clearTimeout(this._aiRecalcTime);
-		window.clearTimeout(this._aiGoTime);
-		window.clearTimeout(this._goTime);
 		this._aiRecalcTime = 0;
-		this._aiGoTime = 0;
 		this._goTime = 0;
 	}
 	
@@ -67,7 +63,6 @@ export default class Paddle {
 		data.ctx.beginPath();
 		data.ctx.fillStyle = this._paddleGrad;
 		data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
-
 		//define corner grads
 		this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
 		this._topCornerGrad.addColorStop(0, "white");
@@ -80,14 +75,6 @@ export default class Paddle {
 		 else halfCorner(this);
 	}
 
-	public move(): void {
-		erase(this);
-		this._y += this._dir * this._moveSpeed;
-		if (this._y < 0) this._y = 0;
-		if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
-		this.draw();
-	}
-
 	public hitY(ball: Ball): boolean {
 		if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
 		else return false;
@@ -98,14 +85,6 @@ export default class Paddle {
 			if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
 		} else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
 		return false;
-	}
-
-	private movePaddle(): void {
-		if (data.keys[this._p.up])
-			if (this._y > 0) this._dir = -1; else this._dir = 0;
-		if (data.keys[this._p.down]) 
-			if (this._y <= data.canvas.height - data.paddleHeight) this._dir = 1; else this._dir = 0;
-		this.move();
 	}
 
 	public moveAI(): void {
@@ -122,43 +101,61 @@ export default class Paddle {
 				data.keys[this._p.up] = false;
 			}
 		}
+		this.movePaddle();
+	}
+
+	public movePaddle(): void {
+		if (data.keys[this._p.up])
+			if (this._y > 0) this._dir = -1; else this._dir = 0;
+		if (data.keys[this._p.down]) 
+			if (this._y <= data.canvas.height - data.paddleHeight) this._dir = 1; else this._dir = 0;
+		this.move();
+	}
+
+	private move(): void {
+		this._y += this._dir * this._moveSpeed;
+		if (this._y < 0) this._y = 0;
+		if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
+	}
+
+	private isApproaching(ball: Ball): boolean {
+		const dX = ball.getX() + ball.getDirX();
+		if (dX < ball.getX()) return true;
+		return false;
 	}
 
 	private getClosestBall(): number {
 		let closest: number = 0;
-		let closestSteps: number = 0;
-		for (let i: number = 1; i < balls.length; i++) {
-			let steps = 0;
-			let x: number = balls[i].getX();
-			while (x < data.canvas.width || x > 0) {
-				x += balls[i].getX();
-				steps++;
-			}
-			if (steps < closestSteps) {
-				closest = i;
-				closestSteps = steps;
+		let closestSteps: number = Number.MAX_SAFE_INTEGER;
+		for (let i: number = 0; i < balls.length; i++) {
+			if (this.isApproaching(balls[i])) {
+				let steps = 0;
+				let x: number = balls[i].getX();
+				while (x < data.canvas.width && x > 0) {
+					x += balls[i].getDirX();
+					steps++;
+				}
+				if (steps < closestSteps) {
+					closest = i;
+					closestSteps = steps;
+				}
 			}
 		}
 		return closest;
 	}
 
 	public calcTarget(): void {
-		if (this.isGo()) {
-			const t = 0;//this.getClosestBall();
+		if (pad.length && balls.length) {
+			const t = this.getClosestBall();
 			var x: number = balls[t].getX();
 			var y: number = balls[t].getY();
 			var dx: number = balls[t].getDirX();
 			var dy: number = balls[t].getDirY();
-			var draw = 0;
 			while ((balls[t].getDirX() <= 0 && this._x < data.canvas.width / 2) && x > data.paddleWidth + balls[t].getSize()
 			|| (balls[t].getDirX() > 0 && this._x > data.canvas.width / 2) && x < data.canvas.width - balls[t].getSize() - data.paddleWidth) {
 				if (y < balls[t].getSize() || y > data.canvas.height - balls[t].getSize()) dy *= -1;
 				x += dx * 10;
 				y += dy * 10;
-				draw++;
-				if (data.showAiPath) {
-					if (draw == 5) {draw = 0; pxl(x, y);}
-				}
 			}
 			if (y != balls[t].getY()) {
 				var dir = 1;

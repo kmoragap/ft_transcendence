@@ -41,6 +41,9 @@ async function loadConfig() {
   const ctx = canvas.getContext("2d");
   const loadData = {
     canvas,
+    fps: 50,
+    timestamp: 0,
+    lastTime: 0,
     paddleWidth: canvas.width / 60,
     paddleHeight: canvas.height / 5,
     ctx,
@@ -73,7 +76,6 @@ async function loadConfig() {
     paddleSpeed: 40,
     ballSpeed: 10,
     ballSize: 80,
-    showAiPath: loadInB("showAiPath"),
     maxScore: parseInt(loadIn("maxScore") || "10", 10),
     trailLength: parseInt(loadIn("trailLength") || "20", 10),
     bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
@@ -85,7 +87,9 @@ async function loadConfig() {
     serve: Math.floor(Math.random() * 2) ? -1 : 1,
     keys: {},
     showingText: false,
-    gameID: ""
+    gameID: "",
+    go: false,
+    multiball: loadInB("multiball")
   };
   loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
   loadData.bg.addColorStop(0, loadIn("outerBg"));
@@ -158,8 +162,14 @@ async function loadConfig() {
 document.getElementById("gameMenu").addEventListener("submit", function(e) {
   e.preventDefault();
   if (!data.showingText) {
-    while (balls.length) balls[0].stop();
-    while (pad.length) pad[0].stop();
+    while (pad.length) {
+      pad[0].stop();
+      pad.shift();
+    }
+    while (balls.length) {
+      balls[0].stop();
+      balls.shift();
+    }
     setTimeout(() => startGame(), 1e3);
   }
 });
@@ -180,22 +190,21 @@ function controlKeys() {
         }
         data.keys[ev.key] = false;
       } else {
-        if (ev.key == data.p1.up || ev.key == data.p1.down) {
-          pad[0].setDir(0);
-          data.keys[ev.key] = false;
-        }
-        if (ev.key == data.p2.up || ev.key == data.p2.down) {
-          pad[1].setDir(0);
+        for (let i = 0; i < pad.length; i++) {
+          pad[i].setDir(0);
           data.keys[ev.key] = false;
         }
       }
       if (ev.key == "Escape") {
         data.keys[ev.key] = false;
-        while (balls.length) {
-          balls[0].stop();
-        }
+        data.go = false;
         while (pad.length) {
           pad[0].stop();
+          pad.shift();
+        }
+        while (balls.length) {
+          balls[0].stop();
+          balls.shift();
         }
       }
     }
@@ -297,11 +306,14 @@ function halfCorner(pad2) {
   data.ctx.closePath();
   data.ctx.fill();
 }
-function erase(pad2) {
+function midline() {
   data.ctx.beginPath();
-  data.ctx.fillStyle = data.bg;
-  data.ctx.rect(pad2.getX() - 1, pad2.getY() - 1, data.paddleWidth + 2, data.paddleHeight + 2);
-  data.ctx.fill();
+  data.ctx.lineWidth = 1;
+  data.ctx.moveTo(data.canvas.width / 2, 0);
+  data.ctx.lineTo(data.canvas.width / 2, data.canvas.height);
+  data.ctx.strokeStyle = data.uiCol;
+  data.ctx.stroke();
+  data.ctx.closePath();
 }
 function scoreText(p, wins) {
   data.showingText = true;
@@ -320,11 +332,6 @@ function scoreText(p, wins) {
   data.ctx.strokeText(line2, data.canvas.width / 2, data.canvas.height / 2);
   data.ctx.fillText(line2, data.canvas.width / 2, data.canvas.height / 2);
   endRound();
-}
-function pxl(x, y) {
-  data.ctx.beginPath();
-  data.ctx.rect(x, y, 1, 1);
-  data.ctx.stroke();
 }
 
 // src/Paddle.ts
@@ -348,16 +355,12 @@ var Paddle = class {
   go() {
     if (this._p.isAi) {
       this._aiRecalcTime = window.setInterval(() => this.calcTarget(), 1e3);
-      this._aiGoTime = window.setInterval(() => this.moveAI(), 20);
     }
-    this._goTime = window.setInterval(() => this.movePaddle(), 20);
+    this._goTime = 1;
   }
   stop() {
     window.clearTimeout(this._aiRecalcTime);
-    window.clearTimeout(this._aiGoTime);
-    window.clearTimeout(this._goTime);
     this._aiRecalcTime = 0;
-    this._aiGoTime = 0;
     this._goTime = 0;
   }
   getX() {
@@ -412,13 +415,6 @@ var Paddle = class {
     if (!this._p.isAi) quarterCorner(this);
     else halfCorner(this);
   }
-  move() {
-    erase(this);
-    this._y += this._dir * this._moveSpeed;
-    if (this._y < 0) this._y = 0;
-    if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
-    this.draw();
-  }
   hitY(ball) {
     if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
     else return false;
@@ -428,15 +424,6 @@ var Paddle = class {
       if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
     } else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
     return false;
-  }
-  movePaddle() {
-    if (data.keys[this._p.up])
-      if (this._y > 0) this._dir = -1;
-      else this._dir = 0;
-    if (data.keys[this._p.down])
-      if (this._y <= data.canvas.height - data.paddleHeight) this._dir = 1;
-      else this._dir = 0;
-    this.move();
   }
   moveAI() {
     if (this._aiTarget >= this._y && this._aiTarget < this.getY2()) {
@@ -452,43 +439,57 @@ var Paddle = class {
         data.keys[this._p.up] = false;
       }
     }
+    this.movePaddle();
+  }
+  movePaddle() {
+    if (data.keys[this._p.up])
+      if (this._y > 0) this._dir = -1;
+      else this._dir = 0;
+    if (data.keys[this._p.down])
+      if (this._y <= data.canvas.height - data.paddleHeight) this._dir = 1;
+      else this._dir = 0;
+    this.move();
+  }
+  move() {
+    this._y += this._dir * this._moveSpeed;
+    if (this._y < 0) this._y = 0;
+    if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
+  }
+  isApproaching(ball) {
+    const dX = ball.getX() + ball.getDirX();
+    if (dX < ball.getX()) return true;
+    return false;
   }
   getClosestBall() {
     let closest = 0;
-    let closestSteps = 0;
-    for (let i = 1; i < balls.length; i++) {
-      let steps = 0;
-      let x = balls[i].getX();
-      while (x < data.canvas.width || x > 0) {
-        x += balls[i].getX();
-        steps++;
-      }
-      if (steps < closestSteps) {
-        closest = i;
-        closestSteps = steps;
+    let closestSteps = Number.MAX_SAFE_INTEGER;
+    for (let i = 0; i < balls.length; i++) {
+      if (this.isApproaching(balls[i])) {
+        let steps = 0;
+        let x = balls[i].getX();
+        while (x < data.canvas.width && x > 0) {
+          x += balls[i].getDirX();
+          steps++;
+        }
+        if (steps < closestSteps) {
+          closest = i;
+          closestSteps = steps;
+        }
       }
     }
     return closest;
   }
   calcTarget() {
     if (pad.length && balls.length) {
-      const t2 = 0;
+      const t2 = this.getClosestBall();
       var x = balls[t2].getX();
       var y = balls[t2].getY();
       var dx = balls[t2].getDirX();
       var dy = balls[t2].getDirY();
-      var draw = 0;
       while (balls[t2].getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + balls[t2].getSize() || balls[t2].getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - balls[t2].getSize() - data.paddleWidth) {
         if (y < balls[t2].getSize() || y > data.canvas.height - balls[t2].getSize()) dy *= -1;
         x += dx * 10;
         y += dy * 10;
-        draw++;
-        if (data.showAiPath) {
-          if (draw == 5) {
-            draw = 0;
-            pxl(x, y);
-          }
-        }
       }
       if (y != balls[t2].getY()) {
         var dir = 1;
@@ -503,9 +504,7 @@ var Paddle = class {
 // src/Ball.ts
 var Ball = class {
   constructor(...args) {
-    this._index = balls.length;
     this._go = false;
-    this._goTime = 0;
     this._ballSpeed = data.canvas.width / data.ballSpeed;
     this._x = data.canvas.width / 2;
     this._y = data.canvas.height / 2;
@@ -513,7 +512,7 @@ var Ball = class {
     this._dirX = (0.1 - this._dirY) * data.serve;
     this._size = data.canvas.width / data.ballSize;
     this._trailPoints = [];
-    this._trailFade = 30 / data.trailLength;
+    this._trailFade = 50 / data.trailLength;
     if (!args.length) {
       this._x = data.canvas.width / 2;
       this._y = data.canvas.height / 2;
@@ -524,8 +523,8 @@ var Ball = class {
       this._dirY = args[3];
     }
   }
-  setIndex(i) {
-    this._index = i;
+  go() {
+    this._go = true;
   }
   isGo() {
     return this._go;
@@ -551,50 +550,14 @@ var Ball = class {
   setDirY(dir) {
     this._dirY = dir;
   }
-  go() {
-    this._goTime = window.setInterval(() => this.move(), 20);
-    this._go = true;
-  }
   stop() {
-    window.clearTimeout(this._goTime);
     this._go = false;
     this._dirX = 0;
     this._dirY = 0;
-    removeBall(this._index);
   }
-  //	private removeBall(): void {
-  //		let shrunk: Ball[] = [];
-  //		let newIndex: number = 0;
-  //		for (let i: number = 0; i < balls.length; i++) {
-  //			if (balls[i] == this) {
-  //			//if (i == index) {
-  //				console.log("stopping ball " + i + " of " + balls.length);
-  //				balls[i].eraseTrail();
-  //				balls[i].erase(balls[i].getX(), balls[i].getY());
-  //			} else {
-  //				shrunk.push(balls[i]);
-  //				//console.log("re-indexing ball " + balls[i]._index + " @ " + newIndex);
-  //				//shrunk[newIndex].setIndex(newIndex++);
-  //			}
-  //		}
-  //		for (let i: number = 0; i < balls.length; i++)
-  //			balls.pop;
-  //		for (let i: number = 0; i < shrunk.length; i++)
-  //			balls.push(shrunk[i]);
-  //	}
-  erase(x, y) {
-    data.ctx.beginPath();
-    data.ctx.ellipse(x, y, this._size + 1, this._size + 1, 0, 0, Math.PI * 2);
-    data.ctx.fillStyle = data.bg;
-    data.ctx.fill();
-  }
-  eraseTrail() {
-    for (let i = this._trailPoints.length - 1; i > 0; i--)
-      this.erase(this._trailPoints[i].x, this._trailPoints[i].y);
-  }
-  draw(ball) {
+  draw() {
     if (this._trailPoints) this.drawTrail();
-    var grad = data.ctx.createRadialGradient(ball.getX() - ball.getSize() / 2, ball.getY() - ball.getSize() / 2, ball.getSize() / 10, ball.getX(), ball.getY(), ball.getSize());
+    var grad = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
     grad.addColorStop(0, "white");
     grad.addColorStop(0.3, data.ballCol);
     grad.addColorStop(0.6, data.ballCol);
@@ -611,8 +574,6 @@ var Ball = class {
       y: this._y
     };
     this._trailPoints.unshift(currentPoint);
-    this.eraseTrail();
-    this.midline(this._trailPoints[this._trailPoints.length - 1].x);
     let opacity = 0;
     for (let i = this._trailPoints.length - 1; i > 0; i--) {
       data.ctx.beginPath();
@@ -624,17 +585,6 @@ var Ball = class {
     }
     this._trailPoints = this._trailPoints.slice(0, data.trailLength);
   }
-  midline(x) {
-    if (x > data.canvas.width / 2 - this._size * 2 && x < data.canvas.width / 2 + this._size * 2) {
-      data.ctx.beginPath();
-      data.ctx.lineWidth = 1;
-      data.ctx.moveTo(data.canvas.width / 2, 0);
-      data.ctx.lineTo(data.canvas.width / 2, data.canvas.height);
-      data.ctx.strokeStyle = data.uiCol;
-      data.ctx.stroke();
-      data.ctx.closePath();
-    }
-  }
   collision(paddle) {
     const hitPosition = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
     const clampedHit = Math.max(-0.7, Math.min(0.7, hitPosition));
@@ -644,13 +594,13 @@ var Ball = class {
     angle += variationAngle;
     this._dirX = Math.cos(angle) / 10;
     this._dirY = Math.sin(angle) / 10;
-    spawnMultiball(this);
+    if (data.multiball) spawnMultiball(this);
   }
   checkWalls() {
     if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
       this.stop();
-      this.erase(this._x, this._y);
       if (balls.length == 1) {
+        data.go = false;
         if (this._x <= this._size) {
           data.p2.score++;
           data.p2.scoreTB.value = String(data.p2.score);
@@ -664,11 +614,11 @@ var Ball = class {
           data.serve = 1;
         }
       }
+      removeBall2(this);
     }
     if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
   }
   advanceBall() {
-    this.erase(this._x, this._y);
     var stop = false;
     for (let i = 0; i < this._ballSpeed && !stop && this.isGo(); i++) {
       this._x += this._dirX;
@@ -688,16 +638,15 @@ var Ball = class {
     if (this._go) {
       this.checkWalls();
       this.advanceBall();
-      this.draw(this);
     }
   }
 };
 function spawnMultiball(ball) {
   let angle = Math.atan2(ball.getDirY(), ball.getDirX());
-  const variation = (Math.random() * 300 - 150) / 1e3;
-  console.log(angle + ", " + variation);
+  let variation = (Math.random() * 40 - 30) / 100;
+  if (Math.floor(Math.random() * 2)) variation *= -1;
   angle += variation;
-  let newBall = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);
+  let newBall = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);
   newBall.go();
   balls.push(newBall);
 }
@@ -771,19 +720,10 @@ var gameService = new GameService();
 // src/pong.ts
 var pad = new Array(2);
 var balls = [];
-function removeBall(index) {
+function removeBall2(ball) {
   let shrunk = [];
-  let newIndex = 0;
-  for (let i = 0; i < balls.length; i++) {
-    if (i == index) {
-      console.log("stopping ball " + i + " of " + balls.length);
-      balls[i].eraseTrail();
-      balls[i].erase(balls[i].getX(), balls[i].getY());
-    } else {
-      shrunk.push(balls[i]);
-      shrunk[newIndex].setIndex(newIndex++);
-    }
-  }
+  for (let i = 0; i < balls.length; i++)
+    if (balls[i] != ball) shrunk.push(balls[i]);
   balls = shrunk;
 }
 async function startGame() {
@@ -813,19 +753,44 @@ function countdown(nr, ms) {
   if (nr - 1) setTimeout(() => countdown(nr - 1, ms), ms);
   else setTimeout(() => startRound(), ms);
 }
-function initBoard() {
-  data.showingText = false;
-  data.ctx.fillStyle = data.bg;
-  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-  data.ctx.fill();
-  balls.push(new Ball());
-  pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
-}
 function startRound() {
   initBoard();
   pad[0].go();
   pad[1].go();
-  setTimeout(() => balls[0].go(), 250);
+  balls[0].go();
+  data.go = true;
+  window.requestAnimationFrame(loop);
+}
+function initBoard() {
+  data.showingText = false;
+  balls.push(new Ball());
+  pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+}
+function update() {
+  const now = performance.now();
+  if (now - data.lastTime > 1e3 / 50) {
+    data.lastTime = now;
+    for (let i = 0; i < balls.length; i++) balls[i].move();
+    for (let i = 0; i < pad.length; i++) {
+      if (pad[i].isAi()) pad[i].moveAI();
+      else pad[i].movePaddle();
+    }
+  }
+}
+function render() {
+  data.ctx.fillStyle = data.bg;
+  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+  data.ctx.fill();
+  midline();
+  for (let i = 0; i < pad.length; i++) pad[i].draw();
+  for (let i = 0; i < balls.length; i++) balls[i].draw();
+}
+function loop() {
+  if (data.go) {
+    update();
+    render();
+    window.requestAnimationFrame(loop);
+  }
 }
 function endRound() {
   while (balls.length) {
@@ -852,7 +817,7 @@ export {
   endGame,
   endRound,
   pad,
-  removeBall,
+  removeBall2 as removeBall,
   startGame,
   startRound
 };

@@ -16,6 +16,9 @@ export type playerData = {
 
 export type gameData = {
 	canvas: HTMLCanvasElement;
+	fps: number;
+	timestamp: number;
+	lastTime: number;
 	paddleWidth: number;
 	paddleHeight: number;
 	ctx: CanvasRenderingContext2D;
@@ -32,7 +35,6 @@ export type gameData = {
 	paddleSpeed: number;
 	ballSpeed: number;
 	ballSize: number;
-	showAiPath: boolean;
 	maxScore: number;
 	trailLength: number;
 	
@@ -40,6 +42,8 @@ export type gameData = {
 	keys: Record<string, boolean>;
 	showingText: boolean;
 	gameID: string;
+	go: boolean;
+	multiball: boolean;
 };
 
 export let data: gameData;
@@ -94,6 +98,9 @@ export async function loadConfig(): Promise<void> {
 
 	const loadData = {
 		canvas: canvas,
+		fps: 50,
+		timestamp: 0,
+		lastTime: 0,
 		paddleWidth: canvas.width / 60,
 		paddleHeight: canvas.height / 5,
 		ctx: ctx,
@@ -125,7 +132,6 @@ export async function loadConfig(): Promise<void> {
 		paddleSpeed: 40,
 		ballSpeed: 10,
 		ballSize: 80,
-		showAiPath: loadInB("showAiPath"),
 		maxScore: parseInt(loadIn("maxScore") || "10", 10),
 		trailLength: parseInt(loadIn("trailLength") || "20", 10),
 		
@@ -140,6 +146,8 @@ export async function loadConfig(): Promise<void> {
 		keys: {},
 		showingText: false,
 		gameID: "",
+		go: false,
+		multiball: loadInB("multiball"),
 	}
 	
 	loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);

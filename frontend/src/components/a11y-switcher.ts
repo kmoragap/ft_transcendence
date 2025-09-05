@@ -9,7 +9,7 @@ export function renderA11yControls(): HTMLElement {
   trigger.type = 'button';
   trigger.className = [
     'inline-flex items-center gap-2',
-    'ml-[15px] px-[5px] py-[2px] mt-[6px] bg-[#0a2b2b] text-[#66fcf1] border border-[#66fcf1] rounded-[5px]',
+    'ml-4 px-1 py-0 mt-1.5 bg-[#0a2b2b] text-[#66fcf1] border border-[#66fcf1] rounded-sm',
     'focus-visible:ring-2 focus-visible:ring-[#66fcf1]'
   ].join(' ');
   trigger.setAttribute('aria-haspopup', 'menu');
@@ -27,15 +27,15 @@ export function renderA11yControls(): HTMLElement {
   panel.id = 'a11y-menu';
   panel.setAttribute('role', 'menu');
   panel.className = [
-    'absolute w-[180px] right-[0] mt-2 w-64 z-[1000]',
-    'rounded-[5px] border-[0]',
-    'shadow-[0_10px_30px_rgba(0,0,0,0.6)] bg-[#0a2b2b]',
-    'py-[5px] hidden'
+          'absolute w-45 right-0 mt-2 w-64 z-50',
+          'rounded-sm border-0',
+          'shadow-2xl bg-[#0a2b2b]',
+    'py-0.5 hidden'
   ].join(' ');
 
   const label = (txtKey: string) => {
     const el = document.createElement('div');
-    el.className = 'px-[2px] py-[5px] text-xs uppercase tracking-wide bg-[#0a2b2b] z-[1000] text-[#9fe7e3]';
+    el.className = 'px-0.5 py-0.5 text-xs uppercase tracking-wide bg-[#0a2b2b] z-50 text-[#9fe7e3]';
     el.setAttribute('data-i18n', txtKey);
     el.textContent = t(txtKey);
     return el;
@@ -45,7 +45,7 @@ export function renderA11yControls(): HTMLElement {
     const row = document.createElement('button');
     row.type = 'button';
     row.setAttribute('role', 'menuitemradio');
-    row.className = 'w-full flex items-center justify-between px-[3px] py-[5px] rounded bg-[#0a2b2b] text-[#66fcf1] z-[100] border-[0] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+    row.className = 'w-full flex items-center justify-between px-1 py-1 rounded bg-[#0a2b2b] text-[#66fcf1] z-50 border-0 focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
     row.innerHTML = `
       <span data-i18n="${labelKey}">${t(labelKey)}</span>
       <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15">${Math.round(scale * 100)}%</span>
@@ -64,7 +64,7 @@ export function renderA11yControls(): HTMLElement {
   const hcRow = document.createElement('button');
   hcRow.type = 'button';
   hcRow.setAttribute('role', 'menuitemcheckbox');
-  hcRow.className = 'w-full flex items-center justify-between px-[3px] py-[2px] border-[0] rounded bg-[#0a2b2b] hover:bg-[#66fcf1]/15 text-[#66fcf1] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
+  hcRow.className = 'w-full flex items-center justify-between px-1 py-0.5 border-0 rounded bg-[#0a2b2b] hover:bg-[#66fcf1]/15 text-[#66fcf1] focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
   hcRow.innerHTML = `
     <span data-i18n="high_contrast">${t('high_contrast')}</span>
     <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15" data-state>Off</span>

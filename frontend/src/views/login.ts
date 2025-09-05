@@ -1,25 +1,29 @@
 import { t } from './../i18n';
 import { store } from '../store';
+import { redirectIfAuthenticated } from '../utils/auth';
 
 export function renderLogin(): HTMLElement {
+  // Redirect authenticated users to dashboard
+  redirectIfAuthenticated();
+
   const section = document.createElement('section');
   section.className =
-    'flex flex-col m-0 items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
+    'flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
-      <h1 data-i18n="login" class="text-[4.375rem] font-bold uppercase">
-        ${t('login')}
+      <h1 class="title uppercase">
+        <span class="mid_line" data-i18n="login">LOGIN</span>
       </h1>
     </div>
     <form
       id="login-form"
       novalidate
-      class="mt-[10px] flex flex-col items-center py-[40px] px-[40px]
-             bg-[rgba(102,252,241,0.1)] rounded-[6px]
-             shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+      class="mt-2.5 flex flex-col items-center py-10 px-10
+                            bg-[rgba(102,252,241,0.1)] rounded-md
+                            shadow-lg"
     >
-      <div class="w-full mb-[10px]">
+      <div class="w-full mb-2.5">
         <input
           id="identifier"
           type="text"
@@ -31,12 +35,15 @@ export function renderLogin(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="identifier-error"
-          class="px-[20px] py-[8px] border-0 rounded-[6px]"
+          class='w-full px-4 py-2 rounded-lg
+          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
+          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
+          outline-none font-[jura]'
         />
         <p id="identifier-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
 
-      <div class="w-full mb-[20px]">
+      <div class="w-full mb-5">
         <input
           id="password"
           type="password"
@@ -48,14 +55,17 @@ export function renderLogin(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="password-error"
-          class="px-[20px] py-[8px] border-0 rounded-[6px]"
+          class='w-full px-4 py-2 rounded-lg
+          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
+          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
+          outline-none font-[jura]'
         />
         <p id="password-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
 
       <button
         type="submit"
-        class="btn py-[10px] text-[1.125rem] font-[700]"
+        class="btn py-2 text-lg font-bold"
         data-i18n="submit"
       >
         ${t('submit')}

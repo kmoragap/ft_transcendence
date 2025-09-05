@@ -628,7 +628,7 @@ var GameService = class {
         player1Name: playerData.playerName,
         player2Name: "IA_OPPONENT",
         maxScore: playerData.maxScore || 5,
-        gameType: "vs_ai"
+        gameType: "VS_AI"
       };
       return await this.createGame(gameData);
     } catch (error) {
@@ -726,19 +726,6 @@ function endGame() {
   else console.log("Player 2 wins!");
   data.showingText = false;
 }
-async function testCreateGame() {
-  const gameData = {
-    player1Id: "player1-id",
-    player2Id: "player2-id",
-    player1Name: "Player One",
-    player2Name: "Player Two",
-    maxScore: 5,
-    gameType: "VS_HUMAN"
-  };
-  const result = await gameService.createGame(gameData);
-  console.log("Resultado de crear juego:", result);
-}
-testCreateGame();
 startGame();
 export {
   ball,

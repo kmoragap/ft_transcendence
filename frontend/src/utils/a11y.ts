@@ -16,7 +16,7 @@ function ensureSkipLink() {
   a.href = '#main';
   a.textContent = 'Skip to content';
   a.className =
-    'sr-only focus:not-sr-only fixed top-2 left-2 z-[10000] px-3 py-2 rounded ' +
+    'sr-only focus:not-sr-only fixed top-2 left-2 z-50 px-3 py-2 rounded ' +
     'bg-black/80 text-white';
   document.body.prepend(a);
 }

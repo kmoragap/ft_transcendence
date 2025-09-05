@@ -56,7 +56,9 @@ async function restoreSession() {
     if (meRes.ok) {
       const user = await meRes.json();
       store.dispatch({ type: 'LOGIN', payload: user });
+      console.log('Session restored successfully');
     } else {
+      console.log('Session restoration failed, clearing invalid tokens');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     }

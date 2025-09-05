@@ -33,5 +33,18 @@
   "coming_soon": "Скоро",
   "single_play": "Одиночная игра",
   "multiplayer": "Многопользовательская игра",
-  "back_to_modes": "Назад к режимам"
+  "back_to_modes": "Назад к режимам",
+  "search_users": "Поиск пользователей",
+  "dashboard": "Таблица игр",
+  "leaderboard": "Таблица лидеров",
+  "recent_games": "Последние игры",
+  "top_players": "Лучшие игроки",
+  "last_5_games": "Последние 5 игр",
+  "top_5_players": "Топ 5 игроков",
+  "no_games": "Нет игр для отображения.",
+  "no_players": "Нет игроков для отображения.",
+  "loading": "Загрузка...",
+  "error_loading_data": "Ошибка загрузки данных.",
+  "wins_plural": "побеждает",
+  "win_plural": "победил"
 }

@@ -3,12 +3,14 @@ import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';
 import { renderMyProfile } from './views/myprofile.ts';
 import { renderDashboard } from './views/dashboard.ts';
-import { renderGame, destroyGameView } from './views/game';
+import { renderGame} from './views/game';
 import { updateText } from './i18n';
 import { ensureA11yScaffold, announce, setPageTitleAndFocus } from './utils/a11y.ts';
 import { store } from './store.ts';
+import { shouldRedirectFromAuth, shouldRedirectFromProtected } from './utils/auth.ts';
 
 const protectedRoutes = new Set<string>(['/myprofile']);
+const authRoutes = new Set<string>(['/login', '/register']);
 
 const routes: Record<string, () => HTMLElement> = {
   '/': renderHome,
@@ -33,12 +35,22 @@ const titles: Record<string, string> = {
 ensureA11yScaffold();
 
 export function navigate(path: string) {
-  if (protectedRoutes.has(path) && !store.getState().isAuthenticated) {
+  // Redirect unauthenticated users away from protected routes
+  if (protectedRoutes.has(path) && shouldRedirectFromProtected()) {
     if (location.hash !== '#/home') {
       location.hash = '/home';
     }
     return;
   }
+  
+  // Redirect authenticated users away from auth routes (login/register)
+  if (authRoutes.has(path) && shouldRedirectFromAuth()) {
+    if (location.hash !== '#/dashboard') {
+      location.hash = '/dashboard';
+    }
+    return;
+  }
+  
   const app = document.getElementById('app');
   if (!app) return;
 
@@ -52,10 +64,3 @@ export function navigate(path: string) {
   announce(`Navigated to ${title}`);
   updateText();
 }
-
-// function cleanupGameView() {
-//   const leavingGame = window.location.pathname === '/game' && routes['/game'];
-//   if (leavingGame) {
-//     destroyGameView();
-//   }
-// }

@@ -1,23 +1,25 @@
 import { t } from './../i18n';
-
 import { attachValidation } from './../form-validation';
+import { redirectIfAuthenticated } from '../utils/auth';
 
 export function renderRegistration(): HTMLElement {
+  // Redirect authenticated users to dashboard
+  redirectIfAuthenticated();
   const section = document.createElement('section');
   section.className =
-    'flex flex-col m-0 items-center justify-center h-full text-center relative z-[3] font-[jura] text-[#66fcf1]';
+    'flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
-    <div class="flex flex-col items-center justify-center">
-      <h1 data-i18n="registration" class="text-[4.375rem] font-bold uppercase">Registration</h1>
-    </div>
+    <h1 class="title uppercase">
+        <span class="mid_line" data-i18n="registration">REGISTRATION</span>
+    </h1>
     <form
       id="register-form"
       novalidate
-      class="mt-[10px] flex flex-col items-center py-[40px] px-[50px] bg-[rgba(102,252,241,0.1)] rounded-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+      class="mt-2.5 flex flex-col items-center py-10 px-12 bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg"
     >
-      <div class="w-full mb-[10px]">
-        <input
+              <div class="w-full mb-2.5">
+                  <input
           id="username"
           type="text"
           name="username"
@@ -28,12 +30,15 @@ export function renderRegistration(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="username-error"
-          class="px-[20px] py-[8px] border-0 rounded-[6px]"
+          class='w-full px-4 py-2 rounded-lg
+          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
+          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
+          outline-none font-[jura]'
         />
         <p id="username-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>
       </div>
 
-      <div class="w-full mb-[10px]">
+      <div class="w-full mb-2.5">
         <input
           id="email"
           type="email"
@@ -45,12 +50,15 @@ export function renderRegistration(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="email-error"
-          class="px-[20px] py-[8px] border-0 rounded-[6px]"
+          class='w-full px-4 py-2 rounded-lg
+          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
+          border border-[#66fcf1]/60
+          outline-none font-[jura]'
         />
         <p id="email-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>
       </div>
 
-      <div class="w-full mb-[10px]">
+      <div class="w-full mb-2.5">
         <input
           id="firstname"
           type="text"
@@ -62,12 +70,15 @@ export function renderRegistration(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="firstname-error"
-          class="px-[20px] py-[8px] border-0 rounded-[6px]"
+          class='w-full px-4 py-2 rounded-lg
+          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
+          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
+          outline-none font-[jura]'
         />
         <p id="firstname-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>
       </div>
 
-      <div class="w-full mb-[20px]">
+      <div class="w-full mb-5">
         <input
           id="password"
           type="password"
@@ -79,14 +90,17 @@ export function renderRegistration(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="password-error"
-          class="px-[20px] py-[8px] border-0 rounded-[6px]"
+          class='w-full px-4 py-2 rounded-lg
+          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
+          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
+          outline-none font-[jura]'
         />
         <p id="password-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>
       </div>
 
       <button
         type="submit"
-        class="btn py-[10px] text-[1.125rem] font-[700] cursor-not-allowed"
+        class="btn py-2.5 text-lg font-bold cursor-not-allowed"
       >
         <span data-i18n="submit">Submit</span>
       </button>

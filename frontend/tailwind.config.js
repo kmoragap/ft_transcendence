@@ -6,8 +6,8 @@ module.exports = {
     "./public/**/*.html"
   ],
   safelist: [
-    'flex', 'flex-col', 'min-h-screen', 'bg-cover', 'bg-center', 'text-white', 'm-0', 'ml-5', 'relative', 'first_line', 'mid_line', 'last_line',
-  'flicker', 'fast-flicker', 'title', body, h1, 'btn', 'btn-animated', 'btn-hover-animated'
+    'bg-cover', 'bg-center', 'text-white', 'first_line', 'mid_line', 'last_line',
+    'flicker', 'fast-flicker', 'title', 'btn', 'btn-animated', 'btn-hover-animated'
   ],
   theme: {
     extend: {

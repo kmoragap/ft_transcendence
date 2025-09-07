@@ -185,8 +185,11 @@ function controlKeys() {
     if (pad.length) {
       if (ev.key == "Shift" || ev.key == "Control") {
         if (ev.location == 1) {
-          if (ev.key == data.p1.up || ev.key == data.p1.down) pad[0].setDir(0);
-          else if (ev.key == data.p2.up || ev.key == data.p2.down) pad[1].setDir(0);
+          if (ev.key == data.p1.up || ev.key == data.p1.down) {
+            pad[0].setDir(0);
+          } else if (ev.key == data.p2.up || ev.key == data.p2.down) {
+            pad[1].setDir(0);
+          }
         }
         data.keys[ev.key] = false;
       } else {
@@ -295,16 +298,18 @@ function quarterCorner(pad2) {
 function halfCorner(pad2) {
   data.ctx.beginPath();
   data.ctx.fillStyle = pad2.getTCG();
-  data.ctx.moveTo(pad2.getX() + data.paddleWidth / 2, pad2.getY() + data.paddleWidth);
-  data.ctx.arc(pad2.getX() + data.paddleWidth / 2, pad2.getY() + data.paddleWidth, data.paddleWidth / 2, 0, Math.PI, true);
+  data.ctx.moveTo(pad2.getX() + data.paddleWidth / 2, pad2.getY() + data.paddleWidth / 2);
+  data.ctx.arc(pad2.getX() + data.paddleWidth / 2, pad2.getY() + data.paddleWidth / 2, data.paddleWidth / 2, 0, Math.PI, true);
   data.ctx.closePath();
   data.ctx.fill();
+  data.ctx.fillRect(pad2.getX(), pad2.getY() - 1 + data.paddleWidth / 2, data.paddleWidth, data.paddleWidth / 2 + 2);
   data.ctx.beginPath();
   data.ctx.fillStyle = pad2.getBCG();
-  data.ctx.moveTo(pad2.getX() + data.paddleWidth / 2, pad2.getY2() - data.paddleWidth);
-  data.ctx.arc(pad2.getX() + data.paddleWidth / 2, pad2.getY2() - data.paddleWidth, data.paddleWidth / 2, 0, Math.PI);
+  data.ctx.moveTo(pad2.getX() + data.paddleWidth / 2, pad2.getY2() - data.paddleWidth / 2);
+  data.ctx.arc(pad2.getX() + data.paddleWidth / 2, pad2.getY2() - data.paddleWidth / 2, data.paddleWidth / 2, 0, Math.PI);
   data.ctx.closePath();
   data.ctx.fill();
+  data.ctx.fillRect(pad2.getX(), pad2.getY2() - 1 - data.paddleWidth, data.paddleWidth, data.paddleWidth / 2 + 2);
 }
 function midline() {
   data.ctx.beginPath();
@@ -416,14 +421,11 @@ var Paddle = class {
     else halfCorner(this);
   }
   hitY(ball) {
-    if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
-    else return false;
+    const ballCenterY = ball.getY() + ball.getSize() / 2;
+    return ballCenterY > this._y && ballCenterY < this.getY2() + ball.getSize();
   }
   hitX(ball) {
-    if (!this._x) {
-      if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
-    } else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
-    return false;
+    return ball.getX() + ball.getSize() > this._x && ball.getX() < this._x + data.paddleWidth + ball.getSize();
   }
   moveAI() {
     if (this._aiTarget >= this._y && this._aiTarget < this.getY2()) {
@@ -452,6 +454,18 @@ var Paddle = class {
   }
   move() {
     this._y += this._dir * this._moveSpeed;
+    if (this._dir) {
+      for (let i = 0; i < balls.length; i++)
+        if (this.hitX(balls[i]) && this.hitY(balls[i])) {
+          if (balls[i].getY() < this._y + data.paddleHeight / 2)
+            balls[i].setY(this._y - balls[i].getSize() * 2);
+          else balls[i].setY(this.getY2() + balls[i].getSize() * 2);
+          balls[i].collision(this);
+          if (balls[i].getY() < balls[i].getSize()) {
+            balls[i].setY(balls[i].getSize() + 1);
+          }
+        }
+    }
     if (this._y < 0) this._y = 0;
     if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
   }
@@ -487,7 +501,7 @@ var Paddle = class {
       var dx = balls[t2].getDirX();
       var dy = balls[t2].getDirY();
       while (balls[t2].getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + balls[t2].getSize() || balls[t2].getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - balls[t2].getSize() - data.paddleWidth) {
-        if (y < balls[t2].getSize() || y > data.canvas.height - balls[t2].getSize()) dy *= -1;
+        if (y <= balls[t2].getSize() || y > data.canvas.height - balls[t2].getSize()) dy *= -1;
         x += dx * 10;
         y += dy * 10;
       }
@@ -512,7 +526,7 @@ var Ball = class {
     this._dirX = (0.1 - this._dirY) * data.serve;
     this._size = data.canvas.width / data.ballSize;
     this._trailPoints = [];
-    this._trailFade = 50 / data.trailLength;
+    this._trailFade = 30 / data.trailLength;
     if (!args.length) {
       this._x = data.canvas.width / 2;
       this._y = data.canvas.height / 2;
@@ -535,6 +549,12 @@ var Ball = class {
   getY() {
     return this._y;
   }
+  setX(x) {
+    this._x = x;
+  }
+  setY(y) {
+    this._y = y;
+  }
   getSize() {
     return this._size;
   }
@@ -556,7 +576,6 @@ var Ball = class {
     this._dirY = 0;
   }
   draw() {
-    if (this._trailPoints) this.drawTrail();
     var grad = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
     grad.addColorStop(0, "white");
     grad.addColorStop(0.3, data.ballCol);
@@ -577,7 +596,15 @@ var Ball = class {
     let opacity = 0;
     for (let i = this._trailPoints.length - 1; i > 0; i--) {
       data.ctx.beginPath();
-      data.ctx.ellipse(this._trailPoints[i].x, this._trailPoints[i].y, this._size, this._size, 0, 0, Math.PI * 2);
+      data.ctx.ellipse(
+        this._trailPoints[i].x,
+        this._trailPoints[i].y,
+        this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+        this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+        0,
+        0,
+        Math.PI * 2
+      );
       data.ctx.fillStyle = `rgb(${data.ballR} ${data.ballG} ${data.ballB} / ${opacity}%`;
       data.ctx.fill();
       data.ctx.closePath();
@@ -586,11 +613,21 @@ var Ball = class {
     this._trailPoints = this._trailPoints.slice(0, data.trailLength);
   }
   collision(paddle) {
-    const hitPosition = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
-    const clampedHit = Math.max(-0.7, Math.min(0.7, hitPosition));
-    const isRightPaddle = paddle.getX() > data.canvas.width / 2;
-    var variationAngle = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4);
-    var angle = Math.atan2(this._dirY / 2, -this._dirX);
+    const hitPositionX = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
+    const hitPositionY = (this._x - (paddle.getX() + data.paddleWidth / 2)) / (data.paddleWidth / 2);
+    const clampedHitX = Math.max(-0.7, Math.min(0.7, hitPositionX));
+    const clampedHitY = Math.max(-0.7, Math.min(0.7, hitPositionY));
+    const xSide = paddle.getX() + data.paddleWidth / 2 > this.getX() + this._size / 2;
+    const ySide = paddle.getY() + data.paddleHeight / 2 > this.getY() + this._size / 2;
+    var variationAngle = 0;
+    var angle = 0;
+    if (paddle.hitY(this)) {
+      variationAngle = clampedHitX * (xSide ? -(Math.PI / 4) : Math.PI / 4);
+      angle = Math.atan2(this._dirY / 2, -this._dirX);
+    } else {
+      variationAngle = clampedHitY * (ySide ? Math.PI / 4 : -(Math.PI / 4));
+      angle = Math.atan2(-this._dirY, this._dirX / 2);
+    }
     angle += variationAngle;
     this._dirX = Math.cos(angle) / 10;
     this._dirY = Math.sin(angle) / 10;
@@ -642,13 +679,15 @@ var Ball = class {
   }
 };
 function spawnMultiball(ball) {
-  let angle = Math.atan2(ball.getDirY(), ball.getDirX());
-  let variation = (Math.random() * 40 - 30) / 100;
-  if (Math.floor(Math.random() * 2)) variation *= -1;
-  angle += variation;
-  let newBall = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);
-  newBall.go();
-  balls.push(newBall);
+  if (balls.length < 25) {
+    let angle = Math.atan2(ball.getDirY(), ball.getDirX());
+    let variation = (Math.random() * 40 - 30) / 100;
+    if (Math.floor(Math.random() * 2)) variation *= -1;
+    angle += variation;
+    let newBall = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);
+    newBall.go();
+    balls.push(newBall);
+  }
 }
 
 // src/services/gameService.ts
@@ -718,7 +757,7 @@ var GameService = class {
 var gameService = new GameService();
 
 // src/pong.ts
-var pad = new Array(2);
+var pad = [];
 var balls = [];
 function removeBall2(ball) {
   let shrunk = [];
@@ -763,8 +802,15 @@ function startRound() {
 }
 function initBoard() {
   data.showingText = false;
+  data.keys = {};
   balls.push(new Ball());
-  pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+  pad = new Array(
+    new Paddle(0, data.p1),
+    //		new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1),//2pad
+    //		new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2),//2pad
+    //		new Paddle(data.canvas.width - data.paddleWidth, data.p2));//2pad
+    new Paddle(data.canvas.width - data.paddleWidth, data.p2)
+  );
 }
 function update() {
   const now = performance.now();
@@ -783,6 +829,7 @@ function render() {
   data.ctx.fill();
   midline();
   for (let i = 0; i < pad.length; i++) pad[i].draw();
+  for (let i = 0; i < balls.length; i++) balls[i].drawTrail();
   for (let i = 0; i < balls.length; i++) balls[i].draw();
 }
 function loop() {

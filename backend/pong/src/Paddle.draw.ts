@@ -3,6 +3,17 @@ import Paddle from "./Paddle";
 import { t } from "./../../../frontend/src/i18n";
 import { endRound } from "./pong";
 
+export function debugOutline(pad: Paddle) {
+	data.ctx.beginPath();
+	data.ctx.strokeStyle = data.uiCol;
+	data.ctx.moveTo(pad.getX(), pad.getY());
+	data.ctx.lineTo(pad.getX(), pad.getY2());
+	data.ctx.lineTo(pad.getX2(), pad.getY2());
+	data.ctx.lineTo(pad.getX2(), pad.getY());
+	data.ctx.lineTo(pad.getX(), pad.getY());
+	data.ctx.stroke();
+}
+
 export function quarterCorner(pad: Paddle) {
 	//left paddle corner
 	if (pad.getX() < data.canvas.width / 2) {
@@ -38,16 +49,18 @@ export function quarterCorner(pad: Paddle) {
 export function halfCorner(pad: Paddle) {
 	data.ctx.beginPath();
 	data.ctx.fillStyle = pad.getTCG();
-	data.ctx.moveTo(pad.getX() + data.paddleWidth / 2, pad.getY() + data.paddleWidth);
-	data.ctx.arc(pad.getX() + data.paddleWidth / 2, pad.getY() + data.paddleWidth, data.paddleWidth / 2, 0, Math.PI, true);
+	data.ctx.moveTo(pad.getX() + data.paddleWidth / 2, pad.getY() + data.paddleWidth / 2);
+	data.ctx.arc(pad.getX() + data.paddleWidth / 2, pad.getY() + data.paddleWidth / 2, data.paddleWidth / 2, 0, Math.PI, true);
 	data.ctx.closePath();
 	data.ctx.fill();
+	data.ctx.fillRect(pad.getX(), pad.getY() - 1 + data.paddleWidth / 2, data.paddleWidth, data.paddleWidth / 2 + 2)
 	data.ctx.beginPath();
 	data.ctx.fillStyle = pad.getBCG();
-	data.ctx.moveTo(pad.getX() + data.paddleWidth / 2, pad.getY2() - data.paddleWidth);
-	data.ctx.arc(pad.getX() + data.paddleWidth / 2, pad.getY2() - data.paddleWidth, data.paddleWidth / 2, 0, Math.PI);
+	data.ctx.moveTo(pad.getX() + data.paddleWidth / 2, pad.getY2() - data.paddleWidth / 2);
+	data.ctx.arc(pad.getX() + data.paddleWidth / 2, pad.getY2() - data.paddleWidth / 2, data.paddleWidth / 2, 0, Math.PI);
 	data.ctx.closePath();
 	data.ctx.fill();
+	data.ctx.fillRect(pad.getX(), pad.getY2() - 1 - data.paddleWidth, data.paddleWidth, data.paddleWidth / 2 + 2)
 }
 
 export function midline(): void {

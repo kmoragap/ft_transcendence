@@ -17,7 +17,7 @@ export default class Ball {
 	private _dirX: number = (0.1 - this._dirY) * data.serve;
 	private _size: number = data.canvas.width / data.ballSize;
 	private _trailPoints: TrailPoint[] = [];
-	private _trailFade: number = 50 / data.trailLength;
+	private _trailFade: number = 30 / data.trailLength;
 
 	constructor(...args: number[]) {
 		if (!args.length) {
@@ -35,12 +35,13 @@ export default class Ball {
 	public isGo(): boolean {return this._go;}
 	public getX(): number {return this._x;}
 	public getY(): number {return this._y;}
+	public setX(x: number): void {this._x = x;}
+	public setY(y: number): void {this._y = y;}
 	public getSize(): number {return this._size;}
 	public getDirX(): number {return this._dirX;}
 	public getDirY(): number {return this._dirY;}
 	public setDirX(dir: number): void {this._dirX = dir;}
 	public setDirY(dir: number): void {this._dirY = dir;}
-
 
 	public stop(): void {
 		this._go = false;
@@ -49,7 +50,7 @@ export default class Ball {
 	}
 
 	public draw(): void {
-		if (this._trailPoints) this.drawTrail();
+//		if (this._trailPoints) this.drawTrail();
 		//define grad
 		var grad:CanvasGradient = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
 		grad.addColorStop(0, "white");
@@ -64,7 +65,7 @@ export default class Ball {
 		data.ctx.closePath();
 	}
 
-	private drawTrail(): void {
+	public drawTrail(): void {
 		const currentPoint: TrailPoint = {
 			x: this._x,
 			y: this._y,
@@ -73,7 +74,10 @@ export default class Ball {
 		let opacity: number = 0;
 		for (let i = this._trailPoints.length - 1; i > 0; i--) {
 			data.ctx.beginPath();
-			data.ctx.ellipse(this._trailPoints[i].x, this._trailPoints[i].y, this._size, this._size, 0, 0, Math.PI * 2);
+			data.ctx.ellipse(this._trailPoints[i].x, this._trailPoints[i].y,
+				this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+				this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+				0, 0, Math.PI * 2);
 			data.ctx.fillStyle = `rgb(${data.ballR} ${data.ballG} ${data.ballB} / ${opacity}%`;
 			data.ctx.fill();
 			data.ctx.closePath();
@@ -82,12 +86,22 @@ export default class Ball {
 		this._trailPoints = this._trailPoints.slice(0, data.trailLength);
 	}
 
-	private collision(paddle: Paddle): void {
-		const hitPosition = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
-		const clampedHit = Math.max(-0.7, Math.min(0.7, hitPosition));
-		const isRightPaddle = paddle.getX() > (data.canvas.width / 2);
-		var variationAngle: number = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4);
-		var angle: number = Math.atan2(this._dirY / 2, -this._dirX);
+	public collision(paddle: Paddle): void {
+		const hitPositionX = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
+		const hitPositionY = (this._x - (paddle.getX() + data.paddleWidth / 2)) / (data.paddleWidth / 2);
+		const clampedHitX = Math.max(-0.7, Math.min(0.7, hitPositionX));
+		const clampedHitY = Math.max(-0.7, Math.min(0.7, hitPositionY));
+		const xSide = paddle.getX() + data.paddleWidth / 2 > this.getX() + this._size / 2;
+		const ySide = paddle.getY() + data.paddleHeight / 2 > this.getY() + this._size / 2;
+		var variationAngle: number = 0;
+		var angle: number = 0;
+		if (paddle.hitY(this)) {
+			variationAngle = clampedHitX * (xSide ? -(Math.PI / 4) : Math.PI / 4);
+			angle = Math.atan2(this._dirY / 2, -this._dirX);
+		} else {
+			variationAngle = clampedHitY * (ySide ? Math.PI / 4 : -(Math.PI / 4));
+			angle = Math.atan2(-this._dirY, this._dirX / 2);
+		}
 		angle += variationAngle;
 		this._dirX = (Math.cos(angle)) / 10;
 		this._dirY = (Math.sin(angle)) / 10;
@@ -143,11 +157,14 @@ export default class Ball {
 }
 
 export function spawnMultiball(ball: Ball) {
-	let angle: number = Math.atan2(ball.getDirY(), ball.getDirX());
-	let variation: number = ((Math.random() * 40)- 30) / 100;
-	if (Math.floor(Math.random() * 2)) variation *= -1;
-	angle +=  variation;
-	let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);
-	newBall.go();
-	balls.push(newBall);
+	if (balls.length < 25) {
+		let angle: number = Math.atan2(ball.getDirY(), ball.getDirX());
+		let variation: number = ((Math.random() * 40)- 30) / 100;
+		if (Math.floor(Math.random() * 2)) variation *= -1;
+		angle +=  variation;
+		let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball in center
+//		let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball at ball pos
+		newBall.go();
+		balls.push(newBall);
+	}
 }

@@ -8,7 +8,7 @@ import { initI18n } from "./../../../frontend/src/i18n";
 //import { userService, UserData } from "./services/userService";
 import { gameService } from "./services/gameService";
 
-export let pad: Paddle[] = new Array(2);
+export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
 
 export function removeBall(ball: Ball): void {
@@ -25,9 +25,47 @@ export async function startGame() {
 		controlKeys();
 		document.getElementById("board")?.focus();
 		setTimeout(() => countdown(3, 500), 500);
+//		collisionTest()
 	} catch (error) {
 		console.error('Failed to load configuration:', error);
 	}
+}
+
+function collisionTest(): void {
+	data.showingText = false;
+	data.p1.isAi = false;
+//	data.p2.isAi = false;
+	data.multiball = false;
+	data.trailLength = 0;
+	data.maxScore = 1;
+	data.ballSpeed = 70;
+	//x axis
+	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2,                                           -0.1, 0));
+	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 4, -0.1, 0));
+	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 2, -0.1, 0));
+	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 2, -0.1, 0));
+	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 4, -0.1, 0));
+	//y axis
+	balls.push(new Ball(data.canvas.width / 2 - data.paddleWidth * 2 - (data.canvas.width / data.ballSize) / 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 6, 0, +0.1));
+	balls.push(new Ball(data.canvas.width / 2 - data.paddleWidth * 3 + (data.canvas.width / data.ballSize) / 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6, 0, -0.1));
+	balls.push(new Ball(data.canvas.width / 2 + data.paddleWidth * 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 6, 0, +0.1));
+	balls.push(new Ball(data.canvas.width / 2 + data.paddleWidth * 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6, 0, -0.1));
+	
+	
+	pad = new Array(new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p1), new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p2));
+	pad[0].go();
+	pad[1].go();
+	balls[0].go();
+	balls[1].go();
+	balls[2].go();
+	balls[3].go();
+	balls[4].go();
+	balls[5].go();
+	balls[6].go();
+	balls[7].go();
+	balls[8].go();
+	data.go = true;
+	window.requestAnimationFrame(loop);
 }
 
 function countdown(nr: number, ms: number) {
@@ -58,8 +96,13 @@ export function startRound(): void {
 
 function initBoard():void {
 	data.showingText = false;
+	data.keys = {};
 	balls.push(new Ball());
-	pad = new Array(new Paddle(0, data.p1), new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+	pad = new Array(new Paddle(0, data.p1),
+//		new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1),//2pad
+//		new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2),//2pad
+//		new Paddle(data.canvas.width - data.paddleWidth, data.p2));//2pad
+		new Paddle(data.canvas.width - data.paddleWidth, data.p2));//1pad
 }
 
 function update(): void {
@@ -80,6 +123,7 @@ function render(): void {
 	data.ctx.fill();
 	midline();
 	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
+	for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
 	for (let i: number = 0; i < balls.length; i++) balls[i].draw();
 }
 

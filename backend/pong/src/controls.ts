@@ -31,8 +31,15 @@ export function controlKeys(): void {
 		if (pad.length) {
 			if (ev.key == "Shift" || ev.key == "Control") {
 				if (ev.location == 1) {
-					if (ev.key == data.p1.up || ev.key == data.p1.down) pad[0].setDir(0);
-					else if (ev.key == data.p2.up || ev.key == data.p2.down) pad[1].setDir(0);
+					if (ev.key == data.p1.up || ev.key == data.p1.down) {
+						pad[0].setDir(0);
+//						pad[1].setDir(0);//2pad
+					}
+					else if (ev.key == data.p2.up || ev.key == data.p2.down) {
+						pad[1].setDir(0);//1pad
+//						pad[2].setDir(0);//2pad
+//						pad[3].setDir(0);//2pad
+					}
 				}
 				data.keys[ev.key] = false;
 			} else {

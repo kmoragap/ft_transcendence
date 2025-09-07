@@ -2,7 +2,7 @@ import { data } from "./gameData";
 import { pad, balls } from "./pong";
 import Ball from "./Ball";
 import { playerData } from "./gameData";
-import { quarterCorner, halfCorner } from "./Paddle.draw";
+import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
 
 export default class Paddle {
 	private _x: number;
@@ -59,10 +59,13 @@ export default class Paddle {
 	public isGo(): number {return this._goTime;}
 
 	public draw(): void {
+		//debug collision outlne
+		//debugOutline(this);
 		//draw paddle center
 		data.ctx.beginPath();
 		data.ctx.fillStyle = this._paddleGrad;
 		data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
+
 		//define corner grads
 		this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
 		this._topCornerGrad.addColorStop(0, "white");
@@ -76,15 +79,13 @@ export default class Paddle {
 	}
 
 	public hitY(ball: Ball): boolean {
-		if (ball.getY() >= this._y - data.canvas.width / data.ballSize && ball.getY() <= this.getY2() + data.canvas.width / data.ballSize) return true;
-		else return false;
+		const ballCenterY = ball.getY() + ball.getSize() / 2;
+		return ballCenterY > this._y && ballCenterY < this.getY2() + ball.getSize();
 	}
 
 	public hitX(ball: Ball): boolean {
-		if (!this._x) {
-			if (ball.getX() < data.paddleWidth + ball.getSize()) return true;
-		} else if (ball.getX() >= data.canvas.width - data.paddleWidth - ball.getSize() && ball.getX() < data.canvas.width - ball.getSize()) return true;
-		return false;
+		return ball.getX() + ball.getSize() > this._x
+		&& ball.getX() < this._x + data.paddleWidth + ball.getSize();
 	}
 
 	public moveAI(): void {
@@ -114,6 +115,21 @@ export default class Paddle {
 
 	private move(): void {
 		this._y += this._dir * this._moveSpeed;
+		if (this._dir)
+			for (let i: number = 0; i < balls.length; i++)
+				if (this.hitX(balls[i]) && this.hitY(balls[i])) {
+					if (balls[i].getY() < this._y + data.paddleHeight / 2)
+						balls[i].setY(this._y - balls[i].getSize() * 2);
+					else balls[i].setY(this.getY2() + balls[i].getSize() * 2);
+					balls[i].collision(this);
+					if (balls[i].getY() < balls[i].getSize()) {
+//						while (this.hitX(balls[i])) {
+//							console.log("correcting " + balls[i].getX() + " with " + balls[i].getDirX());
+//							balls[i].setX(balls[i].getX() + balls[i].getDirX());//????
+//						}
+						balls[i].setY(balls[i].getSize() + 1);
+					}
+				}
 		if (this._y < 0) this._y = 0;
 		if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
 	}
@@ -153,7 +169,7 @@ export default class Paddle {
 			var dy: number = balls[t].getDirY();
 			while ((balls[t].getDirX() <= 0 && this._x < data.canvas.width / 2) && x > data.paddleWidth + balls[t].getSize()
 			|| (balls[t].getDirX() > 0 && this._x > data.canvas.width / 2) && x < data.canvas.width - balls[t].getSize() - data.paddleWidth) {
-				if (y < balls[t].getSize() || y > data.canvas.height - balls[t].getSize()) dy *= -1;
+				if (y <= balls[t].getSize() || y > data.canvas.height - balls[t].getSize()) dy *= -1;
 				x += dx * 10;
 				y += dy * 10;
 			}

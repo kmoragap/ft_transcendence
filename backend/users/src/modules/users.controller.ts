@@ -1,6 +1,12 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest, FastifyInstance } from "fastify";
 import * as bcrypt from 'bcrypt'
 import prisma  from '../utils/prisma'
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import mime from "mime";
+import sharp from "sharp";
+import { MultipartFile } from "@fastify/multipart";
 
 
 function isValidCuid(id: string): boolean {
@@ -259,3 +265,171 @@ export const getUsersByIds = async (
     return reply.status(500).send({ error: 'Failed to get users' });
   }
 };
+
+interface AvatarUploadRequest extends FastifyRequest {
+  user?: { id: string };
+  file: (options?: { limits?: { fileSize?: number } }) => Promise<MultipartFile | undefined>;
+}
+
+interface AvatarUploadReply {
+  avatarUrl: string;
+}
+
+export default async function usersRoutes(fastify: FastifyInstance): Promise<void> {
+  fastify.post("/api/users/me/avatar", {
+    handler: async (request: AvatarUploadRequest, reply: FastifyReply): Promise<AvatarUploadReply | void> => {
+      const file = await request.file({ limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
+      if (!file) {
+        return reply.code(400).send({ error: "No file uploaded" });
+      }
+
+      const allowed = new Set(["image/jpeg", "image/png", "image/webp"]);
+      const ct = file.mimetype?.toLowerCase() || "";
+      if (!allowed.has(ct)) {
+        return reply.code(415).send({ error: "Unsupported file type. Use JPG, PNG or WEBP." });
+      }
+
+      const chunks: Buffer[] = [];
+      for await (const chunk of file.file) chunks.push(chunk as Buffer);
+      const input = Buffer.concat(chunks);
+
+      const img = sharp(input, { failOn: "none" }).rotate();
+      const outputName = `${randomUUID()}.webp`;
+      const outputDir = path.join(__dirname, "..", "..", "uploads", "avatars");
+      const outputPath = path.join(outputDir, outputName);
+
+      await fs.mkdir(outputDir, { recursive: true });
+      await img
+        .resize(256, 256, { fit: "cover" })
+        .webp({ quality: 85 })
+        .toFile(outputPath);
+
+      const publicUrl = `/uploads/avatars/${outputName}`;
+
+      const userId = request.user?.id; // adapt to your auth
+      if (!userId) return reply.code(401).send({ error: "Unauthorized" });
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { avatarUrl: publicUrl },
+      });
+
+      return reply.send({ avatarUrl: publicUrl });
+    },
+  });
+}
+
+export async function updateMyProfileHandler(request: any, reply: any) {
+  const { username, firstname, email } = request.body as {
+    username?: string;
+    firstname?: string;
+    email?: string;
+  };
+
+  const userId = request.user?.userId ?? request.user?.id ?? request.user?.sub ?? request.userId;
+  if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
+
+  try {
+    // Check if username or email already exists (if they're being changed)
+    if (username) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          username,
+          NOT: { id: userId }
+        }
+      });
+      if (existingUser) {
+        return reply.code(409).send({ error: 'Username already exists' });
+      }
+    }
+
+    if (email) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email,
+          NOT: { id: userId }
+        }
+      });
+      if (existingUser) {
+        return reply.code(409).send({ error: 'Email already exists' });
+      }
+    }
+
+    // Update user profile
+    const updateData: any = {};
+    if (username) updateData.username = username;
+    if (firstname) updateData.firstname = firstname;
+    if (email) updateData.email = email;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        firstname: true,
+        email: true,
+        avatarUrl: true
+      }
+    });
+
+    return reply.send({
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
+  } catch (error: any) {
+    console.error('Error updating profile:', error);
+    return reply.code(500).send({ error: 'Failed to update profile' });
+  }
+}
+
+export async function uploadAvatarHandler(request: any, reply: any) {
+  // file comes from @fastify/multipart (make sure it's registered before routes)
+  const file = await request.file({ limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
+  if (!file) return reply.code(400).send({ error: 'No file uploaded' });
+
+  const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
+  const ct = (file.mimetype || '').toLowerCase();
+  if (!allowed.has(ct)) return reply.code(415).send({ error: 'Unsupported file type' });
+
+  // auth: get current user id from token/middleware
+  const userId = request.user?.userId ?? request.user?.id ?? request.user?.sub ?? request.userId;
+  if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
+
+  // read the upload stream to buffer
+  const chunks: Buffer[] = [];
+  for await (const chunk of file.file) chunks.push(chunk as Buffer);
+  const input = Buffer.concat(chunks);
+
+  const avatarsDir = path.resolve(process.cwd(), 'uploads', 'avatars');
+  await fs.mkdir(avatarsDir, { recursive: true });
+
+  const filename = `${randomUUID()}.webp`;
+  const outPath = path.join(avatarsDir, filename);
+
+  await sharp(input, { failOn: 'none' })
+    .rotate()
+    .resize(256, 256, { fit: 'cover' })
+    .webp({ quality: 85 })
+    .toFile(outPath);
+
+  const where =
+    typeof userId === 'number' || /^\d+$/.test(String(userId))
+      ? { id: Number(userId) }
+      : { id: userId };
+
+  const current = await prisma.user.findUnique({ where, select: { avatarUrl: true } });
+  if (current?.avatarUrl?.startsWith('/uploads/avatars/')) {
+    const oldPath = path.resolve(process.cwd(), current.avatarUrl.replace('/uploads/', 'uploads/'));
+    fs.unlink(oldPath).catch(() => {});
+  }
+
+  const publicUrl = `/uploads/avatars/${filename}`;
+
+  await prisma.user.update({
+    where,
+    data: { avatarUrl: publicUrl },
+  });
+
+  return reply.send({ avatarUrl: publicUrl });
+}

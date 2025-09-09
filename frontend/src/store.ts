@@ -14,7 +14,9 @@ type State = {
 type Action =
   | { type: 'LOGIN'; payload: User }
   | { type: 'LOGOUT' }
-  | { type: 'SET_LANGUAGE'; payload: string };
+  | { type: 'SET_LANGUAGE'; payload: string }
+  | { type: 'UPDATE_AVATAR'; payload: string }
+  | { type: 'UPDATE_PROFILE'; payload: Partial<User> };
 
 class Store extends EventTarget {
   private state: State = {
@@ -66,6 +68,28 @@ class Store extends EventTarget {
         }
         break;
 
+      case 'UPDATE_AVATAR':
+      if (this.state.currentUser) {
+        this.setState({
+          currentUser: {
+            ...this.state.currentUser,
+            avatarUrl: action.payload,
+          },
+        });
+      }
+      break;
+
+      case 'UPDATE_PROFILE':
+        if (this.state.currentUser) {
+          this.setState({
+            currentUser: {
+              ...this.state.currentUser,
+              ...action.payload,
+            },
+          });
+        }
+        break;
+
       default:
         break;
     }
@@ -73,3 +97,11 @@ class Store extends EventTarget {
 }
 
 export const store = new Store();
+
+export function updateCurrentUserAvatar(url: string) {
+  store.dispatch({ type: 'UPDATE_AVATAR', payload: url });
+}
+
+export function updateCurrentUserProfile(profileData: Partial<User>) {
+  store.dispatch({ type: 'UPDATE_PROFILE', payload: profileData });
+}

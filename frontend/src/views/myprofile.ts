@@ -1,5 +1,7 @@
 import { store } from '../store';
 import {  } from '../i18n';
+import { uploadMyAvatar, updateMyProfile } from "../api/users";
+import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 
 let isSessionRestored = false;
 
@@ -35,7 +37,7 @@ function getCurrentUser(): UserProfile {
     return {
       username: 'Loading...',
       email: 'Loading...',
-      name: 'Loading...',
+      name: 'Loading',
       avatarUrl: '/assets/img/avatar.jpg',
       ...getStaticStats()
     };
@@ -82,7 +84,7 @@ export function renderMyProfile(): HTMLElement {
     <section class="w-full
                     rounded-xl shadow-2xl
                     max-w-7xl mx-auto px-15 py-7.5">
-              <div class="flex flex-row items-stretch gap-x-8">
+      <div class="flex flex-row items-stretch gap-x-8">
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
                     shadow-lg px-8 py-5">
           <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
@@ -93,10 +95,18 @@ export function renderMyProfile(): HTMLElement {
                     shadow-lg px-15 py-5">
           <div class="flex flex-col items-center space-y-4 mb-6">
             <div class="relative group">
-              <img src="${user.avatarUrl}" alt="${user.username}'s avatar"
-                  class="w-24 h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110" />
-              <div class="absolute inset-0 rounded-full border-4 border-transparent group-hover:border-[#66fcf1] transition-all duration-300"></div>
+              <img id="profile-avatar-img" src="${user.avatarUrl}" alt="${user.username}'s avatar"
+                  class="w-24 h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover cursor-pointer" 
+                  title="Click to change photo" />
+              <!-- Upload overlay -->
+              <div class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                <span class="text-white text-xs font-bold">Change Photo</span>
+              </div>
             </div>
+
+            <!-- Hidden file input -->
+            <input id="avatar-file-input" type="file" accept="image/*" class="hidden" />
+
             <div class="text-center">
               <h2 class="text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
               <p class="text-lg text-gray-300 mb-1">${user.name}</p>
@@ -148,11 +158,9 @@ export function renderMyProfile(): HTMLElement {
 
   const getEditHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
-      <div class="title">
-        <span class="first_line"></span>
-        <span class="mid_line flicker">EDIT PROFILE</span>
-        <span class="last_line"></span>
-      </div>
+    <h1 class="title uppercase">
+      <span class="mid_line" data-i18n="my_profile">MY PROFILE</span>
+    </h1>
       
       <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4">
         <div class="space-y-2">
@@ -173,17 +181,17 @@ export function renderMyProfile(): HTMLElement {
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
         </div>
         
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-[#66fcf1] text-left">Avatar URL</label>
-          <input name="avatarUrl" type="text" value="${user.avatarUrl}"
-                 class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
-        </div>
-        
         <div class="flex flex-col gap-3 pt-4">
-          <button type="button" id="cancel-btn" class="btn w-auto px-8">
+          <button type="button" id="cancel-btn" class="cursor-pointer text-lg font-bold px-8 py-2
+                  bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
+                  hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
+                  transition-shadow duration-300">
             Cancel
           </button>
-          <button type="submit" class="btn btn-constant w-auto px-8">
+          <button type="submit" class="cursor-pointer text-lg font-bold px-8 py-2
+                  bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
+                  hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
+                  transition-shadow duration-300">
             Save Changes
           </button>
         </div>
@@ -208,7 +216,53 @@ export function renderMyProfile(): HTMLElement {
   function bindViewEvents() {
     const editBtn = section.querySelector('#edit-btn') as HTMLButtonElement
     const refreshStatsBtn = section.querySelector('#refresh-stats-btn') as HTMLButtonElement
-    
+
+    // ---- Avatar upload bindings (VIEW MODE) ----
+    const fileInput = section.querySelector('#avatar-file-input') as HTMLInputElement | null;
+    const avatarImg = section.querySelector('#profile-avatar-img') as HTMLImageElement | null;
+
+    if (avatarImg && fileInput) {
+      // Make avatar image clickable
+      avatarImg.addEventListener('click', () => fileInput.click());
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+
+        // Optional 2MB client-side guard (match backend)
+        if (file.size > 2 * 1024 * 1024) {
+          alert('Please choose an image under 2MB.');
+          fileInput.value = '';
+          return;
+        }
+
+        // UI feedback - show loading state on avatar
+        if (avatarImg) {
+          avatarImg.style.opacity = '0.5';
+          avatarImg.style.cursor = 'wait';
+        }
+
+        try {
+          const url = await uploadMyAvatar(file);
+          // Update UI immediately
+          if (avatarImg) avatarImg.src = url;
+          // Update local data + global store
+          user = { ...user, avatarUrl: url };
+          updateCurrentUserAvatar(url);
+        } catch (e: any) {
+          alert(e?.message || 'Upload failed.');
+        } finally {
+          // Reset UI state
+          if (avatarImg) {
+            avatarImg.style.opacity = '1';
+            avatarImg.style.cursor = 'pointer';
+          }
+          fileInput.value = '';
+        }
+      });
+    }
+    // -------------------------------------------
+
     editBtn?.addEventListener('click', enterEditMode)
     
     refreshStatsBtn?.addEventListener('click', () => {
@@ -229,25 +283,46 @@ export function renderMyProfile(): HTMLElement {
       bindViewEvents()
     })
 
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault()
       const data = new FormData(form)
-      const updated: UserProfile = {
-        name: data.get('name') as string,
+      
+      const profileData = {
         username: data.get('username') as string,
+        firstname: data.get('name') as string,
         email: data.get('email') as string,
-        avatarUrl: data.get('avatarUrl') as string,
-        wins: user.wins,
-        losses: user.losses,
-        totalGames: user.totalGames,
-        winRate: user.winRate,
       }
 
-      console.log('Saving profile →', updated)
+      try {
+        // Save to backend
+        await updateMyProfile(profileData);
+        
+        // Update local store
+        updateCurrentUserProfile(profileData);
+        
+        // Update local user data
+        const updated: UserProfile = {
+          name: profileData.firstname,
+          username: profileData.username,
+          email: profileData.email,
+          avatarUrl: user.avatarUrl, // Keep existing avatar URL
+          wins: user.wins,
+          losses: user.losses,
+          totalGames: user.totalGames,
+          winRate: user.winRate,
+        }
 
-      user = updated
-      section.innerHTML = getViewHTML()
-      bindViewEvents()
+        console.log('Profile saved successfully →', updated)
+
+        user = updated
+        section.innerHTML = getViewHTML()
+        bindViewEvents()
+        
+        alert('Profile updated successfully!');
+      } catch (error: any) {
+        console.error('Failed to update profile:', error);
+        alert(error?.message || 'Failed to update profile. Please try again.');
+      }
     })
   }
 

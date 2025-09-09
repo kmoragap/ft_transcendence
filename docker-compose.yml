@@ -7,6 +7,7 @@ services:
     volumes:
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend/users/uploads:/app/uploads:ro
     depends_on:
       - frontend
       - auth
@@ -36,7 +37,6 @@ services:
     networks:
       - app-network
 
-
   pong:
     build: ./backend/pong
     #ports:
@@ -52,6 +52,7 @@ services:
     build: ./backend/users
     volumes:
       - ./backend/users/prisma/users-db.sqlite:/app/prisma/users-db.sqlite
+      - ./backend/users/uploads:/app/uploads
     #ports:
     #  - "3004:3000"
     environment:

@@ -130,8 +130,6 @@ export function renderHeader(): HTMLElement {
       const userLi = document.createElement('li');
       userLi.className = 'relative ml-5';
 
-      const avatarUrl = currentUser.avatarUrl || '/assets/img/avatar.jpg';
-
       const trigger = document.createElement('button');
       trigger.type = 'button';
       trigger.className = [
@@ -146,12 +144,13 @@ export function renderHeader(): HTMLElement {
       name.className = 'font-[jura] font-bold text-lg';
       name.textContent = currentUser.username;
 
-      const img = document.createElement('img');
-      img.src = avatarUrl;
-      img.alt = t('profile_avatar') || 'Avatar';
-      img.className = 'w-8 h-8 ml-2 rounded-full border border-[#66fcf1] object-cover';
+      const avatar = document.createElement("img");
+      avatar.alt = "Me";
+      avatar.width = 32; avatar.height = 32;
+      avatar.className = "w-8 h-8 rounded-full object-cover border border-[#66fcf1]/30";
+      avatar.src = currentUser?.avatarUrl || "/assets/img/avatar.svg"; 
 
-      trigger.append(name, img);
+      trigger.append(name, avatar);
 
       const menu = document.createElement('div');
       menu.className = [

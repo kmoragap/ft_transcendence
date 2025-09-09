@@ -87,7 +87,7 @@ export function renderMyProfile(): HTMLElement {
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-15 py-5">
+                    shadow-lg px-10 py-5">
           <div class="flex flex-col items-center space-y-4 mb-6">
             <div class="relative group">
               <img id="profile-avatar-img" src="${user.avatarUrl}" alt="${user.username}'s avatar"
@@ -124,7 +124,7 @@ export function renderMyProfile(): HTMLElement {
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-15 py-5">
+                    shadow-lg px-10 py-5">
           <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="p-4 text-center">

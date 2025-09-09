@@ -1,10 +1,7 @@
 import Paddle from "./Paddle";
+import { scoreText } from "./Paddle.draw";
 import { data } from "./gameData";
-import { p1 } from "./pong";
-import { p2 } from "./pong";
-import { ball } from "./pong";
-import { startRound } from "./pong";
-import { endGame } from "./pong";
+import { pad, balls, removeBall } from "./pong";
 
 interface TrailPoint {
 	x: number;
@@ -13,77 +10,73 @@ interface TrailPoint {
 
 export default class Ball {
 	private _go: boolean = false;
-	private _goTime: number = 0;
 	private _ballSpeed: number = data.canvas.width / data.ballSpeed;
 	private _x: number = data.canvas.width / 2;
 	private _y: number = data.canvas.height / 2;
-	private _dirY: number = ((Math.random() * 30) - 15) / 10000;
-	private _dirX: number = (0.01 - this._dirY) * data.serve;
+	private _dirY: number = ((Math.random() * 30) - 15) / 1000;
+	private _dirX: number = (0.1 - this._dirY) * data.serve;
 	private _size: number = data.canvas.width / data.ballSize;
-	private _grad!: CanvasGradient;
 	private _trailPoints: TrailPoint[] = [];
-	private _trailFade = 30 / data.trailLength;
+	private _trailFade: number = 30 / data.trailLength;
 
-	constructor() {
-		this._x = data.canvas.width / 2;
-		this._y = data.canvas.height / 2;
+	constructor(...args: number[]) {
+		if (!args.length) {
+			this._x = data.canvas.width / 2;
+			this._y = data.canvas.height / 2;
+		} else {
+			this._x = args[0];
+			this._y = args[1];
+			this._dirX = args[2];
+			this._dirY = args[3];
+		}
 	}
 
-	public go(): void {
-		this._goTime = window.setInterval(() => this.move(), 5);
-		this._go = true;
-	}
-	public stop(): void {
-		window.clearTimeout(this._goTime);
-		this._go = false;
-		this._dirX = 0;
-		this._dirY = 0;
-	}
-	public isGo(): boolean { return this._go;}
+	public go(): void {this._go = true;}
+	public isGo(): boolean {return this._go;}
 	public getX(): number {return this._x;}
 	public getY(): number {return this._y;}
+	public setX(x: number): void {this._x = x;}
+	public setY(y: number): void {this._y = y;}
 	public getSize(): number {return this._size;}
 	public getDirX(): number {return this._dirX;}
 	public getDirY(): number {return this._dirY;}
 	public setDirX(dir: number): void {this._dirX = dir;}
 	public setDirY(dir: number): void {this._dirY = dir;}
 
-	private erase(x: number, y: number): void {
-		data.ctx.beginPath();
-		data.ctx.ellipse(x, y, this._size + 1, this._size + 1, 0, 0, Math.PI * 2);
-		data.ctx.fillStyle = data.bg;
-		data.ctx.fill();
+	public stop(): void {
+		this._go = false;
+		this._dirX = 0;
+		this._dirY = 0;
 	}
 
-	private draw(): void {
-		this.drawTrail();
+	public draw(): void {
 		//define grad
-		this._grad = data.ctx.createRadialGradient(this._x - this._size / 2, this._y - this._size / 2, this._size / 10, this._x, this._y, this._size);
-		this._grad.addColorStop(0, "white");
-		this._grad.addColorStop(0.3, data.ballCol);
-		this._grad.addColorStop(0.6, data.ballCol);
-		this._grad.addColorStop(1, "black");
+		var grad:CanvasGradient = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
+		grad.addColorStop(0, "white");
+		grad.addColorStop(0.3, data.ballCol);
+		grad.addColorStop(0.6, data.ballCol);
+		grad.addColorStop(1, "black");
 		//draw ball
 		data.ctx.beginPath();
 		data.ctx.ellipse(this._x, this._y, this._size, this._size, 0, 0, Math.PI * 2);
-		data.ctx.fillStyle = this._grad;
+		data.ctx.fillStyle = grad;
 		data.ctx.fill();
 		data.ctx.closePath();
 	}
 
-	private drawTrail(): void {
+	public drawTrail(): void {
 		const currentPoint: TrailPoint = {
 			x: this._x,
 			y: this._y,
 		};
 		this._trailPoints.unshift(currentPoint);
-		for (let i = this._trailPoints.length - 1; i > 0; i--) 
-			this.erase(this._trailPoints[i].x, this._trailPoints[i].y);
-		this.midline(this._trailPoints[this._trailPoints.length - 1].x);
 		let opacity: number = 0;
 		for (let i = this._trailPoints.length - 1; i > 0; i--) {
 			data.ctx.beginPath();
-			data.ctx.ellipse(this._trailPoints[i].x, this._trailPoints[i].y, this._size, this._size, 0, 0, Math.PI * 2);
+			data.ctx.ellipse(this._trailPoints[i].x, this._trailPoints[i].y,
+				this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+				this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+				0, 0, Math.PI * 2);
 			data.ctx.fillStyle = `rgb(${data.ballR} ${data.ballG} ${data.ballB} / ${opacity}%`;
 			data.ctx.fill();
 			data.ctx.closePath();
@@ -92,75 +85,93 @@ export default class Ball {
 		this._trailPoints = this._trailPoints.slice(0, data.trailLength);
 	}
 
-	private midline(x: number): void {
-		if (x > (data.canvas.width / 2 - this._size * 2) && x < (data.canvas.width / 2 + this._size * 2)) {
-			data.ctx.beginPath();
-			data.ctx.lineWidth = 1;
-			data.ctx.moveTo(data.canvas.width / 2, 0);
-			data.ctx.lineTo(data.canvas.width / 2, data.canvas.height);
-			data.ctx.strokeStyle = data.uiCol;
-			data.ctx.stroke();
-			data.ctx.closePath();
+	public collision(paddle: Paddle): void {
+		const hitPositionX = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
+		const hitPositionY = (this._x - (paddle.getX() + data.paddleWidth / 2)) / (data.paddleWidth / 2);
+		const clampedHitX = Math.max(-0.7, Math.min(0.7, hitPositionX));
+		const clampedHitY = Math.max(-0.7, Math.min(0.7, hitPositionY));
+		const xSide = paddle.getX() + data.paddleWidth / 2 > this.getX() + this._size / 2;
+		const ySide = paddle.getY() + data.paddleHeight / 2 > this.getY() + this._size / 2;
+		var variationAngle: number = 0;
+		var angle: number = 0;
+		if (paddle.hitY(this)) {
+			variationAngle = clampedHitX * (xSide ? -(Math.PI / 4) : Math.PI / 4);
+			angle = Math.atan2(this._dirY / 2, -this._dirX);
+		} else {
+			variationAngle = clampedHitY * (ySide ? Math.PI / 4 : -(Math.PI / 4));
+			angle = Math.atan2(-this._dirY, this._dirX / 2);
 		}
-	}
-
-	private collision(paddle: Paddle): void {
-		const hitPosition = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
-		const clampedHit = Math.max(-0.7, Math.min(0.7, hitPosition));
-		const isRightPaddle = paddle.getX() > (data.canvas.width / 2);
-		var variationAngle: number = clampedHit * (isRightPaddle ? -(Math.PI / 4) : Math.PI / 4);
-		var angle: number = Math.atan2(this._dirY / 2, -this._dirX);
 		angle += variationAngle;
-		this._dirX = (Math.cos(angle)) / 100;
-		this._dirY = (Math.sin(angle)) / 100;
-	}
-
-	private checkPaddle(): void {
-		if (p1.hitX() && p1.hitY()) this.collision(p1);
-		if (p2.hitX() && p2.hitY()) this.collision(p2);
+		this._dirX = (Math.cos(angle)) / 10;
+		this._dirY = (Math.sin(angle)) / 10;
+		//if (data.multiball) spawnMultiball(this);
 	}
 
 	private checkWalls(): void {
 		if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
-			ball.stop();
-			p1.stop();
-			p2.stop();
-			if (this._x <= this._size) {
-				data.p2.score++;
-				data.p2.scoreTB.value = String(data.p2.score);
-				setTimeout(() => p2.scoreText(), 100);
-				data.serve = -1;
+			this.stop();
+			if (balls.length == 1) {
+				data.go = false;
+				if (this._x <= this._size) {
+					data.p2.score++;
+					data.p2.scoreTB.value = String(data.p2.score);
+					if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
+					data.serve = -1;
+				}
+				if (this._x >= data.canvas.width - this._size) {
+					data.p1.score++;
+					data.p1.scoreTB.value = String(data.p1.score);
+					if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
+					data.serve = 1;
+				}
 			}
-			if (this._x >= data.canvas.width - this._size) {
-				data.p1.score++;
-				data.p1.scoreTB.value = String(data.p1.score);
-				setTimeout(() => p1.scoreText(), 100);
-				data.serve = 1;
-			}
-			if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 2000);
-			else endGame();
+			removeBall(this);
 		}
-		if (this._y <= this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
+		if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
 	}
 
 	private advanceBall(): void {
 		var stop: boolean = false;
-		for (let i = 0; i < this._ballSpeed && !stop; i++) {
+		for (let i = 0; i < this._ballSpeed && !stop && this.isGo(); i++) {
 			this._x += this._dirX;
 			this._y += this._dirY;
-			if (this._x < ball.getSize()) stop = true;
-			if (this._x >= data.canvas.width - ball.getSize()) stop = true;
-			if (this._dirX < 0 && p1.hitX() && p1.hitY()) stop = true;
-			if (this._dirX >= 0 && p2.hitX() && p2.hitY()) stop = true;
+			if (this._x < this.getSize()) stop = true;
+			if (this._x >= data.canvas.width - this.getSize()) stop = true;
+			for (let i: number = 0; i < pad.length && pad.length; i++)
+				if (pad[i].hitX(this) && pad[i].hitY(this)){
+					stop = true;
+					this._x -= this._dirX * 2;
+					this._y -= this._dirY * 2;
+					this.collision(pad[i]);
+					if (data.multiball) {
+						data.hits++;
+						if (data.hits == data.maxHits) {
+							data.hits = 0;
+							data.maxHits =  Math.floor(Math.random()* 5 + 5);
+							spawnMultiball(this);
+						}
+					}
+				}
 		}
 	}
 
 	public move(): void {
 		if (this._go) {
-			this.checkPaddle();
 			this.checkWalls();
 			this.advanceBall();
-			this.draw();
 		}
+	}
+}
+
+export function spawnMultiball(ball: Ball) {
+	if (balls.length < 25) {
+		let angle: number = Math.atan2(ball.getDirY(), ball.getDirX());
+		let variation: number = ((Math.random() * 40)- 30) / 100;
+		if (Math.floor(Math.random() * 2)) variation *= -1;
+		angle +=  variation;
+//		let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball in center
+		let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball at ball pos
+		newBall.go();
+		balls.push(newBall);
 	}
 }

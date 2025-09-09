@@ -89,7 +89,13 @@ async function loadConfig() {
     showingText: false,
     gameID: "",
     go: false,
-    multiball: loadInB("multiball")
+    touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+    doublePaddle: loadInB("doublePaddle"),
+    multiball: loadInB("multiball"),
+    maxHits_l: Math.floor(Math.random() * 5 + 5),
+    maxHits_r: Math.floor(Math.random() * 5 + 5),
+    hits_l: 0,
+    hits_r: 0
   };
   loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
   loadData.bg.addColorStop(0, loadIn("outerBg"));
@@ -173,6 +179,7 @@ document.getElementById("gameMenu").addEventListener("submit", function(e) {
     setTimeout(() => startGame(), 1e3);
   }
 });
+var lastX;
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
     if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
@@ -187,8 +194,10 @@ function controlKeys() {
         if (ev.location == 1) {
           if (ev.key == data.p1.up || ev.key == data.p1.down) {
             pad[0].setDir(0);
+            if (data.doublePaddle) pad[2].setDir(0);
           } else if (ev.key == data.p2.up || ev.key == data.p2.down) {
             pad[1].setDir(0);
+            if (data.doublePaddle) pad[3].setDir(0);
           }
         }
         data.keys[ev.key] = false;
@@ -212,6 +221,39 @@ function controlKeys() {
       }
     }
   });
+  data.canvas.addEventListener("touchstart", touchDown);
+  data.canvas.addEventListener("touchend", touchUp);
+}
+function touchDown(ev) {
+  lastX = data.canvas.height / 2;
+  if (data.go) {
+    var x = lastX = ev.touches[0].clientX;
+    var y = ev.touches[0].clientY;
+    if (x < data.canvas.width / 4) {
+      if (y < data.canvas.height / 4) data.keys[data.p1.up] = true;
+      if (y > data.canvas.height * 3 / 4) data.keys[data.p1.down] = true;
+    }
+    if (x > data.canvas.width * 3 / 4) {
+      if (y < data.canvas.height / 4) data.keys[data.p2.up] = true;
+      if (y > data.canvas.height * 3 / 4) data.keys[data.p2.down] = true;
+    }
+  }
+}
+function touchUp() {
+  if (data.go) {
+    if (lastX < data.canvas.width / 4) {
+      data.keys[data.p1.up] = false;
+      data.keys[data.p1.down] = false;
+      pad[0].setDir(0);
+      if (data.doublePaddle) pad[2].setDir(0);
+    }
+    if (lastX > data.canvas.width * 3 / 4) {
+      data.keys[data.p2.up] = false;
+      data.keys[data.p2.down] = false;
+      pad[1].setDir(0);
+      if (data.doublePaddle) pad[3].setDir(0);
+    }
+  }
 }
 
 // ../../frontend/src/i18n.ts
@@ -631,7 +673,6 @@ var Ball = class {
     angle += variationAngle;
     this._dirX = Math.cos(angle) / 10;
     this._dirY = Math.sin(angle) / 10;
-    if (data.multiball) spawnMultiball(this);
   }
   checkWalls() {
     if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
@@ -668,6 +709,20 @@ var Ball = class {
           this._x -= this._dirX * 2;
           this._y -= this._dirY * 2;
           this.collision(pad[i2]);
+          if (data.multiball) {
+            if (i2 % 2) data.hits_r++;
+            else data.hits_l++;
+            if (data.hits_r == data.maxHits_r) {
+              data.hits_r = 0;
+              data.maxHits_r = Math.floor(Math.random() * 5 + 5);
+              spawnMultiball(this);
+            }
+            if (data.hits_l == data.maxHits_l) {
+              data.hits_l = 0;
+              data.maxHits_l = Math.floor(Math.random() * 5 + 5);
+              spawnMultiball(this);
+            }
+          }
         }
     }
   }
@@ -684,7 +739,7 @@ function spawnMultiball(ball) {
     let variation = (Math.random() * 40 - 30) / 100;
     if (Math.floor(Math.random() * 2)) variation *= -1;
     angle += variation;
-    let newBall = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);
+    let newBall = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);
     newBall.go();
     balls.push(newBall);
   }
@@ -796,6 +851,8 @@ function startRound() {
   initBoard();
   pad[0].go();
   pad[1].go();
+  if (data.doublePaddle) pad[2].go();
+  if (data.doublePaddle) pad[3].go();
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -806,15 +863,23 @@ function initBoard() {
   balls.push(new Ball());
   pad = new Array(
     new Paddle(0, data.p1),
-    //		new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1),//2pad
-    //		new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2),//2pad
-    //		new Paddle(data.canvas.width - data.paddleWidth, data.p2));//2pad
     new Paddle(data.canvas.width - data.paddleWidth, data.p2)
   );
+  if (data.doublePaddle) {
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2));
+  }
+}
+function loop() {
+  if (data.go) {
+    update();
+    render();
+    window.requestAnimationFrame(loop);
+  }
 }
 function update() {
   const now = performance.now();
-  if (now - data.lastTime > 1e3 / 50) {
+  if (now - data.lastTime > 1e3 / data.fps) {
     data.lastTime = now;
     for (let i = 0; i < balls.length; i++) balls[i].move();
     for (let i = 0; i < pad.length; i++) {
@@ -829,14 +894,32 @@ function render() {
   data.ctx.fill();
   midline();
   for (let i = 0; i < pad.length; i++) pad[i].draw();
-  for (let i = 0; i < balls.length; i++) balls[i].drawTrail();
+  if (data.trailLength) for (let i = 0; i < balls.length; i++) balls[i].drawTrail();
   for (let i = 0; i < balls.length; i++) balls[i].draw();
-}
-function loop() {
-  if (data.go) {
-    update();
-    render();
-    window.requestAnimationFrame(loop);
+  if (
+    /*data.mouseControl || */
+    data.touchControl
+  ) {
+    data.ctx.fillStyle = `rgb(80 80 80 / 25%)`;
+    data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
+    for (let i = 0; i < pad.length; i++) {
+      if (i == 0 && !pad[i].isAi()) {
+        data.ctx.textBaseline = "top";
+        data.ctx.textAlign = "left";
+        data.ctx.fillText("\u2B06", data.canvas.width / 16, 0);
+        data.ctx.textBaseline = "bottom";
+        data.ctx.textAlign = "left";
+        data.ctx.fillText("\u2B07", data.canvas.width / 16, data.canvas.height);
+      }
+      if (i == 1 && !pad[i].isAi()) {
+        data.ctx.textBaseline = "top";
+        data.ctx.textAlign = "right";
+        data.ctx.fillText("\u2B06", data.canvas.width * 15 / 16, 0);
+        data.ctx.textBaseline = "bottom";
+        data.ctx.textAlign = "right";
+        data.ctx.fillText("\u2B07", data.canvas.width * 15 / 16, data.canvas.height);
+      }
+    }
   }
 }
 function endRound() {

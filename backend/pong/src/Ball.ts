@@ -50,7 +50,6 @@ export default class Ball {
 	}
 
 	public draw(): void {
-//		if (this._trailPoints) this.drawTrail();
 		//define grad
 		var grad:CanvasGradient = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
 		grad.addColorStop(0, "white");
@@ -105,7 +104,7 @@ export default class Ball {
 		angle += variationAngle;
 		this._dirX = (Math.cos(angle)) / 10;
 		this._dirY = (Math.sin(angle)) / 10;
-		if (data.multiball) spawnMultiball(this);
+		//if (data.multiball) spawnMultiball(this);
 	}
 
 	private checkWalls(): void {
@@ -144,6 +143,14 @@ export default class Ball {
 					this._x -= this._dirX * 2;
 					this._y -= this._dirY * 2;
 					this.collision(pad[i]);
+					if (data.multiball) {
+						data.hits++;
+						if (data.hits == data.maxHits) {
+							data.hits = 0;
+							data.maxHits =  Math.floor(Math.random()* 5 + 5);
+							spawnMultiball(this);
+						}
+					}
 				}
 		}
 	}
@@ -162,8 +169,8 @@ export function spawnMultiball(ball: Ball) {
 		let variation: number = ((Math.random() * 40)- 30) / 100;
 		if (Math.floor(Math.random() * 2)) variation *= -1;
 		angle +=  variation;
-		let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball in center
-//		let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball at ball pos
+//		let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball in center
+		let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball at ball pos
 		newBall.go();
 		balls.push(newBall);
 	}

@@ -43,7 +43,12 @@ export type gameData = {
 	showingText: boolean;
 	gameID: string;
 	go: boolean;
+	touchControl: boolean;
+	doublePaddle: boolean;
+	
 	multiball: boolean;
+	maxHits: number;
+	hits: number;
 };
 
 export let data: gameData;
@@ -147,7 +152,12 @@ export async function loadConfig(): Promise<void> {
 		showingText: false,
 		gameID: "",
 		go: false,
+		touchControl: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+		doublePaddle: loadInB("doublePaddle"),
+		
 		multiball: loadInB("multiball"),
+		maxHits: Math.floor(Math.random()* 5 + 5),
+		hits: 0,
 	}
 	
 	loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);

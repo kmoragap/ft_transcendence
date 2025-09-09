@@ -17,7 +17,6 @@ export default class Paddle {
 	private _moveSpeed: number = data.canvas.height / data.paddleSpeed;
 	
 	private _aiTarget: number = data.canvas.height / 2;
-	private _aiGoTime: number = 0;
 	private _aiRecalcTime: number = 0;
 
 	public constructor(x: number, p: playerData) {

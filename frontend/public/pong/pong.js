@@ -1,9 +1,7 @@
 // src/gameData.ts
 var data;
-function loadPlayer(scoreTB, nameTB, name, id, isAi, up, down, innerCol, outercol, cornerCol) {
+function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
-    scoreTB,
-    nameTB,
     name,
     id,
     score: 0,
@@ -15,8 +13,6 @@ function loadPlayer(scoreTB, nameTB, name, id, isAi, up, down, innerCol, outerco
     cornerCol
   };
   if (isAi) p.name = "Marvin";
-  p.nameTB.value = p.name;
-  p.scoreTB.value = "0";
   return p;
 }
 function loadTA(id) {
@@ -39,40 +35,66 @@ async function loadConfig() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - loadTA("p1score").clientHeight;
   const ctx = canvas.getContext("2d");
+  var p1 = loadPlayer(
+    loadIn("name_p1"),
+    "",
+    //player ID
+    loadInB("p1Ai"),
+    loadIn("p1Up"),
+    loadIn("p1Down"),
+    loadIn("p1InnerCol"),
+    loadIn("p1OuterCol"),
+    loadIn("p1CornerCol")
+  );
+  var p2 = loadPlayer(
+    loadIn("name_p2"),
+    "",
+    //player ID
+    loadInB("p2Ai"),
+    loadIn("p2Up"),
+    loadIn("p2Down"),
+    loadIn("p2InnerCol"),
+    loadIn("p2OuterCol"),
+    loadIn("p2CornerCol")
+  );
+  var p3 = loadPlayer(
+    loadIn("name_p3"),
+    "",
+    //player ID
+    loadInB("p3Ai"),
+    loadIn("p3Up"),
+    loadIn("p3Down"),
+    loadIn("p3InnerCol"),
+    loadIn("p3OuterCol"),
+    loadIn("p3CornerCol")
+  );
+  var p4 = loadPlayer(
+    loadIn("name_p4"),
+    "",
+    //player ID
+    loadInB("p4Ai"),
+    loadIn("p4Up"),
+    loadIn("p4Down"),
+    loadIn("p4InnerCol"),
+    loadIn("p4OuterCol"),
+    loadIn("p4CornerCol")
+  );
   const loadData = {
     canvas,
     fps: 50,
+    nameTB1: loadTA("p1name"),
+    scoreTB1: loadTA("p1score"),
+    scoreTB2: loadTA("p2score"),
+    nameTB2: loadTA("p2name"),
     timestamp: 0,
     lastTime: 0,
     paddleWidth: canvas.width / 60,
     paddleHeight: canvas.height / 5,
     ctx,
-    p1: loadPlayer(
-      loadTA("p1score"),
-      loadTA("p1name"),
-      loadIn("name_p1"),
-      "",
-      //player ID
-      loadInB("p1Ai"),
-      loadIn("p1Up"),
-      loadIn("p1Down"),
-      loadIn("p1InnerCol"),
-      loadIn("p1OuterCol"),
-      loadIn("p1CornerCol")
-    ),
-    p2: loadPlayer(
-      loadTA("p2score"),
-      loadTA("p2name"),
-      loadIn("name_p2"),
-      "",
-      //player ID
-      loadInB("p2Ai"),
-      loadIn("p2Up"),
-      loadIn("p2Down"),
-      loadIn("p2InnerCol"),
-      loadIn("p2OuterCol"),
-      loadIn("p2CornerCol")
-    ),
+    p1,
+    p2,
+    p3,
+    p4,
     paddleSpeed: 40,
     ballSpeed: 10,
     ballSize: 80,
@@ -90,13 +112,20 @@ async function loadConfig() {
     gameID: "",
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
-    doublePaddle: loadInB("doublePaddle"),
+    mode: document.getElementById("gameMenu2").elements["mode"].value,
     multiball: loadInB("multiball"),
-    maxHits_l: Math.floor(Math.random() * 5 + 5),
-    maxHits_r: Math.floor(Math.random() * 5 + 5),
-    hits_l: 0,
-    hits_r: 0
+    maxHits: Math.floor(Math.random() * 5 + 5),
+    hits: 0
   };
+  loadData.scoreTB1.value = "0";
+  loadData.scoreTB2.value = "0";
+  if (loadData.mode == "fourPlayers") {
+    loadData.nameTB1.value = p1.name + " / " + p2.name;
+    loadData.nameTB2.value = p3.name + " / " + p4.name;
+  } else {
+    loadData.nameTB1.value = p1.name;
+    loadData.nameTB2.value = p2.name;
+  }
   loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
   loadData.bg.addColorStop(0, loadIn("outerBg"));
   loadData.bg.addColorStop(0.5, loadIn("innerBg"));
@@ -182,6 +211,7 @@ document.getElementById("gameMenu").addEventListener("submit", function(e) {
 var lastX;
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
+    console.log(ev.key);
     if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
       ev.preventDefault();
     if (ev.key == "Shift" || ev.key == "Control") {
@@ -194,10 +224,10 @@ function controlKeys() {
         if (ev.location == 1) {
           if (ev.key == data.p1.up || ev.key == data.p1.down) {
             pad[0].setDir(0);
-            if (data.doublePaddle) pad[2].setDir(0);
+            if (data.mode == "doublePaddle") pad[2].setDir(0);
           } else if (ev.key == data.p2.up || ev.key == data.p2.down) {
             pad[1].setDir(0);
-            if (data.doublePaddle) pad[3].setDir(0);
+            if (data.mode == "doublePaddle") pad[3].setDir(0);
           }
         }
         data.keys[ev.key] = false;
@@ -245,13 +275,13 @@ function touchUp() {
       data.keys[data.p1.up] = false;
       data.keys[data.p1.down] = false;
       pad[0].setDir(0);
-      if (data.doublePaddle) pad[2].setDir(0);
+      if (data.mode == "doublePaddle") pad[2].setDir(0);
     }
     if (lastX > data.canvas.width * 3 / 4) {
       data.keys[data.p2.up] = false;
       data.keys[data.p2.down] = false;
       pad[1].setDir(0);
-      if (data.doublePaddle) pad[3].setDir(0);
+      if (data.mode == "doublePaddle") pad[3].setDir(0);
     }
   }
 }
@@ -388,7 +418,6 @@ var Paddle = class {
     this._goTime = 0;
     this._moveSpeed = data.canvas.height / data.paddleSpeed;
     this._aiTarget = data.canvas.height / 2;
-    this._aiGoTime = 0;
     this._aiRecalcTime = 0;
     this._x = x;
     this._y = data.canvas.height / 2 - data.paddleHeight / 2;
@@ -618,7 +647,14 @@ var Ball = class {
     this._dirY = 0;
   }
   draw() {
-    var grad = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
+    var grad = data.ctx.createRadialGradient(
+      this.getX() - this.getSize() / 2,
+      this.getY() - this.getSize() / 2,
+      this.getSize() / 10,
+      this.getX(),
+      this.getY(),
+      this.getSize()
+    );
     grad.addColorStop(0, "white");
     grad.addColorStop(0.3, data.ballCol);
     grad.addColorStop(0.6, data.ballCol);
@@ -681,13 +717,13 @@ var Ball = class {
         data.go = false;
         if (this._x <= this._size) {
           data.p2.score++;
-          data.p2.scoreTB.value = String(data.p2.score);
+          data.scoreTB2.value = String(data.p2.score);
           if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
           data.serve = -1;
         }
         if (this._x >= data.canvas.width - this._size) {
           data.p1.score++;
-          data.p1.scoreTB.value = String(data.p1.score);
+          data.scoreTB1.value = String(data.p1.score);
           if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
           data.serve = 1;
         }
@@ -710,16 +746,10 @@ var Ball = class {
           this._y -= this._dirY * 2;
           this.collision(pad[i2]);
           if (data.multiball) {
-            if (i2 % 2) data.hits_r++;
-            else data.hits_l++;
-            if (data.hits_r == data.maxHits_r) {
-              data.hits_r = 0;
-              data.maxHits_r = Math.floor(Math.random() * 5 + 5);
-              spawnMultiball(this);
-            }
-            if (data.hits_l == data.maxHits_l) {
-              data.hits_l = 0;
-              data.maxHits_l = Math.floor(Math.random() * 5 + 5);
+            data.hits++;
+            if (data.hits == data.maxHits) {
+              data.hits = 0;
+              data.maxHits = Math.floor(Math.random() * 5 + 5);
               spawnMultiball(this);
             }
           }
@@ -851,8 +881,8 @@ function startRound() {
   initBoard();
   pad[0].go();
   pad[1].go();
-  if (data.doublePaddle) pad[2].go();
-  if (data.doublePaddle) pad[3].go();
+  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
+  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -861,13 +891,17 @@ function initBoard() {
   data.showingText = false;
   data.keys = {};
   balls.push(new Ball());
-  pad = new Array(
-    new Paddle(0, data.p1),
-    new Paddle(data.canvas.width - data.paddleWidth, data.p2)
-  );
-  if (data.doublePaddle) {
+  pad = new Array(new Paddle(0, data.p1));
+  if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+  if (data.mode == "doublePaddle") {
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
     pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1));
     pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2));
+  }
+  if (data.mode == "fourPlayers") {
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p2));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p3));
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p4));
   }
 }
 function loop() {

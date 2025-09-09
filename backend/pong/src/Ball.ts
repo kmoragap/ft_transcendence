@@ -51,7 +51,8 @@ export default class Ball {
 
 	public draw(): void {
 		//define grad
-		var grad:CanvasGradient = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2, this.getSize() / 10, this.getX(), this.getY(), this.getSize());
+		var grad:CanvasGradient = data.ctx.createRadialGradient(this.getX() - this.getSize() / 2, this.getY() - this.getSize() / 2,
+			this.getSize() / 10, this.getX(), this.getY(), this.getSize());
 		grad.addColorStop(0, "white");
 		grad.addColorStop(0.3, data.ballCol);
 		grad.addColorStop(0.6, data.ballCol);
@@ -114,13 +115,13 @@ export default class Ball {
 				data.go = false;
 				if (this._x <= this._size) {
 					data.p2.score++;
-					data.p2.scoreTB.value = String(data.p2.score);
+					data.scoreTB2.value = String(data.p2.score);
 					if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
 					data.serve = -1;
 				}
 				if (this._x >= data.canvas.width - this._size) {
 					data.p1.score++;
-					data.p1.scoreTB.value = String(data.p1.score);
+					data.scoreTB1.value = String(data.p1.score);
 					if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
 					data.serve = 1;
 				}

@@ -20,6 +20,7 @@
 		<ul id="debugMenu" class="flex items-center list-none">
 			<li>
 			<form id= "player1Menu" class="player1Menu">
+				<!--     Player 1   -->
 				<label class="game-text" for="name_p1">Player 1:</label>
 				<input type="text" class="game-text" size="16" id="name_p1" name="name_p1" value="Ford Prefect"><br>
 				<label class="game-text" for="p1Ai">AI </label>
@@ -36,12 +37,29 @@
 				<input class="game-text" type="color" id="p1CornerCol" name="p1CornerCol" value="#ff0000">
 				<label class="game-text" for="p1CornerCol">paddle corner color</label><br>
 
+				<!--     Player 3   -->
+				<label class="game-text" for="name_p3">Player 3:</label>
+				<input type="text" class="game-text" size="16" id="name_p3" name="name_p3" value="Trillian Astra"><br>
+				<label class="game-text" for="p3Ai">AI </label>
+				<input type="checkbox" id="p3Ai" name="p3Ai" checked><br>
+				
+				<label class="game-text" for="p3Up">Up: </label>
+				<input class="game-text" type="text" size="9" id="p3Up" name="p3Up" value="i">
+				<label class="game-text" for="p3Down">Down: </label>
+				<input type="text" class="game-text" size="9" id="p3Down" name="p3Down" value="k"><br><br>
+				<input class="game-text" type="color" id="p3InnerCol" name="p3InnerCol" value="#ffffff">
+				<label class="game-text" for="p3InnerCol">paddle inner color</label><br>
+				<input class="game-text" type="color" id="p3OuterCol" name="p3OuterCol" value="#808080">
+				<label class="game-text" for="p3OuterCol">paddle outer color</label><br>
+				<input class="game-text" type="color" id="p3CornerCol" name="p3CornerCol" value="#ff0000">
+				<label class="game-text" for="p3CornerCol">paddle corner color</label><br>
 			</form>
 			</li>
 			<li>
 			<form id= "player2Menu" class="player2Menu">
+				<!--     Player 2   -->
 				<label class="game-text" for="name_p2">Player 2:</label>
-				<input type="text" class="game-text" size="16" id="name_p2" name="name_p2" value="Zaphod Beeblebrox"><br>
+				<input type="text" class="game-text" size="16" id="name_p2" name="name_p2" value="Arthur Dent"><br>
 				<label class="game-text" for="p2Ai" checked>AI</label>
 				<input type="checkbox" id="p2Ai" name="p2Ai" checked><br>
 				
@@ -55,6 +73,23 @@
 				<label class="game-text" for="p2OuterCol">paddle outer color</label><br>
 				<input class="game-text" type="color" id="p2CornerCol" name="p2CornerCol" value="#ff0000">
 				<label class="game-text" for="p2CornerCol">paddle corner color</label><br>
+				
+				<!--     Player 4   -->
+				<label class="game-text" for="name_p4">Player 4:</label>
+				<input type="text" class="game-text" size="16" id="name_p4" name="name_p4" value="Zaphod Beeblebrox"><br>
+				<label class="game-text" for="p4Ai">AI </label>
+				<input type="checkbox" id="p4Ai" name="p3Ai" checked><br>
+				
+				<label class="game-text" for="p4Up">Up: </label>
+				<input class="game-text" type="text" size="9" id="p4Up" name="p4Up" value="PageUp">
+				<label class="game-text" for="p4Down">Down: </label>
+				<input type="text" class="game-text" size="9" id="p4Down" name="p4Down" value="PageDown"><br><br>
+				<input class="game-text" type="color" id="p4InnerCol" name="p4InnerCol" value="#ffffff">
+				<label class="game-text" for="p4InnerCol">paddle inner color</label><br>
+				<input class="game-text" type="color" id="p4OuterCol" name="p4OuterCol" value="#808080">
+				<label class="game-text" for="p4OuterCol">paddle outer color</label><br>
+				<input class="game-text" type="color" id="p4CornerCol" name="p4CornerCol" value="#ff0000">
+				<label class="game-text" for="p4CornerCol">paddle corner color</label><br>
 			</form>
 			</li>
 			<li>
@@ -86,10 +121,16 @@
 				</select>
 				<label class="game-text" for="ballSize">Ball size</label>
 				<br><br>
+				
 				<input type="checkbox" id="multiball" name="multiball" checked>
-				<label class="game-text" for="multiball" checked>Multiball</label><br>
-				<input type="checkbox" id="doublePaddle" name="doublePaddle" checked>
+				<label class="game-text" for="multiball">Multiball</label><br>
+
+				<input type="radio" id="mode" name="mode" value="twoPlayers" checked>
+				<label class="game-text" for="twoPlayers">2 players</label><br>
+				<input type="radio" id="mode" name="mode" value="doublePaddle">
 				<label class="game-text" for="doublePaddle">Double paddles</label><br>
+				<input type="radio" id="mode" name="mode" value="fourPlayers">
+				<label class="game-text" for="4players">4 players</label><br>
 				<label class="game-text" for="maxScore">max. Score: </label>
 				<input type="text" class="game-text" size="2" id="maxScore" name="maxScore" value="3">
 				<label class="game-text" for="trailLength">Trail length: </label>

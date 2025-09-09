@@ -35,11 +35,11 @@ export function controlKeys(): void {
 				if (ev.location == 1) {
 					if (ev.key == data.p1.up || ev.key == data.p1.down) {
 						pad[0].setDir(0);
-						if (data.doublePaddle) pad[2].setDir(0);
+						if (data.mode == "doublePaddle") pad[2].setDir(0);
 					}
 					else if (ev.key == data.p2.up || ev.key == data.p2.down) {
 						pad[1].setDir(0);
-						if (data.doublePaddle) pad[3].setDir(0);
+						if (data.mode == "doublePaddle") pad[3].setDir(0);
 					}
 				}
 				data.keys[ev.key] = false;
@@ -89,13 +89,13 @@ function touchUp() {
 			data.keys[data.p1.up] = false;
 			data.keys[data.p1.down] = false;
 			pad[0].setDir(0);
-			if (data.doublePaddle) pad[2].setDir(0);
+			if (data.mode == "doublePaddle") pad[2].setDir(0);
 		}
 		if (lastX > data.canvas.width * 3 / 4) {
 			data.keys[data.p2.up] = false;
 			data.keys[data.p2.down] = false;
 			pad[1].setDir(0);
-			if (data.doublePaddle) pad[3].setDir(0);
+			if (data.mode == "doublePaddle") pad[3].setDir(0);
 		}
 	}
 }

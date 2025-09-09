@@ -52,8 +52,8 @@ export function startRound(): void {
 	initBoard();
 	pad[0].go();
 	pad[1].go();
-	if (data.doublePaddle) pad[2].go();
-	if (data.doublePaddle) pad[3].go();
+	if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
+	if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
 	balls[0].go();
 	data.go = true;
 	window.requestAnimationFrame(loop);
@@ -63,11 +63,17 @@ function initBoard():void {
 	data.showingText = false;
 	data.keys = {};
 	balls.push(new Ball());
-	pad = new Array(new Paddle(0, data.p1),
-		new Paddle(data.canvas.width - data.paddleWidth, data.p2));
-	if (data.doublePaddle) {
+	pad = new Array(new Paddle(0, data.p1));
+	if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+	if (data.mode == "doublePaddle") {
+		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
 		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1));
 		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2));
+	}
+	if (data.mode == "fourPlayers")	{
+		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p2));
+		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p3));
+		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p4));
 	}
 }
 

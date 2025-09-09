@@ -45,6 +45,8 @@
   "no_players": "Keine Spieler zum Anzeigen.",
   "loading": "Wird geladen...",
   "error_loading_data": "Fehler beim Laden der Daten.",
-  "wins_plural": "gewinnt",
-  "win_plural": "gewonnen"
+  "wins_plural": "Gewonnen",
+  "losses": "Verluste",
+  "total_games": "Gesamtspiele",
+  "win_rate": "Gewinnrate"
 }

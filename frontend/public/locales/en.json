@@ -24,8 +24,8 @@
 	"large": "Large",
 	"x_large": "Extra Large",
 	"xx_large": "Double Extra Large",
-	"scores": "scores",
-	"wins": "wins",
+	"scores": "Scores",
+	"wins": "Wins",
 	"social": "Social",
 	"game_statistics": "Game Statistics",
 	"create_tournament": "Create Tournament",
@@ -45,6 +45,8 @@
 	"no_players": "No players to display.",
 	"loading": "Loading...",
 	"error_loading_data": "Error loading data.",
-	"wins_plural": "wins",
-	"win_plural": "win"
+	"wins_plural": "Wins",
+	"losses": "Losses",
+	"total_games": "Total Games",
+	"win_rate": "Win Rate"
 }

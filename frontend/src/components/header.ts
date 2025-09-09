@@ -144,18 +144,18 @@ export function renderHeader(): HTMLElement {
       trigger.append(name, avatar);
 
       const menu = document.createElement('div');
-      menu.className = [
-        'absolute right-0 mt-2',
-        'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
-        'opacity-0 pointer-events-none transition'
-      ].join(' ');
+        menu.className = [
+          'absolute right-0 mt-2 w-48',
+          'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
+          'opacity-0 pointer-events-none transition'
+        ].join(' ');
       menu.setAttribute('role', 'menu');
 
       menu.innerHTML = `
         <button data-i18n="my_profile" data-action="me"
-          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">My Profile</button>
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('my_profile')}</button>
         <button data-i18n="logout" data-action="logout"
-          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">Logout</button>
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('logout')}</button>
       `;
 
       let open = false;

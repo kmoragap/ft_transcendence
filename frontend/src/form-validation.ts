@@ -76,7 +76,6 @@ export function attachValidation(form: HTMLFormElement) {
       }
     });
     if (!hasError) {
-      console.log('Registering:', Object.fromEntries(inputs.map(i => [i.name, i.value])));
     }
   });
 }

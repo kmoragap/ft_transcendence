@@ -45,6 +45,8 @@
   "no_players": "Нет игроков для отображения.",
   "loading": "Загрузка...",
   "error_loading_data": "Ошибка загрузки данных.",
-  "wins_plural": "побеждает",
-  "win_plural": "победил"
+  "wins_plural": "Победы",
+  "losses": "Поражения",
+  "total_games": "Всего игр",
+  "win_rate": "Процент побед"
 }

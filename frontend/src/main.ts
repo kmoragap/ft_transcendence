@@ -4,7 +4,6 @@ import { navigate } from './router';
 import { initI18n } from './i18n';
 import { store } from './store';
 import { initA11yTheme } from './utils/a11y';
-import { destroyGameView } from './views/game';
 import { sessionManager } from './utils/session';
 
 function buildShell() {
@@ -52,9 +51,7 @@ async function restoreSession() {
     if (meRes.ok) {
       const user = await meRes.json();
       store.dispatch({ type: 'LOGIN', payload: user });
-      console.log('Session restored successfully');
     } else {
-      console.log('Session restoration failed, clearing invalid tokens');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     }

@@ -81,7 +81,7 @@ export function renderMyProfile(): HTMLElement {
                     max-w-7xl mx-auto px-15 py-7.5">
       <div class="flex flex-row items-stretch gap-x-8">
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-8 py-5">
+                    shadow-lg px-10 py-5">
           <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
           <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]"></div>
         </div>
@@ -99,7 +99,6 @@ export function renderMyProfile(): HTMLElement {
               </div>
             </div>
 
-            <!-- Hidden file input -->
             <input id="avatar-file-input" type="file" accept="image/*" class="hidden" />
 
             <div class="text-center">
@@ -130,19 +129,19 @@ export function renderMyProfile(): HTMLElement {
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
-              <div class="text-sm text-gray-300">Wins</div>
+              <div class="text-sm text-gray-300" data-i18n="wins_plural">${t('wins_plural')}</div>
             </div>
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
-              <div class="text-sm text-gray-300">Losses</div>
+              <div class="text-sm text-gray-300" data-i18n="losses">${t('losses')}</div>
             </div>
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
-              <div class="text-sm text-gray-300">Total Games</div>
+              <div class="text-sm text-gray-300" data-i18n="total_games">${t('total_games')}</div>
             </div>
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
-              <div class="text-sm text-gray-300">Win Rate</div>
+              <div class="text-sm text-gray-300" data-i18n="win_rate">${t('win_rate')}</div>
             </div>
           </div>
         </div>
@@ -308,7 +307,6 @@ export function renderMyProfile(): HTMLElement {
           winRate: user.winRate,
         }
 
-        console.log('Profile saved successfully →', updated)
 
         user = updated
         section.innerHTML = getViewHTML()

@@ -1,13 +1,8 @@
 import { store } from '../store';
-import {  } from '../i18n';
+import { t, updateText } from '../i18n';
 import { uploadMyAvatar, updateMyProfile } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
-
-let isSessionRestored = false;
-
-export function setProfileSessionRestored() {
-  isSessionRestored = true;
-}
+import { sessionManager } from '../utils/session';
 
 export interface UserProfile {
   username: string
@@ -33,7 +28,7 @@ function getCurrentUser(): UserProfile {
   const state = store.getState();
   const currentUser = state.currentUser;
 
-  if (!isSessionRestored) {
+  if (!sessionManager.isSessionRestored()) {
     return {
       username: 'Loading...',
       email: 'Loading...',
@@ -208,6 +203,7 @@ export function renderMyProfile(): HTMLElement {
 
   updateUserData();
   store.subscribe(updateUserData);
+  sessionManager.onSessionRestored(updateUserData);
   
   setTimeout(() => {
     updateUserData();
@@ -325,6 +321,6 @@ export function renderMyProfile(): HTMLElement {
       }
     })
   }
-
+  updateText();
   return section
 }

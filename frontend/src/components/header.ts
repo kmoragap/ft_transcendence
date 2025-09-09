@@ -2,16 +2,7 @@ import { t, loadLanguage } from './../i18n';
 import { store } from '../store';
 import { logout } from '../utils/auth';
 import { renderA11yControls } from './a11y-switcher';
-
-let isSessionRestored = false;
-let updateHeaderCallback: (() => void) | null = null;
-
-export function setSessionRestored() {
-  isSessionRestored = true;
-  if (updateHeaderCallback) {
-    updateHeaderCallback();
-  }
-}
+import { sessionManager } from '../utils/session';
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -19,7 +10,7 @@ export function renderHeader(): HTMLElement {
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
   function updateHeader() {
-    if (!isSessionRestored) {
+    if (!sessionManager.isSessionRestored()) {
       header.innerHTML = '';
       return;
     }
@@ -220,9 +211,9 @@ export function renderHeader(): HTMLElement {
     header.appendChild(bar);
   }
 
-  updateHeaderCallback = updateHeader;
   updateHeader();
   store.subscribe(updateHeader);
+  sessionManager.onSessionRestored(updateHeader);
 
   return header;
 }

@@ -8,11 +8,11 @@
 <body>
 	<div id="app">
 		<div class="scoreboard">
-			<textarea id="p1name" class="p1name game-text" rows="1" cols="30" disabled> Player 1</textarea>
+			<textarea id="p1name" class="p1name game-text" rows="1" cols="30" disabled data-i18n="player_1">Player 1</textarea>
 			<textarea id="p1score" class="p1score game-text" rows="1" cols="2" disabled>0</textarea>
 						:
 			<textarea id="p2score" class="p2score game-text" rows="1" cols="2" disabled>0</textarea>
-			<textarea id="p2name" class="p2name game-text" rows="1" cols="30" disabled> Player 2</textarea>
+			<textarea id="p2name" class="p2name game-text" rows="1" cols="30" disabled data-i18n="player_2">Player 2</textarea>
 		</div>
 		<canvas id="board" tabindex="1"></canvas>
 		
@@ -20,7 +20,7 @@
 		<ul id="debugMenu" class="flex items-center list-none">
 			<li>
 			<form id= "player1Menu" class="player1Menu">
-				<label class="game-text" for="name_p1">Player 1:</label>
+				<label class="game-text" for="name_p1" data-i18n="player_1">Player 1:</label>
 				<input type="text" class="game-text" size="16" id="name_p1" name="name_p1" value="Ford Prefect"><br>
 				<label class="game-text" for="p1Ai">AI </label>
 				<input type="checkbox" id="p1Ai" name="p1Ai" checked><br>
@@ -40,7 +40,7 @@
 			</li>
 			<li>
 			<form id= "player2Menu" class="player2Menu">
-				<label class="game-text" for="name_p2">Player 2:</label>
+				<label class="game-text" for="name_p2" data-i18n="player_2">Player 2:</label>
 				<input type="text" class="game-text" size="16" id="name_p2" name="name_p2" value="Zaphod Beeblebrox"><br>
 				<label class="game-text" for="p2Ai" checked>AI</label>
 				<input type="checkbox" id="p2Ai" name="p2Ai" checked><br>

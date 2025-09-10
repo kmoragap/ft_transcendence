@@ -8,6 +8,7 @@ services:
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./backend/users/uploads:/app/uploads:ro
+      - ./backend/pong/src:/app/pong-static:ro
     depends_on:
       - frontend
       - auth
@@ -70,7 +71,7 @@ services:
       - ./frontend:/app:cached
       - .:/workspace:ro
       - /app/node_modules
-    command: bash -lc "npm run prepare:pong && npm run dev"
+    command: bash -lc "npm run dev"
     depends_on:
       - auth
     networks:

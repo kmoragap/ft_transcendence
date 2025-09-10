@@ -1,4 +1,4 @@
-import { t } from './../i18n';
+import { t, getCurrentLang } from './../i18n';
 
 let iframeRef: HTMLIFrameElement | null = null;
 
@@ -68,6 +68,16 @@ export function renderGame(): HTMLElement {
     }
   }
 
+  function reloadIframe() {
+    if (iframeRef) {
+      const currentLang = getCurrentLang();
+      const currentSrc = iframeRef.src;
+      const url = new URL(currentSrc);
+      url.searchParams.set('lang', currentLang);
+      iframeRef.src = url.toString();
+    }
+  }
+
   function renderMenuHTML() {
     return `
       <div class="p-6 flex flex-col justify-center items-center h-full">
@@ -128,7 +138,11 @@ export function renderGame(): HTMLElement {
   }
 
   function renderIframeHTML(mode: Exclude<GameMode, 'menu'>) {
-    const src = mode === 'single' ? '/pong.html?mode=single' : '/pong.html?mode=multi';
+    const currentLang = getCurrentLang();
+    const src = mode === 'single' 
+      ? `/pong/?mode=single&lang=${currentLang}` 
+      : `/pong/?mode=multi&lang=${currentLang}`;
+    
     return `
       <div class="w-full h-[60vh]"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
@@ -143,6 +157,31 @@ export function renderGame(): HTMLElement {
   });
 
   setMode('menu');
+
+  // Listen for language changes and reload iframe if needed
+  const languageChangeHandler = () => {
+    if (iframeRef) {
+      // Get current mode from the iframe URL
+      const currentSrc = iframeRef.src;
+      const url = new URL(currentSrc);
+      const mode = url.searchParams.get('mode');
+      
+      if (mode === 'single' || mode === 'multi') {
+        // Destroy and recreate the iframe with new language
+        setMode(mode as Exclude<GameMode, 'menu'>);
+      }
+    }
+  };
+  
+  // Listen for storage changes (language changes)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'lang') {
+      languageChangeHandler();
+    }
+  });
+  
+  // Also listen for custom language change events
+  window.addEventListener('languageChanged', languageChangeHandler);
 
   (section as any).__destroyGameView = destroyGameView;
 

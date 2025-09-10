@@ -114,6 +114,9 @@ export function renderHeader(): HTMLElement {
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
       updateHeader();
+      
+      // Dispatch custom event for language change
+      window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     });
     langLi.appendChild(langSelect);
     

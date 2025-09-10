@@ -1,23 +1,5 @@
 import { defineConfig } from 'vite';
 
-function pongRewritePlugin() {
-  return {
-    name: 'pong-rewrite',
-    configureServer(server) {
-      server.middlewares.use((req, _res, next) => {
-        if (req.url === '/pong' || req.url === '/pong/') req.url = '/pong.html';
-        next();
-      });
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use((req, _res, next) => {
-        if (req.url === '/pong' || req.url === '/pong/') req.url = '/pong.html';
-        next();
-      });
-    },
-  };
-}
-
 export default defineConfig({
   root: '.',
   publicDir: 'public',
@@ -36,5 +18,4 @@ export default defineConfig({
     },
     fs: { strict: false },
   },
-  plugins: [pongRewritePlugin()],
 });

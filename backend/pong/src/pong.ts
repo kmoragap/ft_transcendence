@@ -3,7 +3,7 @@ import { loadConfig } from "./gameData";
 import { controlKeys } from "./controls";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
-import { initI18n } from "./../../../frontend/src/i18n";
+import { initI18n } from "./i18n";
 import { gameService } from "./services/gameService";
 export let p1: Paddle;
 export let p2: Paddle;
@@ -11,18 +11,18 @@ export let ball: Ball;
 
 document.getElementById('gameMenu')!.addEventListener('submit', function(e) {
 	e.preventDefault();
-	if (!data.showingText) {
-		if (ball) ball.stop();
-		if (p1) p1.stop();
-		if (p2) p2.stop();
-		setTimeout(() => startGame(), 1000);
-	}
+	startGame();
 });
 
 export async function startGame() {
 	try {
 		await loadConfig();
-		await initI18n();
+		
+		// Get language from URL parameters or default to 'en'
+		const urlParams = new URLSearchParams(window.location.search);
+		const lang = urlParams.get('lang') || 'en';
+		
+		await initI18n(lang);
 		controlKeys();
 		document.getElementById("board")?.focus();
 		setTimeout(() => countdown(3, 500), 500);

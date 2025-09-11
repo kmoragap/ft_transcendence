@@ -95,7 +95,7 @@ export function renderMyProfile(): HTMLElement {
                   title="Click to change photo" />
               <!-- Upload overlay -->
               <div class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
-                <span class="text-white text-xs font-bold">Change Photo</span>
+                <span class="text-white text-xs font-bold" data-i18n="change_photo">Change Photo</span>
               </div>
             </div>
 
@@ -110,13 +110,13 @@ export function renderMyProfile(): HTMLElement {
               <button id="edit-btn" class="cursor-pointer mt-2.5 text-lg font-bold px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
-                      transition-shadow duration-300">
+                      transition-shadow duration-300" data-i18n="edit_profile">
                 Edit Profile
               </button>
               <button id="refresh-stats-btn" class="cursor-pointer mt-2.5 text-lg font-bold px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45fcf1] font-[jura] hover:shadow-lg
-                      transition-shadow duration-300">
+                      transition-shadow duration-300" data-i18n="refresh_stats">
                 Refresh Stats
               </button>
             </div>
@@ -129,19 +129,19 @@ export function renderMyProfile(): HTMLElement {
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
-              <div class="text-sm text-gray-300" data-i18n="wins_plural">${t('wins_plural')}</div>
+              <div class="text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
             </div>
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
-              <div class="text-sm text-gray-300" data-i18n="losses">${t('losses')}</div>
+              <div class="text-sm text-gray-300" data-i18n="losses">Losses</div>
             </div>
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
-              <div class="text-sm text-gray-300" data-i18n="total_games">${t('total_games')}</div>
+              <div class="text-sm text-gray-300" data-i18n="total_games">Total Games</div>
             </div>
             <div class="p-4 text-center">
               <div class="text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
-              <div class="text-sm text-gray-300" data-i18n="win_rate">${t('win_rate')}</div>
+              <div class="text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
             </div>
           </div>
         </div>
@@ -158,19 +158,19 @@ export function renderMyProfile(): HTMLElement {
       
       <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4">
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-[#66fcf1] text-left">Display Name</label>
+          <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="display_name">Display Name</label>
           <input name="name" type="text" value="${user.name}"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
         </div>
         
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-[#66fcf1] text-left">Username</label>
+          <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="username">Username</label>
           <input name="username" type="text" value="${user.username}"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
         </div>
         
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-[#66fcf1] text-left">Email</label>
+          <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="email">Email</label>
           <input name="email" type="email" value="${user.email}"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
         </div>
@@ -179,13 +179,13 @@ export function renderMyProfile(): HTMLElement {
           <button type="button" id="cancel-btn" class="cursor-pointer text-lg font-bold px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
-                  transition-shadow duration-300">
+                  transition-shadow duration-300" data-i18n="cancel">
             Cancel
           </button>
           <button type="submit" class="cursor-pointer text-lg font-bold px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
-                  transition-shadow duration-300">
+                  transition-shadow duration-300" data-i18n="save_changes">
             Save Changes
           </button>
         </div>
@@ -198,11 +198,17 @@ export function renderMyProfile(): HTMLElement {
     user = getCurrentUser();
     section.innerHTML = getViewHTML();
     bindViewEvents();
+    updateText(); // Ensure translations are applied after re-rendering
   };
 
   updateUserData();
   store.subscribe(updateUserData);
   sessionManager.onSessionRestored(updateUserData);
+  
+  // Listen for language changes
+  window.addEventListener('languageChanged', () => {
+    updateUserData();
+  });
   
   setTimeout(() => {
     updateUserData();
@@ -226,7 +232,7 @@ export function renderMyProfile(): HTMLElement {
 
         // Optional 2MB client-side guard (match backend)
         if (file.size > 2 * 1024 * 1024) {
-          alert('Please choose an image under 2MB.');
+          alert(t('image_too_large'));
           fileInput.value = '';
           return;
         }
@@ -245,7 +251,7 @@ export function renderMyProfile(): HTMLElement {
           user = { ...user, avatarUrl: url };
           updateCurrentUserAvatar(url);
         } catch (e: any) {
-          alert(e?.message || 'Upload failed.');
+          alert(e?.message || t('upload_failed'));
         } finally {
           // Reset UI state
           if (avatarImg) {
@@ -265,17 +271,20 @@ export function renderMyProfile(): HTMLElement {
       user = { ...user, ...newStats }
       section.innerHTML = getViewHTML()
       bindViewEvents()
+      updateText(); // Apply translations after refresh
     })
   }
 
   function enterEditMode() {
     section.innerHTML = getEditHTML()
+    updateText(); // Apply translations to edit mode
     const form = section.querySelector('form') as HTMLFormElement
     const cancel = section.querySelector('#cancel-btn') as HTMLButtonElement
 
     cancel.addEventListener('click', () => {
       section.innerHTML = getViewHTML()
       bindViewEvents()
+      updateText(); // Apply translations when returning to view mode
     })
 
     form.addEventListener('submit', async e => {
@@ -311,11 +320,12 @@ export function renderMyProfile(): HTMLElement {
         user = updated
         section.innerHTML = getViewHTML()
         bindViewEvents()
+        updateText(); // Apply translations after successful update
         
-        alert('Profile updated successfully!');
+        alert(t('profile_updated'));
       } catch (error: any) {
         console.error('Failed to update profile:', error);
-        alert(error?.message || 'Failed to update profile. Please try again.');
+        alert(error?.message || t('update_failed'));
       }
     })
   }

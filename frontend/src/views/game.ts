@@ -1,4 +1,4 @@
-import { t, getCurrentLang } from './../i18n';
+import { t, getCurrentLang, updateText } from './../i18n';
 
 let iframeRef: HTMLIFrameElement | null = null;
 
@@ -61,6 +61,7 @@ export function renderGame(): HTMLElement {
       destroyIframe();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
+      updateText(); // Apply translations after HTML is inserted into DOM
     } else {
       showBack();
       root.innerHTML = renderIframeHTML(mode);
@@ -170,6 +171,9 @@ export function renderGame(): HTMLElement {
         // Destroy and recreate the iframe with new language
         setMode(mode as Exclude<GameMode, 'menu'>);
       }
+    } else {
+      // If we're in menu mode, just update the text
+      updateText();
     }
   };
   

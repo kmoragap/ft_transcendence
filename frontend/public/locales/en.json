@@ -14,6 +14,8 @@
 	"game": "Game",
 	"profile": "Profile",
 	"my_profile": "My Profile",
+	"edit_profile": "Edit Profile",
+	"refresh_stats": "Refresh Stats",
 	"exit": "Exit",
 	"accessibility": "Accessibility",
 	"theme": "Theme",
@@ -41,6 +43,8 @@
 	"top_players": "Top Players",
 	"last_5_games": "Last 5 Games",
 	"top_5_players": "Top 5 Players",
+	"failed_to_load_games": "Failed to load games",
+	"failed_to_load_leaderboard": "Failed to load leaderboard",
 	"no_games": "No games to display.",
 	"no_players": "No players to display.",
 	"loading": "Loading...",
@@ -48,5 +52,14 @@
 	"wins_plural": "Wins",
 	"losses": "Losses",
 	"total_games": "Total Games",
-	"win_rate": "Win Rate"
+	"win_rate": "Win Rate",
+	"cancel": "Cancel",
+	"save_changes": "Save Changes",
+	"change_photo": "Change Photo",
+	"display_name": "Display Name",
+	"upload_failed": "Upload failed.",
+	"profile_updated": "Profile updated successfully!",
+	"update_failed": "Failed to update profile. Please try again.",
+	"image_too_large": "Please choose an image under 2MB."
+
 }

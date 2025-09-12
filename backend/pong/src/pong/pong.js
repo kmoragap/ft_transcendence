@@ -20,11 +20,11 @@ function loadTA(id) {
 }
 function loadIn(id) {
   const el = document.getElementById(id);
-  return el.value;
+  return el ? el.value : "";
 }
 function loadInB(id) {
   const el = document.getElementById(id);
-  return el.checked;
+  return el ? el.checked : false;
 }
 async function loadConfig() {
   await new Promise((resolve) => {
@@ -288,53 +288,45 @@ function touchUp() {
 
 // ../../frontend/src/i18n.ts
 var translations = {};
-var currentLang = "en";
-async function loadLanguage(lang) {
-  currentLang = lang;
-  document.documentElement.setAttribute("lang", lang);
-  try {
-    const res = await fetch(`/locales/${lang}.json`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Missing locale: ${lang}`);
-    translations = await res.json();
-    localStorage.setItem("lang", lang);
-  } catch (err) {
-    if (lang !== "en") {
-      const res = await fetch(`/locales/en.json`, { cache: "no-store" });
-      translations = await res.json();
-      currentLang = "en";
-      document.documentElement.setAttribute("lang", "en");
-      document.documentElement.dir = "ltr";
-      localStorage.setItem("lang", "en");
-    }
-  }
-  updateText();
-}
+var currentLanguage = "en";
 function t(key) {
-  return translations[key] ?? key;
+  return translations[key] || key;
 }
-function updateText() {
+async function initI18n(lang = "en") {
+  currentLanguage = lang;
+  try {
+    const response = await fetch(`/pong/locales/${lang}.json`);
+    if (response.ok) {
+      translations = await response.json();
+    } else {
+      if (lang !== "en") {
+        const fallbackResponse = await fetch("/pong/locales/en.json");
+        if (fallbackResponse.ok) {
+          translations = await fallbackResponse.json();
+        }
+      }
+    }
+  } catch (error) {
+    translations = {
+      "scores": "Scores",
+      "wins": "Wins",
+      "player_1": "Player 1",
+      "player_2": "Player 2",
+      "game_over": "Game Over",
+      "restart": "Restart",
+      "pause": "Pause",
+      "resume": "Resume"
+    };
+  }
+  updateHTMLTranslations();
+}
+function updateHTMLTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
-    if (key) el.textContent = t(key);
-  });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (key && (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
-      el.placeholder = t(key);
+    if (key && translations[key]) {
+      el.textContent = translations[key];
     }
   });
-  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-title");
-    if (key) el.setAttribute("title", t(key));
-  });
-  document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-aria-label");
-    if (key) el.setAttribute("aria-label", t(key));
-  });
-}
-async function initI18n() {
-  const saved = localStorage.getItem("lang") || "en";
-  await loadLanguage(saved);
 }
 
 // src/Paddle.draw.ts
@@ -423,9 +415,11 @@ var Paddle = class {
     this._y = data.canvas.height / 2 - data.paddleHeight / 2;
     this._p = p;
     this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
-    this._paddleGrad.addColorStop(0, this._p.outerCol);
-    this._paddleGrad.addColorStop(0.5, this._p.innerCol);
-    this._paddleGrad.addColorStop(1, this._p.outerCol);
+    const outerCol = this._p.outerCol || "#808080";
+    const innerCol = this._p.innerCol || "#ffffff";
+    this._paddleGrad.addColorStop(0, outerCol);
+    this._paddleGrad.addColorStop(0.5, innerCol);
+    this._paddleGrad.addColorStop(1, outerCol);
     this.draw();
   }
   go() {
@@ -482,9 +476,10 @@ var Paddle = class {
     data.ctx.beginPath();
     data.ctx.fillStyle = this._paddleGrad;
     data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
+    const cornerCol = this._p.cornerCol || "#ff0000";
     this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
     this._topCornerGrad.addColorStop(0, "white");
-    this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
+    this._topCornerGrad.addColorStop(0.75, cornerCol);
     this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
     this._bottomCornerGrad.addColorStop(0, "white");
     this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
@@ -853,7 +848,9 @@ function removeBall2(ball) {
 async function startGame() {
   try {
     await loadConfig();
-    await initI18n();
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get("lang") || "en";
+    await initI18n(lang);
     controlKeys();
     document.getElementById("board")?.focus();
     setTimeout(() => countdown(3, 500), 500);
@@ -975,7 +972,12 @@ async function endGame() {
   else winner = data.p2.name;
   data.showingText = false;
 }
-startGame();
+document.addEventListener("DOMContentLoaded", async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const lang = urlParams.get("lang") || "en";
+  await initI18n(lang);
+  startGame();
+});
 export {
   balls,
   endGame,

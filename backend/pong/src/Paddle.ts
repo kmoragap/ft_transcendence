@@ -24,9 +24,14 @@ export default class Paddle {
 		this._y = data.canvas.height / 2 - data.paddleHeight / 2;
 		this._p = p;
 		this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
-		this._paddleGrad.addColorStop(0, this._p.outerCol);
-		this._paddleGrad.addColorStop(0.5, this._p.innerCol);
-		this._paddleGrad.addColorStop(1, this._p.outerCol);
+		
+		// Use fallback colors if the color values are empty or invalid
+		const outerCol = this._p.outerCol || '#808080';
+		const innerCol = this._p.innerCol || '#ffffff';
+		
+		this._paddleGrad.addColorStop(0, outerCol);
+		this._paddleGrad.addColorStop(0.5, innerCol);
+		this._paddleGrad.addColorStop(1, outerCol);
 		this.draw();
 	}
 
@@ -68,7 +73,7 @@ export default class Paddle {
 		//define corner grads
 		this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
 		this._topCornerGrad.addColorStop(0, "white");
-		this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
+		this._topCornerGrad.addColorStop(0.75, cornerCol);
 		this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
 		this._bottomCornerGrad.addColorStop(0, "white");
 		this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);

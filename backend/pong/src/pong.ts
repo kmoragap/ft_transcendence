@@ -4,8 +4,7 @@ import { controlKeys } from "./controls";
 import Paddle from "./Paddle";
 import { midline } from "./Paddle.draw";
 import Ball from "./Ball";
-import { initI18n } from "./../../../frontend/src/i18n";
-//import { userService, UserData } from "./services/userService";
+import { initI18n } from "./i18n";
 import { gameService } from "./services/gameService";
 
 export let pad: Paddle[] = [];
@@ -21,7 +20,12 @@ export function removeBall(ball: Ball): void {
 export async function startGame() {
 	try {
 		await loadConfig();
-		await initI18n();
+		
+		// Get language from URL parameters or default to 'en'
+		const urlParams = new URLSearchParams(window.location.search);
+		const lang = urlParams.get('lang') || 'en';
+		
+		await initI18n(lang);
 		controlKeys();
 		document.getElementById("board")?.focus();
 		setTimeout(() => countdown(3, 500), 500);

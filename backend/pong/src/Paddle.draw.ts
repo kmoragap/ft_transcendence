@@ -76,18 +76,22 @@ export function midline(): void {
 export function scoreText(p: Paddle, wins: boolean): void {
 	data.showingText = true;
 	data.ctx.font = `bold ${data.canvas.height/6}px system-ui`;
-	data.ctx.fillStyle = p.getTCG();
-	data.ctx.strokeStyle = p.getPG();
+	var fillGrad = data.ctx.createLinearGradient(0, data.canvas.height * 2 / 5, 0, data.canvas.height * 3 / 5);
+	fillGrad.addColorStop(0, p.getPl().outerCol);
+	fillGrad.addColorStop(0.5, p.getPl().innerCol);
+	fillGrad.addColorStop(1, p.getPl().outerCol);
+	data.ctx.fillStyle = fillGrad;
+	data.ctx.strokeStyle = p.getPl().cornerCol;
 	data.ctx.lineWidth = data.canvas.height/60;
 	data.ctx.textAlign = "center";
 	data.ctx.textBaseline = "bottom";
-	data.ctx.strokeText(p.getPlr().name, data.canvas.width/2, data.canvas.height/2);
-	data.ctx.fillText(p.getPlr().name, data.canvas.width/2, data.canvas.height/2);
+	data.ctx.strokeText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.fillText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
 	data.ctx.textBaseline = "top";
 	var line2: string;
 	if (wins) line2 = t('wins') + "!";
-		else line2 = t('scores') + "!";
-	data.ctx.strokeText(line2, data.canvas.width/2, data.canvas.height/2);
-	data.ctx.fillText(line2, data.canvas.width/2, data.canvas.height/2);
+	else line2 = t('scores') + "!";
+	data.ctx.strokeText(line2, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.fillText(line2, data.canvas.width / 2, data.canvas.height / 2);
 	endRound();
 }

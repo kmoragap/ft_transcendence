@@ -1,6 +1,5 @@
 import { data } from "./gameData";
-import { loadConfig } from "./gameData";
-import { controlKeys } from "./controls";
+import { newGame } from "./gameData";
 import Paddle from "./Paddle";
 import { midline } from "./Paddle.draw";
 import Ball from "./Ball";
@@ -18,20 +17,17 @@ export function removeBall(ball: Ball): void {
 	balls = shrunk;
 }
 
-export async function startGame() {
+export async function startGame(fourPlayers: boolean) {
 	try {
-		await loadConfig();
 		await initI18n();
-		controlKeys();
-		document.getElementById("board")?.focus();
-		setTimeout(() => countdown(3, 500), 500);
+		await newGame(fourPlayers);
 //		collisionTest()
 	} catch (error) {
 		console.error('Failed to load configuration:', error);
 	}
 }
 
-function countdown(nr: number, ms: number) {
+export function countdown(nr: number, ms: number) {
 	data.showingText = true;
 	data.ctx.fillStyle = data.bg;
 	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
@@ -63,17 +59,17 @@ function initBoard():void {
 	data.showingText = false;
 	data.keys = {};
 	balls.push(new Ball());
-	pad = new Array(new Paddle(0, data.p1));
-	if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+	pad = new Array(new Paddle(0, data.p[0]));console.log(data.mode);
+	if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
 	if (data.mode == "doublePaddle") {
-		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
-		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1));
-		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2));
+		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
+		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
+		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
 	}
 	if (data.mode == "fourPlayers")	{
-		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p2));
-		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p3));
-		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p4));
+		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
+		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
+		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
 	}
 }
 
@@ -134,7 +130,7 @@ function render(): void {
 }
 
 export function endRound(): void {
-	//gameService.updateScore(data.gameID, data.p1.score, data.p2.score);
+	//gameService.updateScore(data.gameID, data.p[0].score, data.p[1].score);
 	while (balls.length) {
 		balls[0].stop();
 		balls.shift();
@@ -143,17 +139,17 @@ export function endRound(): void {
 		pad[0].stop();
 		pad.shift();
 	}
-	if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 1500);
+	if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) setTimeout(startRound, 1500);
 	else endGame();
 }
 
 export async function endGame() {
 	var winner: string;
-	if (data.p1.score > data.p2.score)
-		winner = data.p1.name;
-	else winner = data.p2.name;
+	if (data.p[0].score > data.p[1].score)
+		winner = data.p[0].name;
+	else winner = data.p[1].name;
 	data.showingText = false;
-	//const res = await gameService.finishGame(data.gameID, data.p1.score, data.p2.score, winner);
+	//const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
 	//console.log(res);
 }
 
@@ -176,8 +172,8 @@ async function testCreateGame() {
 
 function collisionTest(): void {
 	data.showingText = false;
-	data.p1.isAi = false;
-//	data.p2.isAi = false;
+	data.p[0].isAi = false;
+//	data.p[1].isAi = false;
 	data.multiball = false;
 	data.trailLength = 0;
 	data.maxScore = 1;
@@ -195,7 +191,7 @@ function collisionTest(): void {
 	balls.push(new Ball(data.canvas.width / 2 + data.paddleWidth * 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6, 0, -0.1));
 	
 	
-	pad = new Array(new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p1), new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p2));
+	pad = new Array(new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p[0]), new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p[1]));
 	pad[0].go();
 	pad[1].go();
 	balls[0].go();
@@ -212,4 +208,4 @@ function collisionTest(): void {
 }
 
 //testCreateGame();
-startGame();
+startGame(false);

@@ -47,6 +47,7 @@ export default class Paddle {
 	public getY(): number {return this._y;}
 	public getX2(): number {return this._x + data.paddleWidth;}
 	public getY2(): number {return this._y + data.paddleHeight;}
+	public getPl(): playerData {return this._p;}
 	public getPG(): CanvasGradient {return this._paddleGrad;}
 	public getTCG(): CanvasGradient {return this._topCornerGrad;}
 	public getBCG(): CanvasGradient {return this._bottomCornerGrad;}

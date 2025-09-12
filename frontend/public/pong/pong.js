@@ -1,3 +1,184 @@
+// src/controls.ts
+var lastX;
+function controlKeys() {
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
+      ev.preventDefault();
+    if (ev.key == "Shift" || ev.key == "Control") {
+      if (ev.location == 1) data.keys[ev.key] = true;
+    } else data.keys[ev.key] = true;
+  });
+  document.addEventListener("keyup", (ev) => {
+    if (pad.length) {
+      if (ev.key == "Shift" || ev.key == "Control") {
+        if (ev.location == 1) {
+          if (ev.key == data.p[0].up || ev.key == data.p[0].down) {
+            pad[0].setDir(0);
+            if (data.mode == "doublePaddle") pad[2].setDir(0);
+          } else if (ev.key == data.p[1].up || ev.key == data.p[1].down) {
+            pad[1].setDir(0);
+            if (data.mode == "doublePaddle") pad[3].setDir(0);
+          }
+        }
+        data.keys[ev.key] = false;
+      } else {
+        for (let i = 0; i < pad.length; i++) {
+          pad[i].setDir(0);
+          data.keys[ev.key] = false;
+        }
+      }
+      if (ev.key == "Escape") {
+        data.keys[ev.key] = false;
+        data.go = false;
+        while (pad.length) {
+          pad[0].stop();
+          pad.shift();
+        }
+        while (balls.length) {
+          balls[0].stop();
+          balls.shift();
+        }
+      }
+    }
+  });
+  data.canvas.addEventListener("touchstart", touchDown);
+  data.canvas.addEventListener("touchend", touchUp);
+}
+function touchDown(ev) {
+  lastX = data.canvas.height / 2;
+  if (data.go) {
+    var x = lastX = ev.touches[0].clientX;
+    var y = ev.touches[0].clientY;
+    if (x < data.canvas.width / 4) {
+      if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
+      if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
+    }
+    if (x > data.canvas.width * 3 / 4) {
+      if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+      if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+    }
+  }
+}
+function touchUp() {
+  if (data.go) {
+    if (lastX < data.canvas.width / 4) {
+      data.keys[data.p[0].up] = false;
+      data.keys[data.p[0].down] = false;
+      pad[0].setDir(0);
+      if (data.mode == "doublePaddle") pad[2].setDir(0);
+    }
+    if (lastX > data.canvas.width * 3 / 4) {
+      data.keys[data.p[1].up] = false;
+      data.keys[data.p[1].down] = false;
+      pad[1].setDir(0);
+      if (data.mode == "doublePaddle") pad[3].setDir(0);
+    }
+  }
+}
+
+// src/menus.ts
+function br() {
+  return Object.assign(document.createElement("br"));
+}
+function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
+  const form = Object.assign(document.createElement("form"), { id: `player${p}Menu`, className: `player${p}Menu` });
+  const e1 = Object.assign(document.createElement("label"), { className: "game-text", for: `name_p${p}`, textContent: `Player ${p}: ` });
+  const e2 = Object.assign(document.createElement("input"), { className: "game-text", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name });
+  const e3 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Ai`, textContent: "AI " });
+  const e4 = Object.assign(document.createElement("input"), { type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi });
+  const e5 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Up`, textContent: "Up: " });
+  const e6 = Object.assign(document.createElement("input"), { className: "game-text", type: "text", size: "9", id: `p${p}Up`, value: up });
+  const e7 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Down`, textContent: "Down: " });
+  const e8 = Object.assign(document.createElement("input"), { className: "game-text", type: "text", size: "9", id: `p${p}Down`, value: down });
+  const e9 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}InnerCol`, name: `p${p}InnerCol`, value: c1 });
+  const e10 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}InnerCol`, textContent: "paddle inner color" });
+  const e11 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}OuterCol`, name: `p${p}OuterCol`, value: c2 });
+  const e12 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}OuterCol`, textContent: "paddle outer color" });
+  const e13 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}CornerCol`, name: `p${p}CornerCol`, value: c3 });
+  const e14 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}CornerCol`, textContent: "paddle corner color" });
+  form.append(e1, e2, br(), e3, e4, br(), e5, e6, e7, e8, br(), e9, e10, br(), e11, e12, br(), e13, e14, br());
+  const ul = document.createElement("li");
+  ul.appendChild(form);
+  list.appendChild(ul);
+}
+function gameSetupMenu(fourPlayers) {
+  const settings = Object.assign(document.createElement("form"), { id: "settings", className: "settings" });
+  const bgColors = Object.assign(document.createElement("form"), { id: "bgColors", className: "bgColors" });
+  const startBtn = Object.assign(document.createElement("form"), { id: "startBtn", className: "startBtn" });
+  const e1 = Object.assign(document.createElement("select"), { name: "paddleSpeed", id: "paddleSpeed" });
+  const e2 = [
+    { value: "glacial", text: "glacial" },
+    { value: "slow", text: "slow" },
+    { value: "standard", text: "standard", selected: true },
+    { value: "fast", text: "fast" },
+    { value: "insane", text: "insane" }
+  ];
+  e2.forEach((option) => {
+    const opt = Object.assign(document.createElement("option"), { value: option.value, textContent: option.text });
+    if (option.selected) opt.selected = true;
+    e1.appendChild(opt);
+  });
+  const e3 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "paddleSpeed", textContent: "Paddle speed" });
+  const e4 = Object.assign(document.createElement("select"), { name: "ballSpeed", id: "ballSpeed" });
+  const e5 = [
+    { value: "glacial", text: "glacial" },
+    { value: "slow", text: "slow" },
+    { value: "standard", text: "standard", selected: true },
+    { value: "fast", text: "fast" },
+    { value: "insane", text: "insane" }
+  ];
+  e5.forEach((option) => {
+    const opt = Object.assign(document.createElement("option"), {
+      value: option.value,
+      textContent: option.text
+    });
+    if (option.selected) opt.selected = true;
+    e4.appendChild(opt);
+  });
+  const e6 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "ballSpeed", textContent: "Ball speed" });
+  const e7 = Object.assign(document.createElement("select"), { name: "ballSize", id: "ballSize", style: { width: "20px" } });
+  const e8 = [
+    { value: "tiny", text: "tiny" },
+    { value: "small", text: "small" },
+    { value: "normal", text: "normal", selected: true },
+    { value: "big", text: "big" },
+    { value: "huge", text: "huge" }
+  ];
+  e8.forEach((option) => {
+    const opt = Object.assign(document.createElement("option"), { value: option.value, textContent: option.text });
+    if (option.selected) opt.selected = true;
+    e7.appendChild(opt);
+  });
+  const e9 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "ballSize", textContent: "Ball size" });
+  const e10 = Object.assign(document.createElement("input"), { type: "checkbox", id: "multiball", name: "multiball", checked: false });
+  const e11 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "multiball", textContent: "Multiball" });
+  const e12 = Object.assign(document.createElement("input"), { type: "checkbox", id: "doublePaddle", name: "doublePaddle", checked: false });
+  const e13 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "doublePaddle", textContent: "Double paddles" });
+  const e14 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "uiCol", name: "uiCol", value: "#ffffff" });
+  const e15 = Object.assign(document.createElement("label"), { className: "game-text", for: "uiCol", textContent: "UI color" });
+  const e16 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "ballCol", name: "ballCol", value: "#0000ff" });
+  const e17 = Object.assign(document.createElement("label"), { className: "game-text", for: "ballCol", textContent: "Ball color" });
+  const e18 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "innerBg", name: "innerBg", value: "#008000" });
+  const e19 = Object.assign(document.createElement("label"), { className: "game-text", for: "innerBg", textContent: "inner background color" });
+  const e20 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000" });
+  const e21 = Object.assign(document.createElement("label"), { className: "game-text", for: "outerBg", textContent: "outer background color" });
+  const e22 = Object.assign(document.createElement("input"), { type: "submit", className: "game-start-button", value: "START" });
+  e22.addEventListener("submit", function(e) {
+    e.preventDefault();
+    loadConfig(fourPlayers);
+  });
+  if (fourPlayers)
+    settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br());
+  else settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br(), e12, e13, br());
+  bgColors.append(e14, e15, br(), e16, e17, br(), e18, e19, br(), e20, e21, br());
+  startBtn.append(e22);
+  const ul = Object.assign(document.createElement("ul"), { id: "gameSetup", className: "flex items-center list-none" });
+  ul.appendChild(settings);
+  ul.appendChild(bgColors);
+  ul.append(startBtn);
+  return ul;
+}
+
 // src/gameData.ts
 var data;
 function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
@@ -15,9 +196,6 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   if (isAi) p.name = "Marvin";
   return p;
 }
-function loadTA(id) {
-  return document.getElementById(id);
-}
 function loadIn(id) {
   const el = document.getElementById(id);
   return el.value;
@@ -26,16 +204,40 @@ function loadInB(id) {
   const el = document.getElementById(id);
   return el.checked;
 }
-async function loadConfig() {
+async function newGame(fourPlayers) {
   await new Promise((resolve) => {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  var canvas = document.getElementById("board");
+  const appDiv = document.getElementById("app");
+  const players = Object.assign(document.createElement("ul"), { id: "playerSetup", className: "flex items-center list-none" });
+  playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  if (fourPlayers) {
+    playerSetupMenu(players, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
+    playerSetupMenu(players, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+  }
+  appDiv.appendChild(players);
+  appDiv.appendChild(gameSetupMenu(fourPlayers));
+  document.getElementById("gameSetup").addEventListener("submit", function(e) {
+    e.preventDefault();
+    loadConfig(fourPlayers);
+  });
+}
+function loadConfig(fourPlayers) {
+  const appDiv = document.getElementById("app");
+  const scoreboard = Object.assign(document.createElement("div"), { className: "scoreboard" });
+  const p1name = Object.assign(document.createElement("textarea"), { className: "p1name game-text", rows: "1", cols: "30", disabled: "true" });
+  const p1score = Object.assign(document.createElement("textarea"), { className: "p1score game-text", rows: "1", cols: "2", disabled: "true" });
+  const p2score = Object.assign(document.createElement("textarea"), { className: "p2score game-text", rows: "1", cols: "2", disabled: "true" });
+  const p2name = Object.assign(document.createElement("textarea"), { className: "p2name game-text", rows: "1", cols: "30", disabled: "true" });
+  scoreboard.append(p1name, p1score, " : ", p2score, p2name);
+  const canvas = Object.assign(document.createElement("canvas"), { id: "board", tabIndex: 1 });
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - loadTA("p1score").clientHeight;
+  canvas.height = window.innerHeight - p1score.clientHeight;
   const ctx = canvas.getContext("2d");
-  var p1 = loadPlayer(
+  var p = [];
+  p.push(loadPlayer(
     loadIn("name_p1"),
     "",
     //player ID
@@ -45,8 +247,8 @@ async function loadConfig() {
     loadIn("p1InnerCol"),
     loadIn("p1OuterCol"),
     loadIn("p1CornerCol")
-  );
-  var p2 = loadPlayer(
+  ));
+  p.push(loadPlayer(
     loadIn("name_p2"),
     "",
     //player ID
@@ -56,8 +258,8 @@ async function loadConfig() {
     loadIn("p2InnerCol"),
     loadIn("p2OuterCol"),
     loadIn("p2CornerCol")
-  );
-  var p3 = loadPlayer(
+  ));
+  if (fourPlayers) p.push(loadPlayer(
     loadIn("name_p3"),
     "",
     //player ID
@@ -67,8 +269,8 @@ async function loadConfig() {
     loadIn("p3InnerCol"),
     loadIn("p3OuterCol"),
     loadIn("p3CornerCol")
-  );
-  var p4 = loadPlayer(
+  ));
+  if (fourPlayers) p.push(loadPlayer(
     loadIn("name_p4"),
     "",
     //player ID
@@ -78,28 +280,27 @@ async function loadConfig() {
     loadIn("p4InnerCol"),
     loadIn("p4OuterCol"),
     loadIn("p4CornerCol")
-  );
+  ));
   const loadData = {
     canvas,
     fps: 50,
-    nameTB1: loadTA("p1name"),
-    scoreTB1: loadTA("p1score"),
-    scoreTB2: loadTA("p2score"),
-    nameTB2: loadTA("p2name"),
+    nameTB1: p1name,
+    scoreTB1: p1score,
+    scoreTB2: p2score,
+    nameTB2: p2name,
     timestamp: 0,
     lastTime: 0,
     paddleWidth: canvas.width / 60,
     paddleHeight: canvas.height / 5,
     ctx,
-    p1,
-    p2,
-    p3,
-    p4,
+    p,
     paddleSpeed: 40,
     ballSpeed: 10,
     ballSize: 80,
-    maxScore: parseInt(loadIn("maxScore") || "10", 10),
-    trailLength: parseInt(loadIn("trailLength") || "20", 10),
+    maxScore: 3,
+    //parseInt(loadIn("maxScore") || "10", 10),
+    trailLength: 20,
+    //parseInt(loadIn("trailLength") || "20", 10),
     bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
     uiCol: loadIn("uiCol"),
     ballCol: loadIn("ballCol"),
@@ -112,19 +313,21 @@ async function loadConfig() {
     gameID: "",
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
-    mode: document.getElementById("gameMenu2").elements["mode"].value,
+    mode: "twoPlayers",
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (loadData.mode == "fourPlayers") {
-    loadData.nameTB1.value = p1.name + " / " + p2.name;
-    loadData.nameTB2.value = p3.name + " / " + p4.name;
+  if (fourPlayers) {
+    loadData.mode = "fourPlayers";
+    loadData.nameTB1.value = p[0].name + " / " + p[1].name;
+    loadData.nameTB2.value = p[2].name + " / " + p[3].name;
   } else {
-    loadData.nameTB1.value = p1.name;
-    loadData.nameTB2.value = p2.name;
+    if (loadInB("doublePaddle")) loadData.mode = "doublePaddle";
+    loadData.nameTB1.value = p[0].name;
+    loadData.nameTB2.value = p[1].name;
   }
   loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
   loadData.bg.addColorStop(0, loadIn("outerBg"));
@@ -191,99 +394,13 @@ async function loadConfig() {
       break;
   }
   data = loadData;
-}
-
-// src/controls.ts
-document.getElementById("gameMenu").addEventListener("submit", function(e) {
-  e.preventDefault();
-  if (!data.showingText) {
-    while (pad.length) {
-      pad[0].stop();
-      pad.shift();
-    }
-    while (balls.length) {
-      balls[0].stop();
-      balls.shift();
-    }
-    setTimeout(() => startGame(), 1e3);
-  }
-});
-var lastX;
-function controlKeys() {
-  document.addEventListener("keydown", (ev) => {
-    console.log(ev.key);
-    if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
-      ev.preventDefault();
-    if (ev.key == "Shift" || ev.key == "Control") {
-      if (ev.location == 1) data.keys[ev.key] = true;
-    } else data.keys[ev.key] = true;
-  });
-  document.addEventListener("keyup", (ev) => {
-    if (pad.length) {
-      if (ev.key == "Shift" || ev.key == "Control") {
-        if (ev.location == 1) {
-          if (ev.key == data.p1.up || ev.key == data.p1.down) {
-            pad[0].setDir(0);
-            if (data.mode == "doublePaddle") pad[2].setDir(0);
-          } else if (ev.key == data.p2.up || ev.key == data.p2.down) {
-            pad[1].setDir(0);
-            if (data.mode == "doublePaddle") pad[3].setDir(0);
-          }
-        }
-        data.keys[ev.key] = false;
-      } else {
-        for (let i = 0; i < pad.length; i++) {
-          pad[i].setDir(0);
-          data.keys[ev.key] = false;
-        }
-      }
-      if (ev.key == "Escape") {
-        data.keys[ev.key] = false;
-        data.go = false;
-        while (pad.length) {
-          pad[0].stop();
-          pad.shift();
-        }
-        while (balls.length) {
-          balls[0].stop();
-          balls.shift();
-        }
-      }
-    }
-  });
-  data.canvas.addEventListener("touchstart", touchDown);
-  data.canvas.addEventListener("touchend", touchUp);
-}
-function touchDown(ev) {
-  lastX = data.canvas.height / 2;
-  if (data.go) {
-    var x = lastX = ev.touches[0].clientX;
-    var y = ev.touches[0].clientY;
-    if (x < data.canvas.width / 4) {
-      if (y < data.canvas.height / 4) data.keys[data.p1.up] = true;
-      if (y > data.canvas.height * 3 / 4) data.keys[data.p1.down] = true;
-    }
-    if (x > data.canvas.width * 3 / 4) {
-      if (y < data.canvas.height / 4) data.keys[data.p2.up] = true;
-      if (y > data.canvas.height * 3 / 4) data.keys[data.p2.down] = true;
-    }
-  }
-}
-function touchUp() {
-  if (data.go) {
-    if (lastX < data.canvas.width / 4) {
-      data.keys[data.p1.up] = false;
-      data.keys[data.p1.down] = false;
-      pad[0].setDir(0);
-      if (data.mode == "doublePaddle") pad[2].setDir(0);
-    }
-    if (lastX > data.canvas.width * 3 / 4) {
-      data.keys[data.p2.up] = false;
-      data.keys[data.p2.down] = false;
-      pad[1].setDir(0);
-      if (data.mode == "doublePaddle") pad[3].setDir(0);
-    }
-  }
+  document.getElementById("playerSetup").remove();
+  document.getElementById("gameSetup").remove();
+  appDiv.appendChild(scoreboard);
+  appDiv.appendChild(canvas);
+  controlKeys();
+  document.getElementById("board")?.focus();
+  setTimeout(() => countdown(3, 500), 500);
 }
 
 // ../../frontend/src/i18n.ts
@@ -395,8 +512,12 @@ function midline() {
 function scoreText(p, wins) {
   data.showingText = true;
   data.ctx.font = `bold ${data.canvas.height / 6}px system-ui`;
-  data.ctx.fillStyle = p.getTCG();
-  data.ctx.strokeStyle = p.getPG();
+  var fillGrad = data.ctx.createLinearGradient(0, data.canvas.height * 2 / 5, 0, data.canvas.height * 3 / 5);
+  fillGrad.addColorStop(0, p.getPl().outerCol);
+  fillGrad.addColorStop(0.5, p.getPl().innerCol);
+  fillGrad.addColorStop(1, p.getPl().outerCol);
+  data.ctx.fillStyle = fillGrad;
+  data.ctx.strokeStyle = p.getPl().cornerCol;
   data.ctx.lineWidth = data.canvas.height / 60;
   data.ctx.textAlign = "center";
   data.ctx.textBaseline = "bottom";
@@ -450,6 +571,9 @@ var Paddle = class {
   }
   getY2() {
     return this._y + data.paddleHeight;
+  }
+  getPl() {
+    return this._p;
   }
   getPG() {
     return this._paddleGrad;
@@ -716,19 +840,19 @@ var Ball = class {
       if (balls.length == 1) {
         data.go = false;
         if (this._x <= this._size) {
-          data.p2.score++;
-          data.scoreTB2.value = String(data.p2.score);
-          if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
+          data.p[1].score++;
+          data.scoreTB2.value = String(data.p[1].score);
+          if (pad.length) setTimeout(() => scoreText(pad[1], data.p[1].score == data.maxScore), 100);
           data.serve = -1;
         }
         if (this._x >= data.canvas.width - this._size) {
-          data.p1.score++;
-          data.scoreTB1.value = String(data.p1.score);
-          if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
+          data.p[0].score++;
+          data.scoreTB1.value = String(data.p[0].score);
+          if (pad.length) setTimeout(() => scoreText(pad[0], data.p[0].score == data.maxScore), 100);
           data.serve = 1;
         }
       }
-      removeBall2(this);
+      removeBall(this);
     }
     if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
   }
@@ -844,19 +968,16 @@ var gameService = new GameService();
 // src/pong.ts
 var pad = [];
 var balls = [];
-function removeBall2(ball) {
+function removeBall(ball) {
   let shrunk = [];
   for (let i = 0; i < balls.length; i++)
     if (balls[i] != ball) shrunk.push(balls[i]);
   balls = shrunk;
 }
-async function startGame() {
+async function startGame(fourPlayers) {
   try {
-    await loadConfig();
     await initI18n();
-    controlKeys();
-    document.getElementById("board")?.focus();
-    setTimeout(() => countdown(3, 500), 500);
+    await newGame(fourPlayers);
   } catch (error) {
     console.error("Failed to load configuration:", error);
   }
@@ -891,17 +1012,18 @@ function initBoard() {
   data.showingText = false;
   data.keys = {};
   balls.push(new Ball());
-  pad = new Array(new Paddle(0, data.p1));
-  if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
+  pad = new Array(new Paddle(0, data.p[0]));
+  console.log(data.mode);
+  if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   if (data.mode == "doublePaddle") {
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p2));
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p1));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p2));
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
   }
   if (data.mode == "fourPlayers") {
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p2));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p3));
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p4));
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
   }
 }
 function loop() {
@@ -965,23 +1087,24 @@ function endRound() {
     pad[0].stop();
     pad.shift();
   }
-  if (data.p1.score < data.maxScore && data.p2.score < data.maxScore) setTimeout(startRound, 1500);
+  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) setTimeout(startRound, 1500);
   else endGame();
 }
 async function endGame() {
   var winner;
-  if (data.p1.score > data.p2.score)
-    winner = data.p1.name;
-  else winner = data.p2.name;
+  if (data.p[0].score > data.p[1].score)
+    winner = data.p[0].name;
+  else winner = data.p[1].name;
   data.showingText = false;
 }
-startGame();
+startGame(false);
 export {
   balls,
+  countdown,
   endGame,
   endRound,
   pad,
-  removeBall2 as removeBall,
+  removeBall,
   startGame,
   startRound
 };

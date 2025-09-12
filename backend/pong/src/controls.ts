@@ -1,21 +1,5 @@
 import { data } from "./gameData";
-import { pad, balls, startGame, removeBall } from "./pong";
-
-
-document.getElementById('gameMenu')!.addEventListener('submit', function(e) {//debug menu restart button
-	e.preventDefault();
-	if (!data.showingText) {
-		while (pad.length) {
-			pad[0].stop();
-			pad.shift();
-		}
-		while (balls.length) {
-			balls[0].stop();
-			balls.shift();
-		}
-		setTimeout(() => startGame(), 1000);
-	}
-});
+import { pad, balls } from "./pong";
 
 var lastX: number;
 
@@ -33,11 +17,11 @@ export function controlKeys(): void {
 		if (pad.length) {
 			if (ev.key == "Shift" || ev.key == "Control") {
 				if (ev.location == 1) {
-					if (ev.key == data.p1.up || ev.key == data.p1.down) {
+					if (ev.key == data.p[0].up || ev.key == data.p[0].down) {
 						pad[0].setDir(0);
 						if (data.mode == "doublePaddle") pad[2].setDir(0);
 					}
-					else if (ev.key == data.p2.up || ev.key == data.p2.down) {
+					else if (ev.key == data.p[1].up || ev.key == data.p[1].down) {
 						pad[1].setDir(0);
 						if (data.mode == "doublePaddle") pad[3].setDir(0);
 					}
@@ -73,12 +57,12 @@ function touchDown(ev: TouchEvent) {
 		var x: number = lastX = ev.touches[0].clientX;
 		var y: number = ev.touches[0].clientY;
 		if (x < data.canvas.width / 4) {
-			if (y < data.canvas.height / 4) data.keys[data.p1.up] = true;
-			if (y > data.canvas.height * 3 / 4) data.keys[data.p1.down] = true;
+			if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
+			if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
 		}
 		if (x > data.canvas.width * 3 / 4) {
-			if (y < data.canvas.height / 4) data.keys[data.p2.up] = true;
-			if (y > data.canvas.height * 3 / 4) data.keys[data.p2.down] = true;
+			if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+			if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
 		}
 	}
 }
@@ -86,14 +70,14 @@ function touchDown(ev: TouchEvent) {
 function touchUp() {
 	if (data.go) {
 		if (lastX < data.canvas.width / 4) {
-			data.keys[data.p1.up] = false;
-			data.keys[data.p1.down] = false;
+			data.keys[data.p[0].up] = false;
+			data.keys[data.p[0].down] = false;
 			pad[0].setDir(0);
 			if (data.mode == "doublePaddle") pad[2].setDir(0);
 		}
 		if (lastX > data.canvas.width * 3 / 4) {
-			data.keys[data.p2.up] = false;
-			data.keys[data.p2.down] = false;
+			data.keys[data.p[1].up] = false;
+			data.keys[data.p[1].down] = false;
 			pad[1].setDir(0);
 			if (data.mode == "doublePaddle") pad[3].setDir(0);
 		}

@@ -4,10 +4,12 @@
   "description": "Final 42 School Project",
   "main": "index.js",
   "scripts": {
-    "prepare:pong": "bash ./scripts/build_game.sh",
     "dev": "concurrently \"npm run dev:css\" \"vite\"",
     "dev:css": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css --watch",
-    "build:css": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css"
+    "build:css": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css",
+    "build:css:prod": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css --minify",
+    "build": "npm run build:css:prod && vite build",
+    "preview": "vite preview --host"
   },
   "repository": {
     "type": "git",

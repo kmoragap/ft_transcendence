@@ -1,7 +1,8 @@
+import { userService } from "./services/userService";
+
 export type playerData = {
-	scoreTB: HTMLTextAreaElement;
-	nameTB: HTMLTextAreaElement;
 	name: string;
+	id: string;
 	score: number;
 	isAi: boolean;
 	up: string;
@@ -13,11 +14,20 @@ export type playerData = {
 
 export type gameData = {
 	canvas: HTMLCanvasElement;
+	fps: number;
+	nameTB1: HTMLTextAreaElement,
+	scoreTB1: HTMLTextAreaElement,
+	scoreTB2: HTMLTextAreaElement,
+	nameTB2: HTMLTextAreaElement,
+	timestamp: number;
+	lastTime: number;
 	paddleWidth: number;
 	paddleHeight: number;
 	ctx: CanvasRenderingContext2D;
 	p1: playerData;
 	p2: playerData;
+	p3: playerData;
+	p4: playerData;
 	
 	bg: CanvasGradient;
 	uiCol: string;
@@ -29,22 +39,28 @@ export type gameData = {
 	paddleSpeed: number;
 	ballSpeed: number;
 	ballSize: number;
-	showAiPath: boolean;
 	maxScore: number;
 	trailLength: number;
 	
 	serve: number;
 	keys: Record<string, boolean>;
 	showingText: boolean;
+	gameID: string;
+	go: boolean;
+	touchControl: boolean;
+	mode: string;
+	
+	multiball: boolean;
+	maxHits: number;
+	hits: number;
 };
 
 export let data: gameData;
 
-function loadPlayer(scoreTB: HTMLTextAreaElement, nameTB: HTMLTextAreaElement, name: string, isAi: boolean, up: string, down: string, innerCol: string, outercol: string, cornerCol: string):playerData {
+function loadPlayer(name: string, id: string, isAi: boolean, up: string, down: string, innerCol: string, outercol: string, cornerCol: string):playerData {
 	var p: playerData =  {
-		scoreTB: scoreTB,
-		nameTB: nameTB,
 		name: name,
+		id: id,
 		score: 0,
 		isAi: isAi,
 		up: up,
@@ -54,8 +70,6 @@ function loadPlayer(scoreTB: HTMLTextAreaElement, nameTB: HTMLTextAreaElement, n
 		cornerCol: cornerCol
 	}
 	if (isAi) p.name = "Marvin";
-	p.nameTB.value = p.name;
-	p.scoreTB.value = "0";
 	return p;
 }
 
@@ -78,44 +92,71 @@ export async function loadConfig(): Promise<void> {
 		if (document.readyState === 'complete') resolve();
 		else document.addEventListener('DOMContentLoaded', () => resolve());
 	});
-
+	//load player data from user DB
+	//const users: string[] = ["test", "test2"];
+	//const ud = await userService.getUsersByIds(users);
+	
 	var canvas = document.getElementById("board") as HTMLCanvasElement;
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight - loadTA("p1score").clientHeight;
 	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+	var p1: playerData = loadPlayer(
+		loadIn("name_p1"),
+		"",//player ID
+		loadInB("p1Ai"),
+		loadIn("p1Up"),
+		loadIn("p1Down"),
+		loadIn("p1InnerCol"),
+		loadIn("p1OuterCol"),
+		loadIn("p1CornerCol"));
+	var p2: playerData = loadPlayer(
+		loadIn("name_p2"),
+		"",//player ID
+		loadInB("p2Ai"),
+		loadIn("p2Up"),
+		loadIn("p2Down"),
+		loadIn("p2InnerCol"),
+		loadIn("p2OuterCol"),
+		loadIn("p2CornerCol"));
+	var p3: playerData = loadPlayer(
+		loadIn("name_p3"),
+		"",//player ID
+		loadInB("p3Ai"),
+		loadIn("p3Up"),
+		loadIn("p3Down"),
+		loadIn("p3InnerCol"),
+		loadIn("p3OuterCol"),
+		loadIn("p3CornerCol"));
+	var p4: playerData = loadPlayer(
+		loadIn("name_p4"),
+		"",//player ID
+		loadInB("p4Ai"),
+		loadIn("p4Up"),
+		loadIn("p4Down"),
+		loadIn("p4InnerCol"),
+		loadIn("p4OuterCol"),
+		loadIn("p4CornerCol"));
 
 	const loadData = {
 		canvas: canvas,
+		fps: 50,
+		nameTB1: loadTA("p1name"),
+		scoreTB1: loadTA("p1score"),
+		scoreTB2: loadTA("p2score"),
+		nameTB2: loadTA("p2name"),
+		timestamp: 0,
+		lastTime: 0,
 		paddleWidth: canvas.width / 60,
 		paddleHeight: canvas.height / 5,
 		ctx: ctx,
-		p1: loadPlayer(
-			loadTA("p1score"),
-			loadTA("p1name"),
-			loadIn("name_p1"),
-			loadInB("p1Ai"),
-			loadIn("p1Up"),
-			loadIn("p1Down"),
-			loadIn("p1InnerCol"),
-			loadIn("p1OuterCol"),
-			loadIn("p1CornerCol")
-		),
-		p2: loadPlayer(
-			loadTA("p2score"),
-			loadTA("p2name"),
-			loadIn("name_p2"),
-			loadInB("p2Ai"),
-			loadIn("p2Up"),
-			loadIn("p2Down"),
-			loadIn("p2InnerCol"),
-			loadIn("p2OuterCol"),
-			loadIn("p2CornerCol")
-		),
+		p1: p1,
+		p2: p2,
+		p3: p3,
+		p4: p4,
 		
 		paddleSpeed: 40,
-		ballSpeed: 3,
+		ballSpeed: 10,
 		ballSize: 80,
-		showAiPath: loadInB("showAiPath"),
 		maxScore: parseInt(loadIn("maxScore") || "10", 10),
 		trailLength: parseInt(loadIn("trailLength") || "20", 10),
 		
@@ -129,8 +170,24 @@ export async function loadConfig(): Promise<void> {
 		serve: Math.floor(Math.random() * 2) ? -1 : 1,
 		keys: {},
 		showingText: false,
+		gameID: "",
+		go: false,
+		touchControl: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+		mode: (document.getElementById("gameMenu2") as HTMLFormElement).elements["mode"].value,
+		
+		multiball: loadInB("multiball"),
+		maxHits: Math.floor(Math.random()* 5 + 5),
+		hits: 0,
 	}
-	
+	loadData.scoreTB1.value = "0";
+	loadData.scoreTB2.value = "0";
+	if (loadData.mode == "fourPlayers") {
+		loadData.nameTB1.value = p1.name + " / " + p2.name;
+		loadData.nameTB2.value = p3.name + " / " + p4.name;
+	} else {
+		loadData.nameTB1.value = p1.name;
+		loadData.nameTB2.value = p2.name;
+	}
 	loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
 	loadData.bg.addColorStop(0, loadIn("outerBg"));
 	loadData.bg.addColorStop(0.5, loadIn("innerBg"));
@@ -145,12 +202,12 @@ export async function loadConfig(): Promise<void> {
 		default:			loadData.paddleSpeed = 40;	break;
 	}
 	switch (loadIn("ballSpeed")) {
-		case "glacial":		loadData.ballSpeed = 10;	break;
-		case "slow":		loadData.ballSpeed = 5;		break;
-		case "standard":	loadData.ballSpeed = 3;		break;
-		case "fast":		loadData.ballSpeed = 2;		break;
-		case "insane":		loadData.ballSpeed = 1;		break;
-		default:			loadData.ballSpeed = 3;		break;
+		case "glacial":		loadData.ballSpeed = 15;	break;
+		case "slow":		loadData.ballSpeed = 12;	break;
+		case "standard":	loadData.ballSpeed = 10;	break;
+		case "fast":		loadData.ballSpeed = 8;		break;
+		case "insane":		loadData.ballSpeed = 6;		break;
+		default:			loadData.ballSpeed = 10;	break;
 	}
 	switch (loadIn("ballSize")) {
 		case "tiny":		loadData.ballSize = 160;	break;
@@ -161,4 +218,6 @@ export async function loadConfig(): Promise<void> {
 		default:			loadData.ballSize = 80;		break;
 	}
 	data = loadData;
+	//const gd: GameData = {data.p1.name, data.p2.name, data.p1.id, data.p2.id, data.maxScore};
+	//const res = await gameService.createGame(gd);
 }

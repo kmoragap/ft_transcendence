@@ -1,6 +1,9 @@
-import fastify from 'fastify';
+import fastify, { FastifyInstance } from 'fastify';
 import userRoutes from './modules/users.routes';
 import prisma from './utils/prisma';
+import path from 'node:path';
+import multipart from '@fastify/multipart';
+import fastifyStatic, { FastifyStaticOptions } from '@fastify/static';
 import cors from '@fastify/cors';
 
 const server = fastify({ logger: true });
@@ -38,8 +41,16 @@ server.get('/', async (req, reply) => {
 
 const start = async () => {
   try {
+    await buildApp(server); // <-- important
+
+    server.register(userRoutes, { prefix: '/api/users' });
+
+    server.get('/', async () => ({ message: 'Users service is up!' }));
+
     await server.listen({ port: 3000, host: '0.0.0.0' });
-    console.log('Users service running on port 3000');
+    server.log.info('Users service running on port 3000');
+
+    server.ready().then(() => server.printRoutes());
   } catch (err) {
     server.log.error(err);
     process.exit(1);

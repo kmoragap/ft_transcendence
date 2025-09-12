@@ -1,13 +1,10 @@
-import { renderHeader, setSessionRestored } from './components/header';
+import { renderHeader } from './components/header';
 import { renderFooter } from './components/footer';
 import { navigate } from './router';
 import { initI18n } from './i18n';
 import { store } from './store';
-import { setProfileSessionRestored } from './views/myprofile';
 import { initA11yTheme } from './utils/a11y';
-import { destroyGameView } from './views/game';
-
-let isSessionRestored = false;
+import { sessionManager } from './utils/session';
 
 function buildShell() {
   document.body.className = 'flex flex-col font-Jura overflow-x-hidden min-h-screen bg-cover bg-center text-white m-0 p-0 z-0 relative';
@@ -42,9 +39,7 @@ async function restoreSession() {
   const token = localStorage.getItem('accessToken');
   
   if (!token) {
-    isSessionRestored = true;
-    setSessionRestored();
-    setProfileSessionRestored();
+    sessionManager.setSessionRestored();
     return;
   }
 
@@ -56,9 +51,7 @@ async function restoreSession() {
     if (meRes.ok) {
       const user = await meRes.json();
       store.dispatch({ type: 'LOGIN', payload: user });
-      console.log('Session restored successfully');
     } else {
-      console.log('Session restoration failed, clearing invalid tokens');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     }
@@ -67,9 +60,7 @@ async function restoreSession() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   } finally {
-    isSessionRestored = true;
-    setSessionRestored();
-    setProfileSessionRestored();
+    sessionManager.setSessionRestored();
   }
 }
 

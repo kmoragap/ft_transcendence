@@ -259,3 +259,127 @@ export const getUsersByIds = async (
     return reply.status(500).send({ error: 'Failed to get users' });
   }
 };
+
+// --- Friend Request Handlers ---
+
+export async function sendFriendRequestHandler(request: FastifyRequest, reply: FastifyReply) {
+  const requesterId = (request.user as any).id;
+  const { receiverId } = request.body as { receiverId: string };
+
+  if (requesterId === receiverId) {
+    return reply.code(400).send({ error: "You cannot send a friend request to yourself." });
+  }
+
+  try {
+    // Check if a friendship already exists
+    const existingFriendship = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { requesterId, receiverId },
+          { requesterId: receiverId, receiverId: requesterId },
+        ],
+      },
+    });
+
+    if (existingFriendship) {
+      return reply.code(409).send({ error: "A friend request already exists or you are already friends." });
+    }
+
+    const friendship = await prisma.friendship.create({
+      data: {
+        requesterId,
+        receiverId,
+      },
+    });
+
+    return reply.code(201).send(friendship);
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+    return reply.code(500).send({ error: "Failed to send friend request." });
+  }
+}
+
+export async function getFriendRequestsHandler(request: FastifyRequest, reply: FastifyReply) {
+    const userId = (request.user as any).id;
+
+    try {
+        const pendingRequests = await prisma.friendship.findMany({
+            where: {
+                receiverId: userId,
+                status: 'PENDING',
+            },
+            include: {
+                requester: {
+                    select: { id: true, username: true, avatarUrl: true },
+                },
+            },
+        });
+        return reply.send(pendingRequests);
+    } catch (error) {
+        console.error("Error fetching friend requests:", error);
+        return reply.code(500).send({ error: "Failed to retrieve friend requests." });
+    }
+}
+
+export async function respondToFriendRequestHandler(request: FastifyRequest, reply: FastifyReply) {
+  const userId = (request.user as any).id;
+  const { friendshipId } = request.params as { friendshipId: string };
+  const { status } = request.body as { status: 'ACCEPTED' | 'REJECTED' };
+
+  if (!['ACCEPTED', 'REJECTED'].includes(status)) {
+    return reply.code(400).send({ error: "Invalid status." });
+  }
+
+  try {
+    const friendship = await prisma.friendship.findUnique({
+      where: { id: friendshipId },
+    });
+
+    if (!friendship || friendship.receiverId !== userId) {
+      return reply.code(404).send({ error: "Friend request not found or you are not the receiver." });
+    }
+
+    if (friendship.status !== 'PENDING') {
+        return reply.code(400).send({ error: "This friend request has already been responded to." });
+    }
+
+    const updatedFriendship = await prisma.friendship.update({
+      where: { id: friendshipId },
+      data: { status },
+    });
+
+    return reply.send(updatedFriendship);
+  } catch (error) {
+    console.error("Error responding to friend request:", error);
+    return reply.code(500).send({ error: "Failed to respond to friend request." });
+  }
+}
+
+export async function getFriendsHandler(request: FastifyRequest, reply: FastifyReply) {
+    const userId = (request.user as any).id;
+
+    try {
+        const friendships = await prisma.friendship.findMany({
+            where: {
+                status: 'ACCEPTED',
+                OR: [
+                    { requesterId: userId },
+                    { receiverId: userId },
+                ],
+            },
+            include: {
+                requester: { select: { id: true, username: true, avatarUrl: true } },
+                receiver: { select: { id: true, username: true, avatarUrl: true } },
+            },
+        });
+
+        const friends = friendships.map(f => {
+            return f.requesterId === userId ? f.receiver : f.requester;
+        });
+
+        return reply.send(friends);
+    } catch (error) {
+        console.error("Error fetching friends:", error);
+        return reply.code(500).send({ error: "Failed to retrieve friends." });
+    }
+}

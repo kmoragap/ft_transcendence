@@ -2,8 +2,7 @@
 var lastX;
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
-    if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
-      ev.preventDefault();
+    ev.preventDefault();
     if (ev.key == "Shift" || ev.key == "Control") {
       if (ev.location == 1) data.keys[ev.key] = true;
     } else data.keys[ev.key] = true;
@@ -47,15 +46,31 @@ function controlKeys() {
 function touchDown(ev) {
   lastX = data.canvas.height / 2;
   if (data.go) {
+    ev.preventDefault();
     var x = lastX = ev.touches[0].clientX;
     var y = ev.touches[0].clientY;
     if (x < data.canvas.width / 4) {
       if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
       if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
     }
-    if (x > data.canvas.width * 3 / 4) {
-      if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
-      if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+    if (data.mode != "fourPlayers") {
+      if (x > data.canvas.width * 3 / 4) {
+        if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+        if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+      }
+    } else {
+      if (x > data.canvas.width / 4 && x < data.canvas.width / 2) {
+        if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+        if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+      }
+      if (x > data.canvas.width / 2 && x < data.canvas.width * 3 / 4) {
+        if (y < data.canvas.height / 4) data.keys[data.p[2].up] = true;
+        if (y > data.canvas.height * 3 / 4) data.keys[data.p[2].down] = true;
+      }
+      if (x > data.canvas.width * 3 / 4) {
+        if (y < data.canvas.height / 4) data.keys[data.p[3].up] = true;
+        if (y > data.canvas.height * 3 / 4) data.keys[data.p[3].down] = true;
+      }
     }
   }
 }
@@ -67,11 +82,29 @@ function touchUp() {
       pad[0].setDir(0);
       if (data.mode == "doublePaddle") pad[2].setDir(0);
     }
-    if (lastX > data.canvas.width * 3 / 4) {
-      data.keys[data.p[1].up] = false;
-      data.keys[data.p[1].down] = false;
-      pad[1].setDir(0);
-      if (data.mode == "doublePaddle") pad[3].setDir(0);
+    if (data.mode != "fourPlayers") {
+      if (lastX > data.canvas.width * 3 / 4) {
+        data.keys[data.p[1].up] = false;
+        data.keys[data.p[1].down] = false;
+        pad[1].setDir(0);
+        if (data.mode == "doublePaddle") pad[3].setDir(0);
+      }
+    } else {
+      if (lastX > data.canvas.width / 4 && lastX < data.canvas.width / 2) {
+        data.keys[data.p[1].up] = false;
+        data.keys[data.p[1].down] = false;
+        pad[1].setDir(0);
+      }
+      if (lastX > data.canvas.width / 2 && lastX < data.canvas.width * 3 / 4) {
+        data.keys[data.p[2].up] = false;
+        data.keys[data.p[2].down] = false;
+        pad[2].setDir(0);
+      }
+      if (lastX > data.canvas.width * 3 / 4) {
+        data.keys[data.p[3].up] = false;
+        data.keys[data.p[3].down] = false;
+        pad[3].setDir(0);
+      }
     }
   }
 }
@@ -163,10 +196,6 @@ function gameSetupMenu(fourPlayers) {
   const e20 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000" });
   const e21 = Object.assign(document.createElement("label"), { className: "game-text", for: "outerBg", textContent: "outer background color" });
   const e22 = Object.assign(document.createElement("input"), { type: "submit", className: "game-start-button", value: "START" });
-  e22.addEventListener("submit", function(e) {
-    e.preventDefault();
-    loadConfig(fourPlayers);
-  });
   if (fourPlayers)
     settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br());
   else settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br(), e12, e13, br());
@@ -209,7 +238,9 @@ async function newGame(fourPlayers) {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  const appDiv = document.getElementById("app");
+  const appDiv = Object.assign(document.createElement("app"), { id: "app" });
+  const body = document.getElementsByTagName("body");
+  body[0].appendChild(appDiv);
   const players = Object.assign(document.createElement("ul"), { id: "playerSetup", className: "flex items-center list-none" });
   playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
   playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
@@ -530,6 +561,50 @@ function scoreText(p, wins) {
   data.ctx.strokeText(line2, data.canvas.width / 2, data.canvas.height / 2);
   data.ctx.fillText(line2, data.canvas.width / 2, data.canvas.height / 2);
   endRound();
+}
+function touchControlArrows() {
+  data.ctx.fillStyle = "rgb(50 50 50 / 50%)";
+  data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
+  for (let i = 0; i < pad.length; i++) {
+    if (i == 0 && !pad[i].isAi()) {
+      data.ctx.textBaseline = "top";
+      data.ctx.textAlign = "left";
+      data.ctx.fillText("\u2B06", data.canvas.width / 16, 0);
+      data.ctx.textBaseline = "bottom";
+      data.ctx.fillText("\u2B07", data.canvas.width / 16, data.canvas.height);
+    }
+    if (data.mode != "fourPlayers") {
+      if (i == 1 && !pad[i].isAi()) {
+        data.ctx.textBaseline = "top";
+        data.ctx.textAlign = "right";
+        data.ctx.fillText("\u2B06", data.canvas.width * 15 / 16, 0);
+        data.ctx.textBaseline = "bottom";
+        data.ctx.fillText("\u2B07", data.canvas.width * 15 / 16, data.canvas.height);
+      }
+    } else {
+      if (i == 1 && !pad[i].isAi()) {
+        data.ctx.textBaseline = "top";
+        data.ctx.textAlign = "right";
+        data.ctx.fillText("\u2B06", data.canvas.width * 2 / 5, 0);
+        data.ctx.textBaseline = "bottom";
+        data.ctx.fillText("\u2B07", data.canvas.width * 2 / 5, data.canvas.height);
+      }
+      if (i == 2 && !pad[i].isAi()) {
+        data.ctx.textBaseline = "top";
+        data.ctx.textAlign = "left";
+        data.ctx.fillText("\u2B06", data.canvas.width * 3 / 5, 0);
+        data.ctx.textBaseline = "bottom";
+        data.ctx.fillText("\u2B07", data.canvas.width * 3 / 5, data.canvas.height);
+      }
+      if (i == 3 && !pad[i].isAi()) {
+        data.ctx.textBaseline = "top";
+        data.ctx.textAlign = "right";
+        data.ctx.fillText("\u2B06", data.canvas.width * 15 / 16, 0);
+        data.ctx.textBaseline = "bottom";
+        data.ctx.fillText("\u2B07", data.canvas.width * 15 / 16, data.canvas.height);
+      }
+    }
+  }
 }
 
 // src/Paddle.ts
@@ -920,14 +995,14 @@ var GameService = class {
       return null;
     }
   }
-  async createAIGame(playerData) {
+  async createAIGame(playerData2) {
     try {
       const gameData = {
-        player1Id: playerData.playerId,
+        player1Id: playerData2.playerId,
         player2Id: "ai_opponent",
-        player1Name: playerData.playerName,
+        player1Name: playerData2.playerName,
         player2Name: "IA_OPPONENT",
-        maxScore: playerData.maxScore || 5,
+        maxScore: playerData2.maxScore || 5,
         gameType: "VS_AI"
       };
       return await this.createGame(gameData);
@@ -1013,7 +1088,6 @@ function initBoard() {
   data.keys = {};
   balls.push(new Ball());
   pad = new Array(new Paddle(0, data.p[0]));
-  console.log(data.mode);
   if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   if (data.mode == "doublePaddle") {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
@@ -1052,31 +1126,7 @@ function render() {
   for (let i = 0; i < pad.length; i++) pad[i].draw();
   if (data.trailLength) for (let i = 0; i < balls.length; i++) balls[i].drawTrail();
   for (let i = 0; i < balls.length; i++) balls[i].draw();
-  if (
-    /*data.mouseControl || */
-    data.touchControl
-  ) {
-    data.ctx.fillStyle = `rgb(80 80 80 / 25%)`;
-    data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
-    for (let i = 0; i < pad.length; i++) {
-      if (i == 0 && !pad[i].isAi()) {
-        data.ctx.textBaseline = "top";
-        data.ctx.textAlign = "left";
-        data.ctx.fillText("\u2B06", data.canvas.width / 16, 0);
-        data.ctx.textBaseline = "bottom";
-        data.ctx.textAlign = "left";
-        data.ctx.fillText("\u2B07", data.canvas.width / 16, data.canvas.height);
-      }
-      if (i == 1 && !pad[i].isAi()) {
-        data.ctx.textBaseline = "top";
-        data.ctx.textAlign = "right";
-        data.ctx.fillText("\u2B06", data.canvas.width * 15 / 16, 0);
-        data.ctx.textBaseline = "bottom";
-        data.ctx.textAlign = "right";
-        data.ctx.fillText("\u2B07", data.canvas.width * 15 / 16, data.canvas.height);
-      }
-    }
-  }
+  if (data.touchControl) touchControlArrows();
 }
 function endRound() {
   while (balls.length) {
@@ -1097,7 +1147,7 @@ async function endGame() {
   else winner = data.p[1].name;
   data.showingText = false;
 }
-startGame(false);
+startGame(true);
 export {
   balls,
   countdown,

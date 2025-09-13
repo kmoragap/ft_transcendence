@@ -1,8 +1,7 @@
-import { data } from "./gameData";
-import { newGame } from "./gameData";
+import { data, newGame } from "./gameData";
 import Paddle from "./Paddle";
-import { midline } from "./Paddle.draw";
 import Ball from "./Ball";
+import { midline, touchControlArrows } from "./Paddle.draw";
 import { initI18n } from "./../../../frontend/src/i18n";
 //import { userService, UserData } from "./services/userService";
 import { gameService } from "./services/gameService";
@@ -59,7 +58,7 @@ function initBoard():void {
 	data.showingText = false;
 	data.keys = {};
 	balls.push(new Ball());
-	pad = new Array(new Paddle(0, data.p[0]));console.log(data.mode);
+	pad = new Array(new Paddle(0, data.p[0]));
 	if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
 	if (data.mode == "doublePaddle") {
 		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
@@ -101,32 +100,7 @@ function render(): void {
 	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
 	if (data.trailLength) for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
 	for (let i: number = 0; i < balls.length; i++) balls[i].draw();
-	if ((/*data.mouseControl || */data.touchControl)) {
-		data.ctx.fillStyle = `rgb(80 80 80 / 25%)`;
-		data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
-		for (let i: number = 0; i < pad.length; i++) {
-			if (i == 0 && !pad[i].isAi()) {
-//				data.ctx.fillRect(0, 0, data.canvas.width / 4, data.canvas.height / 4);
-				data.ctx.textBaseline = "top";
-				data.ctx.textAlign = "left";
-				data.ctx.fillText("\u{2B06}", data.canvas.width / 16, 0);
-//				data.ctx.fillRect(0, data.canvas.height * 3 / 4, data.canvas.width / 4, data.canvas.height);
-				data.ctx.textBaseline = "bottom";
-				data.ctx.textAlign = "left";
-				data.ctx.fillText("\u{2B07}", data.canvas.width / 16, data.canvas.height);
-			}
-			if (i == 1 && !pad[i].isAi()) {
-//				data.ctx.fillRect(data.canvas.width * 3 / 4, 0, data.canvas.width, data.canvas.height / 4);
-				data.ctx.textBaseline = "top";
-				data.ctx.textAlign = "right";
-				data.ctx.fillText("\u{2B06}", data.canvas.width * 15 / 16, 0);
-//				data.ctx.fillRect(data.canvas.width * 3 / 4, data.canvas.height * 3 / 4, data.canvas.height, data.canvas.width);
-				data.ctx.textBaseline = "bottom";
-				data.ctx.textAlign = "right";
-				data.ctx.fillText("\u{2B07}", data.canvas.width * 15 / 16, data.canvas.height);
-			}
-		}
-	}
+	if (data.touchControl) touchControlArrows();
 }
 
 export function endRound(): void {

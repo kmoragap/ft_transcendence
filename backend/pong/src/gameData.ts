@@ -28,10 +28,6 @@ export type gameData = {
 	paddleHeight: number;
 	ctx: CanvasRenderingContext2D;
 	p:  playerData[];
-//	p1: playerData;
-//	p2: playerData;
-//	p3: playerData;
-//	p4: playerData;
 	
 	bg: CanvasGradient;
 	uiCol: string;
@@ -95,7 +91,9 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 	//load player data from user DB
 	//const users: string[] = ["test", "test2"];
 	//const ud = await userService.getUsersByIds(users);
-	const appDiv = document.getElementById('app') as HTMLDivElement;
+	const appDiv = Object.assign(document.createElement("app"), {id: "app"}) as HTMLDivElement;
+	const body = document.getElementsByTagName("body");
+	body[0].appendChild(appDiv);
 	const players = Object.assign(document.createElement("ul"), {id: "playerSetup", className: "flex items-center list-none"}) as HTMLUListElement;
 	playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
 	playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
@@ -105,7 +103,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 	}
 	appDiv.appendChild(players);
 	appDiv.appendChild(gameSetupMenu(fourPlayers));
-	document.getElementById('gameSetup')!.addEventListener('submit', function(e) {//debug menu restart button
+	document.getElementById('gameSetup')!.addEventListener('submit', function(e) {//start button
 		e.preventDefault();
 		loadConfig(fourPlayers);
 	});

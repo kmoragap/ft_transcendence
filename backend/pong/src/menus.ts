@@ -1,5 +1,3 @@
-import { loadConfig } from "./gameData";
-
 function br(): HTMLBRElement {
 	return Object.assign(document.createElement("br")) as HTMLBRElement;
 }
@@ -99,10 +97,6 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLUListElement {
 	const e21 = Object.assign(document.createElement("label"), {className: "game-text", for: "outerBg", textContent: "outer background color"}) as HTMLLabelElement;
 //start button
 	const e22 = Object.assign(document.createElement("input"), {type: "submit", className: "game-start-button", value: "START"});
-	e22.addEventListener('submit', function(e) {
-		e.preventDefault();
-		loadConfig(fourPlayers);
-	});
 //assemble
 	if (fourPlayers)
 		settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br());

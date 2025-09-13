@@ -1,7 +1,6 @@
-import { data } from "./gameData";
+import { data, playerData } from "./gameData";
 import { pad, balls } from "./pong";
 import Ball from "./Ball";
-import { playerData } from "./gameData";
 import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
 
 export default class Paddle {

@@ -5,8 +5,7 @@ var lastX: number;
 
 export function controlKeys(): void {
 	document.addEventListener("keydown", (ev) => {
-		if (ev.key == "ArrowUp" || ev.key == "ArrowDown")
-			ev.preventDefault();
+		ev.preventDefault();
 		if (ev.key == "Shift" || ev.key == "Control") {
 			if (ev.location == 1) data.keys[ev.key] = true;
 		}
@@ -54,15 +53,31 @@ export function controlKeys(): void {
 function touchDown(ev: TouchEvent) {
 	lastX  = data.canvas.height / 2;
 	if (data.go) {
+		ev.preventDefault();
 		var x: number = lastX = ev.touches[0].clientX;
 		var y: number = ev.touches[0].clientY;
 		if (x < data.canvas.width / 4) {
 			if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
 			if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
 		}
-		if (x > data.canvas.width * 3 / 4) {
-			if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
-			if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+		if (data.mode != "fourPlayers" ) {
+			if (x > data.canvas.width * 3 / 4) {
+				if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+				if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+			}
+		} else {
+			if (x > data.canvas.width / 4 && x < data.canvas.width / 2) {
+				if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+				if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+			}
+			if (x > data.canvas.width / 2 && x < data.canvas.width * 3 / 4) {
+				if (y < data.canvas.height / 4) data.keys[data.p[2].up] = true;
+				if (y > data.canvas.height * 3 / 4) data.keys[data.p[2].down] = true;
+			}
+			if (x > data.canvas.width * 3 / 4) {
+				if (y < data.canvas.height / 4) data.keys[data.p[3].up] = true;
+				if (y > data.canvas.height * 3 / 4) data.keys[data.p[3].down] = true;
+			}
 		}
 	}
 }
@@ -75,11 +90,29 @@ function touchUp() {
 			pad[0].setDir(0);
 			if (data.mode == "doublePaddle") pad[2].setDir(0);
 		}
-		if (lastX > data.canvas.width * 3 / 4) {
-			data.keys[data.p[1].up] = false;
-			data.keys[data.p[1].down] = false;
-			pad[1].setDir(0);
-			if (data.mode == "doublePaddle") pad[3].setDir(0);
+		if (data.mode != "fourPlayers" ) {
+			if (lastX > data.canvas.width * 3 / 4) {
+				data.keys[data.p[1].up] = false;
+				data.keys[data.p[1].down] = false;
+				pad[1].setDir(0);
+				if (data.mode == "doublePaddle") pad[3].setDir(0);
+			}
+		} else {
+			if (lastX > data.canvas.width / 4 && lastX < data.canvas.width / 2) {
+				data.keys[data.p[1].up] = false;
+				data.keys[data.p[1].down] = false;
+				pad[1].setDir(0);
+			}
+			if (lastX > data.canvas.width / 2 && lastX < data.canvas.width * 3 / 4) {
+				data.keys[data.p[2].up] = false;
+				data.keys[data.p[2].down] = false;
+				pad[2].setDir(0);
+			}
+			if (lastX > data.canvas.width * 3 / 4) {
+				data.keys[data.p[3].up] = false;
+				data.keys[data.p[3].down] = false;
+				pad[3].setDir(0);
+			}
 		}
 	}
 }

@@ -1,12 +1,10 @@
-import { FastifyReply, FastifyRequest, FastifyInstance } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import * as bcrypt from 'bcrypt'
 import prisma  from '../utils/prisma'
 import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import mime from "mime";
 import sharp from "sharp";
-import { MultipartFile } from "@fastify/multipart";
 
 
 function isValidCuid(id: string): boolean {
@@ -266,67 +264,166 @@ export const getUsersByIds = async (
   }
 };
 
-interface AvatarUploadRequest extends FastifyRequest {
-  user?: { id: string };
-  file: (options?: { limits?: { fileSize?: number } }) => Promise<MultipartFile | undefined>;
+// --- Friend Request Handlers ---
+
+export async function sendFriendRequestHandler(request: FastifyRequest, reply: FastifyReply) {
+  if (!request.user) {
+    return reply.code(401).send({ error: "Unauthorized: No user token provided." });
+  }
+  const requesterId = request.user.id;
+  const { username: receiverUsername } = request.body as { username: string };
+
+  if (!receiverUsername) {
+    return reply.code(400).send({ error: "Username must be provided." });
+  }
+
+  if (request.user.username === receiverUsername) {
+    return reply.code(400).send({ error: "You cannot send a friend request to yourself." });
+  }
+
+  try {
+    // Find the receiver user by username
+    const receiver = await prisma.user.findUnique({
+      where: { username: receiverUsername },
+    });
+
+    if (!receiver) {
+      return reply.code(404).send({ error: "User not found." });
+    }
+    const receiverId = receiver.id;
+
+    // Check if a friendship already exists
+    const existingFriendship = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { requesterId, receiverId },
+          { requesterId: receiverId, receiverId: requesterId },
+        ],
+      },
+    });
+
+    if (existingFriendship) {
+      return reply.code(409).send({ error: "A friend request already exists or you are already friends." });
+    }
+
+    const friendship = await prisma.friendship.create({
+      data: {
+        requesterId,
+        receiverId,
+      },
+    });
+
+    return reply.code(201).send(friendship);
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+    return reply.code(500).send({ error: "Failed to send friend request." });
+  }
 }
 
-interface AvatarUploadReply {
-  avatarUrl: string;
+export async function getFriendRequestsHandler(request: FastifyRequest, reply: FastifyReply) {
+    if (!request.user) {
+    return reply.code(401).send({ error: "Unauthorized: No user token provided." });
+  }
+    const userId = request.user.id;
+
+    try {
+        const pendingRequests = await prisma.friendship.findMany({
+            where: {
+                receiverId: userId,
+                status: 'PENDING',
+            },
+            include: {
+                requester: {
+                    select: { id: true, username: true, avatarUrl: true },
+                },
+            },
+        });
+        return reply.send(pendingRequests);
+    } catch (error) {
+        console.error("Error fetching friend requests:", error);
+        return reply.code(500).send({ error: "Failed to retrieve friend requests." });
+    }
 }
 
-export default async function usersRoutes(fastify: FastifyInstance): Promise<void> {
-  fastify.post("/api/users/me/avatar", {
-    handler: async (request: AvatarUploadRequest, reply: FastifyReply): Promise<AvatarUploadReply | void> => {
-      const file = await request.file({ limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
-      if (!file) {
-        return reply.code(400).send({ error: "No file uploaded" });
-      }
+export async function respondToFriendRequestHandler(request: FastifyRequest, reply: FastifyReply) {
+  if (!request.user) {
+    return reply.code(401).send({ error: "Unauthorized: No user token provided." });
+  }
+  const userId = request.user.id;
+  const { friendshipId } = request.params as { friendshipId: string };
+  const { status } = request.body as { status: 'ACCEPTED' | 'REJECTED' };
 
-      const allowed = new Set(["image/jpeg", "image/png", "image/webp"]);
-      const ct = file.mimetype?.toLowerCase() || "";
-      if (!allowed.has(ct)) {
-        return reply.code(415).send({ error: "Unsupported file type. Use JPG, PNG or WEBP." });
-      }
+  if (!['ACCEPTED', 'REJECTED'].includes(status)) {
+    return reply.code(400).send({ error: "Invalid status." });
+  }
 
-      const chunks: Buffer[] = [];
-      for await (const chunk of file.file) chunks.push(chunk as Buffer);
-      const input = Buffer.concat(chunks);
+  try {
+    const friendship = await prisma.friendship.findUnique({
+      where: { id: friendshipId },
+    });
 
-      const img = sharp(input, { failOn: "none" }).rotate();
-      const outputName = `${randomUUID()}.webp`;
-      const outputDir = path.join(__dirname, "..", "..", "uploads", "avatars");
-      const outputPath = path.join(outputDir, outputName);
+    if (!friendship || friendship.receiverId !== userId) {
+      return reply.code(404).send({ error: "Friend request not found or you are not the receiver." });
+    }
 
-      await fs.mkdir(outputDir, { recursive: true });
-      await img
-        .resize(256, 256, { fit: "cover" })
-        .webp({ quality: 85 })
-        .toFile(outputPath);
+    if (friendship.status !== 'PENDING') {
+        return reply.code(400).send({ error: "This friend request has already been responded to." });
+    }
 
-      const publicUrl = `/uploads/avatars/${outputName}`;
+    const updatedFriendship = await prisma.friendship.update({
+      where: { id: friendshipId },
+      data: { status },
+    });
 
-      const userId = request.user?.id; // adapt to your auth
-      if (!userId) return reply.code(401).send({ error: "Unauthorized" });
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: { avatarUrl: publicUrl },
-      });
-
-      return reply.send({ avatarUrl: publicUrl });
-    },
-  });
+    return reply.send(updatedFriendship);
+  } catch (error) {
+    console.error("Error responding to friend request:", error);
+    return reply.code(500).send({ error: "Failed to respond to friend request." });
+  }
 }
 
-export async function updateMyProfileHandler(request: any, reply: any) {
+export async function getFriendsHandler(request: FastifyRequest, reply: FastifyReply) {
+    if (!request.user) {
+      return reply.code(401).send({ error: "Unauthorized: No user token provided." });
+    }
+    const userId = request.user.id;
+
+    try {
+        const friendships = await prisma.friendship.findMany({
+            where: {
+                status: 'ACCEPTED',
+                OR: [
+                    { requesterId: userId },
+                    { receiverId: userId },
+                ],
+            },
+            include: {
+                requester: { select: { id: true, username: true, avatarUrl: true } },
+                receiver: { select: { id: true, username: true, avatarUrl: true } },
+            },
+        });
+
+        const friends = friendships.map(f => {
+            return f.requesterId === userId ? f.receiver : f.requester;
+        });
+
+        return reply.send(friends);
+    } catch (error) {
+        console.error("Error fetching friends:", error);
+        return reply.code(500).send({ error: "Failed to retrieve friends." });
+    }
+}
+
+
+
+export async function updateMyProfileHandler(request: FastifyRequest, reply: FastifyReply) {
   const { username, firstname, email } = request.body as {
     username?: string;
     firstname?: string;
     email?: string;
   };
 
-  const userId = request.user?.userId ?? request.user?.id ?? request.user?.sub ?? request.userId;
+  const userId = request.user?.id;
   if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
 
   try {
@@ -383,7 +480,7 @@ export async function updateMyProfileHandler(request: any, reply: any) {
   }
 }
 
-export async function uploadAvatarHandler(request: any, reply: any) {
+export async function uploadAvatarHandler(request: FastifyRequest, reply: FastifyReply) {
   // file comes from @fastify/multipart (make sure it's registered before routes)
   const file = await request.file({ limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
   if (!file) return reply.code(400).send({ error: 'No file uploaded' });
@@ -393,7 +490,7 @@ export async function uploadAvatarHandler(request: any, reply: any) {
   if (!allowed.has(ct)) return reply.code(415).send({ error: 'Unsupported file type' });
 
   // auth: get current user id from token/middleware
-  const userId = request.user?.userId ?? request.user?.id ?? request.user?.sub ?? request.userId;
+  const userId = request.user?.id;
   if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
 
   // read the upload stream to buffer
@@ -413,10 +510,7 @@ export async function uploadAvatarHandler(request: any, reply: any) {
     .webp({ quality: 85 })
     .toFile(outPath);
 
-  const where =
-    typeof userId === 'number' || /^\d+$/.test(String(userId))
-      ? { id: Number(userId) }
-      : { id: userId };
+  const where = { id: userId };
 
   const current = await prisma.user.findUnique({ where, select: { avatarUrl: true } });
   if (current?.avatarUrl?.startsWith('/uploads/avatars/')) {

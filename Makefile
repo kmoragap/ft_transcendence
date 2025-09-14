@@ -17,18 +17,22 @@ show-url:
 
 up:
 	@echo "🚀 Starting containers..."
-	@$(DC) up -d
+	@$(DC) up -d > /dev/null 2>&1
+	@echo "✅ Containers are up and running."
 
-down:
+down: 
 	@echo "🛑 Stopping containers..."
-	@$(DC) down
+	@$(DC) down > /dev/null 2>&1
+	@echo "✅ Containers have been stopped."
 
 rebuild: down show-url
 	@echo "🔄 Rebuilding images and starting containers..."
-	@$(DC) up --build -d
+	@$(DC) up --build -d > /dev/null 2>&1
+	@echo "✅ Containers are up and running."
 
 clean: down
 #	@echo "🧹 Removing SSL certificates..."
 #	@rm -rf $(PROJECT)/ssl
 	@echo "🧹 Removing Docker volumes..."
-	@$(DC) down -v
+	@$(DC) down -v > /dev/null 2>&1
+	@echo "✅ Cleanup complete."

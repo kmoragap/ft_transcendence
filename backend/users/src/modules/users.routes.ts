@@ -7,6 +7,10 @@ import {
   getUserByUsernameHandler,
   uploadAvatarHandler,
   updateMyProfileHandler,
+  sendFriendRequestHandler,
+  getFriendRequestsHandler,
+  respondToFriendRequestHandler,
+  getFriendsHandler,
 } from '../modules/users.controller';
 import { authenticateToken } from '../modules/users.middleware';
 import { getUserStats, updateUserStats, getUsersByIds } from './users.controller';
@@ -25,6 +29,11 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.get('/', { preHandler: [authenticateToken] }, getUsersHandler);
   fastify.delete('/', { preHandler: [authenticateToken] }, deleteUserHandler);
   
+// --- Friend Request Routes ---
+  fastify.post('/friends/requests', { preHandler: [authenticateToken] }, sendFriendRequestHandler);
+  fastify.get('/friends/requests/pending', { preHandler: [authenticateToken] }, getFriendRequestsHandler);
+  fastify.put('/friends/requests/:friendshipId', { preHandler: [authenticateToken] }, respondToFriendRequestHandler);
+  fastify.get('/friends', { preHandler: [authenticateToken] }, getFriendsHandler);
 
   // pong routes
   fastify.get('/users/:id/stats', {

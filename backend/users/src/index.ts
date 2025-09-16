@@ -1,28 +1,33 @@
-import fastify from 'fastify';
-import userRoutes from './modules/users.routes';
+import { buildServer } from './utils/app';
 import prisma from './utils/prisma';
 
-const server = fastify({ logger: true });
-
-server.register(userRoutes, { prefix: '/api/users' });
-
-server.get('/', async (req, reply) => {
-  return { message: 'Users service is up!' };
-});
-
 const start = async () => {
+  const server = await buildServer();
+
   try {
     await server.listen({ port: 3000, host: '0.0.0.0' });
-    console.log('Users service running on port 3000');
+
+    // Optional: Wait for server to be ready before printing routes
+    server.ready().then(() => {
+      server.log.info('Routes registered:');
+      console.log(server.printRoutes());
+    });
   } catch (err) {
     server.log.error(err);
     process.exit(1);
   }
 };
 
-start();
-
-process.on('SIGINT', async () => {
+// --- Graceful Shutdown ---
+const shutdown = async () => {
+  console.log('\nGracefully shutting down...');
   await prisma.$disconnect();
+  console.log('Prisma client disconnected.');
   process.exit(0);
-});
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+// --- Start the server ---
+start();

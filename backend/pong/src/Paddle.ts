@@ -23,9 +23,14 @@ export default class Paddle {
 		this._y = data.canvas.height / 2 - data.paddleHeight / 2;
 		this._p = p;
 		this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
-		this._paddleGrad.addColorStop(0, this._p.outerCol);
-		this._paddleGrad.addColorStop(0.5, this._p.innerCol);
-		this._paddleGrad.addColorStop(1, this._p.outerCol);
+		
+		// Use fallback colors if the color values are empty or invalid
+		const outerCol = this._p.outerCol || '#808080';
+		const innerCol = this._p.innerCol || '#ffffff';
+		
+		this._paddleGrad.addColorStop(0, outerCol);
+		this._paddleGrad.addColorStop(0.5, innerCol);
+		this._paddleGrad.addColorStop(1, outerCol);
 		this.draw();
 	}
 

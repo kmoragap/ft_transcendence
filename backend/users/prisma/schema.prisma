@@ -9,20 +9,41 @@ datasource db {
 
 //TODO: check the id of all models in schema bc it should be more komplex, like a string...
 model User {
-    id              String            @id @default(cuid())
-    username        String            @unique
-    email           String            @unique
-    firstname       String
-    password        String
-    avatarUrl       String            @default("/assets/img/avatar.jpg")
-    createdAt       DateTime          @default(now())
+    id                     String            @id @default(cuid())
+    username               String            @unique
+    email                  String            @unique
+    firstname              String
+    password               String
+    avatarUrl              String            @default("/assets/img/avatar.jpg")
+    createdAt              DateTime          @default(now())
     // pong stats
-    gamesPlayed     Int               @default(0)
-    gamesWon        Int               @default(0)
-    totalScore      Int               @default(0)
-    UserGameHistory UserGameHistory[]
+    gamesPlayed            Int               @default(0)
+    gamesWon               Int               @default(0)
+    totalScore             Int               @default(0)
+    UserGameHistory        UserGameHistory[]
+    sentFriendRequests     Friendship[]      @relation("sent_requests")
+    receivedFriendRequests Friendship[]      @relation("received_requests")
 
     @@map("users")
+}
+
+// many to many relationship
+model Friendship {
+    id        String           @id @default(cuid())
+    status    FriendshipStatus @default(PENDING)
+    createdAt DateTime         @default(now())
+    updatedAt DateTime         @updatedAt
+
+    // User who sent the request
+    requesterId String
+    requester   User   @relation("sent_requests", fields: [requesterId], references: [id], onDelete: Cascade)
+
+    // User who received the request
+    receiverId String
+    receiver   User   @relation("received_requests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+    @@unique([requesterId, receiverId])
+    @@map("friendships")
 }
 
 model UserGameHistory {
@@ -37,4 +58,11 @@ model UserGameHistory {
     user User @relation(fields: [userId], references: [id])
 
     @@map("user_game_history")
+}
+
+enum FriendshipStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    BLOCKED
 }

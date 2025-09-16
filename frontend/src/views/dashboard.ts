@@ -61,9 +61,12 @@ export function renderDashboard(): HTMLElement {
   const tabs = document.createElement('div');
   tabs.className = 'flex gap-2.5';
 
-  function makeTab(label: string) {
+  function makeTab(label: string, translationKey?: string) {
     const btn = document.createElement('button');
     btn.textContent = label;
+    if (translationKey) {
+      btn.setAttribute('data-i18n', translationKey);
+    }
     btn.className = [
       'px-3 py-1.5 rounded-md border',
               'border-[rgba(102,252,241,0.25)] text-base font-medium',
@@ -75,8 +78,8 @@ export function renderDashboard(): HTMLElement {
     return btn;
   }
 
-  const tabLast = makeTab('Last 5 games');
-  const tabTop  = makeTab('Top 5 players');
+  const tabLast = makeTab(t('last_5_games'), 'last_5_games');
+  const tabTop  = makeTab(t('top_5_players'), 'top_5_players');
   tabs.appendChild(tabLast);
   tabs.appendChild(tabTop);
 
@@ -96,7 +99,6 @@ export function renderDashboard(): HTMLElement {
   wrap.appendChild(title);
   wrap.appendChild(card);
 
-  // Render helpers
   function renderGames(rows: GameRow[]) {
     table.innerHTML = '';
     const list = document.createElement('div');
@@ -187,7 +189,7 @@ export function renderDashboard(): HTMLElement {
       tabLast.classList.add('bg-[rgba(102,252,241,0.12)]');
       tabTop.classList.remove('bg-[rgba(102,252,241,0.12)]');
     } catch (e) {
-      table.innerHTML = `<div class="p-4 text-red-300">Failed to load games</div>`;
+      table.innerHTML = `<div class="p-4 text-red-300" data-i18n="failed_to_load_games">Failed to load games</div>`;
       console.error(e);
     }
   }

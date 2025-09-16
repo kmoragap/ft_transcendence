@@ -1,7 +1,8 @@
 import { data } from "./gameData";
 import Paddle from "./Paddle";
-import { t } from "./../../../frontend/src/i18n";
+import { t } from "./i18n";
 import { endRound, pad } from "./pong";
+
 
 export function debugOutline(pad: Paddle) {
 	data.ctx.beginPath();

@@ -197,6 +197,7 @@ export async function verifyTokenHandler(request: FastifyRequest, reply: Fastify
 
       return {
         valid: true,
+        userId: user.id,
         username: user.username,
         firstname: user.firstname,
         email: user.email,

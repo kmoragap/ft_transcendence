@@ -2,8 +2,8 @@ import { data, newGame } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
-import { initI18n } from "./../../../frontend/src/i18n";
 //import { userService, UserData } from "./services/userService";
+import { initI18n } from "./i18n";
 import { gameService } from "./services/gameService";
 
 export let pad: Paddle[] = [];
@@ -18,8 +18,14 @@ export function removeBall(ball: Ball): void {
 
 export async function startGame(fourPlayers: boolean) {
 	try {
-		await initI18n();
+		// Get language from URL parameters or default to 'en'
+		const urlParams = new URLSearchParams(window.location.search);
+		const lang = urlParams.get('lang') || 'en';
+		
+		await initI18n(lang);
 		await newGame(fourPlayers);
+		document.getElementById("board")?.focus();
+		setTimeout(() => countdown(3, 500), 500);
 //		collisionTest()
 	} catch (error) {
 		console.error('Failed to load configuration:', error);

@@ -2,16 +2,7 @@ import { t, loadLanguage } from './../i18n';
 import { store } from '../store';
 import { logout } from '../utils/auth';
 import { renderA11yControls } from './a11y-switcher';
-
-let isSessionRestored = false;
-let updateHeaderCallback: (() => void) | null = null;
-
-export function setSessionRestored() {
-  isSessionRestored = true;
-  if (updateHeaderCallback) {
-    updateHeaderCallback();
-  }
-}
+import { sessionManager } from '../utils/session';
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -19,7 +10,7 @@ export function renderHeader(): HTMLElement {
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
   function updateHeader() {
-    if (!isSessionRestored) {
+    if (!sessionManager.isSessionRestored()) {
       header.innerHTML = '';
       return;
     }
@@ -123,14 +114,15 @@ export function renderHeader(): HTMLElement {
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
       updateHeader();
+      
+      // Dispatch custom event for language change
+      window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     });
     langLi.appendChild(langSelect);
     
     if (isAuthenticated && currentUser) {
       const userLi = document.createElement('li');
       userLi.className = 'relative ml-5';
-
-      const avatarUrl = currentUser.avatarUrl || '/assets/img/avatar.jpg';
 
       const trigger = document.createElement('button');
       trigger.type = 'button';
@@ -146,26 +138,27 @@ export function renderHeader(): HTMLElement {
       name.className = 'font-[jura] font-bold text-lg';
       name.textContent = currentUser.username;
 
-      const img = document.createElement('img');
-      img.src = avatarUrl;
-      img.alt = t('profile_avatar') || 'Avatar';
-      img.className = 'w-8 h-8 ml-2 rounded-full border border-[#66fcf1] object-cover';
+      const avatar = document.createElement("img");
+      avatar.alt = "Me";
+      avatar.width = 32; avatar.height = 32;
+      avatar.className = "w-8 h-8 rounded-full object-cover border border-[#66fcf1]/30";
+      avatar.src = currentUser?.avatarUrl || "/assets/img/avatar.svg"; 
 
-      trigger.append(name, img);
+      trigger.append(name, avatar);
 
       const menu = document.createElement('div');
-      menu.className = [
-        'absolute right-0 mt-2',
-        'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
-        'opacity-0 pointer-events-none transition'
-      ].join(' ');
+        menu.className = [
+          'absolute right-0 mt-2 w-48',
+          'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
+          'opacity-0 pointer-events-none transition'
+        ].join(' ');
       menu.setAttribute('role', 'menu');
 
       menu.innerHTML = `
         <button data-i18n="my_profile" data-action="me"
-          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">My Profile</button>
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('my_profile')}</button>
         <button data-i18n="logout" data-action="logout"
-          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">Logout</button>
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('logout')}</button>
       `;
 
       let open = false;
@@ -221,9 +214,9 @@ export function renderHeader(): HTMLElement {
     header.appendChild(bar);
   }
 
-  updateHeaderCallback = updateHeader;
   updateHeader();
   store.subscribe(updateHeader);
+  sessionManager.onSessionRestored(updateHeader);
 
   return header;
 }

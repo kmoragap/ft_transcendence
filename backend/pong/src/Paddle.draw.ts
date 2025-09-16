@@ -3,7 +3,6 @@ import Paddle from "./Paddle";
 import { t } from "./i18n";
 import { endRound, pad } from "./pong";
 
-
 export function debugOutline(pad: Paddle) {
 	data.ctx.beginPath();
 	data.ctx.strokeStyle = data.uiCol;

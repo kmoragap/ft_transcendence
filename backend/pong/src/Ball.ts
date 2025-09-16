@@ -114,15 +114,15 @@ export default class Ball {
 			if (balls.length == 1) {
 				data.go = false;
 				if (this._x <= this._size) {
-					data.p2.score++;
-					data.scoreTB2.value = String(data.p2.score);
-					if (pad.length) setTimeout(() => scoreText(pad[1], data.p2.score == data.maxScore), 100);
+					data.p[1].score++;
+					data.scoreTB2.value = String(data.p[1].score);
+					if (pad.length) setTimeout(() => scoreText(pad[1], data.p[1].score == data.maxScore), 100);
 					data.serve = -1;
 				}
 				if (this._x >= data.canvas.width - this._size) {
-					data.p1.score++;
-					data.scoreTB1.value = String(data.p1.score);
-					if (pad.length) setTimeout(() => scoreText(pad[0], data.p1.score == data.maxScore), 100);
+					data.p[0].score++;
+					data.scoreTB1.value = String(data.p[0].score);
+					if (pad.length) setTimeout(() => scoreText(pad[0], data.p[0].score == data.maxScore), 100);
 					data.serve = 1;
 				}
 			}

@@ -1,7 +1,6 @@
-import { data } from "./gameData";
+import { data, playerData } from "./gameData";
 import { pad, balls } from "./pong";
 import Ball from "./Ball";
-import { playerData } from "./gameData";
 import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
 
 export default class Paddle {
@@ -52,6 +51,7 @@ export default class Paddle {
 	public getY(): number {return this._y;}
 	public getX2(): number {return this._x + data.paddleWidth;}
 	public getY2(): number {return this._y + data.paddleHeight;}
+	public getPl(): playerData {return this._p;}
 	public getPG(): CanvasGradient {return this._paddleGrad;}
 	public getTCG(): CanvasGradient {return this._topCornerGrad;}
 	public getBCG(): CanvasGradient {return this._bottomCornerGrad;}

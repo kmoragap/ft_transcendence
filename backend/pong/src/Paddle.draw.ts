@@ -1,7 +1,7 @@
 import { data } from "./gameData";
 import Paddle from "./Paddle";
 import { t } from "./i18n";
-import { endRound } from "./pong";
+import { endRound, pad } from "./pong";
 
 export function debugOutline(pad: Paddle) {
 	data.ctx.beginPath();
@@ -76,18 +76,67 @@ export function midline(): void {
 export function scoreText(p: Paddle, wins: boolean): void {
 	data.showingText = true;
 	data.ctx.font = `bold ${data.canvas.height/6}px system-ui`;
-	data.ctx.fillStyle = p.getTCG();
-	data.ctx.strokeStyle = p.getPG();
+	var fillGrad = data.ctx.createLinearGradient(0, data.canvas.height * 2 / 5, 0, data.canvas.height * 3 / 5);
+	fillGrad.addColorStop(0, p.getPl().outerCol);
+	fillGrad.addColorStop(0.5, p.getPl().innerCol);
+	fillGrad.addColorStop(1, p.getPl().outerCol);
+	data.ctx.fillStyle = fillGrad;
+	data.ctx.strokeStyle = p.getPl().cornerCol;
 	data.ctx.lineWidth = data.canvas.height/60;
 	data.ctx.textAlign = "center";
 	data.ctx.textBaseline = "bottom";
-	data.ctx.strokeText(p.getPlr().name, data.canvas.width/2, data.canvas.height/2);
-	data.ctx.fillText(p.getPlr().name, data.canvas.width/2, data.canvas.height/2);
+	data.ctx.strokeText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.fillText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
 	data.ctx.textBaseline = "top";
 	var line2: string;
 	if (wins) line2 = t('wins') + "!";
-		else line2 = t('scores') + "!";
-	data.ctx.strokeText(line2, data.canvas.width/2, data.canvas.height/2);
-	data.ctx.fillText(line2, data.canvas.width/2, data.canvas.height/2);
+	else line2 = t('scores') + "!";
+	data.ctx.strokeText(line2, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.fillText(line2, data.canvas.width / 2, data.canvas.height / 2);
 	endRound();
+}
+
+export function touchControlArrows(): void {
+	data.ctx.fillStyle = "rgb(50 50 50 / 50%)";
+	data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
+	for (let i: number = 0; i < pad.length; i++) {
+		if (i == 0 && !pad[i].isAi()) {
+			data.ctx.textBaseline = "top";
+			data.ctx.textAlign = "left";
+			data.ctx.fillText("\u{2B06}", data.canvas.width / 16, 0);
+			data.ctx.textBaseline = "bottom";
+			data.ctx.fillText("\u{2B07}", data.canvas.width / 16, data.canvas.height);
+		}
+		if (data.mode != "fourPlayers") {
+			if (i == 1 && !pad[i].isAi()) {
+				data.ctx.textBaseline = "top";
+				data.ctx.textAlign = "right";
+				data.ctx.fillText("\u{2B06}", data.canvas.width * 15 / 16, 0);
+				data.ctx.textBaseline = "bottom";
+				data.ctx.fillText("\u{2B07}", data.canvas.width * 15 / 16, data.canvas.height);
+			}
+		} else {
+			if (i == 1 && !pad[i].isAi()) {
+				data.ctx.textBaseline = "top";
+				data.ctx.textAlign = "right";
+				data.ctx.fillText("\u{2B06}", data.canvas.width * 2 / 5, 0);
+				data.ctx.textBaseline = "bottom";
+				data.ctx.fillText("\u{2B07}", data.canvas.width * 2 / 5, data.canvas.height);
+			}
+			if (i == 2 && !pad[i].isAi()) {
+				data.ctx.textBaseline = "top";
+				data.ctx.textAlign = "left";
+				data.ctx.fillText("\u{2B06}", data.canvas.width * 3 / 5, 0);
+				data.ctx.textBaseline = "bottom";
+				data.ctx.fillText("\u{2B07}", data.canvas.width * 3 / 5, data.canvas.height);
+			}
+			if (i == 3 && !pad[i].isAi()) {
+				data.ctx.textBaseline = "top";
+				data.ctx.textAlign = "right";
+				data.ctx.fillText("\u{2B06}", data.canvas.width * 15 / 16, 0);
+				data.ctx.textBaseline = "bottom";
+				data.ctx.fillText("\u{2B07}", data.canvas.width * 15 / 16, data.canvas.height);
+			}
+		}
+	}
 }

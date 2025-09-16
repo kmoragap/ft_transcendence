@@ -1,4 +1,7 @@
-import { userService } from "./services/userService";
+//import { userService } from "./services/userService";
+import { controlKeys } from "./controls";
+import { countdown } from "./pong";
+import { playerSetupMenu, gameSetupMenu } from "./menus";
 
 export type playerData = {
 	name: string;
@@ -24,10 +27,7 @@ export type gameData = {
 	paddleWidth: number;
 	paddleHeight: number;
 	ctx: CanvasRenderingContext2D;
-	p1: playerData;
-	p2: playerData;
-	p3: playerData;
-	p4: playerData;
+	p:  playerData[];
 	
 	bg: CanvasGradient;
 	uiCol: string;
@@ -73,10 +73,6 @@ function loadPlayer(name: string, id: string, isAi: boolean, up: string, down: s
 	return p;
 }
 
-function loadTA(id: string): HTMLTextAreaElement {
-	return document.getElementById(id) as HTMLTextAreaElement;
-}
-
 function loadIn(id: string): string {
 	const el = document.getElementById(id) as HTMLInputElement;
 	return el.value;
@@ -87,7 +83,7 @@ function loadInB(id: string): boolean {
 	return el.checked;
 }
 
-export async function loadConfig(): Promise<void> {
+export async function newGame(fourPlayers: boolean): Promise<void> {
 	await new Promise<void>(resolve => {
 		if (document.readyState === 'complete') resolve();
 		else document.addEventListener('DOMContentLoaded', () => resolve());
@@ -95,12 +91,41 @@ export async function loadConfig(): Promise<void> {
 	//load player data from user DB
 	//const users: string[] = ["test", "test2"];
 	//const ud = await userService.getUsersByIds(users);
-	
-	var canvas = document.getElementById("board") as HTMLCanvasElement;
+	const appDiv = Object.assign(document.createElement("app"), {id: "app"}) as HTMLDivElement;
+	const body = document.getElementsByTagName("body");
+	body[0].appendChild(appDiv);
+	const players = Object.assign(document.createElement("ul"), {id: "playerSetup", className: "flex items-center list-none"}) as HTMLUListElement;
+	playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+	playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+	if (fourPlayers) {
+		playerSetupMenu(players, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
+		playerSetupMenu(players, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+	}
+	appDiv.appendChild(players);
+	appDiv.appendChild(gameSetupMenu(fourPlayers));
+	document.getElementById('gameSetup')!.addEventListener('submit', function(e) {//start button
+		e.preventDefault();
+		loadConfig(fourPlayers);
+	});
+
+}
+
+export function loadConfig(fourPlayers: boolean) {
+	const appDiv = document.getElementById('app') as HTMLDivElement;
+//create scoreboard
+	const scoreboard = Object.assign(document.createElement("div"),   {className: "scoreboard"}) as HTMLDivElement;
+	const p1name  = Object.assign(document.createElement("textarea"), {className: "p1name game-text",  rows: "1", cols: "30", disabled: "true"}) as HTMLTextAreaElement;
+	const p1score = Object.assign(document.createElement("textarea"), {className: "p1score game-text", rows: "1", cols: "2",  disabled: "true"}) as HTMLTextAreaElement;
+	const p2score = Object.assign(document.createElement("textarea"), {className: "p2score game-text", rows: "1", cols: "2",  disabled: "true"}) as HTMLTextAreaElement;
+	const p2name  = Object.assign(document.createElement("textarea"), {className: "p2name game-text",  rows: "1", cols: "30", disabled: "true"}) as HTMLTextAreaElement;
+	scoreboard.append(p1name, p1score, ' : ', p2score, p2name);
+//create canvas
+	const canvas = Object.assign(document.createElement('canvas'), { id: 'board', tabIndex: 1 }) as HTMLCanvasElement;
 	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight - loadTA("p1score").clientHeight;
+	canvas.height = window.innerHeight - p1score.clientHeight;
 	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-	var p1: playerData = loadPlayer(
+	var p: playerData[] = [];
+	p.push(loadPlayer(
 		loadIn("name_p1"),
 		"",//player ID
 		loadInB("p1Ai"),
@@ -108,8 +133,8 @@ export async function loadConfig(): Promise<void> {
 		loadIn("p1Down"),
 		loadIn("p1InnerCol"),
 		loadIn("p1OuterCol"),
-		loadIn("p1CornerCol"));
-	var p2: playerData = loadPlayer(
+		loadIn("p1CornerCol")));
+	p.push(loadPlayer(
 		loadIn("name_p2"),
 		"",//player ID
 		loadInB("p2Ai"),
@@ -117,8 +142,8 @@ export async function loadConfig(): Promise<void> {
 		loadIn("p2Down"),
 		loadIn("p2InnerCol"),
 		loadIn("p2OuterCol"),
-		loadIn("p2CornerCol"));
-	var p3: playerData = loadPlayer(
+		loadIn("p2CornerCol")));
+	if (fourPlayers) p.push(loadPlayer(
 		loadIn("name_p3"),
 		"",//player ID
 		loadInB("p3Ai"),
@@ -126,8 +151,8 @@ export async function loadConfig(): Promise<void> {
 		loadIn("p3Down"),
 		loadIn("p3InnerCol"),
 		loadIn("p3OuterCol"),
-		loadIn("p3CornerCol"));
-	var p4: playerData = loadPlayer(
+		loadIn("p3CornerCol")));
+	if (fourPlayers) p.push(loadPlayer(
 		loadIn("name_p4"),
 		"",//player ID
 		loadInB("p4Ai"),
@@ -135,30 +160,27 @@ export async function loadConfig(): Promise<void> {
 		loadIn("p4Down"),
 		loadIn("p4InnerCol"),
 		loadIn("p4OuterCol"),
-		loadIn("p4CornerCol"));
+		loadIn("p4CornerCol")));
 
 	const loadData = {
 		canvas: canvas,
 		fps: 50,
-		nameTB1: loadTA("p1name"),
-		scoreTB1: loadTA("p1score"),
-		scoreTB2: loadTA("p2score"),
-		nameTB2: loadTA("p2name"),
+		nameTB1: p1name,
+		scoreTB1: p1score,
+		scoreTB2: p2score,
+		nameTB2: p2name,
 		timestamp: 0,
 		lastTime: 0,
 		paddleWidth: canvas.width / 60,
 		paddleHeight: canvas.height / 5,
 		ctx: ctx,
-		p1: p1,
-		p2: p2,
-		p3: p3,
-		p4: p4,
+		p: p,
 		
 		paddleSpeed: 40,
 		ballSpeed: 10,
 		ballSize: 80,
-		maxScore: parseInt(loadIn("maxScore") || "10", 10),
-		trailLength: parseInt(loadIn("trailLength") || "20", 10),
+		maxScore: 3,//parseInt(loadIn("maxScore") || "10", 10),
+		trailLength: 20,//parseInt(loadIn("trailLength") || "20", 10),
 		
 		bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
 		uiCol: loadIn("uiCol"),
@@ -173,7 +195,7 @@ export async function loadConfig(): Promise<void> {
 		gameID: "",
 		go: false,
 		touchControl: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-		mode: (document.getElementById("gameMenu2") as HTMLFormElement).elements["mode"].value,
+		mode: "twoPlayers",
 		
 		multiball: loadInB("multiball"),
 		maxHits: Math.floor(Math.random()* 5 + 5),
@@ -181,12 +203,14 @@ export async function loadConfig(): Promise<void> {
 	}
 	loadData.scoreTB1.value = "0";
 	loadData.scoreTB2.value = "0";
-	if (loadData.mode == "fourPlayers") {
-		loadData.nameTB1.value = p1.name + " / " + p2.name;
-		loadData.nameTB2.value = p3.name + " / " + p4.name;
+	if (fourPlayers) {
+		loadData.mode = "fourPlayers";
+		loadData.nameTB1.value = p[0].name + " / " + p[1].name;
+		loadData.nameTB2.value = p[2].name + " / " + p[3].name;
 	} else {
-		loadData.nameTB1.value = p1.name;
-		loadData.nameTB2.value = p2.name;
+		if (loadInB("doublePaddle")) loadData.mode = "doublePaddle";
+		loadData.nameTB1.value = p[0].name;
+		loadData.nameTB2.value = p[1].name;
 	}
 	loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
 	loadData.bg.addColorStop(0, loadIn("outerBg"));
@@ -218,6 +242,13 @@ export async function loadConfig(): Promise<void> {
 		default:			loadData.ballSize = 80;		break;
 	}
 	data = loadData;
+	(document.getElementById("playerSetup") as HTMLUListElement).remove();
+	(document.getElementById("gameSetup") as HTMLUListElement).remove();
+	appDiv.appendChild(scoreboard);
+	appDiv.appendChild(canvas);
+	controlKeys();
+	document.getElementById("board")?.focus();
+	setTimeout(() => countdown(3, 500), 500);
 	//const gd: GameData = {data.p1.name, data.p2.name, data.p1.id, data.p2.id, data.maxScore};
 	//const res = await gameService.createGame(gd);
 }

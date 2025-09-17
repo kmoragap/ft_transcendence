@@ -95,7 +95,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   const appDiv = Object.assign(document.createElement("div"), { id: "app" }) as HTMLDivElement;
 
   appDiv.className = [
-    "fixed inset-0 flex items-center justify-center",
+    "fixed inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
     "z-50"
   ].join(" ");
@@ -121,7 +121,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   const players = Object.assign(document.createElement("ul"), {
     id: "playerSetup",
     className: [
-      "flex flex-row justify-between",
+      "flex flex-row gap-4 justify-between",
       "list-none"
     ].join(" ")
   }) as HTMLUListElement;
@@ -284,10 +284,22 @@ export function loadConfig(fourPlayers: boolean) {
 		default:			loadData.ballSize = 80;		break;
 	}
 	data = loadData;
-	(document.getElementById("playerSetup") as HTMLUListElement).remove();
-	(document.getElementById("gameSetup") as HTMLUListElement).remove();
-	appDiv.appendChild(scoreboard);
-	appDiv.appendChild(canvas);
+	// Remove all existing content from app div except what we want to keep
+	const gameAppDiv = document.getElementById('app');
+	if (gameAppDiv) {
+		// Clear all content
+		gameAppDiv.innerHTML = '';
+		// Change layout for game view
+		gameAppDiv.className = [
+			"fixed inset-0 flex flex-col",
+			"bg-black/60",
+			"z-50"
+		].join(" ");
+		
+		// Add only the scoreboard and canvas
+		gameAppDiv.appendChild(scoreboard);
+		gameAppDiv.appendChild(canvas);
+	}
 	controlKeys();
 	document.getElementById("board")?.focus();
 	setTimeout(() => countdown(3, 500), 500);

@@ -32,7 +32,6 @@
   font-style: normal;
 }
 
-@layer base {
   body {
     margin: 0;
     font-family: 'Jura', sans-serif;
@@ -115,7 +114,6 @@
     color: #66fcf1 !important;
   }
   
-  /* Ensure all button elements in the accessibility menu have dark background */
   #a11y-menu button {
     background-color: #0a2b2b !important;
     color: #66fcf1 !important;
@@ -130,7 +128,6 @@
     color: #66fcf1 !important;
   }
   
-  /* Ensure the accessibility dropdown is above everything */
   #a11y-menu {
     position: absolute !important;
     z-index: 1000 !important;
@@ -139,14 +136,11 @@
     box-shadow: 0 4px 10px rgba(102, 252, 241, 0.5);
   }
   
-  /* Ensure the dropdown container has proper stacking context */
   .relative.ml-3 {
     position: relative !important;
     z-index: 1000 !important;
   }
-}
 
-@layer components {
   .title {
     display: table;
     font-size: 5.3125rem; /* 85px / 16px = 5.3125rem */
@@ -224,7 +218,7 @@
   }
 
   .btn {
-    width: 100%;
+    width: auto;
     margin-top: 10px;
     border: 0;
     border-radius: 6px;
@@ -296,12 +290,22 @@
     font: 600 14px/1.2 system-ui;
     font-size: 14px;
     font-weight:700;
+    margin-left: 3px;
   }
   color.game-text {
     border: none;
   }
-}
-@layer utilities {
+  .editBox {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+    background-color: rgba(102,252,241,0.1);
+    border-radius: 5px;
+    box-shadow: 0 0 10px 0 rgba(102,252,241,0.5);
+  }
+
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
@@ -373,4 +377,3 @@
       background-position: 0% 50%;
     }
   }
-}

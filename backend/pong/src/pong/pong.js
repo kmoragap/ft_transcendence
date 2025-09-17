@@ -110,15 +110,12 @@ function touchUp() {
 }
 
 // src/menus.ts
-function br() {
-  return Object.assign(document.createElement("br"));
-}
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
-  const form = Object.assign(document.createElement("form"), { id: `player${p}Menu`, className: `player${p}Menu` });
+  const form = Object.assign(document.createElement("form"), { id: `player${p}Menu`, className: `editBox` });
   const e1 = Object.assign(document.createElement("label"), { className: "game-text", for: `name_p${p}`, textContent: `Player ${p}: ` });
-  const e2 = Object.assign(document.createElement("input"), { className: "game-text", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name });
+  const e2 = Object.assign(document.createElement("input"), { className: "game-text ml-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name });
   const e3 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Ai`, textContent: "AI " });
-  const e4 = Object.assign(document.createElement("input"), { type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi });
+  const e4 = Object.assign(document.createElement("input"), { type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi, className: "ml-1" });
   const e5 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Up`, textContent: "Up: " });
   const e6 = Object.assign(document.createElement("input"), { className: "game-text", type: "text", size: "9", id: `p${p}Up`, value: up });
   const e7 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Down`, textContent: "Down: " });
@@ -129,14 +126,37 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   const e12 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}OuterCol`, textContent: "paddle outer color" });
   const e13 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}CornerCol`, name: `p${p}CornerCol`, value: c3 });
   const e14 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}CornerCol`, textContent: "paddle corner color" });
-  form.append(e1, e2, br(), e3, e4, br(), e5, e6, e7, e8, br(), e10, e9, br(), e12, e11, br(), e14, e13, br());
+  const nameRow = Object.assign(document.createElement("div"), { className: "flex items-center mb-2" });
+  const keysRow = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const innerColRow = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const outerColRow = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const cornerColRow = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  nameRow.appendChild(e1);
+  nameRow.appendChild(e2);
+  nameRow.appendChild(e3);
+  nameRow.appendChild(e4);
+  keysRow.appendChild(e5);
+  keysRow.appendChild(e6);
+  keysRow.appendChild(e7);
+  keysRow.appendChild(e8);
+  innerColRow.appendChild(e10);
+  innerColRow.appendChild(e9);
+  outerColRow.appendChild(e12);
+  outerColRow.appendChild(e11);
+  cornerColRow.appendChild(e14);
+  cornerColRow.appendChild(e13);
+  form.appendChild(nameRow);
+  form.appendChild(keysRow);
+  form.appendChild(innerColRow);
+  form.appendChild(outerColRow);
+  form.appendChild(cornerColRow);
   const ul = document.createElement("li");
   ul.appendChild(form);
   list.appendChild(ul);
 }
 function gameSetupMenu(fourPlayers) {
-  const settings = Object.assign(document.createElement("form"), { id: "settings", className: "settings flex-1" });
-  const bgColors = Object.assign(document.createElement("form"), { id: "bgColors", className: "bgColors flex-1" });
+  const settings = Object.assign(document.createElement("form"), { id: "settings", className: "editBox flex-1 flex flex-col space-y-3" });
+  const bgColors = Object.assign(document.createElement("form"), { id: "bgColors", className: "editBox flex-1 flex flex-col space-y-3" });
   const e3 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "paddleSpeed", textContent: "Paddle speed" });
   const e1 = Object.assign(document.createElement("select"), { name: "paddleSpeed", id: "paddleSpeed" });
   const e2 = [
@@ -195,16 +215,60 @@ function gameSetupMenu(fourPlayers) {
   const e20 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000" });
   const e21 = Object.assign(document.createElement("label"), { className: "game-text", for: "outerBg", textContent: "outer background color" });
   const e22 = Object.assign(document.createElement("input"), { type: "submit", className: "btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer", value: "START" });
-  if (fourPlayers)
-    settings.append(e3, e1, br(), e6, e4, br(), e9, e7, br(), e10, e11, br());
-  else settings.append(e3, e1, br(), e6, e4, br(), e9, e7, br(), e10, e11, br(), e12, e13, br());
-  bgColors.append(e14, e15, br(), e16, e17, br(), e18, e19, br(), e20, e21, br());
+  const row1 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const row2 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const row3 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const row4 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const row5 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const colorRow1 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const colorRow2 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const colorRow3 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const colorRow4 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  row1.appendChild(e3);
+  row1.appendChild(e1);
+  row2.appendChild(e6);
+  row2.appendChild(e4);
+  row3.appendChild(e9);
+  row3.appendChild(e7);
+  row4.appendChild(e11);
+  row4.appendChild(e10);
+  if (!fourPlayers) {
+    row5.appendChild(e13);
+    row5.appendChild(e12);
+  }
+  colorRow1.appendChild(e15);
+  colorRow1.appendChild(e14);
+  colorRow2.appendChild(e17);
+  colorRow2.appendChild(e16);
+  colorRow3.appendChild(e19);
+  colorRow3.appendChild(e18);
+  colorRow4.appendChild(e21);
+  colorRow4.appendChild(e20);
+  settings.appendChild(row1);
+  settings.appendChild(row2);
+  settings.appendChild(row3);
+  settings.appendChild(row4);
+  if (!fourPlayers) {
+    settings.appendChild(row5);
+  }
+  bgColors.appendChild(colorRow1);
+  bgColors.appendChild(colorRow2);
+  bgColors.appendChild(colorRow3);
+  bgColors.appendChild(colorRow4);
   const container = Object.assign(document.createElement("div"), { className: "game-setup-container" });
-  const ul = Object.assign(document.createElement("ul"), { id: "gameSetup", className: "flex flex-row justify-between items-center list-none" });
+  const ul = Object.assign(document.createElement("ul"), { id: "gameSetup", className: "flex flex-row gap-4 justify-between items-center list-none" });
   ul.appendChild(settings);
   ul.appendChild(bgColors);
   const buttonContainer = Object.assign(document.createElement("div"), { className: "flex justify-center mt-4" });
   buttonContainer.appendChild(e22);
+  e22.addEventListener("click", (e) => {
+    e.preventDefault();
+    const gameSetupForm = document.getElementById("gameSetup");
+    if (gameSetupForm) {
+      const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
+      gameSetupForm.dispatchEvent(submitEvent);
+    }
+  });
   container.appendChild(ul);
   container.appendChild(buttonContainer);
   return container;
@@ -212,7 +276,7 @@ function gameSetupMenu(fourPlayers) {
 
 // src/gameData.ts
 var data;
-function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol2) {
+function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
     name,
     id,
@@ -222,7 +286,7 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol2) {
     down,
     innerCol,
     outerCol: outercol,
-    cornerCol: cornerCol2
+    cornerCol
   };
   if (isAi) p.name = "Marvin";
   return p;
@@ -242,7 +306,7 @@ async function newGame(fourPlayers) {
   });
   const appDiv = Object.assign(document.createElement("div"), { id: "app" });
   appDiv.className = [
-    "fixed inset-0 flex items-center justify-center",
+    "fixed inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
     "z-50"
   ].join(" ");
@@ -263,7 +327,7 @@ async function newGame(fourPlayers) {
   const players = Object.assign(document.createElement("ul"), {
     id: "playerSetup",
     className: [
-      "flex flex-row justify-between",
+      "flex flex-row gap-4 justify-between",
       "list-none"
     ].join(" ")
   });
@@ -457,10 +521,17 @@ function loadConfig(fourPlayers) {
       break;
   }
   data = loadData;
-  document.getElementById("playerSetup").remove();
-  document.getElementById("gameSetup").remove();
-  appDiv.appendChild(scoreboard);
-  appDiv.appendChild(canvas);
+  const gameAppDiv = document.getElementById("app");
+  if (gameAppDiv) {
+    gameAppDiv.innerHTML = "";
+    gameAppDiv.className = [
+      "fixed inset-0 flex flex-col",
+      "bg-black/60",
+      "z-50"
+    ].join(" ");
+    gameAppDiv.appendChild(scoreboard);
+    gameAppDiv.appendChild(canvas);
+  }
   controlKeys();
   document.getElementById("board")?.focus();
   setTimeout(() => countdown(3, 500), 500);
@@ -709,7 +780,7 @@ var Paddle = class {
     data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
     this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
     this._topCornerGrad.addColorStop(0, "white");
-    this._topCornerGrad.addColorStop(0.75, cornerCol);
+    this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
     this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
     this._bottomCornerGrad.addColorStop(0, "white");
     this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
@@ -1082,7 +1153,6 @@ async function startGame(fourPlayers) {
     await initI18n(lang);
     await newGame(fourPlayers);
     document.getElementById("board")?.focus();
-    setTimeout(() => countdown(3, 500), 500);
   } catch (error) {
     console.error("Failed to load configuration:", error);
   }

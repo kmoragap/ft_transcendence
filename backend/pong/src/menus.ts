@@ -4,12 +4,12 @@ function br(): HTMLBRElement {
 
 export function playerSetupMenu (list: HTMLUListElement, p: string, name: string, isAi: boolean, up: string, down: string, c1: string, c2: string, c3: string) {
 //create player setup
-	const form = Object.assign(document.createElement("form"), {id: `player${p}Menu`, className: `player${p}Menu`}) as HTMLFormElement;
+	const form = Object.assign(document.createElement("form"), {id: `player${p}Menu`, className: `editBox`}) as HTMLFormElement;
 //name, AI
 	const e1 = Object.assign(document.createElement("label"), {className: "game-text", for: `name_p${p}`, textContent: `Player ${p}: `}) as HTMLLabelElement;
-	const e2 = Object.assign(document.createElement("input"), {className: "game-text", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name}) as HTMLInputElement;
+	const e2 = Object.assign(document.createElement("input"), {className: "game-text ml-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name}) as HTMLInputElement;
 	const e3 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Ai`, textContent: "AI "}) as HTMLLabelElement;
-	const e4 = Object.assign(document.createElement("input"), {type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi}) as HTMLInputElement;
+	const e4 = Object.assign(document.createElement("input"), {type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi, className: "ml-1"}) as HTMLInputElement;
 //keys
 	const e5 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Up`, textContent: "Up: "}) as HTMLLabelElement;
 	const e6 = Object.assign(document.createElement("input"), {className: "game-text", type: "text", size: "9", id: `p${p}Up`, value: up}) as HTMLInputElement;
@@ -22,15 +22,50 @@ export function playerSetupMenu (list: HTMLUListElement, p: string, name: string
 	const e12 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}OuterCol`, textContent: "paddle outer color"}) as HTMLLabelElement;
 	const e13 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: `p${p}CornerCol`, name: `p${p}CornerCol`, value: c3}) as HTMLInputElement;
 	const e14 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}CornerCol`, textContent: "paddle corner color"}) as HTMLLabelElement;
-	form.append(e1, e2, br(), e3, e4, br(), e5, e6, e7, e8, br(), e10, e9, br(), e12, e11, br(), e14, e13, br());
+	
+	// Create row containers for each label-input pair
+	const nameRow = Object.assign(document.createElement("div"), {className: "flex items-center mb-2"}) as HTMLDivElement;
+	const keysRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const innerColRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const outerColRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const cornerColRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	
+	// Populate rows
+	nameRow.appendChild(e1);
+	nameRow.appendChild(e2);
+	nameRow.appendChild(e3);
+	nameRow.appendChild(e4);
+	
+	
+	keysRow.appendChild(e5);
+	keysRow.appendChild(e6);
+	keysRow.appendChild(e7);
+	keysRow.appendChild(e8);
+	
+	innerColRow.appendChild(e10);
+	innerColRow.appendChild(e9);
+	
+	outerColRow.appendChild(e12);
+	outerColRow.appendChild(e11);
+	
+	cornerColRow.appendChild(e14);
+	cornerColRow.appendChild(e13);
+	
+	// Add rows to form
+	form.appendChild(nameRow);
+	form.appendChild(keysRow);
+	form.appendChild(innerColRow);
+	form.appendChild(outerColRow);
+	form.appendChild(cornerColRow);
+	
 	const ul = document.createElement("li");
 	ul.appendChild(form);
 	list.appendChild(ul);
 }
 
 export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
-	const settings = Object.assign(document.createElement("form"), {id: "settings", className: "settings flex-1"}) as HTMLFormElement;
-	const bgColors = Object.assign(document.createElement("form"), {id: "bgColors", className: "bgColors flex-1"}) as HTMLFormElement;
+	const settings = Object.assign(document.createElement("form"), {id: "settings", className: "editBox flex-1 flex flex-col space-y-3"}) as HTMLFormElement;
+	const bgColors = Object.assign(document.createElement("form"), {id: "bgColors", className: "editBox flex-1 flex flex-col space-y-3"}) as HTMLFormElement;
 //paddle speed
 	const e3 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "paddleSpeed", textContent: "Paddle speed"}) as HTMLLabelElement;
 	const e1 = Object.assign(document.createElement("select"), {name: "paddleSpeed", id: "paddleSpeed"}) as HTMLSelectElement;
@@ -96,23 +131,72 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
 	const e21 = Object.assign(document.createElement("label"), {className: "game-text", for: "outerBg", textContent: "outer background color"}) as HTMLLabelElement;
 //start button
 	const e22 = Object.assign(document.createElement("input"), {type: "submit", className: "btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer", value: "START"});
-//assemble
-	if (fourPlayers)
-		settings.append(e3, e1, br(), e6, e4, br(), e9, e7, br(), e10, e11, br());
-	 else settings.append(e3, e1, br(), e6, e4, br(), e9, e7, br(), e10, e11, br(), e12, e13, br());
-	bgColors.append(e14, e15, br(), e16, e17, br(), e18, e19, br(), e20, e21, br());
+//assemble - create row containers for each label-select pair
+	const row1 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const row2 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const row3 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const row4 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const row5 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
 	
-	// Create container div to hold both ul and button
+	const colorRow1 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const colorRow2 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const colorRow3 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	const colorRow4 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
+	
+	row1.appendChild(e3);
+	row1.appendChild(e1);
+	row2.appendChild(e6);
+	row2.appendChild(e4);
+	row3.appendChild(e9);
+	row3.appendChild(e7);
+	row4.appendChild(e11);
+	row4.appendChild(e10);
+	if (!fourPlayers) {
+		row5.appendChild(e13);
+		row5.appendChild(e12);
+	}
+	
+	colorRow1.appendChild(e15);
+	colorRow1.appendChild(e14);
+	colorRow2.appendChild(e17);
+	colorRow2.appendChild(e16);
+	colorRow3.appendChild(e19);
+	colorRow3.appendChild(e18);
+	colorRow4.appendChild(e21);
+	colorRow4.appendChild(e20);
+	
+	settings.appendChild(row1);
+	settings.appendChild(row2);
+	settings.appendChild(row3);
+	settings.appendChild(row4);
+	if (!fourPlayers) {
+		settings.appendChild(row5);
+	}
+	
+	bgColors.appendChild(colorRow1);
+	bgColors.appendChild(colorRow2);
+	bgColors.appendChild(colorRow3);
+	bgColors.appendChild(colorRow4);
+	
 	const container = Object.assign(document.createElement("div"), {className: "game-setup-container"}) as HTMLDivElement;
-	
-	// Create ul without startBtn
-	const ul = Object.assign(document.createElement("ul"), {id: "gameSetup", className: "flex flex-row justify-between items-center list-none"}) as HTMLUListElement;
+	const ul = Object.assign(document.createElement("ul"), {id: "gameSetup", className: "flex flex-row gap-4 justify-between items-center list-none"}) as HTMLUListElement;
 	ul.appendChild(settings);
 	ul.appendChild(bgColors);
 	
 	// Create centered button container
 	const buttonContainer = Object.assign(document.createElement("div"), {className: "flex justify-center mt-4"}) as HTMLDivElement;
 	buttonContainer.appendChild(e22);
+	
+	// Add click event listener to the START button
+	e22.addEventListener('click', (e) => {
+		e.preventDefault();
+		// Trigger form submission by dispatching a submit event on the gameSetup form
+		const gameSetupForm = document.getElementById('gameSetup');
+		if (gameSetupForm) {
+			const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+			gameSetupForm.dispatchEvent(submitEvent);
+		}
+	});
 	
 	// Add both ul and button to container
 	container.appendChild(ul);

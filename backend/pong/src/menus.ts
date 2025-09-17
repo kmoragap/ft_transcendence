@@ -22,17 +22,17 @@ export function playerSetupMenu (list: HTMLUListElement, p: string, name: string
 	const e12 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}OuterCol`, textContent: "paddle outer color"}) as HTMLLabelElement;
 	const e13 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: `p${p}CornerCol`, name: `p${p}CornerCol`, value: c3}) as HTMLInputElement;
 	const e14 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}CornerCol`, textContent: "paddle corner color"}) as HTMLLabelElement;
-	form.append(e1, e2, br(), e3, e4, br(), e5, e6, e7, e8, br(), e9, e10, br(), e11, e12, br(), e13, e14, br());
+	form.append(e1, e2, br(), e3, e4, br(), e5, e6, e7, e8, br(), e10, e9, br(), e12, e11, br(), e14, e13, br());
 	const ul = document.createElement("li");
 	ul.appendChild(form);
 	list.appendChild(ul);
 }
 
-export function gameSetupMenu(fourPlayers: boolean): HTMLUListElement {
-	const settings = Object.assign(document.createElement("form"), {id: "settings", className: "settings"}) as HTMLFormElement;
-	const bgColors = Object.assign(document.createElement("form"), {id: "bgColors", className: "bgColors"}) as HTMLFormElement;
-	const startBtn = Object.assign(document.createElement("form"), {id: "startBtn", className: "startBtn"}) as HTMLFormElement;
+export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
+	const settings = Object.assign(document.createElement("form"), {id: "settings", className: "settings flex-1"}) as HTMLFormElement;
+	const bgColors = Object.assign(document.createElement("form"), {id: "bgColors", className: "bgColors flex-1"}) as HTMLFormElement;
 //paddle speed
+	const e3 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "paddleSpeed", textContent: "Paddle speed"}) as HTMLLabelElement;
 	const e1 = Object.assign(document.createElement("select"), {name: "paddleSpeed", id: "paddleSpeed"}) as HTMLSelectElement;
 	const e2 = [
 		{ value: "glacial", text: "glacial" },
@@ -46,8 +46,8 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLUListElement {
 		if (option.selected) opt.selected = true;
 		e1.appendChild(opt);
 	});
-	const e3 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "paddleSpeed", textContent: "Paddle speed"}) as HTMLLabelElement;
 //ball speed
+	const e6 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSpeed", textContent: "Ball speed"}) as HTMLLabelElement;
 	const e4 = Object.assign(document.createElement("select"), {name: "ballSpeed", id: "ballSpeed"}) as HTMLSelectElement;
 	const e5 = [
 		{ value: "glacial", text: "glacial" },
@@ -64,8 +64,8 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLUListElement {
 		if (option.selected) opt.selected = true;
 		e4.appendChild(opt);
 	});
-	const e6 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSpeed", textContent: "Ball speed"}) as HTMLLabelElement;
 //ball size
+	const e9 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSize", textContent: "Ball size"}) as HTMLLabelElement;
 	const e7 = Object.assign(document.createElement("select"), {name: "ballSize", id: "ballSize", style: { width: "20px" }}) as HTMLSelectElement;
 	const e8 = [
 		{ value: "tiny", text: "tiny" },
@@ -79,7 +79,6 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLUListElement {
 		if (option.selected) opt.selected = true;
 		e7.appendChild(opt);
 	});
-	const e9 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSize", textContent: "Ball size"}) as HTMLLabelElement;
 //multiball
 	const e10 = Object.assign(document.createElement("input"), {type: "checkbox", id: "multiball", name: "multiball", checked: false}) as HTMLInputElement;
 	const e11 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "multiball", textContent: "Multiball"}) as HTMLLabelElement;
@@ -96,16 +95,28 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLUListElement {
 	const e20 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000"}) as HTMLInputElement;
 	const e21 = Object.assign(document.createElement("label"), {className: "game-text", for: "outerBg", textContent: "outer background color"}) as HTMLLabelElement;
 //start button
-	const e22 = Object.assign(document.createElement("input"), {type: "submit", className: "game-start-button", value: "START"});
+	const e22 = Object.assign(document.createElement("input"), {type: "submit", className: "btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer", value: "START"});
 //assemble
 	if (fourPlayers)
-		settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br());
-	 else settings.append(e1, e3, br(), e4, e6, br(), e7, e9, br(), br(), e10, e11, br(), e12, e13, br());
+		settings.append(e3, e1, br(), e6, e4, br(), e9, e7, br(), e10, e11, br());
+	 else settings.append(e3, e1, br(), e6, e4, br(), e9, e7, br(), e10, e11, br(), e12, e13, br());
 	bgColors.append(e14, e15, br(), e16, e17, br(), e18, e19, br(), e20, e21, br());
-	startBtn.append(e22);
-	const ul = Object.assign(document.createElement("ul"), {id: "gameSetup", className: "flex items-center list-none"}) as HTMLUListElement;
+	
+	// Create container div to hold both ul and button
+	const container = Object.assign(document.createElement("div"), {className: "game-setup-container"}) as HTMLDivElement;
+	
+	// Create ul without startBtn
+	const ul = Object.assign(document.createElement("ul"), {id: "gameSetup", className: "flex flex-row justify-between items-center list-none"}) as HTMLUListElement;
 	ul.appendChild(settings);
 	ul.appendChild(bgColors);
-	ul.append(startBtn);
-	return ul;
+	
+	// Create centered button container
+	const buttonContainer = Object.assign(document.createElement("div"), {className: "flex justify-center mt-4"}) as HTMLDivElement;
+	buttonContainer.appendChild(e22);
+	
+	// Add both ul and button to container
+	container.appendChild(ul);
+	container.appendChild(buttonContainer);
+	
+	return container;
 }

@@ -18,7 +18,6 @@ export function removeBall(ball: Ball): void {
 
 export async function startGame(fourPlayers: boolean) {
 	try {
-		// Get language from URL parameters or default to 'en'
 		const urlParams = new URLSearchParams(window.location.search);
 		const lang = urlParams.get('lang') || 'en';
 		

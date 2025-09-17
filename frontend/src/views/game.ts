@@ -159,32 +159,26 @@ export function renderGame(): HTMLElement {
 
   setMode('menu');
 
-  // Listen for language changes and reload iframe if needed
   const languageChangeHandler = () => {
     if (iframeRef) {
-      // Get current mode from the iframe URL
       const currentSrc = iframeRef.src;
       const url = new URL(currentSrc);
       const mode = url.searchParams.get('mode');
       
       if (mode === 'single' || mode === 'multi') {
-        // Destroy and recreate the iframe with new language
         setMode(mode as Exclude<GameMode, 'menu'>);
       }
     } else {
-      // If we're in menu mode, just update the text
       updateText();
     }
   };
   
-  // Listen for storage changes (language changes)
   window.addEventListener('storage', (e) => {
     if (e.key === 'lang') {
       languageChangeHandler();
     }
   });
   
-  // Also listen for custom language change events
   window.addEventListener('languageChanged', languageChangeHandler);
 
   (section as any).__destroyGameView = destroyGameView;

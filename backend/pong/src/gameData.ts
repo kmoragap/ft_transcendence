@@ -84,30 +84,72 @@ function loadInB(id: string): boolean {
 }
 
 export async function newGame(fourPlayers: boolean): Promise<void> {
-	await new Promise<void>(resolve => {
-		if (document.readyState === 'complete') resolve();
-		else document.addEventListener('DOMContentLoaded', () => resolve());
-	});
-	//load player data from user DB
-	//const users: string[] = ["test", "test2"];
-	//const ud = await userService.getUsersByIds(users);
-	const appDiv = Object.assign(document.createElement("app"), {id: "app"}) as HTMLDivElement;
-	const body = document.getElementsByTagName("body");
-	body[0].appendChild(appDiv);
-	const players = Object.assign(document.createElement("ul"), {id: "playerSetup", className: "flex items-center list-none"}) as HTMLUListElement;
-	playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
-	playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
-	if (fourPlayers) {
-		playerSetupMenu(players, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
-		playerSetupMenu(players, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
-	}
-	appDiv.appendChild(players);
-	appDiv.appendChild(gameSetupMenu(fourPlayers));
-	document.getElementById('gameSetup')!.addEventListener('submit', function(e) {//start button
-		e.preventDefault();
-		loadConfig(fourPlayers);
-	});
+  await new Promise<void>(resolve => {
+    if (document.readyState === 'complete') resolve();
+    else document.addEventListener('DOMContentLoaded', () => resolve());
+  });
+  //load player data from user DB 
+  //const users: string[] = ["test", "test2"];
+  //const ud = await userService.getUsersByIds(users);
 
+  const appDiv = Object.assign(document.createElement("div"), { id: "app" }) as HTMLDivElement;
+
+  appDiv.className = [
+    "fixed inset-0 flex items-center justify-center",
+    "bg-black/60",
+    "z-50"
+  ].join(" ");
+
+  document.body.appendChild(appDiv);
+
+  // Card wrapper
+  const card = document.createElement("div");
+  card.className = [
+    "w-[min(900px,92vw)]",
+    "rounded-2xl",
+    "bg-[rgba(3,27,27,0.9)]",
+    "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
+    "p-6 md:p-8 space-y-6"
+  ].join(" ");
+  appDiv.appendChild(card);
+
+  const title = document.createElement("h2");
+  title.textContent = "Game Setup";
+  title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
+  card.appendChild(title);
+
+  const players = Object.assign(document.createElement("ul"), {
+    id: "playerSetup",
+    className: [
+      "flex flex-row justify-between",
+      "list-none"
+    ].join(" ")
+  }) as HTMLUListElement;
+
+  playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  playerSetupMenu(players, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  if (fourPlayers) {
+    playerSetupMenu(players, "3", "Trillian Astra",     true, "i", "k", "#ffffff", "#808080", "#ff0000");
+    playerSetupMenu(players, "4", "Zaphod Beeblebrox",  true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+  }
+  card.appendChild(players);
+
+  // Game options + start button (make gameSetupMenu return a <form id="gameSetup">)
+  const setupForm = gameSetupMenu(fourPlayers);
+  // Give the form a nice layout + button style
+  setupForm.classList.add(
+    "space-y-4",
+    "pt-2",
+    "border-t",
+    "border-[#66fcf1]/15"
+  );
+  // You can also add classes to inner controls in gameSetupMenu, see below.
+  card.appendChild(setupForm);
+
+  document.getElementById('gameSetup')!.addEventListener('submit', (e) => {
+    e.preventDefault();
+    loadConfig(fourPlayers);
+  });
 }
 
 export function loadConfig(fourPlayers: boolean) {

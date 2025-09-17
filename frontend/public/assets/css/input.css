@@ -284,7 +284,7 @@
     border: none;
     font-family: 'jura', sans-serif;
     font: 600 14px/1.2 system-ui;
-    font-size: 12px;
+    font-size: 14px;
     font-weight:700;
   }
   input.game-text {
@@ -294,11 +294,10 @@
     border: none;
     font-family: 'jura', sans-serif;
     font: 600 14px/1.2 system-ui;
-    font-size: 12px;
+    font-size: 14px;
     font-weight:700;
   }
   color.game-text {
-    
     border: none;
   }
 }

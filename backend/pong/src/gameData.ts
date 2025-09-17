@@ -95,7 +95,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 	const body = document.getElementsByTagName("body");
 	body[0].appendChild(appDiv);
 	const players = Object.assign(document.createElement("ul"), {id: "playerSetup", className: "flex items-center list-none"}) as HTMLUListElement;
-	playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+	playerSetupMenu(players, "1", "Ford Prefect", false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
 	playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
 	if (fourPlayers) {
 		playerSetupMenu(players, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");

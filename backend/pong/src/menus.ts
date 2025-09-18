@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 function br(): HTMLBRElement {
 	return Object.assign(document.createElement("br")) as HTMLBRElement;
 }
@@ -6,30 +8,30 @@ export function playerSetupMenu (list: HTMLUListElement, p: string, name: string
 //create player setup
 	const form = Object.assign(document.createElement("form"), {id: `player${p}Menu`, className: `editBox`}) as HTMLFormElement;
 //name, AI
-	const e1 = Object.assign(document.createElement("label"), {className: "game-text", for: `name_p${p}`, textContent: `Player ${p}: `}) as HTMLLabelElement;
-	const e2 = Object.assign(document.createElement("input"), {className: "game-text ml-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name}) as HTMLInputElement;
-	const e3 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Ai`, textContent: "AI "}) as HTMLLabelElement;
+	const e1 = Object.assign(document.createElement("label"), {className: "game-text", for: `name_p${p}`, textContent: `${t('player')} ${p}: `}) as HTMLLabelElement;
+	const e2 = Object.assign(document.createElement("input"), {className: "custom-input ml-1 px-1 py-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name}) as HTMLInputElement;
+	const e3 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Ai`, textContent: `${t('ai')} `}) as HTMLLabelElement;
 	const e4 = Object.assign(document.createElement("input"), {type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi, className: "ml-1"}) as HTMLInputElement;
 //keys
-	const e5 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Up`, textContent: "Up: "}) as HTMLLabelElement;
-	const e6 = Object.assign(document.createElement("input"), {className: "game-text", type: "text", size: "9", id: `p${p}Up`, value: up}) as HTMLInputElement;
-	const e7 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Down`, textContent: "Down: "}) as HTMLLabelElement;
-	const e8 = Object.assign(document.createElement("input"), {className: "game-text", type: "text", size: "9", id: `p${p}Down`, value: down}) as HTMLInputElement;
+	const e5 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Up`, textContent: `${t('up')}: `}) as HTMLLabelElement;
+	const e6 = Object.assign(document.createElement("input"), {className: "custom-input px-1 py-1 ml-1", type: "text", size: "9", id: `p${p}Up`, value: up}) as HTMLInputElement;
+	const e7 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Down`, textContent: `${t('down')}: `}) as HTMLLabelElement;
+	const e8 = Object.assign(document.createElement("input"), {className: "custom-input px-1 py-1 ml-1", type: "text", size: "9", id: `p${p}Down`, value: down}) as HTMLInputElement;
 //colors
 	const e9  = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: `p${p}InnerCol`, name: `p${p}InnerCol`, value: c1}) as HTMLInputElement;
-	const e10 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}InnerCol`, textContent: "paddle inner color"}) as HTMLLabelElement;
+	const e10 = Object.assign(document.createElement("label"), {className: "game-text", for: ` p${p}InnerCol`, textContent: `${t('innerColor')}`}) as HTMLLabelElement;
 	const e11 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: `p${p}OuterCol`, name: `p${p}OuterCol`, value: c2}) as HTMLInputElement;
-	const e12 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}OuterCol`, textContent: "paddle outer color"}) as HTMLLabelElement;
+	const e12 = Object.assign(document.createElement("label"), {className: "game-text", for: ` p${p}OuterCol`, textContent: `${t('outerColor')}`}) as HTMLLabelElement;
 	const e13 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: `p${p}CornerCol`, name: `p${p}CornerCol`, value: c3}) as HTMLInputElement;
-	const e14 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}CornerCol`, textContent: "paddle corner color"}) as HTMLLabelElement;
+	const e14 = Object.assign(document.createElement("label"), {className: "game-text", for: ` p${p}CornerCol`, textContent: `${t('cornerColor')}`}) as HTMLLabelElement;
 	
 	// Create row containers for each label-input pair
-	const nameRow = Object.assign(document.createElement("div"), {className: "flex items-center mb-2"}) as HTMLDivElement;
-	const keysRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
-	const innerColRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
-	const outerColRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
-	const cornerColRow = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
-	
+	const nameRow = Object.assign(document.createElement("div"), {className: "flex w-full justify-between items-center mb-2"}) as HTMLDivElement;
+	const keysRow = Object.assign(document.createElement("div"), {className: "flex w-full justify-between items-center mb-2"}) as HTMLDivElement;
+	const innerColRow = Object.assign(document.createElement("div"), {className: "flex w-full justify-between items-center mb-2"}) as HTMLDivElement;
+	const outerColRow = Object.assign(document.createElement("div"), {className: "flex w-full justify-between items-center mb-2"}) as HTMLDivElement;
+	const cornerColRow = Object.assign(document.createElement("div"), {className: "flex w-full justify-between items-center mb-2"}) as HTMLDivElement;
+
 	// Populate rows
 	nameRow.appendChild(e1);
 	nameRow.appendChild(e2);
@@ -63,18 +65,18 @@ export function playerSetupMenu (list: HTMLUListElement, p: string, name: string
 	list.appendChild(ul);
 }
 
-export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
-	const settings = Object.assign(document.createElement("form"), {id: "settings", className: "editBox flex-1 flex flex-col space-y-3"}) as HTMLFormElement;
-	const bgColors = Object.assign(document.createElement("form"), {id: "bgColors", className: "editBox flex-1 flex flex-col space-y-3"}) as HTMLFormElement;
+export function gameSetupMenu(fourPlayers: boolean): { form: HTMLDivElement, startButton: HTMLInputElement } {
+	const settings = Object.assign(document.createElement("form"), {id: "settings", className: "editBox flex-1 flex flex-col h-full"}) as HTMLFormElement;
+	const bgColors = Object.assign(document.createElement("form"), {id: "bgColors", className: "editBox flex-1 flex flex-col h-full"}) as HTMLFormElement;
 //paddle speed
-	const e3 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "paddleSpeed", textContent: "Paddle speed"}) as HTMLLabelElement;
-	const e1 = Object.assign(document.createElement("select"), {name: "paddleSpeed", id: "paddleSpeed"}) as HTMLSelectElement;
+	const e3 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "paddleSpeed", textContent: `${t('paddleSpeed')}`}) as HTMLLabelElement;
+	const e1 = Object.assign(document.createElement("select"), {name: "paddleSpeed", id: "paddleSpeed", className: "custom-select px-1 py-1"}) as HTMLSelectElement;
 	const e2 = [
-		{ value: "glacial", text: "glacial" },
-		{ value: "slow", text: "slow" },
-		{ value: "standard", text: "standard", selected: true },
-		{ value: "fast", text: "fast" },
-		{ value: "insane", text: "insane" }
+		{ value: "glacial", text: `${t('glacial')}` },
+		{ value: "slow", text: `${t('slow')}` },
+		{ value: "standard", text: `${t('standard')}`, selected: true },
+		{ value: "fast", text: `${t('fast')}` },
+		{ value: "insane", text: `${t('insane')}` }
 	];
 	e2.forEach(option => {
 		const opt = Object.assign(document.createElement("option"), {value: option.value, textContent: option.text}) as HTMLOptionElement;
@@ -82,14 +84,14 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
 		e1.appendChild(opt);
 	});
 //ball speed
-	const e6 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSpeed", textContent: "Ball speed"}) as HTMLLabelElement;
-	const e4 = Object.assign(document.createElement("select"), {name: "ballSpeed", id: "ballSpeed"}) as HTMLSelectElement;
+	const e6 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSpeed", textContent: `${t('ballSpeed')}`}) as HTMLLabelElement;
+	const e4 = Object.assign(document.createElement("select"), {name: "ballSpeed", id: "ballSpeed", className: "custom-select px-1 py-1"}) as HTMLSelectElement;
 	const e5 = [
-		{ value: "glacial", text: "glacial" },
-		{ value: "slow", text: "slow" },
-		{ value: "standard", text: "standard", selected: true },
-		{ value: "fast", text: "fast" },
-		{ value: "insane", text: "insane" }
+		{ value: "glacial", text: `${t('glacial')}` },
+		{ value: "slow", text: `${t('slow')}` },
+		{ value: "standard", text: `${t('standard')}`, selected: true },
+		{ value: "fast", text: `${t('fast')}` },
+		{ value: "insane", text: `${t('insane')}` }
 	];
 	e5.forEach(option => {
 		const opt = Object.assign(document.createElement("option"), {
@@ -100,14 +102,14 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
 		e4.appendChild(opt);
 	});
 //ball size
-	const e9 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSize", textContent: "Ball size"}) as HTMLLabelElement;
-	const e7 = Object.assign(document.createElement("select"), {name: "ballSize", id: "ballSize", style: { width: "20px" }}) as HTMLSelectElement;
+	const e9 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "ballSize", textContent: `${t('ballSize')}`}) as HTMLLabelElement;
+	const e7 = Object.assign(document.createElement("select"), {name: "ballSize", id: "ballSize", className: "custom-select px-1 py-1", style: { width: "20px" }}) as HTMLSelectElement;
 	const e8 = [
-		{ value: "tiny", text: "tiny" },
-		{ value: "small", text: "small" },
-		{ value: "normal", text: "normal", selected: true },
-		{ value: "big", text: "big" },
-		{ value: "huge", text: "huge" }
+		{ value: "tiny", text: `${t('tiny')}` },
+		{ value: "small", text: `${t('small')}` },
+		{ value: "normal", text: `${t('normal')}`, selected: true },
+		{ value: "big", text: `${t('big')}` },
+		{ value: "huge", text: `${t('huge')}` }
 	];
 	e8.forEach(option => {
 		const opt = Object.assign(document.createElement("option"), {value: option.value, textContent: option.text}) as HTMLOptionElement;
@@ -116,21 +118,21 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
 	});
 //multiball
 	const e10 = Object.assign(document.createElement("input"), {type: "checkbox", id: "multiball", name: "multiball", checked: false}) as HTMLInputElement;
-	const e11 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "multiball", textContent: "Multiball"}) as HTMLLabelElement;
+	const e11 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "multiball", textContent: ` ${t('multiball')}`}) as HTMLLabelElement;
 //double paddle
 	const e12 = Object.assign(document.createElement("input"), {type: "checkbox", id: "doublePaddle", name: "doublePaddle", checked: false}) as HTMLInputElement;
-	const e13 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "doublePaddle", textContent: "Double paddles"}) as HTMLLabelElement;
+	const e13 = Object.assign(document.createElement("label"), {className: "game-text", htmlFor: "doublePaddle", textContent: ` ${t('doublePaddle')}`}) as HTMLLabelElement;
 //colors
 	const e14 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: "uiCol", name: "uiCol", value: "#ffffff"}) as HTMLInputElement;
-	const e15 = Object.assign(document.createElement("label"), {className: "game-text", for: "uiCol", textContent: "UI color"}) as HTMLLabelElement;
+	const e15 = Object.assign(document.createElement("label"), {className: "game-text", for: "uiCol", textContent: ` ${t('uiCol')}`}) as HTMLLabelElement;
 	const e16 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: "ballCol", name: "ballCol", value: "#0000ff"}) as HTMLInputElement;
-	const e17 = Object.assign(document.createElement("label"), {className: "game-text", for: "ballCol", textContent: "Ball color"}) as HTMLLabelElement;
+	const e17 = Object.assign(document.createElement("label"), {className: "game-text", for: "ballCol", textContent: ` ${t('ballCol')}`}) as HTMLLabelElement;
 	const e18 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: "innerBg", name: "innerBg", value: "#008000"}) as HTMLInputElement;
-	const e19 = Object.assign(document.createElement("label"), {className: "game-text", for: "innerBg", textContent: "inner background color"}) as HTMLLabelElement;
+	const e19 = Object.assign(document.createElement("label"), {className: "game-text", for: "innerBg", textContent: ` ${t('innerBg')}`}) as HTMLLabelElement;
 	const e20 = Object.assign(document.createElement("input"), {className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000"}) as HTMLInputElement;
-	const e21 = Object.assign(document.createElement("label"), {className: "game-text", for: "outerBg", textContent: "outer background color"}) as HTMLLabelElement;
+	const e21 = Object.assign(document.createElement("label"), {className: "game-text", for: "outerBg", textContent: ` ${t('outerBg')}`}) as HTMLLabelElement;
 //start button
-	const e22 = Object.assign(document.createElement("input"), {type: "submit", className: "btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer", value: "START"});
+	const e22 = Object.assign(document.createElement("input"), {type: "submit", className: "btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer", value: `${t('start')}`});
 //assemble - create row containers for each label-select pair
 	const row1 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
 	const row2 = Object.assign(document.createElement("div"), {className: "flex justify-between items-center mb-2"}) as HTMLDivElement;
@@ -179,28 +181,12 @@ export function gameSetupMenu(fourPlayers: boolean): HTMLDivElement {
 	bgColors.appendChild(colorRow4);
 	
 	const container = Object.assign(document.createElement("div"), {className: "game-setup-container"}) as HTMLDivElement;
-	const ul = Object.assign(document.createElement("ul"), {id: "gameSetup", className: "flex flex-row gap-4 justify-between items-center list-none"}) as HTMLUListElement;
+	const ul = Object.assign(document.createElement("ul"), {id: "gameSetup", className: "flex flex-row gap-4 justify-between items-stretch list-none"}) as HTMLUListElement;
 	ul.appendChild(settings);
 	ul.appendChild(bgColors);
-	
-	// Create centered button container
-	const buttonContainer = Object.assign(document.createElement("div"), {className: "flex justify-center mt-4"}) as HTMLDivElement;
-	buttonContainer.appendChild(e22);
-	
-	// Add click event listener to the START button
-	e22.addEventListener('click', (e) => {
-		e.preventDefault();
-		// Trigger form submission by dispatching a submit event on the gameSetup form
-		const gameSetupForm = document.getElementById('gameSetup');
-		if (gameSetupForm) {
-			const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-			gameSetupForm.dispatchEvent(submitEvent);
-		}
-	});
-	
-	// Add both ul and button to container
 	container.appendChild(ul);
-	container.appendChild(buttonContainer);
 	
-	return container;
+	// Note: Event listener is now handled in gameData.ts
+	
+	return { form: container, startButton: e22 };
 }

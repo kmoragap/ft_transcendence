@@ -296,7 +296,6 @@
     border: none;
   }
   .editBox {
-    margin-top: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -324,6 +323,98 @@
     caret-color: #66fcf1;
     box-shadow: 0 0 0px 1000px #0a2b2b inset;
     border-color: rgba(102, 252, 241, 0.6);
+  }
+
+  /* Custom input styling - consistent with header and login forms */
+  .custom-input {
+    background-color: #0a2b2b;
+    color: #66fcf1;
+    border: 1px solid rgba(102, 252, 241, 0.3);
+    border-radius: 8px;
+    font-family: 'Jura', sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .custom-input::placeholder {
+    color: rgba(102, 252, 241, 0.6);
+  }
+
+  .custom-input:focus {
+    border-color: rgba(102, 252, 241, 0.6);
+    box-shadow: 0 0 0 3px rgba(102, 252, 241, 0.1);
+  }
+
+  .custom-input:hover {
+    border-color: rgba(102, 252, 241, 0.4);
+  }
+
+  /* Custom select styling - consistent with input styling */
+  .custom-select {
+    background-color: #0a2b2b;
+    color: #66fcf1;
+    border: 1px solid rgba(102, 252, 241, 0.3);
+    border-radius: 8px;
+    font-family: 'Jura', sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .custom-select:focus {
+    border-color: rgba(102, 252, 241, 0.6);
+    box-shadow: 0 0 0 3px rgba(102, 252, 241, 0.1);
+  }
+
+  .custom-select:hover {
+    border-color: rgba(102, 252, 241, 0.4);
+  }
+
+  .custom-select option {
+    background-color: #0a2b2b;
+    color: #66fcf1;
+  }
+
+  /* Custom checkbox styling */
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #031b1b; /* Dark green border */
+    border-radius: 3px;
+    background-color: #031b1b; /* Dark green background */
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  input[type="checkbox"]:hover {
+    border-color: #66fcf1;
+    box-shadow: 0 0 5px rgba(102, 252, 241, 0.3);
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: #66fcf1; /* Blue background when checked */
+    border-color: #66fcf1;
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #031b1b; /* Dark green checkmark */
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 252, 241, 0.2);
   }
   @keyframes shine {
     0% {

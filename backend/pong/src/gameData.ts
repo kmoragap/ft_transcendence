@@ -101,52 +101,102 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   ].join(" ");
 
   document.body.appendChild(appDiv);
-
+  // Title
+  const title = document.createElement("h2");
+  title.textContent = "Game Setup";
+  title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
+  appDiv.appendChild(title);
   // Card wrapper
   const card = document.createElement("div");
   card.className = [
     "w-[min(900px,92vw)]",
-    "rounded-2xl",
+    "rounded-2xl flex flex-row flex-wrap",
     "bg-[rgba(3,27,27,0.9)]",
     "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
-    "p-6 md:p-8 space-y-6"
+    "p-6 md:p-8 space-y-6 gap-4"
   ].join(" ");
   appDiv.appendChild(card);
 
-  const title = document.createElement("h2");
-  title.textContent = "Game Setup";
-  title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
-  card.appendChild(title);
 
-  const players = Object.assign(document.createElement("ul"), {
-    id: "playerSetup",
-    className: [
-      "flex flex-row gap-4 justify-between",
-      "list-none"
-    ].join(" ")
+  // Create a single flex container for all 4 boxes
+  const allBoxesContainer = Object.assign(document.createElement("div"), {
+    className: "flex flex-row gap-4 justify-between items-stretch"
+  }) as HTMLDivElement;
+
+  // Create player setup containers
+  const player1Container = Object.assign(document.createElement("div"), {
+    className: "flex-1"
+  }) as HTMLDivElement;
+  const player2Container = Object.assign(document.createElement("div"), {
+    className: "flex-1"
+  }) as HTMLDivElement;
+
+  // Create temporary ul elements for player setup
+  const player1List = Object.assign(document.createElement("ul"), {
+    className: "list-none"
+  }) as HTMLUListElement;
+  const player2List = Object.assign(document.createElement("ul"), {
+    className: "list-none"
   }) as HTMLUListElement;
 
-  playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
-  playerSetupMenu(players, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  // Add players to their containers
+  playerSetupMenu(player1List, "1", "Ford Prefect", false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  playerSetupMenu(player2List, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  
+  player1Container.appendChild(player1List);
+  player2Container.appendChild(player2List);
+
+  // Handle 4 players case
   if (fourPlayers) {
-    playerSetupMenu(players, "3", "Trillian Astra",     true, "i", "k", "#ffffff", "#808080", "#ff0000");
-    playerSetupMenu(players, "4", "Zaphod Beeblebrox",  true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+    // Create additional containers for players 3 and 4
+    const player3Container = Object.assign(document.createElement("div"), {
+      className: "flex-1"
+    }) as HTMLDivElement;
+    const player4Container = Object.assign(document.createElement("div"), {
+      className: "flex-1"
+    }) as HTMLDivElement;
+
+    const player3List = Object.assign(document.createElement("ul"), {
+      className: "list-none"
+    }) as HTMLUListElement;
+    const player4List = Object.assign(document.createElement("ul"), {
+      className: "list-none"
+    }) as HTMLUListElement;
+
+    playerSetupMenu(player3List, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
+    playerSetupMenu(player4List, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+    
+    player3Container.appendChild(player3List);
+    player4Container.appendChild(player4List);
+
+    // Add player 3 and 4 containers to the main container
+    allBoxesContainer.appendChild(player3Container);
+    allBoxesContainer.appendChild(player4Container);
   }
-  card.appendChild(players);
 
-  // Game options + start button (make gameSetupMenu return a <form id="gameSetup">)
-  const setupForm = gameSetupMenu(fourPlayers);
-  // Give the form a nice layout + button style
-  setupForm.classList.add(
-    "space-y-4",
-    "pt-2",
-    "border-t",
-    "border-[#66fcf1]/15"
-  );
-  // You can also add classes to inner controls in gameSetupMenu, see below.
-  card.appendChild(setupForm);
+  // Get game setup forms
+  const { form: setupForm, startButton } = gameSetupMenu(fourPlayers);
+  
+  // Extract the two forms from the setup form
+  const settingsForm = setupForm.querySelector('#settings') as HTMLFormElement;
+  const bgColorsForm = setupForm.querySelector('#bgColors') as HTMLFormElement;
 
-  document.getElementById('gameSetup')!.addEventListener('submit', (e) => {
+  // Add all 4 boxes to the main container
+  allBoxesContainer.appendChild(player1Container);
+  allBoxesContainer.appendChild(player2Container);
+  allBoxesContainer.appendChild(settingsForm);
+  allBoxesContainer.appendChild(bgColorsForm);
+
+  // Add the main container to the card
+  card.appendChild(allBoxesContainer);
+  
+  // START button positioned outside the card, at the bottom center of the app
+  const buttonContainer = Object.assign(document.createElement("div"), {className: "flex justify-center mt-6"}) as HTMLDivElement;
+  buttonContainer.appendChild(startButton);
+  appDiv.appendChild(buttonContainer);
+
+  // Add event listener to the START button instead of looking for gameSetup form
+  startButton.addEventListener('click', (e) => {
     e.preventDefault();
     loadConfig(fourPlayers);
   });

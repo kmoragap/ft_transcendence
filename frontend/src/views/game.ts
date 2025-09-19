@@ -205,7 +205,6 @@ export function renderGame(): HTMLElement {
             alert('Second player logged in: ' + user.username);
           },
           onCancel: () => {
-            alert('Login cancelled, reverting AI checkbox');
             if (iframeRef?.contentWindow) {
               iframeRef.contentWindow.postMessage({
                 type: 'LOGIN_CANCELLED',

@@ -1,5 +1,5 @@
 # Use official Node.js image (Debian-based, not Alpine)
-FROM node:20-bullseye
+FROM --platform=linux/amd64 node:23-bullseye-slim
 
 # Set working directory
 WORKDIR /app
@@ -7,8 +7,8 @@ WORKDIR /app
 # Install only the package manager files first
 COPY package*.json ./
 
-# Install dependencies (including optional native ones like rollup or parcel)
-RUN npm install --include=optional && npm install -D esbuild
+# Install dependencies
+RUN npm ci --include=optional
 
 # Copy the rest of your project
 COPY . .

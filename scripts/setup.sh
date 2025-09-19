@@ -27,7 +27,17 @@ echo "📦 Installing dependencies..."
 # Frontend setup
 cd frontend
 echo "🎨 Setting up frontend..."
-rm -rf node_modules package-lock.json
+# Handle macOS permission issues with node_modules
+if [ -d "node_modules" ]; then
+    echo "🗑️ Removing existing node_modules..."
+    if [[ "$PLATFORM" == "macos" ]]; then
+        # Use sudo for macOS if needed
+        sudo rm -rf node_modules 2>/dev/null || rm -rf node_modules
+    else
+        rm -rf node_modules
+    fi
+fi
+rm -f package-lock.json
 npm install --force
 
 # Build CSS to ensure it works
@@ -42,7 +52,16 @@ for service in auth users pong-db chat; do
     if [ -d "backend/$service" ]; then
         echo "📦 Setting up backend/$service..."
         cd "backend/$service"
-        rm -rf node_modules package-lock.json
+        # Handle macOS permission issues with node_modules
+        if [ -d "node_modules" ]; then
+            echo "🗑️ Removing existing node_modules in backend/$service..."
+            if [[ "$PLATFORM" == "macos" ]]; then
+                sudo rm -rf node_modules 2>/dev/null || rm -rf node_modules
+            else
+                rm -rf node_modules
+            fi
+        fi
+        rm -f package-lock.json
         npm install --force
         cd ../..
     fi

@@ -11,7 +11,7 @@
     "build": "npm run build:css:prod && vite build",
     "preview": "vite preview --host",
     "postinstall": "npm run build:css",
-    "clean": "rm -rf node_modules package-lock.json",
+    "clean": "if [ -d node_modules ]; then rm -rf node_modules; fi && rm -f package-lock.json",
     "reinstall": "npm run clean && npm install"
   },
   "repository": {

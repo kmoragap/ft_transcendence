@@ -11,6 +11,18 @@ This project is designed to work on both **Ubuntu** and **macOS** without manual
 ## 🛠️ Quick Setup (Recommended)
 
 ### Option 1: Automated Setup Script
+
+**For macOS users:**
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd ft_transcendence
+
+# Run the macOS-specific setup script (handles permissions)
+./scripts/setup-macos.sh
+```
+
+**For Ubuntu/Linux users:**
 ```bash
 # Clone the repository
 git clone <your-repo-url>
@@ -69,6 +81,16 @@ docker run -p 5173:5173 -v $(pwd):/app ft_transcendence-frontend
    ```bash
    # Use the setup script
    ./scripts/setup.sh
+   ```
+
+4. **macOS Permission Denied** (node_modules):
+   ```bash
+   # Use the macOS-specific script
+   ./scripts/setup-macos.sh
+   
+   # Or manually with sudo
+   sudo rm -rf node_modules
+   npm install --force
    ```
 
 ## 📱 Platform-Specific Notes

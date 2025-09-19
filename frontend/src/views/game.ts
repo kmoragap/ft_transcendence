@@ -1,4 +1,6 @@
 import { t, getCurrentLang, updateText } from './../i18n';
+import { store } from './../store';
+import { showLoginModal } from './../components/login-modal';
 
 let iframeRef: HTMLIFrameElement | null = null;
 
@@ -22,7 +24,7 @@ export function renderGame(): HTMLElement {
         Back
       </button>
       <button id="game-exit"
-        class="btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer"
+        class="btn py-1.5 px-8 m-0 text-lg font-bold cursor-pointer"
         data-i18n="exit">
         Exit
       </button>
@@ -140,9 +142,15 @@ export function renderGame(): HTMLElement {
 
   function renderIframeHTML(mode: Exclude<GameMode, 'menu'>) {
     const currentLang = getCurrentLang();
-    const src = mode === 'single' 
+    const { currentUser } = store.getState();
+    let src = mode === 'single' 
       ? `/pong/?mode=single&lang=${currentLang}` 
       : `/pong/?mode=multi&lang=${currentLang}`;
+
+      if (mode === 'single' && currentUser?.username) {
+        src += `&username=${encodeURIComponent(currentUser.username)}`;
+      }
+      
     
     return `
       <div class="w-full h-[60vh]"> 
@@ -180,6 +188,54 @@ export function renderGame(): HTMLElement {
   });
   
   window.addEventListener('languageChanged', languageChangeHandler);
+
+  window.addEventListener('message', async (event) => {
+    if (event.origin !== window.location.origin) {
+      return;
+    }
+
+    if (event.data.type === 'REQUEST_LOGIN') {
+      const { playerId, playerName } = event.data;
+      
+      try {
+        const user = await showLoginModal({
+          title: 'Login Second Player',
+          gameOnly: true, 
+          onSuccess: (user) => {
+            alert('Second player logged in: ' + user.username);
+          },
+          onCancel: () => {
+            alert('Login cancelled, reverting AI checkbox');
+            if (iframeRef?.contentWindow) {
+              iframeRef.contentWindow.postMessage({
+                type: 'LOGIN_CANCELLED',
+                playerId: playerId
+              }, window.location.origin);
+            }
+          }
+        });
+
+        if (iframeRef?.contentWindow) {
+          iframeRef.contentWindow.postMessage({
+            type: 'LOGIN_SUCCESS',
+            playerId: playerId,
+            playerName: playerName,
+            username: user.username,
+            userData: user // Send full user data for game statistics
+          }, window.location.origin);
+        }
+
+      } catch (error) {
+        alert('Login failed or cancelled:' + error);
+        if (iframeRef?.contentWindow) {
+          iframeRef.contentWindow.postMessage({
+            type: 'LOGIN_CANCELLED',
+            playerId: playerId
+          }, window.location.origin);
+        }
+      }
+    }
+  });
 
   (section as any).__destroyGameView = destroyGameView;
 

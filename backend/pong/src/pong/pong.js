@@ -153,12 +153,44 @@ function updateHTMLTranslations() {
 }
 
 // src/menus.ts
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) {
+    return;
+  }
+  if (event.data.type === "LOGIN_SUCCESS") {
+    const { playerId, playerName, username } = event.data;
+    const nameInput = document.getElementById(playerName);
+    if (nameInput) {
+      nameInput.value = username;
+    }
+    console.log(`Player ${playerId} logged in as: ${username}`);
+  } else if (event.data.type === "LOGIN_CANCELLED") {
+    const { playerId } = event.data;
+    const aiCheckbox = document.getElementById(`p${playerId}Ai`);
+    if (aiCheckbox) {
+      aiCheckbox.checked = true;
+    }
+    console.log(`Login cancelled for player ${playerId}, reverting to AI`);
+  }
+});
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   const form = Object.assign(document.createElement("form"), { id: `player${p}Menu`, className: `editBox` });
   const e1 = Object.assign(document.createElement("label"), { className: "game-text", for: `name_p${p}`, textContent: `${t("player")} ${p}: ` });
   const e2 = Object.assign(document.createElement("input"), { className: "custom-input ml-1 px-1 py-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name });
   const e3 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Ai`, textContent: `${t("ai")} ` });
   const e4 = Object.assign(document.createElement("input"), { type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi, className: "ml-1" });
+  if (p === "2") {
+    e4.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!target.checked) {
+        window.parent.postMessage({
+          type: "REQUEST_LOGIN",
+          playerId: "2",
+          playerName: `name_p${p}`
+        }, window.location.origin);
+      }
+    });
+  }
   const e5 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Up`, textContent: `${t("up")}: ` });
   const e6 = Object.assign(document.createElement("input"), { className: "custom-input px-1 py-1 ml-1", type: "text", size: "9", id: `p${p}Up`, value: up });
   const e7 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Down`, textContent: `${t("down")}: ` });
@@ -371,7 +403,9 @@ async function newGame(fourPlayers) {
   const player2List = Object.assign(document.createElement("ul"), {
     className: "list-none"
   });
-  playerSetupMenu(player1List, "1", "Ford Prefect", false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get("username") || "Player 1";
+  playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
   playerSetupMenu(player2List, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);

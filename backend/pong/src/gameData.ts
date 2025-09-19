@@ -57,6 +57,14 @@ export type gameData = {
 
 export let data: gameData;
 
+export function getSecondPlayerData(): any {
+	return (window as any).gamePlayer2 || null;
+}
+
+export function clearSecondPlayerData(): void {
+	(window as any).gamePlayer2 = null;
+}
+
 function loadPlayer(name: string, id: string, isAi: boolean, up: string, down: string, innerCol: string, outercol: string, cornerCol: string):playerData {
 	var p: playerData =  {
 		name: name,
@@ -88,9 +96,6 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     if (document.readyState === 'complete') resolve();
     else document.addEventListener('DOMContentLoaded', () => resolve());
   });
-  //load player data from user DB 
-  //const users: string[] = ["test", "test2"];
-  //const ud = await userService.getUsersByIds(users);
 
   const appDiv = Object.assign(document.createElement("div"), { id: "app" }) as HTMLDivElement;
 
@@ -139,8 +144,12 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     className: "list-none"
   }) as HTMLUListElement;
 
+  // Get username from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get('username') || 'Player 1';
+  
   // Add players to their containers
-  playerSetupMenu(player1List, "1", "Ford Prefect", false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
   playerSetupMenu(player2List, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
   
   player1Container.appendChild(player1List);

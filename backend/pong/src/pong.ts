@@ -1,4 +1,4 @@
-import { data, newGame } from "./gameData";
+import { data, newGame, getSecondPlayerData } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
@@ -127,6 +127,15 @@ export async function endGame() {
 		winner = data.p[0].name;
 	else winner = data.p[1].name;
 	data.showingText = false;
+	
+	// Example: Get second player data for game statistics
+	const secondPlayerData = getSecondPlayerData();
+	if (secondPlayerData) {
+		console.log('Second player data available for statistics:', secondPlayerData);
+		// Here you could send game results to update the second player's statistics
+		// without affecting the global authentication state
+	}
+	
 	//const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
 	//console.log(res);
 }

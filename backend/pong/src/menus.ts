@@ -1,5 +1,39 @@
 import { t } from "./i18n";
 
+window.addEventListener('message', (event) => {
+	if (event.origin !== window.location.origin) {
+		return;
+	}
+
+	if (event.data.type === 'LOGIN_SUCCESS') {
+		const { playerId, playerName, username, userData } = event.data;
+		const nameInput = document.getElementById(playerName) as HTMLInputElement;
+		if (nameInput) {
+			nameInput.value = username;
+		}
+		
+		if (playerId === '2') {
+			(window as any).gamePlayer2 = {
+				username: username,
+				userData: userData,
+				loggedIn: true
+			};
+		}
+		
+		console.log(`Player ${playerId} logged in as: ${username}`);
+	} else if (event.data.type === 'LOGIN_CANCELLED') {
+		const { playerId } = event.data;
+		const aiCheckbox = document.getElementById(`p${playerId}Ai`) as HTMLInputElement;
+		if (aiCheckbox) {
+			aiCheckbox.checked = true;
+		}
+		console.log(`Login cancelled for player ${playerId}, reverting to AI`);
+	} else if (event.data.type === 'CLEAR_PLAYER2_DATA') {
+		(window as any).gamePlayer2 = null;
+		console.log('Player 2 data cleared');
+	}
+});
+
 function br(): HTMLBRElement {
 	return Object.assign(document.createElement("br")) as HTMLBRElement;
 }
@@ -12,6 +46,18 @@ export function playerSetupMenu (list: HTMLUListElement, p: string, name: string
 	const e2 = Object.assign(document.createElement("input"), {className: "custom-input ml-1 px-1 py-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name}) as HTMLInputElement;
 	const e3 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Ai`, textContent: `${t('ai')} `}) as HTMLLabelElement;
 	const e4 = Object.assign(document.createElement("input"), {type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi, className: "ml-1"}) as HTMLInputElement;
+	if (p === "2") {
+		e4.addEventListener('change', (event) => {
+			const target = event.target as HTMLInputElement;
+			if (!target.checked) {
+				window.parent.postMessage({
+					type: 'REQUEST_LOGIN',
+					playerId: '2',
+					playerName: `name_p${p}`
+				}, window.location.origin);
+			}
+		});
+	}
 //keys
 	const e5 = Object.assign(document.createElement("label"), {className: "game-text", for: `p${p}Up`, textContent: `${t('up')}: `}) as HTMLLabelElement;
 	const e6 = Object.assign(document.createElement("input"), {className: "custom-input px-1 py-1 ml-1", type: "text", size: "9", id: `p${p}Up`, value: up}) as HTMLInputElement;

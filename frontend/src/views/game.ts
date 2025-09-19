@@ -12,10 +12,10 @@ export function renderGame(): HTMLElement {
     'w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10';
 
   section.innerHTML = `
-     <h1 class="title uppercase">
+     <h1 id="game-title" class="title uppercase">
         <span class="mid_line" data-i18n="pong">PONG</span>
       </h1>
-          <div class="w-full max-w-7xl rounded-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
+          <div class="w-full max-w-7xl rounded-t-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
      <div class="flex items-center justify-between px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
@@ -36,6 +36,7 @@ export function renderGame(): HTMLElement {
   const root = section.querySelector('#game-root') as HTMLDivElement;
   const exitBtn = section.querySelector('#game-exit') as HTMLButtonElement;
   const backBtn = section.querySelector('#game-back') as HTMLButtonElement;
+  const title = section.querySelector('#game-title') as HTMLHeadingElement;
 
     function showBack() {
       backBtn.classList.remove('invisible', 'pointer-events-none');
@@ -45,6 +46,14 @@ export function renderGame(): HTMLElement {
     function hideBack() {
       backBtn.classList.add('invisible', 'pointer-events-none');
       backBtn.setAttribute('aria-hidden', 'true');
+    }
+
+    function showTitle() {
+      title.style.display = 'table';
+    }
+
+    function hideTitle() {
+      title.style.display = 'none';
     }
 
   function destroyIframe() {
@@ -60,12 +69,14 @@ export function renderGame(): HTMLElement {
   function setMode(mode: GameMode) {
     if (mode === 'menu') {
       hideBack();
+      showTitle();
       destroyIframe();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
       updateText(); // Apply translations after HTML is inserted into DOM
     } else {
       showBack();
+      hideTitle();
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector('#pong-frame') as HTMLIFrameElement;
     }
@@ -153,7 +164,7 @@ export function renderGame(): HTMLElement {
       
     
     return `
-      <div class="w-full h-[60vh]"> 
+      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px]"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
       </div>
     `;

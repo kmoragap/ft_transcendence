@@ -183,32 +183,50 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     allBoxesContainer.appendChild(player4Container);
   }
 
-  // Get game setup forms
   const { form: setupForm, startButton } = gameSetupMenu(fourPlayers);
   
-  // Extract the two forms from the setup form
   const settingsForm = setupForm.querySelector('#settings') as HTMLFormElement;
   const bgColorsForm = setupForm.querySelector('#bgColors') as HTMLFormElement;
 
-  // Add all 4 boxes to the main container
   allBoxesContainer.appendChild(player1Container);
   allBoxesContainer.appendChild(player2Container);
   allBoxesContainer.appendChild(settingsForm);
   allBoxesContainer.appendChild(bgColorsForm);
 
-  // Add the main container to the card
   card.appendChild(allBoxesContainer);
   
-  // START button positioned outside the card, at the bottom center of the app
   const buttonContainer = Object.assign(document.createElement("div"), {className: "flex justify-center mt-6"}) as HTMLDivElement;
   buttonContainer.appendChild(startButton);
   appDiv.appendChild(buttonContainer);
 
-  // Add event listener to the START button instead of looking for gameSetup form
   startButton.addEventListener('click', (e) => {
     e.preventDefault();
     loadConfig(fourPlayers);
   });
+
+		window.addEventListener('resize', () => {
+		const canvas = document.getElementById('board') as HTMLCanvasElement;
+		if (canvas) {
+			const margin = 50; // Same minimal margin as initial sizing
+			const availableHeight = window.innerHeight - margin;
+			
+			canvas.width = window.innerWidth;
+			canvas.height = availableHeight;
+			canvas.style.width = '100%';
+			canvas.style.height = `${availableHeight}px`;
+			canvas.style.maxWidth = '100%';
+			canvas.style.maxHeight = `${availableHeight}px`;
+			canvas.style.borderRadius = '0'; // Remove any border radius for full square
+			canvas.style.display = 'block'; // Ensure no extra spacing
+			
+			if (data && data.canvas) {
+				data.canvas = canvas;
+				data.ctx = canvas.getContext('2d')!;
+				data.paddleWidth = canvas.width / 60;
+				data.paddleHeight = canvas.height / 5;
+			}
+		}
+	});
 }
 
 export function loadConfig(fourPlayers: boolean) {
@@ -222,8 +240,17 @@ export function loadConfig(fourPlayers: boolean) {
 	scoreboard.append(p1name, p1score, ' : ', p2score, p2name);
 //create canvas
 	const canvas = Object.assign(document.createElement('canvas'), { id: 'board', tabIndex: 1 }) as HTMLCanvasElement;
+	const margin = 47;
+	const availableHeight = window.innerHeight - margin;
+	
 	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight - p1score.clientHeight;
+	canvas.height = availableHeight;
+	canvas.style.width = '100%';
+	canvas.style.height = `${availableHeight}px`;
+	canvas.style.maxWidth = '100%';
+	canvas.style.maxHeight = `${availableHeight}px`;
+	canvas.style.borderRadius = '0'; // Remove any border radius for full square
+	canvas.style.display = 'block'; // Ensure no extra spacing
 	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 	var p: playerData[] = [];
 	p.push(loadPlayer(

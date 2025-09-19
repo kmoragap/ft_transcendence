@@ -158,10 +158,17 @@ window.addEventListener("message", (event) => {
     return;
   }
   if (event.data.type === "LOGIN_SUCCESS") {
-    const { playerId, playerName, username } = event.data;
+    const { playerId, playerName, username, userData } = event.data;
     const nameInput = document.getElementById(playerName);
     if (nameInput) {
       nameInput.value = username;
+    }
+    if (playerId === "2") {
+      window.gamePlayer2 = {
+        username,
+        userData,
+        loggedIn: true
+      };
     }
     console.log(`Player ${playerId} logged in as: ${username}`);
   } else if (event.data.type === "LOGIN_CANCELLED") {
@@ -171,6 +178,9 @@ window.addEventListener("message", (event) => {
       aiCheckbox.checked = true;
     }
     console.log(`Login cancelled for player ${playerId}, reverting to AI`);
+  } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
+    window.gamePlayer2 = null;
+    console.log("Player 2 data cleared");
   }
 });
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
@@ -340,6 +350,9 @@ function gameSetupMenu(fourPlayers) {
 
 // src/gameData.ts
 var data;
+function getSecondPlayerData() {
+  return window.gamePlayer2 || null;
+}
 function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
     name,
@@ -444,6 +457,27 @@ async function newGame(fourPlayers) {
     e.preventDefault();
     loadConfig(fourPlayers);
   });
+  window.addEventListener("resize", () => {
+    const canvas = document.getElementById("board");
+    if (canvas) {
+      const margin = 50;
+      const availableHeight = window.innerHeight - margin;
+      canvas.width = window.innerWidth;
+      canvas.height = availableHeight;
+      canvas.style.width = "100%";
+      canvas.style.height = `${availableHeight}px`;
+      canvas.style.maxWidth = "100%";
+      canvas.style.maxHeight = `${availableHeight}px`;
+      canvas.style.borderRadius = "0";
+      canvas.style.display = "block";
+      if (data && data.canvas) {
+        data.canvas = canvas;
+        data.ctx = canvas.getContext("2d");
+        data.paddleWidth = canvas.width / 60;
+        data.paddleHeight = canvas.height / 5;
+      }
+    }
+  });
 }
 function loadConfig(fourPlayers) {
   const appDiv = document.getElementById("app");
@@ -454,8 +488,16 @@ function loadConfig(fourPlayers) {
   const p2name = Object.assign(document.createElement("textarea"), { className: "p2name game-text", rows: "1", cols: "30", disabled: "true" });
   scoreboard.append(p1name, p1score, " : ", p2score, p2name);
   const canvas = Object.assign(document.createElement("canvas"), { id: "board", tabIndex: 1 });
+  const margin = 47;
+  const availableHeight = window.innerHeight - margin;
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - p1score.clientHeight;
+  canvas.height = availableHeight;
+  canvas.style.width = "100%";
+  canvas.style.height = `${availableHeight}px`;
+  canvas.style.maxWidth = "100%";
+  canvas.style.maxHeight = `${availableHeight}px`;
+  canvas.style.borderRadius = "0";
+  canvas.style.display = "block";
   const ctx = canvas.getContext("2d");
   var p = [];
   p.push(loadPlayer(
@@ -1297,6 +1339,10 @@ async function endGame() {
     winner = data.p[0].name;
   else winner = data.p[1].name;
   data.showingText = false;
+  const secondPlayerData = getSecondPlayerData();
+  if (secondPlayerData) {
+    console.log("Second player data available for statistics:", secondPlayerData);
+  }
 }
 startGame(false);
 export {

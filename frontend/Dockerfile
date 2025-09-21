@@ -1,5 +1,5 @@
 # Use official Node.js image (Debian-based, not Alpine)
-FROM --platform=linux/amd64 node:23-bullseye-slim
+FROM node:23-bullseye-slim
 
 # Set working directory
 WORKDIR /app
@@ -8,7 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --include=optional
+RUN rm -rf node_modules package-lock.json
+
+RUN npm install
 
 # Copy the rest of your project
 COPY . .

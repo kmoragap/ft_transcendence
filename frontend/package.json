@@ -9,10 +9,7 @@
     "build:css": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css",
     "build:css:prod": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/output.css --minify",
     "build": "npm run build:css:prod && vite build",
-    "preview": "vite preview --host",
-    "postinstall": "npm run build:css",
-    "clean": "if [ -d node_modules ]; then rm -rf node_modules; fi && rm -f package-lock.json",
-    "reinstall": "npm run clean && npm install"
+    "preview": "vite preview --host"
   },
   "repository": {
     "type": "git",

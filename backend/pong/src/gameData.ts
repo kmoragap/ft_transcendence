@@ -57,6 +57,14 @@ export type gameData = {
 
 export let data: gameData;
 
+export function getSecondPlayerData(): any {
+	return (window as any).gamePlayer2 || null;
+}
+
+export function clearSecondPlayerData(): void {
+	(window as any).gamePlayer2 = null;
+}
+
 function loadPlayer(name: string, id: string, isAi: boolean, up: string, down: string, innerCol: string, outercol: string, cornerCol: string):playerData {
 	var p: playerData =  {
 		name: name,
@@ -84,30 +92,141 @@ function loadInB(id: string): boolean {
 }
 
 export async function newGame(fourPlayers: boolean): Promise<void> {
-	await new Promise<void>(resolve => {
-		if (document.readyState === 'complete') resolve();
-		else document.addEventListener('DOMContentLoaded', () => resolve());
-	});
-	//load player data from user DB
-	//const users: string[] = ["test", "test2"];
-	//const ud = await userService.getUsersByIds(users);
-	const appDiv = Object.assign(document.createElement("app"), {id: "app"}) as HTMLDivElement;
-	const body = document.getElementsByTagName("body");
-	body[0].appendChild(appDiv);
-	const players = Object.assign(document.createElement("ul"), {id: "playerSetup", className: "flex items-center list-none"}) as HTMLUListElement;
-	playerSetupMenu(players, "1", "Ford Prefect", true, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
-	playerSetupMenu(players, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
-	if (fourPlayers) {
-		playerSetupMenu(players, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
-		playerSetupMenu(players, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
-	}
-	appDiv.appendChild(players);
-	appDiv.appendChild(gameSetupMenu(fourPlayers));
-	document.getElementById('gameSetup')!.addEventListener('submit', function(e) {//start button
-		e.preventDefault();
-		loadConfig(fourPlayers);
-	});
+  await new Promise<void>(resolve => {
+    if (document.readyState === 'complete') resolve();
+    else document.addEventListener('DOMContentLoaded', () => resolve());
+  });
 
+  const appDiv = Object.assign(document.createElement("div"), { id: "app" }) as HTMLDivElement;
+
+  appDiv.className = [
+    "fixed inset-0 flex flex-col items-center justify-center",
+    "bg-black/60",
+    "z-50"
+  ].join(" ");
+
+  document.body.appendChild(appDiv);
+  // Title
+  const title = document.createElement("h2");
+  title.textContent = "Game Setup";
+  title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
+  appDiv.appendChild(title);
+  // Card wrapper
+  const card = document.createElement("div");
+  card.className = [
+    "w-[min(900px,92vw)]",
+    "rounded-2xl flex flex-row flex-wrap",
+    "bg-[rgba(3,27,27,0.9)]",
+    "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
+    "p-6 md:p-8 space-y-6 gap-4"
+  ].join(" ");
+  appDiv.appendChild(card);
+
+
+  // Create a single flex container for all 4 boxes
+  const allBoxesContainer = Object.assign(document.createElement("div"), {
+    className: "flex flex-row gap-4 justify-between items-stretch"
+  }) as HTMLDivElement;
+
+  // Create player setup containers
+  const player1Container = Object.assign(document.createElement("div"), {
+    className: "flex-1"
+  }) as HTMLDivElement;
+  const player2Container = Object.assign(document.createElement("div"), {
+    className: "flex-1"
+  }) as HTMLDivElement;
+
+  // Create temporary ul elements for player setup
+  const player1List = Object.assign(document.createElement("ul"), {
+    className: "list-none"
+  }) as HTMLUListElement;
+  const player2List = Object.assign(document.createElement("ul"), {
+    className: "list-none"
+  }) as HTMLUListElement;
+
+  // Get username from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get('username') || 'Player 1';
+  
+  // Add players to their containers
+  playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  playerSetupMenu(player2List, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  
+  player1Container.appendChild(player1List);
+  player2Container.appendChild(player2List);
+
+  // Handle 4 players case
+  if (fourPlayers) {
+    // Create additional containers for players 3 and 4
+    const player3Container = Object.assign(document.createElement("div"), {
+      className: "flex-1"
+    }) as HTMLDivElement;
+    const player4Container = Object.assign(document.createElement("div"), {
+      className: "flex-1"
+    }) as HTMLDivElement;
+
+    const player3List = Object.assign(document.createElement("ul"), {
+      className: "list-none"
+    }) as HTMLUListElement;
+    const player4List = Object.assign(document.createElement("ul"), {
+      className: "list-none"
+    }) as HTMLUListElement;
+
+    playerSetupMenu(player3List, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
+    playerSetupMenu(player4List, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+    
+    player3Container.appendChild(player3List);
+    player4Container.appendChild(player4List);
+
+    // Add player 3 and 4 containers to the main container
+    allBoxesContainer.appendChild(player3Container);
+    allBoxesContainer.appendChild(player4Container);
+  }
+
+  const { form: setupForm, startButton } = gameSetupMenu(fourPlayers);
+  
+  const settingsForm = setupForm.querySelector('#settings') as HTMLFormElement;
+  const bgColorsForm = setupForm.querySelector('#bgColors') as HTMLFormElement;
+
+  allBoxesContainer.appendChild(player1Container);
+  allBoxesContainer.appendChild(player2Container);
+  allBoxesContainer.appendChild(settingsForm);
+  allBoxesContainer.appendChild(bgColorsForm);
+
+  card.appendChild(allBoxesContainer);
+  
+  const buttonContainer = Object.assign(document.createElement("div"), {className: "flex justify-center mt-6"}) as HTMLDivElement;
+  buttonContainer.appendChild(startButton);
+  appDiv.appendChild(buttonContainer);
+
+  startButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    loadConfig(fourPlayers);
+  });
+
+		window.addEventListener('resize', () => {
+		const canvas = document.getElementById('board') as HTMLCanvasElement;
+		if (canvas) {
+			const margin = 50; // Same minimal margin as initial sizing
+			const availableHeight = window.innerHeight - margin;
+			
+			canvas.width = window.innerWidth;
+			canvas.height = availableHeight;
+			canvas.style.width = '100%';
+			canvas.style.height = `${availableHeight}px`;
+			canvas.style.maxWidth = '100%';
+			canvas.style.maxHeight = `${availableHeight}px`;
+			canvas.style.borderRadius = '0'; // Remove any border radius for full square
+			canvas.style.display = 'block'; // Ensure no extra spacing
+			
+			if (data && data.canvas) {
+				data.canvas = canvas;
+				data.ctx = canvas.getContext('2d')!;
+				data.paddleWidth = canvas.width / 60;
+				data.paddleHeight = canvas.height / 5;
+			}
+		}
+	});
 }
 
 export function loadConfig(fourPlayers: boolean) {
@@ -121,8 +240,17 @@ export function loadConfig(fourPlayers: boolean) {
 	scoreboard.append(p1name, p1score, ' : ', p2score, p2name);
 //create canvas
 	const canvas = Object.assign(document.createElement('canvas'), { id: 'board', tabIndex: 1 }) as HTMLCanvasElement;
+	const margin = 47;
+	const availableHeight = window.innerHeight - margin;
+	
 	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight - p1score.clientHeight;
+	canvas.height = availableHeight;
+	canvas.style.width = '100%';
+	canvas.style.height = `${availableHeight}px`;
+	canvas.style.maxWidth = '100%';
+	canvas.style.maxHeight = `${availableHeight}px`;
+	canvas.style.borderRadius = '0'; // Remove any border radius for full square
+	canvas.style.display = 'block'; // Ensure no extra spacing
 	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 	var p: playerData[] = [];
 	p.push(loadPlayer(
@@ -242,10 +370,22 @@ export function loadConfig(fourPlayers: boolean) {
 		default:			loadData.ballSize = 80;		break;
 	}
 	data = loadData;
-	(document.getElementById("playerSetup") as HTMLUListElement).remove();
-	(document.getElementById("gameSetup") as HTMLUListElement).remove();
-	appDiv.appendChild(scoreboard);
-	appDiv.appendChild(canvas);
+	// Remove all existing content from app div except what we want to keep
+	const gameAppDiv = document.getElementById('app');
+	if (gameAppDiv) {
+		// Clear all content
+		gameAppDiv.innerHTML = '';
+		// Change layout for game view
+		gameAppDiv.className = [
+			"fixed inset-0 flex flex-col",
+			"bg-black/60",
+			"z-50"
+		].join(" ");
+		
+		// Add only the scoreboard and canvas
+		gameAppDiv.appendChild(scoreboard);
+		gameAppDiv.appendChild(canvas);
+	}
 	controlKeys();
 	document.getElementById("board")?.focus();
 	setTimeout(() => countdown(3, 500), 500);

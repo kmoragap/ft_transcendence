@@ -1,4 +1,4 @@
-import { data, newGame } from "./gameData";
+import { data, newGame, getSecondPlayerData } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
@@ -18,14 +18,12 @@ export function removeBall(ball: Ball): void {
 
 export async function startGame(fourPlayers: boolean) {
 	try {
-		// Get language from URL parameters or default to 'en'
 		const urlParams = new URLSearchParams(window.location.search);
 		const lang = urlParams.get('lang') || 'en';
 		
 		await initI18n(lang);
 		await newGame(fourPlayers);
 		document.getElementById("board")?.focus();
-		setTimeout(() => countdown(3, 500), 500);
 //		collisionTest()
 	} catch (error) {
 		console.error('Failed to load configuration:', error);
@@ -129,6 +127,15 @@ export async function endGame() {
 		winner = data.p[0].name;
 	else winner = data.p[1].name;
 	data.showingText = false;
+	
+	// Example: Get second player data for game statistics
+	const secondPlayerData = getSecondPlayerData();
+	if (secondPlayerData) {
+		console.log('Second player data available for statistics:', secondPlayerData);
+		// Here you could send game results to update the second player's statistics
+		// without affecting the global authentication state
+	}
+	
 	//const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
 	//console.log(res);
 }

@@ -35,10 +35,7 @@ export function renderLogin(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="identifier-error"
-          class='w-full px-4 py-2 rounded-lg
-          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
-          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
-          outline-none font-[jura]'
+          class='custom-input px-4 py-2'
         />
         <p id="identifier-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
@@ -55,24 +52,21 @@ export function renderLogin(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="password-error"
-          class='w-full px-4 py-2 rounded-lg
-          bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
-          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
-          outline-none font-[jura]'
+          class='custom-input px-4 py-2'
         />
         <p id="password-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
 
       <button
         type="submit"
-        class="btn py-2 text-lg font-bold"
+        class="btn py-2 text-lg font-bold !w-full"
         data-i18n="submit"
       >
         ${t('submit')}
       </button>
 
       <button
-        class="btn"
+        class="btn !w-full"
       >
         <a
           href="#/login_42"
@@ -83,7 +77,7 @@ export function renderLogin(): HTMLElement {
       </button>
 
       <button
-        class="btn"
+        class="btn !w-full"
       >
         <a
           href="#/register"

@@ -100,7 +100,7 @@ export function renderRegistration(): HTMLElement {
 
       <button
         type="submit"
-        class="btn py-2.5 text-lg font-bold cursor-not-allowed"
+        class="btn !w-full py-2.5 text-lg font-bold cursor-not-allowed"
       >
         <span data-i18n="submit">Submit</span>
       </button>

@@ -1,4 +1,6 @@
 import { t, getCurrentLang, updateText } from './../i18n';
+import { store } from './../store';
+import { showLoginModal } from './../components/login-modal';
 
 let iframeRef: HTMLIFrameElement | null = null;
 
@@ -10,10 +12,10 @@ export function renderGame(): HTMLElement {
     'w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10';
 
   section.innerHTML = `
-     <h1 class="title uppercase">
+     <h1 id="game-title" class="title uppercase">
         <span class="mid_line" data-i18n="pong">PONG</span>
       </h1>
-          <div class="w-full max-w-7xl rounded-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
+          <div class="w-full max-w-7xl rounded-t-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
      <div class="flex items-center justify-between px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
@@ -22,7 +24,7 @@ export function renderGame(): HTMLElement {
         Back
       </button>
       <button id="game-exit"
-        class="btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer"
+        class="btn py-1.5 px-8 m-0 text-lg font-bold cursor-pointer"
         data-i18n="exit">
         Exit
       </button>
@@ -34,6 +36,7 @@ export function renderGame(): HTMLElement {
   const root = section.querySelector('#game-root') as HTMLDivElement;
   const exitBtn = section.querySelector('#game-exit') as HTMLButtonElement;
   const backBtn = section.querySelector('#game-back') as HTMLButtonElement;
+  const title = section.querySelector('#game-title') as HTMLHeadingElement;
 
     function showBack() {
       backBtn.classList.remove('invisible', 'pointer-events-none');
@@ -43,6 +46,14 @@ export function renderGame(): HTMLElement {
     function hideBack() {
       backBtn.classList.add('invisible', 'pointer-events-none');
       backBtn.setAttribute('aria-hidden', 'true');
+    }
+
+    function showTitle() {
+      title.style.display = 'table';
+    }
+
+    function hideTitle() {
+      title.style.display = 'none';
     }
 
   function destroyIframe() {
@@ -58,12 +69,14 @@ export function renderGame(): HTMLElement {
   function setMode(mode: GameMode) {
     if (mode === 'menu') {
       hideBack();
+      showTitle();
       destroyIframe();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
       updateText(); // Apply translations after HTML is inserted into DOM
     } else {
       showBack();
+      hideTitle();
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector('#pong-frame') as HTMLIFrameElement;
     }
@@ -140,12 +153,18 @@ export function renderGame(): HTMLElement {
 
   function renderIframeHTML(mode: Exclude<GameMode, 'menu'>) {
     const currentLang = getCurrentLang();
-    const src = mode === 'single' 
+    const { currentUser } = store.getState();
+    let src = mode === 'single' 
       ? `/pong/?mode=single&lang=${currentLang}` 
       : `/pong/?mode=multi&lang=${currentLang}`;
+
+      if (mode === 'single' && currentUser?.username) {
+        src += `&username=${encodeURIComponent(currentUser.username)}`;
+      }
+      
     
     return `
-      <div class="w-full h-[60vh]"> 
+      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px]"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
       </div>
     `;
@@ -159,33 +178,74 @@ export function renderGame(): HTMLElement {
 
   setMode('menu');
 
-  // Listen for language changes and reload iframe if needed
   const languageChangeHandler = () => {
     if (iframeRef) {
-      // Get current mode from the iframe URL
       const currentSrc = iframeRef.src;
       const url = new URL(currentSrc);
       const mode = url.searchParams.get('mode');
       
       if (mode === 'single' || mode === 'multi') {
-        // Destroy and recreate the iframe with new language
         setMode(mode as Exclude<GameMode, 'menu'>);
       }
     } else {
-      // If we're in menu mode, just update the text
       updateText();
     }
   };
   
-  // Listen for storage changes (language changes)
   window.addEventListener('storage', (e) => {
     if (e.key === 'lang') {
       languageChangeHandler();
     }
   });
   
-  // Also listen for custom language change events
   window.addEventListener('languageChanged', languageChangeHandler);
+
+  window.addEventListener('message', async (event) => {
+    if (event.origin !== window.location.origin) {
+      return;
+    }
+
+    if (event.data.type === 'REQUEST_LOGIN') {
+      const { playerId, playerName } = event.data;
+      
+      try {
+        const user = await showLoginModal({
+          title: 'Login Second Player',
+          gameOnly: true, 
+          onSuccess: (user) => {
+            alert('Second player logged in: ' + user.username);
+          },
+          onCancel: () => {
+            if (iframeRef?.contentWindow) {
+              iframeRef.contentWindow.postMessage({
+                type: 'LOGIN_CANCELLED',
+                playerId: playerId
+              }, window.location.origin);
+            }
+          }
+        });
+
+        if (iframeRef?.contentWindow) {
+          iframeRef.contentWindow.postMessage({
+            type: 'LOGIN_SUCCESS',
+            playerId: playerId,
+            playerName: playerName,
+            username: user.username,
+            userData: user // Send full user data for game statistics
+          }, window.location.origin);
+        }
+
+      } catch (error) {
+        alert('Login failed or cancelled:' + error);
+        if (iframeRef?.contentWindow) {
+          iframeRef.contentWindow.postMessage({
+            type: 'LOGIN_CANCELLED',
+            playerId: playerId
+          }, window.location.origin);
+        }
+      }
+    }
+  });
 
   (section as any).__destroyGameView = destroyGameView;
 

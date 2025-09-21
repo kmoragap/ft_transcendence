@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 const API_BASE = '/api/pong-db';
 
 type GameRow = {

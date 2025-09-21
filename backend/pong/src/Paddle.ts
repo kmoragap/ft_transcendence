@@ -73,7 +73,7 @@ export default class Paddle {
 		//define corner grads
 		this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
 		this._topCornerGrad.addColorStop(0, "white");
-		this._topCornerGrad.addColorStop(0.75, cornerCol);
+		this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
 		this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
 		this._bottomCornerGrad.addColorStop(0, "white");
 		this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);

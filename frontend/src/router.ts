@@ -54,6 +54,16 @@ export function navigate(path: string) {
   const app = document.getElementById('app');
   if (!app) return;
 
+  // Ensure body classes are maintained for pull-to-refresh functionality
+  if (!document.body.classList.contains('overscroll-auto')) {
+    document.body.classList.add('overscroll-auto');
+  }
+  
+  // Ensure overscroll behavior is properly set
+  if (document.body.style.overscrollBehavior === 'none') {
+    document.body.style.overscrollBehavior = '';
+  }
+
   const renderFn = routes[path] || renderHome;
   app.innerHTML = '';
   app.appendChild(renderFn());

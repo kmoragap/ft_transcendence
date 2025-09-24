@@ -114,7 +114,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   // Card wrapper
   const card = document.createElement("div");
   card.className = [
-    "w-[min(900px,92vw)]",
+    "w-[min(900px,92vw)] overflow-y-auto",
     "rounded-2xl flex flex-row flex-wrap",
     "bg-[rgba(3,27,27,0.9)]",
     "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",

@@ -9,11 +9,31 @@ export function renderHeader(): HTMLElement {
   header.className = 'px-4 md:px-10 py-3 md:py-5 bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-50';
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
+  let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
+  let abortController: AbortController | null = null;
+  
   function updateHeader() {
     if (!sessionManager.isSessionRestored()) {
       header.innerHTML = '';
       return;
     }
+    
+    const currentAuthState = store.getState();
+    
+    if (lastAuthState && 
+        lastAuthState.isAuthenticated === currentAuthState.isAuthenticated &&
+        lastAuthState.currentUser?.id === currentAuthState.currentUser?.id) {
+      return;
+    }
+    
+    lastAuthState = { ...currentAuthState };
+    
+    // Clean up previous event listeners
+    if (abortController) {
+      abortController.abort();
+    }
+    abortController = new AbortController();
+    
     header.innerHTML = '';
 
     // Define languages array once for reuse
@@ -106,6 +126,21 @@ export function renderHeader(): HTMLElement {
     const mobileMenuContent = document.createElement('div');
     mobileMenuContent.className = 'fixed right-0 top-0 h-full w-64 bg-[rgba(3,27,27,0.95)] backdrop-blur-sm transform translate-x-full transition-transform duration-300 shadow-2xl';
     
+    // Mobile menu state management - single source of truth
+    let open = false;
+    
+    function setMenu(next: boolean) {
+      open = next;
+      hamburgerBtn.setAttribute('aria-expanded', String(open));
+
+      mobileMenu.classList.toggle('opacity-0', !open);
+      mobileMenu.classList.toggle('pointer-events-none', !open);
+      mobileMenuContent.classList.toggle('translate-x-full', !open);
+
+      document.body.classList.toggle('mobile-menu-open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+    
     const mobileMenuHeader = document.createElement('div');
     mobileMenuHeader.className = 'flex items-center justify-between p-4 border-b border-[#66fcf1]/20';
     
@@ -167,10 +202,7 @@ export function renderHeader(): HTMLElement {
       menuItem.textContent = t(key);
       
       menuItem.addEventListener('click', async () => {
-        // Close mobile menu
-        mobileMenu.classList.add('opacity-0', 'pointer-events-none');
-        mobileMenuContent.classList.add('translate-x-full');
-        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        setMenu(false); // Keep state and UI in sync
         
         switch (key) {
           case 'logout':
@@ -192,39 +224,20 @@ export function renderHeader(): HTMLElement {
     mobileMenuContent.appendChild(mobileNav);
     mobileMenu.appendChild(mobileMenuContent);
     
-    // Mobile menu toggle functionality
-    let mobileMenuOpen = false;
-    const toggleMobileMenu = () => {
-      mobileMenuOpen = !mobileMenuOpen;
-      hamburgerBtn.setAttribute('aria-expanded', String(mobileMenuOpen));
-      
-      if (mobileMenuOpen) {
-        mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
-        mobileMenuContent.classList.remove('translate-x-full');
-        document.body.classList.add('mobile-menu-open');
-        document.body.style.overflow = 'hidden'; // Prevent background scroll
-      } else {
-        mobileMenu.classList.add('opacity-0', 'pointer-events-none');
-        mobileMenuContent.classList.add('translate-x-full');
-        document.body.classList.remove('mobile-menu-open');
-        document.body.style.overflow = ''; // Restore scroll
-      }
-    };
-    
-    hamburgerBtn.addEventListener('click', toggleMobileMenu);
-    closeBtn.addEventListener('click', toggleMobileMenu);
+    // Wire up mobile menu controls with unified state management
+    hamburgerBtn.addEventListener('click', () => setMenu(!open), { signal: abortController.signal });
+    closeBtn.addEventListener('click', () => setMenu(false), { signal: abortController.signal });
     
     mobileMenu.addEventListener('click', (e) => {
-      if (e.target === mobileMenu) {
-        toggleMobileMenu();
-      }
-    });
+      if (e.target === mobileMenu) setMenu(false);
+    }, { signal: abortController.signal });
     
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && mobileMenuOpen) {
-        toggleMobileMenu();
-      }
-    });
+      if (e.key === 'Escape' && open) setMenu(false);
+    }, { signal: abortController.signal });
+    
+    // Close menu on route changes
+    window.addEventListener('hashchange', () => setMenu(false), { signal: abortController.signal });
 
     const langLi = document.createElement('li');
     langLi.classList.add('ml-5');

@@ -18,8 +18,8 @@ export function renderRegistration(): HTMLElement {
       novalidate
       class="mt-2.5 flex flex-col items-center py-10 px-12 bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg"
     >
-              <div class="w-full mb-2.5">
-                  <input
+      <div class="w-full mb-2.5">
+          <input
           id="username"
           type="text"
           name="username"
@@ -52,7 +52,7 @@ export function renderRegistration(): HTMLElement {
           aria-describedby="email-error"
           class='w-full px-4 py-2 rounded-lg
           bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
-          border border-[#66fcf1]/60
+          border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
           outline-none font-[jura]'
         />
         <p id="email-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>

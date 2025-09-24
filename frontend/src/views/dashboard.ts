@@ -37,7 +37,7 @@ function fmtDate(iso: string) {
 
 export function renderDashboard(): HTMLElement {
   const title = document.createElement('h1');
-  title.className = 'pl-2.5 font-[jura] text-[#66fcf1] uppercase title';
+  title.className = 'pl-2.5 font-[jura] text-[#66fcf1] uppercase title mobile-title';
   const line = document.createElement('span');
   line.className = 'mid_line';
   line.setAttribute('data-i18n', 'dashboard');
@@ -50,7 +50,7 @@ export function renderDashboard(): HTMLElement {
   const card = document.createElement('div');
   card.className = [
     'flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1',
-    'shadow-lg px-8 py-5',
+    'shadow-lg px-4 md:px-8 py-4 md:py-5',
     'w-full max-w-7xl mx-auto mt-5',
     'min-h-75',
   ].join(' ');
@@ -60,7 +60,7 @@ export function renderDashboard(): HTMLElement {
 
 
   const tabs = document.createElement('div');
-  tabs.className = 'flex gap-2.5';
+  tabs.className = 'flex gap-1.5 md:gap-2.5';
 
   function makeTab(label: string, translationKey?: string) {
     const btn = document.createElement('button');
@@ -69,8 +69,8 @@ export function renderDashboard(): HTMLElement {
       btn.setAttribute('data-i18n', translationKey);
     }
     btn.className = [
-      'px-3 py-1.5 rounded-md border',
-              'border-[rgba(102,252,241,0.25)] text-base font-medium',
+      'px-2 md:px-3 py-1 md:py-1.5 rounded-md border',
+              'border-[rgba(102,252,241,0.25)] text-sm md:text-base font-medium',
       'text-[#66fcf1] bg-[rgba(102,252,241,0.1)]   hover:bg-[rgba(102,252,241,0.12)]',
               'focus-visible:ring-2 focus-visible:ring-[#66fcf1] hover:shadow-lg',
               'active:scale-95 animation-[press_0.2s_ease]',
@@ -88,10 +88,10 @@ export function renderDashboard(): HTMLElement {
 
   // Content
   const body = document.createElement('div');
-  body.className = 'py-2.5 text-left bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]';
+  body.className = 'py-2 md:py-2.5 text-left bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]';
 
   const table = document.createElement('div');
-  table.className = 'px-2.5';
+  table.className = 'px-2 md:px-2.5';
 
   body.appendChild(table);
   
@@ -113,13 +113,13 @@ export function renderDashboard(): HTMLElement {
     } else {
       rows.forEach(g => {
         const line = document.createElement('div');
-        line.className = 'flex items-center justify-between p-3 hover:bg-[rgba(102,252,241,0.06)]';
+        line.className = 'flex flex-col md:flex-row md:items-center justify-between p-2 md:p-3 hover:bg-[rgba(102,252,241,0.06)] gap-1 md:gap-0';
 
         const left = document.createElement('div');
-        left.className = 'flex items-center gap-2';
+        left.className = 'flex flex-col md:flex-row md:items-center gap-1 md:gap-2';
         const vs = `${g.player1Name} ${g.score1}:${g.score2} ${g.player2Name}`;
         const names = document.createElement('div');
-        names.className = 'text-white';
+        names.className = 'text-white text-sm md:text-base';
         names.textContent = vs;
 
         const meta = document.createElement('div');
@@ -155,16 +155,16 @@ export function renderDashboard(): HTMLElement {
     } else {
       rows.forEach((p, idx) => {
         const line = document.createElement('div');
-        line.className = 'flex items-center justify-between p-3 hover:bg-[rgba(102,252,241,0.06)]';
+        line.className = 'flex flex-col md:flex-row md:items-center justify-between p-2 md:p-3 hover:bg-[rgba(102,252,241,0.06)] gap-1 md:gap-0';
 
         const left = document.createElement('div');
-        left.className = 'flex items-center gap-3';
+        left.className = 'flex items-center gap-2 md:gap-3';
         const rank = document.createElement('div');
-        rank.className = 'w-7 text-center font-bold text-[#66fcf1]';
+        rank.className = 'w-6 md:w-7 text-center font-bold text-[#66fcf1]';
         rank.textContent = String(idx + 1);
 
         const name = document.createElement('div');
-        name.className = 'text-white';
+        name.className = 'text-white text-sm md:text-base';
         name.textContent = p.name ?? p.playerId ?? 'Unknown';
 
         left.appendChild(rank);

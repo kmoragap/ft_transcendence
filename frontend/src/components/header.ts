@@ -6,7 +6,7 @@ import { sessionManager } from '../utils/session';
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
-  header.className = 'px-10 py-5 bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-50';
+  header.className = 'px-4 md:px-10 py-3 md:py-5 bg-gradient-to-r from-[#1f7474] to-[#031b1b] z-50';
   header.style.backgroundImage = 'linear-gradient(91deg, #1f7474 0%, #031b1b 90%)';
 
   function updateHeader() {
@@ -16,30 +16,26 @@ export function renderHeader(): HTMLElement {
     }
     header.innerHTML = '';
 
+    // Define languages array once for reuse
+    const languages = [
+      { code: 'en', label: 'EN' },
+      { code: 'de', label: 'DE' },
+      { code: 'ru', label: 'RU' },
+    ];
+
     const bar = document.createElement('div');
     bar.className = 'flex items-center justify-between';
 
     const searchWrap = document.createElement('div');
-    searchWrap.className = 'flex items-center gap-2';
-    const searchBtn = document.createElement('button');
-    searchBtn.type = 'button';
-    searchBtn.className = 'inline-flex items-center justify-center w-9 h-9 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1]';
-    searchBtn.setAttribute('aria-label', t('search_users') || 'Search users');
-
-    searchBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M21 21l-4.2-4.2M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-              stroke="#66fcf1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    `;
-
+    searchWrap.className = 'flex items-center gap-2 flex-1 md:flex-none';
+    
     const searchInput = document.createElement('input');
     searchInput.type = 'search';
     searchInput.placeholder = t('search_users') || 'Search users…';
     searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
     searchInput.className = [
-      'w-45 focus:w-65 transition-all duration-200',
-      'h-9 px-2.5 rounded-lg',
+      'w-48 md:w-48 md:focus:w-64 transition-all duration-200',
+      'h-8 md:h-9 px-2 md:px-2.5 rounded-lg text-sm md:text-base',
       'bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60',
       'border border-[#66fcf1]/30 focus:border-[#66fcf1]/60',
       'outline-none font-[jura]'
@@ -49,11 +45,24 @@ export function renderHeader(): HTMLElement {
       if (e.key === 'Enter') e.preventDefault();
     });
 
-    searchWrap.appendChild(searchBtn);
     searchWrap.appendChild(searchInput);
 
-    const ul = document.createElement('ul');
-    ul.classList.add('flex', 'justify-end', 'items-center', 'list-none');
+    // Mobile hamburger menu (right side)
+    const hamburgerBtn = document.createElement('button');
+    hamburgerBtn.type = 'button';
+    hamburgerBtn.className = 'md:hidden inline-flex items-center justify-center w-10 h-10 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1] rounded';
+    hamburgerBtn.setAttribute('aria-label', 'Open menu');
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+
+    hamburgerBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 12h18M3 6h18M3 18h18" stroke="#66fcf1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+
+    // Desktop navigation (hidden on mobile)
+    const desktopNav = document.createElement('ul');
+    desktopNav.className = 'hidden md:flex justify-end items-center list-none';
 
     const links = ['home', 'game', 'dashboard'];
     const { isAuthenticated, currentUser } = store.getState();
@@ -87,7 +96,134 @@ export function renderHeader(): HTMLElement {
         }
       });
 
-      ul.appendChild(li);
+      desktopNav.appendChild(li);
+    });
+
+    // Mobile menu overlay
+    const mobileMenu = document.createElement('div');
+    mobileMenu.className = 'fixed inset-0 bg-black/50 z-50 md:hidden opacity-0 pointer-events-none transition-opacity duration-300';
+    
+    const mobileMenuContent = document.createElement('div');
+    mobileMenuContent.className = 'fixed right-0 top-0 h-full w-64 bg-[rgba(3,27,27,0.95)] backdrop-blur-sm transform translate-x-full transition-transform duration-300 shadow-2xl';
+    
+    const mobileMenuHeader = document.createElement('div');
+    mobileMenuHeader.className = 'flex items-center justify-between p-4 border-b border-[#66fcf1]/20';
+    
+    // Create a compact language selector for the header
+    const headerLangSelect = document.createElement('select');
+    headerLangSelect.className = 'px-2 py-1 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1]/30 rounded text-sm';
+    languages.forEach(({ code, label }) => {
+      const option = document.createElement('option');
+      option.value = code;
+      option.textContent = label;
+      option.className = 'border-0 bg-transparent text-[#66fcf1]';
+      headerLangSelect.appendChild(option);
+    });
+    headerLangSelect.value = localStorage.getItem('lang') || 'en';
+    headerLangSelect.addEventListener('change', async (e) => {
+      const lang = (e.target as HTMLSelectElement).value;
+      localStorage.setItem('lang', lang);
+      await loadLanguage(lang);
+      updateHeader();
+      
+      window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+    });
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'inline-flex items-center justify-center w-8 h-8 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1] rounded';
+    closeBtn.setAttribute('aria-label', 'Close menu');
+    closeBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="#66fcf1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+    
+    mobileMenuHeader.appendChild(headerLangSelect);
+    mobileMenuHeader.appendChild(closeBtn);
+    
+    const mobileNav = document.createElement('nav');
+    mobileNav.className = 'p-4 flex flex-col items-end';
+    mobileNav.setAttribute('role', 'navigation');
+    mobileNav.setAttribute('aria-label', 'Mobile navigation');
+    
+    // Create mobile navigation items
+    const mobileLinks = [...links];
+    if (isAuthenticated && currentUser) {
+      mobileLinks.push('myprofile', 'logout');
+    }
+    
+    mobileLinks.forEach(key => {
+      const menuItem = document.createElement('button');
+      menuItem.type = 'button';
+      menuItem.className = [
+        'block text-right p-2 mb-2',
+        'text-[#66fcf1] font-[jura] font-semibold text-lg',
+        'bg-transparent border-0 rounded-lg',
+        'hover:bg-[#66fcf1]/10 focus:bg-[#66fcf1]/10',
+        'focus:outline-none focus:ring-2 focus:ring-[#66fcf1]'
+      ].join(' ');
+      menuItem.setAttribute('data-i18n', key);
+      menuItem.textContent = t(key);
+      
+      menuItem.addEventListener('click', async () => {
+        // Close mobile menu
+        mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+        mobileMenuContent.classList.add('translate-x-full');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        
+        switch (key) {
+          case 'logout':
+            await logout();
+            location.hash = '/home';
+            break;
+          case 'myprofile':
+            location.hash = '/myprofile';
+            break;
+          default:
+            location.hash = `/${key}`;
+        }
+      });
+      
+      mobileNav.appendChild(menuItem);
+    });
+    
+    mobileMenuContent.appendChild(mobileMenuHeader);
+    mobileMenuContent.appendChild(mobileNav);
+    mobileMenu.appendChild(mobileMenuContent);
+    
+    // Mobile menu toggle functionality
+    let mobileMenuOpen = false;
+    const toggleMobileMenu = () => {
+      mobileMenuOpen = !mobileMenuOpen;
+      hamburgerBtn.setAttribute('aria-expanded', String(mobileMenuOpen));
+      
+      if (mobileMenuOpen) {
+        mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+        mobileMenuContent.classList.remove('translate-x-full');
+        document.body.classList.add('mobile-menu-open');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+      } else {
+        mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+        mobileMenuContent.classList.add('translate-x-full');
+        document.body.classList.remove('mobile-menu-open');
+        document.body.style.overflow = ''; // Restore scroll
+      }
+    };
+    
+    hamburgerBtn.addEventListener('click', toggleMobileMenu);
+    closeBtn.addEventListener('click', toggleMobileMenu);
+    
+    mobileMenu.addEventListener('click', (e) => {
+      if (e.target === mobileMenu) {
+        toggleMobileMenu();
+      }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        toggleMobileMenu();
+      }
     });
 
     const langLi = document.createElement('li');
@@ -96,11 +232,6 @@ export function renderHeader(): HTMLElement {
     langSelect.id = 'language-switcher';
     langSelect.className =
       'px-0.5 py-0.5 mt-1.5 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1] rounded-sm';
-    const languages = [
-      { code: 'en', label: 'EN' },
-      { code: 'de', label: 'DE' },
-      { code: 'ru', label: 'RU' },
-    ];
     languages.forEach(({ code, label }) => {
       const option = document.createElement('option');
       option.value = code;
@@ -115,12 +246,33 @@ export function renderHeader(): HTMLElement {
       await loadLanguage(lang);
       updateHeader();
       
-      // Dispatch custom event for language change
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     });
     langLi.appendChild(langSelect);
     
+    // Mobile language selector
+    const mobileLangSelect = document.createElement('select');
+    mobileLangSelect.className = 'px-0.5 py-0.5 mt-1.5 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1] rounded-sm';
+    languages.forEach(({ code, label }) => {
+      const option = document.createElement('option');
+      option.value = code;
+      option.textContent = label;
+      option.className = 'border-0 bg-transparent text-[#66fcf1]';
+      mobileLangSelect.appendChild(option);
+    });
+    mobileLangSelect.value = localStorage.getItem('lang') || 'en';
+    mobileLangSelect.addEventListener('change', async (e) => {
+      const lang = (e.target as HTMLSelectElement).value;
+      localStorage.setItem('lang', lang);
+      await loadLanguage(lang);
+      updateHeader();
+      
+      // Dispatch custom event for language change
+      window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+    });
+    
     if (isAuthenticated && currentUser) {
+      // Desktop user menu
       const userLi = document.createElement('li');
       userLi.className = 'relative ml-5';
 
@@ -147,11 +299,11 @@ export function renderHeader(): HTMLElement {
       trigger.append(name, avatar);
 
       const menu = document.createElement('div');
-        menu.className = [
-          'absolute right-0 mt-2 w-48',
-          'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
-          'opacity-0 pointer-events-none transition'
-        ].join(' ');
+      menu.className = [
+        'absolute right-0 mt-2 w-48',
+        'bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg',
+        'opacity-0 pointer-events-none transition'
+      ].join(' ');
       menu.setAttribute('role', 'menu');
 
       menu.innerHTML = `
@@ -205,13 +357,23 @@ export function renderHeader(): HTMLElement {
       });
 
       userLi.append(trigger, menu);
-      ul.appendChild(userLi);
+      desktopNav.appendChild(userLi);
     }
-    ul.appendChild(langLi);
-    ul.appendChild(renderA11yControls());
+    
+    desktopNav.appendChild(langLi);
+    desktopNav.appendChild(renderA11yControls());
+    
+    // Add accessibility controls to mobile menu
+    const mobileA11y = renderA11yControls();
+    mobileA11y.className = mobileA11y.className.replace('ml-5', 'mb-4');
+    mobileNav.appendChild(mobileA11y);
+    
+    // Assemble header
     bar.appendChild(searchWrap);
-    bar.appendChild(ul);
+    bar.appendChild(hamburgerBtn);
+    bar.appendChild(desktopNav);
     header.appendChild(bar);
+    header.appendChild(mobileMenu);
   }
 
   updateHeader();

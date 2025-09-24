@@ -10,7 +10,7 @@ export function renderRegistration(): HTMLElement {
     'flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]';
 
   section.innerHTML = `
-    <h1 class="title uppercase">
+    <h1 class="title uppercase mobile-title">
         <span class="mid_line" data-i18n="registration">REGISTRATION</span>
     </h1>
     <form

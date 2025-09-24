@@ -7,7 +7,7 @@ import { initA11yTheme } from './utils/a11y';
 import { sessionManager } from './utils/session';
 
 function buildShell() {
-  document.body.className = 'flex flex-col font-Jura overflow-x-hidden min-h-screen bg-cover bg-center text-white m-0 p-0 z-0 relative';
+  document.body.className = 'flex flex-col font-Jura overflow-x-hidden min-h-[100svh] overflow-y-auto overscroll-auto bg-cover bg-center text-white m-0 p-0 z-0 relative';
   document.body.style.backgroundImage = "url('/assets/img/bg.webp')";
 
   const overlay = document.createElement('div');

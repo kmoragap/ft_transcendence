@@ -13,7 +13,7 @@
 	"firstname": "First Name",
 	"game": "Game",
 	"profile": "Profile",
-	"my_profile": "My Profile",
+	"myprofile": "My Profile",
 	"edit_profile": "Edit Profile",
 	"refresh_stats": "Refresh Stats",
 	"exit": "Exit",

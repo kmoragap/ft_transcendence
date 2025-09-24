@@ -240,10 +240,10 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   list.appendChild(ul);
 }
 function gameSetupMenu(fourPlayers) {
-  const settings = Object.assign(document.createElement("form"), { id: "settings", className: "editBox flex-1 flex flex-col h-full" });
-  const bgColors = Object.assign(document.createElement("form"), { id: "bgColors", className: "editBox flex-1 flex flex-col h-full" });
-  const e3 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "paddleSpeed", textContent: `${t("paddleSpeed")}` });
-  const e1 = Object.assign(document.createElement("select"), { name: "paddleSpeed", id: "paddleSpeed", className: "custom-select px-1 py-1" });
+  const settings = Object.assign(document.createElement("form"), { id: "settings", className: "editBox flex-1 flex flex-col h-full p-2 md:p-4" });
+  const bgColors = Object.assign(document.createElement("form"), { id: "bgColors", className: "editBox flex-1 flex flex-col h-full p-2 md:p-4" });
+  const e3 = Object.assign(document.createElement("label"), { className: "game-text text-sm md:text-base", htmlFor: "paddleSpeed", textContent: `${t("paddleSpeed")}` });
+  const e1 = Object.assign(document.createElement("select"), { name: "paddleSpeed", id: "paddleSpeed", className: "custom-select px-1 py-1 text-sm md:text-base" });
   const e2 = [
     { value: "glacial", text: `${t("glacial")}` },
     { value: "slow", text: `${t("slow")}` },
@@ -256,8 +256,8 @@ function gameSetupMenu(fourPlayers) {
     if (option.selected) opt.selected = true;
     e1.appendChild(opt);
   });
-  const e6 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "ballSpeed", textContent: `${t("ballSpeed")}` });
-  const e4 = Object.assign(document.createElement("select"), { name: "ballSpeed", id: "ballSpeed", className: "custom-select px-1 py-1" });
+  const e6 = Object.assign(document.createElement("label"), { className: "game-text text-sm md:text-base", htmlFor: "ballSpeed", textContent: `${t("ballSpeed")}` });
+  const e4 = Object.assign(document.createElement("select"), { name: "ballSpeed", id: "ballSpeed", className: "custom-select px-1 py-1 text-sm md:text-base" });
   const e5 = [
     { value: "glacial", text: `${t("glacial")}` },
     { value: "slow", text: `${t("slow")}` },
@@ -273,8 +273,8 @@ function gameSetupMenu(fourPlayers) {
     if (option.selected) opt.selected = true;
     e4.appendChild(opt);
   });
-  const e9 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "ballSize", textContent: `${t("ballSize")}` });
-  const e7 = Object.assign(document.createElement("select"), { name: "ballSize", id: "ballSize", className: "custom-select px-1 py-1", style: { width: "20px" } });
+  const e9 = Object.assign(document.createElement("label"), { className: "game-text text-sm md:text-base", htmlFor: "ballSize", textContent: `${t("ballSize")}` });
+  const e7 = Object.assign(document.createElement("select"), { name: "ballSize", id: "ballSize", className: "custom-select px-1 py-1 text-sm md:text-base", style: { width: "20px" } });
   const e8 = [
     { value: "tiny", text: `${t("tiny")}` },
     { value: "small", text: `${t("small")}` },
@@ -299,7 +299,7 @@ function gameSetupMenu(fourPlayers) {
   const e19 = Object.assign(document.createElement("label"), { className: "game-text", for: "innerBg", textContent: ` ${t("innerBg")}` });
   const e20 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000" });
   const e21 = Object.assign(document.createElement("label"), { className: "game-text", for: "outerBg", textContent: ` ${t("outerBg")}` });
-  const e22 = Object.assign(document.createElement("input"), { type: "submit", className: "btn w-auto py-1.5 px-8 m-0 text-lg font-bold w-25 cursor-pointer", value: `${t("start")}` });
+  const e22 = Object.assign(document.createElement("input"), { type: "submit", className: "btn w-auto py-2 md:py-1.5 px-6 md:px-8 m-0 text-base md:text-lg font-bold w-25 cursor-pointer", value: `${t("start")}` });
   const row1 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
   const row2 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
   const row3 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
@@ -341,7 +341,7 @@ function gameSetupMenu(fourPlayers) {
   bgColors.appendChild(colorRow3);
   bgColors.appendChild(colorRow4);
   const container = Object.assign(document.createElement("div"), { className: "game-setup-container" });
-  const ul = Object.assign(document.createElement("ul"), { id: "gameSetup", className: "flex flex-row gap-4 justify-between items-stretch list-none" });
+  const ul = Object.assign(document.createElement("ul"), { id: "gameSetup", className: "flex flex-col md:flex-row gap-4 justify-between items-stretch list-none" });
   ul.appendChild(settings);
   ul.appendChild(bgColors);
   container.appendChild(ul);
@@ -402,7 +402,7 @@ async function newGame(fourPlayers) {
   ].join(" ");
   appDiv.appendChild(card);
   const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-row gap-4 justify-between items-stretch"
+    className: "flex flex-col md:flex-row gap-4 justify-between items-stretch"
   });
   const player1Container = Object.assign(document.createElement("div"), {
     className: "flex-1"

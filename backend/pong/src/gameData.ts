@@ -125,7 +125,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 
   // Create a single flex container for all 4 boxes
   const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-row gap-4 justify-between items-stretch"
+    className: "flex flex-col md:flex-row gap-4 justify-between items-stretch"
   }) as HTMLDivElement;
 
   // Create player setup containers

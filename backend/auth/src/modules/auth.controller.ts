@@ -5,6 +5,25 @@ import * as bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
 
 
+
+export async function getMe(request: FastifyRequest, reply: FastifyReply) 
+{
+      const { email } = (request as any).user as { email: string };
+
+      const user = await getUserByEmail(email);
+      if (!user) {
+        reply.code(404).send({ message: 'User not found' });
+        return;
+      }
+
+    return {
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
+    };
+}
+
 //TODO: everthing should be rewrite with zod to make some check before creating or saving the data
 // Helpers to fetch from users service
 export async function getUserByEmail(email: string) {
@@ -34,7 +53,7 @@ export async function getUserByUsername(username: string) {
 }
 
 // Create a new user in users service
-async function createUser(
+export async function createUser(
   username: string,
   email: string,
   firstname: string,

@@ -3,6 +3,10 @@ import { randomBytes } from 'crypto';
 import { createUser, getUserByEmail } from './auth.controller';
 import prisma from '../utils/prisma';
 
+/**
+ * TODO: login with 42 should register and login automatically
+ */
+
 const OAUTH_CONFIG = {
   clientId: process.env.OAUTH_42_CLIENT_ID!,
   clientSecret: process.env.OAUTH_42_CLIENT_SECRET!,
@@ -92,8 +96,8 @@ export async function oauth42CallbackHandler(request: FastifyRequest, reply: Fas
       },
     });
 
-    // Redirect to frontend with token
-    const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost'}/?token=${token}&username=${user.username}&firstname=${user.firstname || user.username}&email=${user.email}&avatarUrl=${encodeURIComponent(user.avatarUrl || '/assets/img/avatar.jpg')}`;    
+    // this redirection to the frontend with the token is not working
+    const frontendUrl = `${process.env.FRONTEND_URL}/?token=${token}&username=${user.username}&firstname=${user.firstname || user.username}&email=${user.email}&avatarUrl=${encodeURIComponent(user.avatarUrl || '/assets/img/avatar.jpg')}`;    
     return reply.redirect(frontendUrl);
 
   } catch (error) {

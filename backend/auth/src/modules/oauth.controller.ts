@@ -81,6 +81,9 @@ export async function oauth42CallbackHandler(request: FastifyRequest, reply: Fas
       );
     }
 
+    if(!user)
+      throw new Error('Failed to create or retrieve iuser');
+
     // Generate our JWT token
     const token = request.server.jwt.sign(
       { userId: user.id, email: user.email },
@@ -97,11 +100,12 @@ export async function oauth42CallbackHandler(request: FastifyRequest, reply: Fas
     });
 
     // this redirection to the frontend with the token is not working
-    const frontendUrl = `${process.env.FRONTEND_URL}/?token=${token}&username=${user.username}&firstname=${user.firstname || user.username}&email=${user.email}&avatarUrl=${encodeURIComponent(user.avatarUrl || '/assets/img/avatar.jpg')}`;    
+    const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost'}/#/login/callback?token=${token}&username=${encodeURIComponent(user.username)}&firstname=${encodeURIComponent(user.firstname || user.username)}&email=${encodeURIComponent(user.email)}&avatarUrl=${encodeURIComponent(user.avatarUrl || '/assets/img/avatar.jpg')}`;
     return reply.redirect(frontendUrl);
 
   } catch (error) {
     console.error('42 OAuth error:', error);
-    return reply.code(500).send({ error: 'OAuth authentication failed' });
+    const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost'}/#/login?error=oauth_failed`;
+    return reply.redirect(errorUrl);
   }
 }

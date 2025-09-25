@@ -99,7 +99,12 @@ export async function registerHandler(
     const { username, email, firstname, password } = request.body;
 
     //validation
-    if(!username || !email || !firstname || !password)
+    if (
+        !username?.trim() ||
+        !email?.trim() ||
+        !firstname?.trim() ||
+        !password?.trim()
+    )
         throw new ValidationError('All fields are required');
     //check if user exist
     const existingUser = await getUserByEmail(email);

@@ -82,7 +82,7 @@ export async function oauth42CallbackHandler(request: FastifyRequest, reply: Fas
     }
 
     if(!user)
-      throw new Error('Failed to create or retrieve iuser');
+      throw new Error('Failed to create or retrieve user');
 
     // Generate our JWT token
     const token = request.server.jwt.sign(

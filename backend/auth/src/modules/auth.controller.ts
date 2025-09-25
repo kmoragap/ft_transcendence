@@ -1,13 +1,46 @@
-// src/modules/auth.controller.ts
-
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
+import { randomBytes } from "crypto";
+import { 
+  LoginRequest, 
+  RegisterRequest, 
+  AuthResponse, 
+  User,
+  JWTPayload 
+} from "../types/auth.types";
+import { 
+  AuthError, 
+  ValidationError, 
+  UnauthorizedError, 
+  ConflictError,
+  handleAuthError 
+} from '../utils/errorHandler';
 
+export async function getMeHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const { email } = (request as any).user as { email: string };
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return reply.code(404).send({ message: 'User not found' });
+    }
+
+    return {
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
+    };
+  } catch (error) {
+    console.error('Error in getMeHandler:', error);
+    return reply.code(500).send({ message: 'Internal server error' });
+  }
+}
 
 //TODO: everthing should be rewrite with zod to make some check before creating or saving the data
 // Helpers to fetch from users service
-export async function getUserByEmail(email: string) {
+export async function getUserByEmail(email: string): Promise<User | null> {
   try {
     const res = await fetch(
       `http://users:3000/api/users/by-email/${encodeURIComponent(email)}`
@@ -34,7 +67,7 @@ export async function getUserByUsername(username: string) {
 }
 
 // Create a new user in users service
-async function createUser(
+export async function createUser(
   username: string,
   email: string,
   firstname: string,
@@ -57,18 +90,28 @@ async function createUser(
   }
 }
 
-// Registration handler
-export async function registerHandler(request: FastifyRequest, reply: FastifyReply) {
-    const { username, email, firstname, password } = request.body as {
-        username: string;
-        email: string;
-        firstname: string;
-        password: string;
-    };
+//register handler
+export async function registerHandler(
+  request: FastifyRequest<{Body: RegisterRequest}>, 
+  reply: FastifyReply
+) {
+  try {
+    const { username, email, firstname, password } = request.body;
 
-    try {
-        // 1.create the users in the users services
-        const user = await createUser(username, email, firstname, password);
+    //validation
+    if (
+        !username?.trim() ||
+        !email?.trim() ||
+        !firstname?.trim() ||
+        !password?.trim()
+    )
+        throw new ValidationError('All fields are required');
+    //check if user exist
+    const existingUser = await getUserByEmail(email);
+    if (existingUser)
+      throw new ConflictError('User with this email already exists');
+    // 1.create the users in the users services
+    const user = await createUser(username, email, firstname, password);
 
         // 2.generate the jwt
         const token = request.server.jwt.sign(
@@ -89,40 +132,43 @@ export async function registerHandler(request: FastifyRequest, reply: FastifyRep
         });
 
         return {
-            message: 'Registration successful',
-            token,
-            user: { id: user.id, username: user.username, firstname: user.firstname, email: email }
+          message: 'Registration successful',
+          token,
+          username: user.username,
+          firstname: user.firstname,
+          email: user.email,
+          avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
         };
-    } catch (error: any) {
-        console.error('Error during registration:', error);
-        return reply.code(400).send({ message: error.message || 'Registration failed' });
+    } 
+    catch (error) {
+        return handleAuthError(error, reply);
     }
 }
 
 export async function loginHandler(
-  request: FastifyRequest,
+  request: FastifyRequest<{Body: LoginRequest}>,
   reply: FastifyReply
 ) {
-  const body = request.body as Record<string, any>;
-  const password = String(body.password || "");
-  const identifier: string | undefined =
-    typeof body.username === "string"
-      ? body.username
-      : typeof body.email === "string"
-      ? body.email
-      : typeof body.identifier === "string"
-      ? body.identifier
-      : undefined;
-
-  if (!identifier) {
-    return reply
-      .code(400)
-      .send({ message: "Must provide email or username" });
-  }
-
+  
   try {
+    const body = request.body as Record<string, any>;
+    const password = String(body.password || "");
+    const identifier: string | undefined =
+      typeof body.username === "string"
+        ? body.username
+        : typeof body.email === "string"
+        ? body.email
+        : typeof body.identifier === "string"
+        ? body.identifier
+        : undefined;
+  
+    if (!identifier) {
+      return reply
+        .code(400)
+        .send({ message: "Must provide email or username" });
+    }
     const user =
-      identifier.includes("@")
+    identifier.includes("@")
         ? await getUserByEmail(identifier)
         : await getUserByUsername(identifier);
 
@@ -151,8 +197,9 @@ export async function loginHandler(
       email: user.email,
       avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
     };
-  } catch (err) {
-    console.error("Error during login:", err);
+  } 
+  catch (error) {
+    console.error("Error during login:", error);
     return reply.code(500).send({ message: "Login failed" });
   }
 }
@@ -177,7 +224,7 @@ export async function logoutHandler(
 
 export async function verifyTokenHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const decoded = await request.jwtVerify() as { userId: string, email: string }; // string instead of number
+    const decoded = await request.jwtVerify() as JWTPayload;
     const token = request.headers.authorization?.replace('Bearer ', '');
 
     if (token) {
@@ -206,8 +253,9 @@ export async function verifyTokenHandler(request: FastifyRequest, reply: Fastify
     }
 
     return reply.code(401).send({ error: 'No token provided' });
-  } catch (error) {
-    console.error('Error verifying token:', error);
-    return reply.code(401).send({ error: 'Invalid token' });
+  } 
+  catch (error) 
+  {
+    return handleAuthError(error, reply);
   }
 }

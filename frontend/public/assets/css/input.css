@@ -278,6 +278,7 @@
     #app {
       min-height: auto !important;
       height: auto !important;
+      padding-bottom: 10px;
     }
     
     footer {

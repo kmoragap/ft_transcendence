@@ -353,6 +353,94 @@ var data;
 function getSecondPlayerData() {
   return window.gamePlayer2 || null;
 }
+var isFullscreen = false;
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 && window.innerHeight <= 1024;
+}
+function toggleFullscreen() {
+  if (!isFullscreen) {
+    enterFullscreen();
+  } else {
+    exitFullscreen();
+  }
+}
+function enterFullscreen() {
+  const canvas = document.getElementById("board");
+  if (!canvas) return;
+  if (canvas.requestFullscreen) {
+    canvas.requestFullscreen();
+  } else if (canvas.webkitRequestFullscreen) {
+    canvas.webkitRequestFullscreen();
+  } else if (canvas.msRequestFullscreen) {
+    canvas.msRequestFullscreen();
+  }
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock("landscape").catch((err) => {
+      console.log("Orientation lock failed:", err);
+    });
+  }
+  updateCanvasForFullscreen(true);
+}
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  }
+  updateCanvasForFullscreen(false);
+}
+function updateCanvasForFullscreen(fullscreen) {
+  const canvas = document.getElementById("board");
+  if (!canvas) return;
+  isFullscreen = fullscreen;
+  if (fullscreen) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.width = "100vw";
+    canvas.style.height = "100vh";
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.zIndex = "9999";
+    canvas.style.backgroundColor = "#000";
+  } else {
+    const margin = 47;
+    const availableHeight = window.innerHeight - margin;
+    canvas.width = window.innerWidth;
+    canvas.height = availableHeight;
+    canvas.style.width = "100%";
+    canvas.style.height = `${availableHeight}px`;
+    canvas.style.position = "static";
+    canvas.style.top = "auto";
+    canvas.style.left = "auto";
+    canvas.style.zIndex = "auto";
+    canvas.style.backgroundColor = "transparent";
+  }
+  if (data && data.canvas) {
+    data.canvas = canvas;
+    data.ctx = canvas.getContext("2d");
+    data.paddleWidth = canvas.width / 60;
+    data.paddleHeight = canvas.height / 5;
+    data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
+    const outerBg = loadIn("outerBg") || "#000000";
+    const innerBg = loadIn("innerBg") || "#008000";
+    data.bg.addColorStop(0, outerBg);
+    data.bg.addColorStop(0.5, innerBg);
+    data.bg.addColorStop(1, outerBg);
+  }
+}
+document.addEventListener("fullscreenchange", handleFullscreenChange);
+document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+function handleFullscreenChange() {
+  const isCurrentlyFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isCurrentlyFullscreen !== isFullscreen) {
+    updateCanvasForFullscreen(isCurrentlyFullscreen);
+  }
+}
 function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
     name,
@@ -385,7 +473,7 @@ async function newGame(fourPlayers) {
   appDiv.className = [
     "fixed inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
-    "z-50"
+    "z-50 pb-2 md:pb-0"
   ].join(" ");
   document.body.appendChild(appDiv);
   const title = document.createElement("h2");
@@ -460,33 +548,57 @@ async function newGame(fourPlayers) {
   window.addEventListener("resize", () => {
     const canvas = document.getElementById("board");
     if (canvas) {
-      const margin = 50;
-      const availableHeight = window.innerHeight - margin;
-      canvas.width = window.innerWidth;
-      canvas.height = availableHeight;
-      canvas.style.width = "100%";
-      canvas.style.height = `${availableHeight}px`;
-      canvas.style.maxWidth = "100%";
-      canvas.style.maxHeight = `${availableHeight}px`;
-      canvas.style.borderRadius = "0";
-      canvas.style.display = "block";
+      if (isFullscreen) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.width = "100vw";
+        canvas.style.height = "100vh";
+      } else {
+        const margin = 50;
+        const availableHeight = window.innerHeight - margin;
+        canvas.width = window.innerWidth;
+        canvas.height = availableHeight;
+        canvas.style.width = "100%";
+        canvas.style.height = `${availableHeight}px`;
+        canvas.style.maxWidth = "100%";
+        canvas.style.maxHeight = `${availableHeight}px`;
+        canvas.style.borderRadius = "0";
+        canvas.style.display = "block";
+      }
       if (data && data.canvas) {
         data.canvas = canvas;
         data.ctx = canvas.getContext("2d");
         data.paddleWidth = canvas.width / 60;
         data.paddleHeight = canvas.height / 5;
+        data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
+        const outerBg = loadIn("outerBg") || "#000000";
+        const innerBg = loadIn("innerBg") || "#008000";
+        data.bg.addColorStop(0, outerBg);
+        data.bg.addColorStop(0.5, innerBg);
+        data.bg.addColorStop(1, outerBg);
       }
     }
   });
 }
 function loadConfig(fourPlayers) {
   const appDiv = document.getElementById("app");
-  const scoreboard = Object.assign(document.createElement("div"), { className: "scoreboard" });
+  const scoreboard = Object.assign(document.createElement("div"), { className: "scoreboard w-full flex justify-between items-center" });
+  const leftSide = Object.assign(document.createElement("div"), { className: "flex items-center" });
   const p1name = Object.assign(document.createElement("textarea"), { className: "p1name game-text", rows: "1", cols: "30", disabled: "true" });
   const p1score = Object.assign(document.createElement("textarea"), { className: "p1score game-text", rows: "1", cols: "2", disabled: "true" });
+  leftSide.append(p1name, p1score);
+  const center = Object.assign(document.createElement("span"), { className: "game-text", textContent: " : " });
+  const rightSide = Object.assign(document.createElement("div"), { className: "flex items-center" });
   const p2score = Object.assign(document.createElement("textarea"), { className: "p2score game-text", rows: "1", cols: "2", disabled: "true" });
   const p2name = Object.assign(document.createElement("textarea"), { className: "p2name game-text", rows: "1", cols: "30", disabled: "true" });
-  scoreboard.append(p1name, p1score, " : ", p2score, p2name);
+  const fullscreenBtn = Object.assign(document.createElement("button"), {
+    className: "fullscreen-btn game-text",
+    textContent: "\u26F6",
+    title: "Toggle Full Screen"
+  });
+  fullscreenBtn.addEventListener("click", toggleFullscreen);
+  rightSide.append(p2score, p2name, fullscreenBtn);
+  scoreboard.append(leftSide, center, rightSide);
   const canvas = Object.assign(document.createElement("canvas"), { id: "board", tabIndex: 1 });
   const margin = 47;
   const availableHeight = window.innerHeight - margin;
@@ -498,7 +610,57 @@ function loadConfig(fourPlayers) {
   canvas.style.maxHeight = `${availableHeight}px`;
   canvas.style.borderRadius = "0";
   canvas.style.display = "block";
+  canvas.style.touchAction = "none";
   const ctx = canvas.getContext("2d");
+  let touchStartY = 0;
+  let touchStartX = 0;
+  canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    touchStartY = touch.clientY;
+    touchStartX = touch.clientX;
+  }, { passive: false });
+  canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    if (!data || !data.p) return;
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - touchStartY;
+    const deltaX = touch.clientX - touchStartX;
+    const canvasRect = canvas.getBoundingClientRect();
+    const touchX = touch.clientX - canvasRect.left;
+    const isLeftSide = touchX < canvas.width / 2;
+    if (isLeftSide && data.p[0]) {
+      if (deltaY < -10) {
+        data.keys[data.p[0].up] = true;
+        data.keys[data.p[0].down] = false;
+      } else if (deltaY > 10) {
+        data.keys[data.p[0].down] = true;
+        data.keys[data.p[0].up] = false;
+      }
+    } else if (!isLeftSide && data.p[1]) {
+      if (deltaY < -10) {
+        data.keys[data.p[1].up] = true;
+        data.keys[data.p[1].down] = false;
+      } else if (deltaY > 10) {
+        data.keys[data.p[1].down] = true;
+        data.keys[data.p[1].up] = false;
+      }
+    }
+  }, { passive: false });
+  canvas.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    if (data && data.p) {
+      data.p.forEach((player) => {
+        data.keys[player.up] = false;
+        data.keys[player.down] = false;
+      });
+    }
+  }, { passive: false });
+  if (isMobile()) {
+    setTimeout(() => {
+      enterFullscreen();
+    }, 100);
+  }
   var p = [];
   p.push(loadPlayer(
     loadIn("name_p1"),
@@ -1342,6 +1504,43 @@ async function endGame() {
   const secondPlayerData = getSecondPlayerData();
   if (secondPlayerData) {
     console.log("Second player data available for statistics:", secondPlayerData);
+  }
+  if (isMobile2()) {
+    showExitButton(winner);
+  }
+}
+function isMobile2() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 && window.innerHeight <= 1024;
+}
+function showExitButton(winner) {
+  const exitOverlay = document.createElement("div");
+  exitOverlay.className = "fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]";
+  exitOverlay.innerHTML = `
+		<div class="text-center text-white mb-8">
+			<h2 class="text-4xl font-bold mb-4">Game Over!</h2>
+			<p class="text-2xl">Winner: ${winner}</p>
+		</div>
+		<button id="exit-game-btn" class="bg-[#66fcf1] text-black px-8 py-4 rounded-lg text-xl font-bold hover:bg-[#5ae6d9] transition-colors">
+			Exit Game
+		</button>
+	`;
+  document.body.appendChild(exitOverlay);
+  const exitBtn = document.getElementById("exit-game-btn");
+  if (exitBtn) {
+    exitBtn.addEventListener("click", () => {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      window.parent.postMessage({
+        type: "EXIT_GAME",
+        winner
+      }, window.location.origin);
+      document.body.removeChild(exitOverlay);
+    });
   }
 }
 startGame(false);

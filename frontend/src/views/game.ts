@@ -244,6 +244,13 @@ export function renderGame(): HTMLElement {
           }, window.location.origin);
         }
       }
+    } else if (event.data.type === 'EXIT_GAME') {
+      // Handle game exit from mobile fullscreen
+      const { winner } = event.data;
+      console.log(`Game ended. Winner: ${winner}`);
+      
+      // Navigate back to home page
+      window.location.href = '#/home';
     }
   });
 

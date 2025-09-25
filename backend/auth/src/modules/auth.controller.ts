@@ -256,6 +256,6 @@ export async function verifyTokenHandler(request: FastifyRequest, reply: Fastify
   } 
   catch (error) 
   {
-    return handleAuthError(error, reply)
+    return handleAuthError(error, reply);
   }
 }

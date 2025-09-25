@@ -108,7 +108,7 @@ export async function registerHandler(
         throw new ValidationError('All fields are required');
     //check if user exist
     const existingUser = await getUserByEmail(email);
-    if(existingUser)
+    if (existingUser)
       throw new ConflictError('User with this email already exists');
     // 1.create the users in the users services
     const user = await createUser(username, email, firstname, password);

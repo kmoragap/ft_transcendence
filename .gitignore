@@ -2,4 +2,4 @@
 **/.DS_Store
 .project
 .settings
-.env
+**/.env

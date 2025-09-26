@@ -15,7 +15,7 @@ export function renderGame(): HTMLElement {
      <h1 id="game-title" class="title uppercase mobile-title">
         <span class="mid_line" data-i18n="pong">PONG</span>
       </h1>
-          <div class="w-full max-w-7xl rounded-t-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
+          <div class="w-full max-w-7xl rounded-t-xl md:overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
      <div class="flex items-center justify-between px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"

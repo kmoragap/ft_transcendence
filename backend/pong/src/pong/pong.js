@@ -424,11 +424,9 @@ function updateCanvasForFullscreen(fullscreen) {
     data.paddleWidth = canvas.width / 60;
     data.paddleHeight = canvas.height / 5;
     data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
-    const outerBg = loadIn("outerBg") || "#000000";
-    const innerBg = loadIn("innerBg") || "#008000";
-    data.bg.addColorStop(0, outerBg);
-    data.bg.addColorStop(0.5, innerBg);
-    data.bg.addColorStop(1, outerBg);
+    data.bg.addColorStop(0, data.outerBg);
+    data.bg.addColorStop(0.5, data.innerBg);
+    data.bg.addColorStop(1, data.outerBg);
   }
 }
 document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -571,11 +569,9 @@ async function newGame(fourPlayers) {
         data.paddleWidth = canvas.width / 60;
         data.paddleHeight = canvas.height / 5;
         data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
-        const outerBg = loadIn("outerBg") || "#000000";
-        const innerBg = loadIn("innerBg") || "#008000";
-        data.bg.addColorStop(0, outerBg);
-        data.bg.addColorStop(0.5, innerBg);
-        data.bg.addColorStop(1, outerBg);
+        data.bg.addColorStop(0, data.outerBg);
+        data.bg.addColorStop(0.5, data.innerBg);
+        data.bg.addColorStop(1, data.outerBg);
       }
     }
   });
@@ -732,6 +728,8 @@ function loadConfig(fourPlayers) {
     ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
     ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
     ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
+    outerBg: loadIn("outerBg") || "#000000",
+    innerBg: loadIn("innerBg") || "#008000",
     serve: Math.floor(Math.random() * 2) ? -1 : 1,
     keys: {},
     showingText: false,

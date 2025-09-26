@@ -1,6 +1,6 @@
 //import { userService } from "./services/userService";
 import { controlKeys } from "./controls";
-import { countdown } from "./pong";
+import { countdown, pad } from "./pong";
 import { playerSetupMenu, gameSetupMenu } from "./menus";
 
 export type playerData = {
@@ -35,6 +35,8 @@ export type gameData = {
 	ballR: string;
 	ballG: string;
 	ballB: string;
+	outerBg: string;
+	innerBg: string;
 	
 	paddleSpeed: number;
 	ballSpeed: number;
@@ -65,7 +67,6 @@ export function clearSecondPlayerData(): void {
 	(window as any).gamePlayer2 = null;
 }
 
-// Full screen functionality
 let isFullscreen = false;
 
 // Mobile detection
@@ -86,7 +87,6 @@ function enterFullscreen(): void {
 	const canvas = document.getElementById('board') as HTMLCanvasElement;
 	if (!canvas) return;
 
-	// Request full screen
 	if (canvas.requestFullscreen) {
 		canvas.requestFullscreen();
 	} else if ((canvas as any).webkitRequestFullscreen) {
@@ -95,14 +95,11 @@ function enterFullscreen(): void {
 		(canvas as any).msRequestFullscreen();
 	}
 
-	// Lock orientation to landscape
-	if (screen.orientation && screen.orientation.lock) {
-		screen.orientation.lock('landscape').catch(err => {
+	if (screen.orientation && (screen.orientation as any).lock) {
+		(screen.orientation as any).lock('landscape').catch((err: any) => {
 			console.log('Orientation lock failed:', err);
 		});
 	}
-
-	// Update canvas for full screen
 	updateCanvasForFullscreen(true);
 }
 
@@ -119,6 +116,28 @@ function exitFullscreen(): void {
 	updateCanvasForFullscreen(false);
 }
 
+function updatePaddlePositions(): void {
+	if (!pad || pad.length === 0) return;
+	
+	// Update paddle positions based on current canvas dimensions
+	if (data.mode === "twoPlayers") {
+		// Left paddle (index 0) - stays at x = 0
+		pad[0].setX(0);
+		// Right paddle (index 1) - moves to right edge
+		pad[1].setX(data.canvas.width - data.paddleWidth);
+	} else if (data.mode === "doublePaddle") {
+		pad[0].setX(0);
+		pad[1].setX(data.canvas.width - data.paddleWidth);
+		pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
+		pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
+	} else if (data.mode === "fourPlayers") {
+		pad[0].setX(0);
+		pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
+		pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
+		pad[3].setX(data.canvas.width - data.paddleWidth);
+	}
+}
+
 function updateCanvasForFullscreen(fullscreen: boolean): void {
 	const canvas = document.getElementById('board') as HTMLCanvasElement;
 	if (!canvas) return;
@@ -126,7 +145,7 @@ function updateCanvasForFullscreen(fullscreen: boolean): void {
 	isFullscreen = fullscreen;
 
 	if (fullscreen) {
-		// Full screen mode - use actual viewport dimensions
+		// Full screen mode
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 		canvas.style.width = '100vw';
@@ -137,7 +156,7 @@ function updateCanvasForFullscreen(fullscreen: boolean): void {
 		canvas.style.zIndex = '9999';
 		canvas.style.backgroundColor = '#000';
 	} else {
-		// Normal mode - use your existing logic
+		// Normal mode
 		const margin = 47;
 		const availableHeight = window.innerHeight - margin;
 		
@@ -152,22 +171,21 @@ function updateCanvasForFullscreen(fullscreen: boolean): void {
 		canvas.style.backgroundColor = 'transparent';
 	}
 
-	// Update game data if available
 	if (data && data.canvas) {
 		data.canvas = canvas;
 		data.ctx = canvas.getContext('2d')!;
 		data.paddleWidth = canvas.width / 60;
 		data.paddleHeight = canvas.height / 5;
-		
-		// Recreate background gradient for new canvas dimensions
+
 		data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
-		data.bg.addColorStop(0, data.uiCol || '#000000');
-		data.bg.addColorStop(0.5, data.ballCol || '#008000');
-		data.bg.addColorStop(1, data.uiCol || '#000000');
+		data.bg.addColorStop(0, data.outerBg);
+		data.bg.addColorStop(0.5, data.innerBg);
+		data.bg.addColorStop(1, data.outerBg);
+		
+		updatePaddlePositions();
 	}
 }
 
-// Listen for full screen changes
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 document.addEventListener('mozfullscreenchange', handleFullscreenChange);
@@ -225,12 +243,10 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   ].join(" ");
 
   document.body.appendChild(appDiv);
-  // Title
   const title = document.createElement("h2");
   title.textContent = "Game Setup";
   title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
   appDiv.appendChild(title);
-  // Card wrapper
   const card = document.createElement("div");
   card.className = [
     "w-[min(900px,92vw)] overflow-y-auto",
@@ -241,13 +257,10 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   ].join(" ");
   appDiv.appendChild(card);
 
-
-  // Create a single flex container for all 4 boxes
   const allBoxesContainer = Object.assign(document.createElement("div"), {
     className: "flex flex-col md:flex-row gap-4 justify-between items-stretch"
   }) as HTMLDivElement;
 
-  // Create player setup containers
   const player1Container = Object.assign(document.createElement("div"), {
     className: "flex-1"
   }) as HTMLDivElement;
@@ -255,7 +268,6 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     className: "flex-1"
   }) as HTMLDivElement;
 
-  // Create temporary ul elements for player setup
   const player1List = Object.assign(document.createElement("ul"), {
     className: "list-none"
   }) as HTMLUListElement;
@@ -263,11 +275,9 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     className: "list-none"
   }) as HTMLUListElement;
 
-  // Get username from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('username') || 'Player 1';
   
-  // Add players to their containers
   playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
   playerSetupMenu(player2List, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
   
@@ -297,7 +307,6 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     player3Container.appendChild(player3List);
     player4Container.appendChild(player4List);
 
-    // Add player 3 and 4 containers to the main container
     allBoxesContainer.appendChild(player3Container);
     allBoxesContainer.appendChild(player4Container);
   }
@@ -355,9 +364,12 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 				
 				// Recreate background gradient for new canvas dimensions
 				data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
-				data.bg.addColorStop(0, data.uiCol || '#000000');
-				data.bg.addColorStop(0.5, data.ballCol || '#008000');
-				data.bg.addColorStop(1, data.uiCol || '#000000');
+				data.bg.addColorStop(0, data.outerBg);
+				data.bg.addColorStop(0.5, data.innerBg);
+				data.bg.addColorStop(1, data.outerBg);
+				
+				// Update paddle positions for new canvas dimensions
+				updatePaddlePositions();
 			}
 		}
 	});
@@ -536,6 +548,8 @@ export function loadConfig(fourPlayers: boolean) {
 		ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
 		ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
 		ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
+		outerBg: loadIn("outerBg") || "#000000",
+		innerBg: loadIn("innerBg") || "#008000",
 		
 		serve: Math.floor(Math.random() * 2) ? -1 : 1,
 		keys: {},

@@ -12,10 +12,10 @@ export function renderGame(): HTMLElement {
     'w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10';
 
   section.innerHTML = `
-     <h1 id="game-title" class="title uppercase">
+     <h1 id="game-title" class="title uppercase mobile-title">
         <span class="mid_line" data-i18n="pong">PONG</span>
       </h1>
-          <div class="w-full max-w-7xl rounded-t-xl overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
+          <div class="w-full max-w-7xl rounded-t-xl md:overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
      <div class="flex items-center justify-between px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
@@ -95,11 +95,11 @@ export function renderGame(): HTMLElement {
   function renderMenuHTML() {
     return `
       <div class="p-6 flex flex-col justify-center items-center h-full">
-        <div class="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
+        <div class="flex flex-col md:grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
           <button
             id="btn-create"
-            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
-                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-2xl
+            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
+                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-lg
                   cursor-not-allowed opacity-50"
             aria-disabled="true"
@@ -110,8 +110,8 @@ export function renderGame(): HTMLElement {
           </button>
           <button
             id="btn-join"
-            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
-                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-2xl
+            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
+                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-lg
                   cursor-not-allowed opacity-50"
             aria-disabled="true"
@@ -122,8 +122,8 @@ export function renderGame(): HTMLElement {
           </button>
           <button
             id="btn-single"
-            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
-                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-2xl
+            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
+                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-xl
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
             data-i18n="single_play"
@@ -132,8 +132,8 @@ export function renderGame(): HTMLElement {
           </button>
           <button
             id="btn-multi"
-            class="px-6 py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
-                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-2xl
+            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
+                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-lg
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
             data-i18n="multiplayer"
@@ -244,6 +244,13 @@ export function renderGame(): HTMLElement {
           }, window.location.origin);
         }
       }
+    } else if (event.data.type === 'EXIT_GAME') {
+      // Handle game exit from mobile fullscreen
+      const { winner } = event.data;
+      console.log(`Game ended. Winner: ${winner}`);
+      
+      // Navigate back to home page
+      window.location.href = '#/home';
     }
   });
 

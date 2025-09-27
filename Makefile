@@ -5,7 +5,7 @@ PROJECT := backend/nginx
 .PHONY: all up down rebuild clean show-url
 
 
-all: show-url up
+all: up show-url
 
 show-url:
 	@echo "🌐 Access the website at:"

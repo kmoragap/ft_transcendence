@@ -72,26 +72,26 @@ export function renderMyProfile(): HTMLElement {
 
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
-    <h1 class="title uppercase">
+    <h1 class="title uppercase mobile-title">
       <span class="mid_line" data-i18n="my_profile">MY PROFILE</span>
     </h1>
 
     <section class="w-full
                     rounded-xl shadow-2xl
-                    max-w-7xl mx-auto px-15 py-7.5">
-      <div class="flex flex-row items-stretch gap-x-8">
+                    max-w-7xl mx-auto px-4 md:px-15 py-4 md:py-7.5">
+      <div class="flex flex-col md:flex-row items-stretch gap-4 md:gap-x-8">
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-10 py-5">
-          <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
+                    shadow-lg px-4 md:px-10 py-4 md:py-5">
+          <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
           <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]"></div>
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-10 py-5">
-          <div class="flex flex-col items-center space-y-4 mb-6">
+                    shadow-lg px-4 md:px-10 py-4 md:py-5">
+          <div class="flex flex-col items-center space-y-3 md:space-y-4 mb-4 md:mb-6">
             <div class="relative group">
               <img id="profile-avatar-img" src="${user.avatarUrl}" alt="${user.username}'s avatar"
-                  class="w-24 h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover cursor-pointer" 
+                  class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover cursor-pointer" 
                   title="Click to change photo" />
               <!-- Upload overlay -->
               <div class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
@@ -102,18 +102,18 @@ export function renderMyProfile(): HTMLElement {
             <input id="avatar-file-input" type="file" accept="image/*" class="hidden" />
 
             <div class="text-center">
-              <h2 class="text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
-              <p class="text-lg text-gray-300 mb-1">${user.name}</p>
+              <h2 class="text-xl md:text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
+              <p class="text-base md:text-lg text-gray-300 mb-1">${user.name}</p>
               <p class="text-sm text-gray-400">${user.email}</p>
             </div>
-            <div class="flex flex-col gap-3">
-              <button id="edit-btn" class="cursor-pointer mt-2.5 text-lg font-bold px-8 py-2
+            <div class="flex flex-col gap-2 md:gap-3">
+              <button id="edit-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                       transition-shadow duration-300" data-i18n="edit_profile">
                 Edit Profile
               </button>
-              <button id="refresh-stats-btn" class="cursor-pointer mt-2.5 text-lg font-bold px-8 py-2
+              <button id="refresh-stats-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45fcf1] font-[jura] hover:shadow-lg
                       transition-shadow duration-300" data-i18n="refresh_stats">
@@ -124,24 +124,24 @@ export function renderMyProfile(): HTMLElement {
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-10 py-5">
-          <h2 class="text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="p-4 text-center">
-              <div class="text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
-              <div class="text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
+                    shadow-lg px-4 md:px-10 py-4 md:py-5">
+          <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
+          <div class="grid grid-cols-2 gap-2 md:gap-4 mb-4 md:mb-6">
+            <div class="p-2 md:p-4 text-center">
+              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
+              <div class="text-xs md:text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
             </div>
-            <div class="p-4 text-center">
-              <div class="text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
-              <div class="text-sm text-gray-300" data-i18n="losses">Losses</div>
+            <div class="p-2 md:p-4 text-center">
+              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
+              <div class="text-xs md:text-sm text-gray-300" data-i18n="losses">Losses</div>
             </div>
-            <div class="p-4 text-center">
-              <div class="text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
-              <div class="text-sm text-gray-300" data-i18n="total_games">Total Games</div>
+            <div class="p-2 md:p-4 text-center">
+              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
+              <div class="text-xs md:text-sm text-gray-300" data-i18n="total_games">Total Games</div>
             </div>
-            <div class="p-4 text-center">
-              <div class="text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
-              <div class="text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
+            <div class="p-2 md:p-4 text-center">
+              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
+              <div class="text-xs md:text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export function renderMyProfile(): HTMLElement {
 
   const getEditHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
-    <h1 class="title uppercase">
+    <h1 class="title uppercase mobile-title">
       <span class="mid_line" data-i18n="my_profile">MY PROFILE</span>
     </h1>
       

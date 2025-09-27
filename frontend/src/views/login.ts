@@ -12,7 +12,7 @@ export function renderLogin(): HTMLElement {
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
-      <h1 class="title uppercase">
+      <h1 class="title uppercase mobile-title">
         <span class="mid_line" data-i18n="login">LOGIN</span>
       </h1>
     </div>

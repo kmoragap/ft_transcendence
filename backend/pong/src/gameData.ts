@@ -1,6 +1,6 @@
 //import { userService } from "./services/userService";
 import { controlKeys } from "./controls";
-import { countdown } from "./pong";
+import { countdown, pad } from "./pong";
 import { playerSetupMenu, gameSetupMenu } from "./menus";
 
 export type playerData = {
@@ -35,6 +35,8 @@ export type gameData = {
 	ballR: string;
 	ballG: string;
 	ballB: string;
+	outerBg: string;
+	innerBg: string;
 	
 	paddleSpeed: number;
 	ballSpeed: number;
@@ -63,6 +65,141 @@ export function getSecondPlayerData(): any {
 
 export function clearSecondPlayerData(): void {
 	(window as any).gamePlayer2 = null;
+}
+
+let isFullscreen = false;
+
+// Mobile detection
+function isMobile(): boolean {
+	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+		   (window.innerWidth <= 768 && window.innerHeight <= 1024);
+}
+
+export function toggleFullscreen(): void {
+	if (!isFullscreen) {
+		enterFullscreen();
+	} else {
+		exitFullscreen();
+	}
+}
+
+function enterFullscreen(): void {
+	const canvas = document.getElementById('board') as HTMLCanvasElement;
+	if (!canvas) return;
+
+	if (canvas.requestFullscreen) {
+		canvas.requestFullscreen();
+	} else if ((canvas as any).webkitRequestFullscreen) {
+		(canvas as any).webkitRequestFullscreen();
+	} else if ((canvas as any).msRequestFullscreen) {
+		(canvas as any).msRequestFullscreen();
+	}
+
+	if (screen.orientation && (screen.orientation as any).lock) {
+		(screen.orientation as any).lock('landscape').catch((err: any) => {
+			console.log('Orientation lock failed:', err);
+		});
+	}
+	updateCanvasForFullscreen(true);
+}
+
+function exitFullscreen(): void {
+	if (document.exitFullscreen) {
+		document.exitFullscreen();
+	} else if ((document as any).webkitExitFullscreen) {
+		(document as any).webkitExitFullscreen();
+	} else if ((document as any).msExitFullscreen) {
+		(document as any).msExitFullscreen();
+	}
+
+	// Update canvas for normal mode
+	updateCanvasForFullscreen(false);
+}
+
+function updatePaddlePositions(): void {
+	if (!pad || pad.length === 0) return;
+	
+	// Update paddle positions based on current canvas dimensions
+	if (data.mode === "twoPlayers") {
+		// Left paddle (index 0) - stays at x = 0
+		pad[0].setX(0);
+		// Right paddle (index 1) - moves to right edge
+		pad[1].setX(data.canvas.width - data.paddleWidth);
+	} else if (data.mode === "doublePaddle") {
+		pad[0].setX(0);
+		pad[1].setX(data.canvas.width - data.paddleWidth);
+		pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
+		pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
+	} else if (data.mode === "fourPlayers") {
+		pad[0].setX(0);
+		pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
+		pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
+		pad[3].setX(data.canvas.width - data.paddleWidth);
+	}
+}
+
+function updateCanvasForFullscreen(fullscreen: boolean): void {
+	const canvas = document.getElementById('board') as HTMLCanvasElement;
+	if (!canvas) return;
+
+	isFullscreen = fullscreen;
+
+	if (fullscreen) {
+		// Full screen mode
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		canvas.style.width = '100vw';
+		canvas.style.height = '100vh';
+		canvas.style.position = 'fixed';
+		canvas.style.top = '0';
+		canvas.style.left = '0';
+		canvas.style.zIndex = '9999';
+		canvas.style.backgroundColor = '#000';
+	} else {
+		// Normal mode
+		const margin = 47;
+		const availableHeight = window.innerHeight - margin;
+		
+		canvas.width = window.innerWidth;
+		canvas.height = availableHeight;
+		canvas.style.width = '100%';
+		canvas.style.height = `${availableHeight}px`;
+		canvas.style.position = 'static';
+		canvas.style.top = 'auto';
+		canvas.style.left = 'auto';
+		canvas.style.zIndex = 'auto';
+		canvas.style.backgroundColor = 'transparent';
+	}
+
+	if (data && data.canvas) {
+		data.canvas = canvas;
+		data.ctx = canvas.getContext('2d')!;
+		data.paddleWidth = canvas.width / 60;
+		data.paddleHeight = canvas.height / 5;
+
+		data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
+		data.bg.addColorStop(0, data.outerBg);
+		data.bg.addColorStop(0.5, data.innerBg);
+		data.bg.addColorStop(1, data.outerBg);
+		
+		updatePaddlePositions();
+	}
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+function handleFullscreenChange(): void {
+	const isCurrentlyFullscreen = !!(document.fullscreenElement || 
+		(document as any).webkitFullscreenElement || 
+		(document as any).mozFullScreenElement || 
+		(document as any).msFullscreenElement);
+	
+	if (isCurrentlyFullscreen !== isFullscreen) {
+		updateCanvasForFullscreen(isCurrentlyFullscreen);
+	}
 }
 
 function loadPlayer(name: string, id: string, isAi: boolean, up: string, down: string, innerCol: string, outercol: string, cornerCol: string):playerData {
@@ -102,19 +239,17 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   appDiv.className = [
     "fixed inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
-    "z-50"
+    "z-50 pb-2 md:pb-0"
   ].join(" ");
 
   document.body.appendChild(appDiv);
-  // Title
   const title = document.createElement("h2");
   title.textContent = "Game Setup";
   title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
   appDiv.appendChild(title);
-  // Card wrapper
   const card = document.createElement("div");
   card.className = [
-    "w-[min(900px,92vw)]",
+    "w-[min(900px,92vw)] overflow-y-auto",
     "rounded-2xl flex flex-row flex-wrap",
     "bg-[rgba(3,27,27,0.9)]",
     "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
@@ -122,13 +257,10 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   ].join(" ");
   appDiv.appendChild(card);
 
-
-  // Create a single flex container for all 4 boxes
   const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-row gap-4 justify-between items-stretch"
+    className: "flex flex-col md:flex-row gap-4 justify-between items-stretch"
   }) as HTMLDivElement;
 
-  // Create player setup containers
   const player1Container = Object.assign(document.createElement("div"), {
     className: "flex-1"
   }) as HTMLDivElement;
@@ -136,7 +268,6 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     className: "flex-1"
   }) as HTMLDivElement;
 
-  // Create temporary ul elements for player setup
   const player1List = Object.assign(document.createElement("ul"), {
     className: "list-none"
   }) as HTMLUListElement;
@@ -144,11 +275,9 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     className: "list-none"
   }) as HTMLUListElement;
 
-  // Get username from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('username') || 'Player 1';
   
-  // Add players to their containers
   playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
   playerSetupMenu(player2List, "2", "Arthur Dent",  true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
   
@@ -178,7 +307,6 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     player3Container.appendChild(player3List);
     player4Container.appendChild(player4List);
 
-    // Add player 3 and 4 containers to the main container
     allBoxesContainer.appendChild(player3Container);
     allBoxesContainer.appendChild(player4Container);
   }
@@ -207,23 +335,41 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 		window.addEventListener('resize', () => {
 		const canvas = document.getElementById('board') as HTMLCanvasElement;
 		if (canvas) {
-			const margin = 50; // Same minimal margin as initial sizing
-			const availableHeight = window.innerHeight - margin;
-			
-			canvas.width = window.innerWidth;
-			canvas.height = availableHeight;
-			canvas.style.width = '100%';
-			canvas.style.height = `${availableHeight}px`;
-			canvas.style.maxWidth = '100%';
-			canvas.style.maxHeight = `${availableHeight}px`;
-			canvas.style.borderRadius = '0'; // Remove any border radius for full square
-			canvas.style.display = 'block'; // Ensure no extra spacing
+			if (isFullscreen) {
+				// Full screen mode - use actual viewport dimensions
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				canvas.style.width = '100vw';
+				canvas.style.height = '100vh';
+			} else {
+				// Normal mode - use your existing logic
+				const margin = 50; // Same minimal margin as initial sizing
+				const availableHeight = window.innerHeight - margin;
+				
+				canvas.width = window.innerWidth;
+				canvas.height = availableHeight;
+				canvas.style.width = '100%';
+				canvas.style.height = `${availableHeight}px`;
+				canvas.style.maxWidth = '100%';
+				canvas.style.maxHeight = `${availableHeight}px`;
+				canvas.style.borderRadius = '0'; // Remove any border radius for full square
+				canvas.style.display = 'block'; // Ensure no extra spacing
+			}
 			
 			if (data && data.canvas) {
 				data.canvas = canvas;
 				data.ctx = canvas.getContext('2d')!;
 				data.paddleWidth = canvas.width / 60;
 				data.paddleHeight = canvas.height / 5;
+				
+				// Recreate background gradient for new canvas dimensions
+				data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
+				data.bg.addColorStop(0, data.outerBg);
+				data.bg.addColorStop(0.5, data.innerBg);
+				data.bg.addColorStop(1, data.outerBg);
+				
+				// Update paddle positions for new canvas dimensions
+				updatePaddlePositions();
 			}
 		}
 	});
@@ -232,12 +378,33 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 export function loadConfig(fourPlayers: boolean) {
 	const appDiv = document.getElementById('app') as HTMLDivElement;
 //create scoreboard
-	const scoreboard = Object.assign(document.createElement("div"),   {className: "scoreboard"}) as HTMLDivElement;
+	const scoreboard = Object.assign(document.createElement("div"), {className: "scoreboard w-full flex justify-between items-center"}) as HTMLDivElement;
+	
+	// Left side - player 1 info
+	const leftSide = Object.assign(document.createElement("div"), {className: "flex items-center"}) as HTMLDivElement;
 	const p1name  = Object.assign(document.createElement("textarea"), {className: "p1name game-text",  rows: "1", cols: "30", disabled: "true"}) as HTMLTextAreaElement;
 	const p1score = Object.assign(document.createElement("textarea"), {className: "p1score game-text", rows: "1", cols: "2",  disabled: "true"}) as HTMLTextAreaElement;
+	leftSide.append(p1name, p1score);
+	
+	// Center - score separator
+	const center = Object.assign(document.createElement("span"), {className: "game-text", textContent: " : "}) as HTMLSpanElement;
+	
+	// Right side - player 2 info and fullscreen button
+	const rightSide = Object.assign(document.createElement("div"), {className: "flex items-center"}) as HTMLDivElement;
 	const p2score = Object.assign(document.createElement("textarea"), {className: "p2score game-text", rows: "1", cols: "2",  disabled: "true"}) as HTMLTextAreaElement;
 	const p2name  = Object.assign(document.createElement("textarea"), {className: "p2name game-text",  rows: "1", cols: "30", disabled: "true"}) as HTMLTextAreaElement;
-	scoreboard.append(p1name, p1score, ' : ', p2score, p2name);
+	
+	// Add full screen button
+	const fullscreenBtn = Object.assign(document.createElement("button"), {
+		className: "fullscreen-btn game-text",
+		textContent: "⛶",
+		title: "Toggle Full Screen"
+	}) as HTMLButtonElement;
+	
+	fullscreenBtn.addEventListener('click', toggleFullscreen);
+	
+	rightSide.append(p2score, p2name, fullscreenBtn);
+	scoreboard.append(leftSide, center, rightSide);
 //create canvas
 	const canvas = Object.assign(document.createElement('canvas'), { id: 'board', tabIndex: 1 }) as HTMLCanvasElement;
 	const margin = 47;
@@ -251,7 +418,72 @@ export function loadConfig(fourPlayers: boolean) {
 	canvas.style.maxHeight = `${availableHeight}px`;
 	canvas.style.borderRadius = '0'; // Remove any border radius for full square
 	canvas.style.display = 'block'; // Ensure no extra spacing
+	canvas.style.touchAction = 'none'; // Prevent scrolling on touch
 	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+	
+	// Add mobile touch controls for full screen
+	let touchStartY = 0;
+	let touchStartX = 0;
+	
+	canvas.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		const touch = e.touches[0];
+		touchStartY = touch.clientY;
+		touchStartX = touch.clientX;
+	}, { passive: false });
+	
+	canvas.addEventListener('touchmove', (e) => {
+		e.preventDefault();
+		if (!data || !data.p) return;
+		
+		const touch = e.touches[0];
+		const deltaY = touch.clientY - touchStartY;
+		const deltaX = touch.clientX - touchStartX;
+		
+		// Simple touch controls - left side controls player 1, right side controls player 2
+		const canvasRect = canvas.getBoundingClientRect();
+		const touchX = touch.clientX - canvasRect.left;
+		const isLeftSide = touchX < canvas.width / 2;
+		
+		if (isLeftSide && data.p[0]) {
+			// Player 1 controls
+			if (deltaY < -10) {
+				data.keys[data.p[0].up] = true;
+				data.keys[data.p[0].down] = false;
+			} else if (deltaY > 10) {
+				data.keys[data.p[0].down] = true;
+				data.keys[data.p[0].up] = false;
+			}
+		} else if (!isLeftSide && data.p[1]) {
+			// Player 2 controls
+			if (deltaY < -10) {
+				data.keys[data.p[1].up] = true;
+				data.keys[data.p[1].down] = false;
+			} else if (deltaY > 10) {
+				data.keys[data.p[1].down] = true;
+				data.keys[data.p[1].up] = false;
+			}
+		}
+	}, { passive: false });
+	
+	canvas.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		// Release all keys on touch end
+		if (data && data.p) {
+			data.p.forEach(player => {
+				data.keys[player.up] = false;
+				data.keys[player.down] = false;
+			});
+		}
+	}, { passive: false });
+	
+	// Auto-enter fullscreen on mobile devices
+	if (isMobile()) {
+		// Small delay to ensure canvas is ready
+		setTimeout(() => {
+			enterFullscreen();
+		}, 100);
+	}
 	var p: playerData[] = [];
 	p.push(loadPlayer(
 		loadIn("name_p1"),
@@ -316,6 +548,8 @@ export function loadConfig(fourPlayers: boolean) {
 		ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
 		ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
 		ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
+		outerBg: loadIn("outerBg") || "#000000",
+		innerBg: loadIn("innerBg") || "#008000",
 		
 		serve: Math.floor(Math.random() * 2) ? -1 : 1,
 		keys: {},

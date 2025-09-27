@@ -136,8 +136,60 @@ export async function endGame() {
 		// without affecting the global authentication state
 	}
 	
+	// Add exit button for mobile users
+	if (isMobile()) {
+		showExitButton(winner);
+	}
+	
 	//const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
 	//console.log(res);
+}
+
+// Mobile exit functionality
+function isMobile(): boolean {
+	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+		   (window.innerWidth <= 768 && window.innerHeight <= 1024);
+}
+
+function showExitButton(winner: string): void {
+	// Create exit button overlay
+	const exitOverlay = document.createElement('div');
+	exitOverlay.className = 'fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]';
+	exitOverlay.innerHTML = `
+		<div class="text-center text-white mb-8">
+			<h2 class="text-4xl font-bold mb-4">Game Over!</h2>
+			<p class="text-2xl">Winner: ${winner}</p>
+		</div>
+		<button id="exit-game-btn" class="bg-[#66fcf1] text-black px-8 py-4 rounded-lg text-xl font-bold hover:bg-[#5ae6d9] transition-colors">
+			Exit Game
+		</button>
+	`;
+	
+	document.body.appendChild(exitOverlay);
+	
+	// Add exit functionality
+	const exitBtn = document.getElementById('exit-game-btn');
+	if (exitBtn) {
+		exitBtn.addEventListener('click', () => {
+			// Exit fullscreen first
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if ((document as any).webkitExitFullscreen) {
+				(document as any).webkitExitFullscreen();
+			} else if ((document as any).msExitFullscreen) {
+				(document as any).msExitFullscreen();
+			}
+			
+			// Navigate back to game page
+			window.parent.postMessage({
+				type: 'EXIT_GAME',
+				winner: winner
+			}, window.location.origin);
+			
+			// Remove the overlay
+			document.body.removeChild(exitOverlay);
+		});
+	}
 }
 
 

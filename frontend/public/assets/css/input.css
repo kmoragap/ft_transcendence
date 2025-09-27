@@ -4,6 +4,65 @@
 @source "../../index.html";
 @source "../../public/**/*.html";
 
+@media (max-width: 768px) {
+  header {
+    min-height: 60px;
+  }
+  .mobile-search-input {
+    font-size: 16px;
+  }
+  
+  .mobile-hamburger {
+    transition: transform 0.2s ease;
+  }
+  
+  .mobile-hamburger:hover {
+    transform: scale(1.1);
+  }
+  
+  .mobile-menu-overlay {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  .mobile-menu-slide {
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Mobile menu items */
+  .mobile-menu-item {
+    transition: background-color 0.2s ease;
+  }
+  
+  .mobile-menu-item:active {
+    background-color: rgba(102, 252, 241, 0.2);
+  }
+  
+  body.mobile-menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-menu-item {
+    min-height: 48px;
+    padding: 16px;
+  }
+  
+  .mobile-hamburger {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .mobile-menu-content {
+    background-color: rgba(3, 27, 27, 0.98);
+  }
+}
+
 @font-face {
   font-family: 'PressStart2P';
   src: url('/assets/fonts/PressStart2P-Regular.ttf') format('truetype');
@@ -147,6 +206,132 @@
     text-align: center;
     width: 75%;
     margin: 40px auto;
+  }
+
+  /* Mobile responsive title */
+  @media (max-width: 768px) {
+    .mobile-title {
+      font-size: 3rem !important; /* 48px - smaller on mobile */
+      width: 90% !important; /* Take more width on mobile */
+      margin: 20px auto !important; /* Less margin on mobile */
+    }
+  }
+
+  @media (max-width: 480px) {
+    .mobile-title {
+      font-size: 2.5rem !important; /* 40px - even smaller on small phones */
+      width: 95% !important; /* Almost full width on small screens */
+      margin: 15px auto !important; /* Minimal margin */
+    }
+  }
+
+  /* Mobile responsive decorative lines - hide side lines on mobile */
+  @media (max-width: 768px) {
+    /* Hide the single-line title on mobile */
+    .mobile-title {
+      display: none !important;
+    }
+    
+    /* Show the two-line title on mobile */
+    .mobile-title-two-lines {
+      display: block !important;
+      text-align: center;
+    }
+    
+    .mobile-line-1,
+    .mobile-line-2 {
+      font-family: 'PressStart2P', monospace;
+      color: #66fcf1;
+      text-shadow:
+        0 0 0.6rem #66fcf1,
+        0 0 1.5rem #66fcf1,
+        -0.2rem 0.1rem 1rem #66fcf1,
+        0.2rem 0.1rem 1rem #66fcf1,
+        0 -0.5rem 2rem #66fcf1,
+        0 0.5rem 3rem #66fcf1;
+      animation: shine 2s forwards, flicker 3s infinite;
+    }
+    
+    .mobile-line-1 {
+      font-size: 2.5rem; /* 40px */
+      margin-bottom: 0.5rem;
+    }
+    
+    .mobile-line-2 {
+      font-size: 2rem; /* 32px - slightly smaller for "GAME" */
+      animation: shine 4s forwards, blink 3s 2s infinite;
+    }
+  }
+  
+  /* Hide two-line title on desktop */
+  @media (min-width: 769px) {
+    .mobile-title-two-lines {
+      display: none !important;
+    }
+  }
+
+  /* Mobile layout fixes for footer visibility */
+  @media (max-width: 768px) {
+    body {
+      padding-bottom: 60px !important; /* Space for fixed footer */
+    }
+    #app {
+      min-height: auto !important;
+      height: auto !important;
+      padding-bottom: 10px;
+    }
+    
+    footer {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 50 !important;
+    }
+  }
+  
+  /* All page titles mobile styles */
+  @media (max-width: 768px) {
+    .mobile-title {
+      font-size: 1.5rem !important; /* Smaller titles on mobile */
+    }
+  }
+
+  /* Background image fix - prevent repetition */
+  body {
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
+
+  /* Mobile pull-to-refresh support */
+  @media (max-width: 768px) {
+    body {
+      overscroll-behavior-y: auto !important; /* Enable pull-to-refresh */
+      -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+    }
+    
+    #main {
+      overscroll-behavior-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Ensure pull-to-refresh works when mobile menu is closed */
+    body:not(.mobile-menu-open) {
+      overflow-y: auto !important;
+    }
+  }
+
+  /* Desktop layout */
+  @media (min-width: 769px) {
+    .home-section {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      min-height: auto !important;
+    }
   }
 
   .first_line,

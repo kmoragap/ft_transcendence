@@ -13,7 +13,7 @@
   "firstname": "Имя",
   "game": "Игра",
   "profile": "Профиль",
-  "my_profile": "Мой профиль",
+  "myprofile": "Мой профиль",
   "edit_profile": "Редактировать профиль",
   "refresh_stats": "Обновить статистику",
   "exit": "Выход",

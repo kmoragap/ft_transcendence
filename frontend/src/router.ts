@@ -6,6 +6,7 @@ import { renderDashboard } from './views/dashboard.ts';
 import { renderGame} from './views/game';
 import { updateText } from './i18n';
 import { ensureA11yScaffold, announce, setPageTitleAndFocus } from './utils/a11y.ts';
+import { renderOAuthCallback } from './views/oauth.ts';
 import { store } from './store.ts';
 import { shouldRedirectFromAuth, shouldRedirectFromProtected } from './utils/auth.ts';
 
@@ -19,7 +20,12 @@ const routes: Record<string, () => HTMLElement> = {
   '/register': renderRegistration,
   '/game': renderGame,
   '/myprofile': renderMyProfile,
-  '/dashboard': renderDashboard
+  '/dashboard': renderDashboard,
+  '/login/callback': renderOAuthCallback,
+  '/login_42': () => {
+    window.location.href = '/api/auth/oauth/42';
+    return document.createElement('div');
+  }
 };
 
 const titles: Record<string, string> = {
@@ -29,7 +35,8 @@ const titles: Record<string, string> = {
   '/register': 'Registration',
   '/game': 'Game',
   '/myprofile': 'My Profile',
-  '/dashboard': 'Dashboard'
+  '/dashboard': 'Dashboard',
+  '/login/callback': 'OAuth Callback'
 };
 
 ensureA11yScaffold();
@@ -53,6 +60,16 @@ export function navigate(path: string) {
   
   const app = document.getElementById('app');
   if (!app) return;
+
+  // Ensure body classes are maintained for pull-to-refresh functionality
+  if (!document.body.classList.contains('overscroll-auto')) {
+    document.body.classList.add('overscroll-auto');
+  }
+  
+  // Ensure overscroll behavior is properly set
+  if (document.body.style.overscrollBehavior === 'none') {
+    document.body.style.overscrollBehavior = '';
+  }
 
   const renderFn = routes[path] || renderHome;
   app.innerHTML = '';

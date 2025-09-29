@@ -12,6 +12,14 @@ export function renderHeader(): HTMLElement {
   let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
   let abortController: AbortController | null = null;
   
+  function updateSearchInputPlaceholder() {
+    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.placeholder = t('search_users') || 'Search users…';
+      searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
+    }
+  }
+
   function updateHeader() {
     if (!sessionManager.isSessionRestored()) {
       header.innerHTML = '';
@@ -159,13 +167,7 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
-      
-      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.placeholder = t('search_users') || 'Search users…';
-        searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
-      }
-      
+      updateSearchInputPlaceholder();
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
@@ -262,13 +264,7 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
-      
-      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.placeholder = t('search_users') || 'Search users…';
-        searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
-      }
-      
+      updateSearchInputPlaceholder()
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
@@ -290,13 +286,7 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
-      
-      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.placeholder = t('search_users') || 'Search users…';
-        searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
-      }
-      
+      updateSearchInputPlaceholder();
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));

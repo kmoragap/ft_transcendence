@@ -39,7 +39,7 @@ async function processOAuthCallback() {
       try {
         const meRes = await fetch('/api/auth/me', {
 			method: 'GET',
-	        credentials: 'include' // we include cookies for the req
+			credentials: 'include' // we include cookies for the req
         });
         
         if (meRes.ok) {

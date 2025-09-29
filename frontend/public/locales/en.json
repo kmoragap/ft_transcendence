@@ -60,6 +60,8 @@
 	"upload_failed": "Upload failed.",
 	"profile_updated": "Profile updated successfully!",
 	"update_failed": "Failed to update profile. Please try again.",
-	"image_too_large": "Please choose an image under 2MB."
+	"image_too_large": "Please choose an image under 2MB.",
+	"no_finished_games": "No finished games yet.",
+	"no_winners_yet": "No winners yet."
 
 }

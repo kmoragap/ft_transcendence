@@ -159,6 +159,13 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
+      
+      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.placeholder = t('search_users') || 'Search users…';
+        searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
+      }
+      
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
@@ -224,7 +231,6 @@ export function renderHeader(): HTMLElement {
     mobileMenuContent.appendChild(mobileNav);
     mobileMenu.appendChild(mobileMenuContent);
     
-    // Wire up mobile menu controls with unified state management
     hamburgerBtn.addEventListener('click', () => setMenu(!open), { signal: abortController.signal });
     closeBtn.addEventListener('click', () => setMenu(false), { signal: abortController.signal });
     
@@ -236,7 +242,6 @@ export function renderHeader(): HTMLElement {
       if (e.key === 'Escape' && open) setMenu(false);
     }, { signal: abortController.signal });
     
-    // Close menu on route changes
     window.addEventListener('hashchange', () => setMenu(false), { signal: abortController.signal });
 
     const langLi = document.createElement('li');
@@ -257,6 +262,13 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
+      
+      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.placeholder = t('search_users') || 'Search users…';
+        searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
+      }
+      
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
@@ -278,14 +290,19 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
+      
+      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.placeholder = t('search_users') || 'Search users…';
+        searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
+      }
+      
       updateHeader();
       
-      // Dispatch custom event for language change
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     });
     
     if (isAuthenticated && currentUser) {
-      // Desktop user menu
       const userLi = document.createElement('li');
       userLi.className = 'relative ml-5';
 
@@ -376,12 +393,10 @@ export function renderHeader(): HTMLElement {
     desktopNav.appendChild(langLi);
     desktopNav.appendChild(renderA11yControls());
     
-    // Add accessibility controls to mobile menu
     const mobileA11y = renderA11yControls();
     mobileA11y.className = mobileA11y.className.replace('ml-5', 'mb-4');
     mobileNav.appendChild(mobileA11y);
     
-    // Assemble header
     bar.appendChild(searchWrap);
     bar.appendChild(hamburgerBtn);
     bar.appendChild(desktopNav);

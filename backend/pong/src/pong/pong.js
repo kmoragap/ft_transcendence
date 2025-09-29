@@ -391,6 +391,23 @@ function exitFullscreen() {
   }
   updateCanvasForFullscreen(false);
 }
+function updatePaddlePositions() {
+  if (!pad || pad.length === 0) return;
+  if (data.mode === "twoPlayers") {
+    pad[0].setX(0);
+    pad[1].setX(data.canvas.width - data.paddleWidth);
+  } else if (data.mode === "doublePaddle") {
+    pad[0].setX(0);
+    pad[1].setX(data.canvas.width - data.paddleWidth);
+    pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
+    pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
+  } else if (data.mode === "fourPlayers") {
+    pad[0].setX(0);
+    pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
+    pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
+    pad[3].setX(data.canvas.width - data.paddleWidth);
+  }
+}
 function updateCanvasForFullscreen(fullscreen) {
   const canvas = document.getElementById("board");
   if (!canvas) return;
@@ -427,6 +444,7 @@ function updateCanvasForFullscreen(fullscreen) {
     data.bg.addColorStop(0, data.outerBg);
     data.bg.addColorStop(0.5, data.innerBg);
     data.bg.addColorStop(1, data.outerBg);
+    updatePaddlePositions();
   }
 }
 document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -572,6 +590,7 @@ async function newGame(fourPlayers) {
         data.bg.addColorStop(0, data.outerBg);
         data.bg.addColorStop(0.5, data.innerBg);
         data.bg.addColorStop(1, data.outerBg);
+        updatePaddlePositions();
       }
     }
   });

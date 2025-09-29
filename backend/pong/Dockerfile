@@ -9,6 +9,7 @@ RUN npm clean-install
 COPY . .
 
 RUN npm install -g ts-node
+RUN npm rebuild esbuild
 
 # Create pong directory and build the game
 RUN mkdir -p src/pong && npm run build

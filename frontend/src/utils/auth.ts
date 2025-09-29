@@ -47,25 +47,26 @@ export async function logout(): Promise<void> {
     // Get current token before clearing
     const token = localStorage.getItem('accessToken');
     
-    if (token) {
+    try {
+      const headers: Record<string, string> = {};
       // Call backend logout endpoint to invalidate server session
-      try {
-        const response = await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: { 
-            'Authorization': `Bearer ${token}` 
-          }
-        });
-        
-        if (response.ok) {
-          console.log('Backend logout successful');
-        } else {
-          console.warn('Backend logout failed, but continuing with frontend logout');
-        }
-      } catch (err) {
-        console.error('Logout API call failed:', err);
-        // Continue with logout even if API call fails
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
+      
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers,
+        credentials: 'include' // include cookies for oauth sessions
+      });
+      
+      if (response.ok) {
+        console.log('Backend logout successful');
+      } else {
+        console.warn('Backend logout failed, but continuing with frontend logout');
+      }
+    } catch (err) {
+      console.error('Logout API call failed:', err);
     }
     
     // Clear frontend state regardless of backend response

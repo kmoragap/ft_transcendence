@@ -4,11 +4,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm clean-install
+RUN rm -rf node_modules package-lock.json
+RUN npm install
 
 COPY . .
 
-RUN rm -rf node_modules package-lock.json
 
 RUN npm install -g ts-node
 

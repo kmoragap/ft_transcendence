@@ -4,13 +4,12 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN rm -rf node_modules package-lock.json
-RUN npm install
+RUN npm clean-install
 
 COPY . .
 
-
 RUN npm install -g ts-node
+RUN npm rebuild esbuild
 
 # Create pong directory and build the game
 RUN mkdir -p src/pong && npm run build

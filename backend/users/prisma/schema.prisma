@@ -7,7 +7,6 @@ datasource db {
     url      = "file:./prisma/users-db.sqlite"
 }
 
-//TODO: check the id of all models in schema bc it should be more komplex, like a string...
 model User {
     id                     String            @id @default(cuid())
     username               String            @unique

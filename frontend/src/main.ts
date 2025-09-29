@@ -36,29 +36,43 @@ function buildShell() {
 }
 
 async function restoreSession() {
+  // first we try to get token from localstorage for regular login
   const token = localStorage.getItem('accessToken');
   
-  if (!token) {
-    sessionManager.setSessionRestored();
-    return;
+  if (token) {
+    try {
+      const meRes = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (meRes.ok) {
+        const user = await meRes.json();
+        store.dispatch({ type: 'LOGIN', payload: user });
+        sessionManager.setSessionRestored();
+        return;
+      } else {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      }
+    } catch (err) {
+      console.error('Failed to restore session with token:', err);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
   }
 
+  // if no token in localstorage, try cookie-based auth for OAuth
   try {
     const meRes = await fetch('/api/auth/me', {
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include' // cookies
     });
     
     if (meRes.ok) {
       const user = await meRes.json();
       store.dispatch({ type: 'LOGIN', payload: user });
-    } else {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
     }
   } catch (err) {
-    console.error('Failed to restore session:', err);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    console.error('Failed to restore session with cookie:', err);
   } finally {
     sessionManager.setSessionRestored();
   }

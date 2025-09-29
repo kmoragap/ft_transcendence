@@ -21,47 +21,49 @@ export function renderOAuthCallback(): HTMLElement {
 }
 
 async function processOAuthCallback() {
-	try {
-		const urlParams = new URLSearchParams(window.location.search);
-		const token = urlParams.get('token');
-		const username = urlParams.get('username');
-		const firstname = urlParams.get('firstname');
-		const email = urlParams.get('email');
-		const avatarUrl = urlParams.get('avatarUrl');
-		const error = urlParams.get('error');
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
 
-		if (error) {
-			console.error('OAuth error:', error);
-			alert('OAuth authentication failed. Please try again.');
-			window.location.hash = '/login';
-			return;
-		}
+    if (error) {
+      console.error('OAuth error:', error);
+      alert('OAuth authentication failed. Please try again.');
+      window.location.hash = '/login';
+      return;
+    }
 
-		if (!token || !username || !email) {
-			console.error('Missing required OAuth parameters');
-			alert('Authentication failed. Missing required data.');
-			window.location.hash = '/login';
-			return;
-		}
+    if (success === 'true') {
+      // the user is now auth via cookie
+      // we fetch user data from the /me endpoint
+      try {
+        const meRes = await fetch('/api/auth/me', {
+			method: 'GET',
+	        credentials: 'include' // we include cookies for the req
+        });
+        
+        if (meRes.ok) {
+          const user = await meRes.json();
+          store.dispatch({ type: 'LOGIN', payload: user });
+          console.log('OAuth login successful:', user);
+          window.location.hash = '/dashboard';
+        } else {
+          throw new Error('Failed to fetch user data');
+        }
+      } catch (err) {
+        console.error('Failed to fetch user data after OAuth:', err);
+        alert('Authentication completed but failed to load user data.');
+        window.location.hash = '/login';
+      }
+    } else {
+      console.error('OAuth callback missing success parameter');
+      alert('Authentication status unclear. Please try logging in again.');
+      window.location.hash = '/login';
+    }
 
-		localStorage.setItem('accessToken', token);
-
-		const user = {
-			username: decodeURIComponent(username),
-			firstname: firstname ? decodeURIComponent(firstname) : username,
-			email: decodeURIComponent(email),
-			avatarUrl: avatarUrl ? decodeURIComponent(avatarUrl) : '/assets/img/avatar.jpg'
-		};
-
-		store.dispatch({ type: 'LOGIN', payload: user });
-
-		console.log('OAuth login successful:', user);
-
-		window.location.hash = '/dashboard';
-
-	} catch (error) {
-		console.error('OAuth callback processing error:', error);
-		alert('An error occurred during authentication. Please try again.');
-		window.location.hash = '/login';
-	}
+  } catch (error) {
+    console.error('OAuth callback processing error:', error);
+    alert('An error occurred during authentication. Please try again.');
+    window.location.hash = '/login';
+  }
 }

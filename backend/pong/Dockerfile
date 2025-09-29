@@ -8,6 +8,8 @@ RUN npm clean-install
 
 COPY . .
 
+RUN rm -rf node_modules package-lock.json
+
 RUN npm install -g ts-node
 
 # Create pong directory and build the game

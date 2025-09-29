@@ -19,22 +19,27 @@ import {
 
 export async function getMeHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const { email } = (request as any).user as { email: string };
-
-    const user = await getUserByEmail(email);
+    const user = (request as any).user;
+    
     if (!user) {
-      return reply.code(404).send({ message: 'User not found' });
+      return reply.code(401).send({ error: 'No user found in request' });
+    }
+
+    // get user details from users service
+    const userDetails = await getUserByEmail(user.email);
+    if (!userDetails) {
+      return reply.code(404).send({ error: 'User not found' });
     }
 
     return {
-      username: user.username,
-      firstname: user.firstname,
-      email: user.email,
-      avatarUrl: user.avatarUrl || '/assets/img/avatar.jpg',
+      username: userDetails.username,
+      firstname: userDetails.firstname,
+      email: userDetails.email,
+      avatarUrl: userDetails.avatarUrl || '/assets/img/avatar.jpg',
     };
   } catch (error) {
     console.error('Error in getMeHandler:', error);
-    return reply.code(500).send({ message: 'Internal server error' });
+    return reply.code(500).send({ error: 'Internal server error' });
   }
 }
 
@@ -71,13 +76,15 @@ export async function createUser(
   username: string,
   email: string,
   firstname: string,
-  password: string
+  password: string,
+  avatarUrl?: string
 ) {
   try {
+    console.log('Creating user with avatarUrl:', avatarUrl);
     const res = await fetch(`http://users:3000/api/users/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, firstname, password }),
+      body: JSON.stringify({ username, email, firstname, password, avatarUrl }),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -89,7 +96,6 @@ export async function createUser(
     throw err;
   }
 }
-
 //register handler
 export async function registerHandler(
   request: FastifyRequest<{Body: RegisterRequest}>, 
@@ -209,16 +215,59 @@ export async function logoutHandler(
   reply: FastifyReply
 ) {
   try {
-    const decoded = (await request.jwtVerify()) as { userId: string };
-    const token = request.headers.authorization?.replace("Bearer ", "");
-    if (token) {
+    let decoded: { userId: string } | null = null;
+    let token: string | undefined;
+
+    // try to get token from auth header first
+    const authHeader = request.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.replace("Bearer ", "");
+      try {
+        decoded = await request.jwtVerify() as { userId: string };
+      } catch (err) {
+        // toke from header is invalid, continue to try cookie
+      }
+    }
+
+    // if no valid token from header, try cookie
+    if (!decoded) {
+      const cookieToken = request.cookies.authToken;
+      if (cookieToken) {
+        try {
+          decoded = request.server.jwt.verify(cookieToken) as { userId: string };
+          token = cookieToken;
+        } catch (err) {
+          // cookie token is also invalid
+        }
+      }
+    }
+
+    if (decoded && token) {
+      // delete session from database
       await prisma.session.deleteMany({
         where: { token, userId: decoded.userId },
       });
     }
+
+    // clear the auth cookie
+    reply.clearCookie('authToken', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+
     return { message: "Logout successful" };
   } catch (err) {
-    return reply.code(401).send({ message: "Invalid token" });
+    // clear cookie even if there is an error
+    reply.clearCookie('authToken', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+    
+    return reply.code(200).send({ message: "Logout completed" });
   }
 }
 

@@ -264,7 +264,7 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
-      updateSearchInputPlaceholder()
+      updateSearchInputPlaceholder();
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));

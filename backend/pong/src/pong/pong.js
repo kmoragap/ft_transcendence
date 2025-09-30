@@ -370,33 +370,69 @@ function enterFullscreen() {
     return Promise.reject(new Error("Canvas not found"));
   }
   return new Promise((resolve, reject) => {
-    let fullscreenRequest;
     if (canvas.requestFullscreen) {
-      fullscreenRequest = canvas.requestFullscreen();
+      canvas.requestFullscreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
     } else if (canvas.webkitRequestFullscreen) {
-      fullscreenRequest = canvas.webkitRequestFullscreen();
+      canvas.webkitRequestFullscreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
     } else if (canvas.mozRequestFullScreen) {
-      fullscreenRequest = canvas.mozRequestFullScreen();
+      canvas.mozRequestFullScreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
     } else if (canvas.msRequestFullscreen) {
-      fullscreenRequest = canvas.msRequestFullscreen();
+      canvas.msRequestFullscreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
     } else {
       reject(new Error("Fullscreen not supported"));
-      return;
     }
-    fullscreenRequest.then(() => {
-      console.log("Fullscreen entered successfully");
-      updateCanvasForFullscreen(true);
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock("landscape").catch((err) => {
-          console.log("Orientation lock failed:", err);
-        });
-      }
-      resolve();
-    }).catch((err) => {
-      console.log("Fullscreen failed:", err);
-      updateCanvasForFullscreen(true);
-      reject(err);
-    });
   });
 }
 function exitFullscreen() {

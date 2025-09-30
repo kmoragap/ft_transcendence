@@ -91,40 +91,90 @@ function enterFullscreen(): Promise<void> {
 
 	// Try different fullscreen APIs for better browser compatibility
 	return new Promise<void>((resolve, reject) => {
-		let fullscreenRequest;
-		
+		// Check which fullscreen method is available and call it
 		if (canvas.requestFullscreen) {
-			fullscreenRequest = canvas.requestFullscreen();
+			canvas.requestFullscreen()
+				.then(() => {
+					console.log('Fullscreen entered successfully');
+					updateCanvasForFullscreen(true);
+					
+					// Try to lock orientation after fullscreen is confirmed
+					if (screen.orientation && (screen.orientation as any).lock) {
+						(screen.orientation as any).lock('landscape').catch((err: any) => {
+							console.log('Orientation lock failed:', err);
+						});
+					}
+					resolve();
+				})
+				.catch((err) => {
+					console.log('Fullscreen failed:', err);
+					// Still update canvas for better mobile experience even if fullscreen fails
+					updateCanvasForFullscreen(true);
+					reject(err);
+				});
 		} else if ((canvas as any).webkitRequestFullscreen) {
-			fullscreenRequest = (canvas as any).webkitRequestFullscreen();
+			(canvas as any).webkitRequestFullscreen()
+				.then(() => {
+					console.log('Fullscreen entered successfully');
+					updateCanvasForFullscreen(true);
+					
+					// Try to lock orientation after fullscreen is confirmed
+					if (screen.orientation && (screen.orientation as any).lock) {
+						(screen.orientation as any).lock('landscape').catch((err: any) => {
+							console.log('Orientation lock failed:', err);
+						});
+					}
+					resolve();
+				})
+				.catch((err) => {
+					console.log('Fullscreen failed:', err);
+					// Still update canvas for better mobile experience even if fullscreen fails
+					updateCanvasForFullscreen(true);
+					reject(err);
+				});
 		} else if ((canvas as any).mozRequestFullScreen) {
-			fullscreenRequest = (canvas as any).mozRequestFullScreen();
+			(canvas as any).mozRequestFullScreen()
+				.then(() => {
+					console.log('Fullscreen entered successfully');
+					updateCanvasForFullscreen(true);
+					
+					// Try to lock orientation after fullscreen is confirmed
+					if (screen.orientation && (screen.orientation as any).lock) {
+						(screen.orientation as any).lock('landscape').catch((err: any) => {
+							console.log('Orientation lock failed:', err);
+						});
+					}
+					resolve();
+				})
+				.catch((err) => {
+					console.log('Fullscreen failed:', err);
+					// Still update canvas for better mobile experience even if fullscreen fails
+					updateCanvasForFullscreen(true);
+					reject(err);
+				});
 		} else if ((canvas as any).msRequestFullscreen) {
-			fullscreenRequest = (canvas as any).msRequestFullscreen();
+			(canvas as any).msRequestFullscreen()
+				.then(() => {
+					console.log('Fullscreen entered successfully');
+					updateCanvasForFullscreen(true);
+					
+					// Try to lock orientation after fullscreen is confirmed
+					if (screen.orientation && (screen.orientation as any).lock) {
+						(screen.orientation as any).lock('landscape').catch((err: any) => {
+							console.log('Orientation lock failed:', err);
+						});
+					}
+					resolve();
+				})
+				.catch((err) => {
+					console.log('Fullscreen failed:', err);
+					// Still update canvas for better mobile experience even if fullscreen fails
+					updateCanvasForFullscreen(true);
+					reject(err);
+				});
 		} else {
 			reject(new Error('Fullscreen not supported'));
-			return;
 		}
-
-		fullscreenRequest
-			.then(() => {
-				console.log('Fullscreen entered successfully');
-				updateCanvasForFullscreen(true);
-				
-				// Try to lock orientation after fullscreen is confirmed
-				if (screen.orientation && (screen.orientation as any).lock) {
-					(screen.orientation as any).lock('landscape').catch((err: any) => {
-						console.log('Orientation lock failed:', err);
-					});
-				}
-				resolve();
-			})
-			.catch((err) => {
-				console.log('Fullscreen failed:', err);
-				// Still update canvas for better mobile experience even if fullscreen fails
-				updateCanvasForFullscreen(true);
-				reject(err);
-			});
 	});
 }
 

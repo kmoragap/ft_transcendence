@@ -38,8 +38,8 @@ export function replaceGlobalAlert() {
   
   const originalConfirm = window.confirm;
   
-  window.confirm = (message: string): boolean => {
-    return originalConfirm(message);
+  window.confirm = (message: string): Promise<boolean> => {
+    return showConfirmModal(message);
   };
   
   return {

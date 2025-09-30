@@ -12,6 +12,16 @@ export function renderHeader(): HTMLElement {
   let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
   let abortController: AbortController | null = null;
   
+  const SEARCH_USERS_FALLBACK = 'Search users…';
+  function updateSearchInputPlaceholder() {
+    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+    if (searchInput) {
+      const searchText = t('search_users') || SEARCH_USERS_FALLBACK;
+      searchInput.placeholder = searchText;
+      searchInput.setAttribute('aria-label', searchText);
+    }
+  }
+
   function updateHeader() {
     if (!sessionManager.isSessionRestored()) {
       header.innerHTML = '';
@@ -159,6 +169,7 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
+      updateSearchInputPlaceholder();
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
@@ -224,7 +235,6 @@ export function renderHeader(): HTMLElement {
     mobileMenuContent.appendChild(mobileNav);
     mobileMenu.appendChild(mobileMenuContent);
     
-    // Wire up mobile menu controls with unified state management
     hamburgerBtn.addEventListener('click', () => setMenu(!open), { signal: abortController.signal });
     closeBtn.addEventListener('click', () => setMenu(false), { signal: abortController.signal });
     
@@ -236,7 +246,6 @@ export function renderHeader(): HTMLElement {
       if (e.key === 'Escape' && open) setMenu(false);
     }, { signal: abortController.signal });
     
-    // Close menu on route changes
     window.addEventListener('hashchange', () => setMenu(false), { signal: abortController.signal });
 
     const langLi = document.createElement('li');
@@ -257,6 +266,7 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
+      updateSearchInputPlaceholder();
       updateHeader();
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
@@ -278,14 +288,13 @@ export function renderHeader(): HTMLElement {
       const lang = (e.target as HTMLSelectElement).value;
       localStorage.setItem('lang', lang);
       await loadLanguage(lang);
+      updateSearchInputPlaceholder();
       updateHeader();
       
-      // Dispatch custom event for language change
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     });
     
     if (isAuthenticated && currentUser) {
-      // Desktop user menu
       const userLi = document.createElement('li');
       userLi.className = 'relative ml-5';
 
@@ -376,12 +385,10 @@ export function renderHeader(): HTMLElement {
     desktopNav.appendChild(langLi);
     desktopNav.appendChild(renderA11yControls());
     
-    // Add accessibility controls to mobile menu
     const mobileA11y = renderA11yControls();
     mobileA11y.className = mobileA11y.className.replace('ml-5', 'mb-4');
     mobileNav.appendChild(mobileA11y);
     
-    // Assemble header
     bar.appendChild(searchWrap);
     bar.appendChild(hamburgerBtn);
     bar.appendChild(desktopNav);

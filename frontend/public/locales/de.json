@@ -51,5 +51,7 @@
   "wins_plural": "Gewonnen",
   "losses": "Verluste",
   "total_games": "Gesamtspiele",
-  "win_rate": "Gewinnrate"
+  "win_rate": "Gewinnrate",
+  "no_finished_games": "Noch keine beendeten Spiele.",
+  "no_winners_yet": "Noch keine Gewinner."
 }

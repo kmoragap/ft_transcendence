@@ -108,7 +108,7 @@ export function renderDashboard(): HTMLElement {
     if (rows.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'p-4 text-[rgba(255,255,255,0.75)]';
-      empty.textContent = 'No finished games yet.';
+      empty.textContent = t('no_finished_games');
       list.appendChild(empty);
     } else {
       rows.forEach(g => {
@@ -150,7 +150,7 @@ export function renderDashboard(): HTMLElement {
     if (rows.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'p-4 text-[rgba(255,255,255,0.75)]';
-      empty.textContent = 'No winners yet.';
+      empty.textContent = t('no_winners_yet');
       list.appendChild(empty);
     } else {
       rows.forEach((p, idx) => {
@@ -209,6 +209,14 @@ export function renderDashboard(): HTMLElement {
 
   tabLast.addEventListener('click', loadLast5);
   tabTop.addEventListener('click', loadTop5);
+
+  window.addEventListener('languageChanged', () => {
+    if (tabLast.classList.contains('bg-[rgba(102,252,241,0.12)]')) {
+      loadLast5();
+    } else if (tabTop.classList.contains('bg-[rgba(102,252,241,0.12)]')) {
+      loadTop5();
+    }
+  });
 
   loadLast5();
 

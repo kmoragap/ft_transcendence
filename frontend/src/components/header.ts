@@ -12,11 +12,13 @@ export function renderHeader(): HTMLElement {
   let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
   let abortController: AbortController | null = null;
   
+  const SEARCH_USERS_FALLBACK = 'Search users…';
   function updateSearchInputPlaceholder() {
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
-      searchInput.placeholder = t('search_users') || 'Search users…';
-      searchInput.setAttribute('aria-label', t('search_users') || 'Search users');
+      const searchText = t('search_users') || SEARCH_USERS_FALLBACK;
+      searchInput.placeholder = searchText;
+      searchInput.setAttribute('aria-label', searchText);
     }
   }
 

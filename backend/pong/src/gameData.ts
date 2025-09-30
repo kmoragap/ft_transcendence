@@ -83,24 +83,49 @@ export function toggleFullscreen(): void {
 	}
 }
 
-function enterFullscreen(): void {
+function enterFullscreen(): Promise<void> {
 	const canvas = document.getElementById('board') as HTMLCanvasElement;
-	if (!canvas) return;
-
-	if (canvas.requestFullscreen) {
-		canvas.requestFullscreen();
-	} else if ((canvas as any).webkitRequestFullscreen) {
-		(canvas as any).webkitRequestFullscreen();
-	} else if ((canvas as any).msRequestFullscreen) {
-		(canvas as any).msRequestFullscreen();
+	if (!canvas) {
+		return Promise.reject(new Error('Canvas not found'));
 	}
 
-	if (screen.orientation && (screen.orientation as any).lock) {
-		(screen.orientation as any).lock('landscape').catch((err: any) => {
-			console.log('Orientation lock failed:', err);
-		});
-	}
-	updateCanvasForFullscreen(true);
+	// Try different fullscreen APIs for better browser compatibility
+	return new Promise<void>((resolve, reject) => {
+		let fullscreenRequest;
+		
+		if (canvas.requestFullscreen) {
+			fullscreenRequest = canvas.requestFullscreen();
+		} else if ((canvas as any).webkitRequestFullscreen) {
+			fullscreenRequest = (canvas as any).webkitRequestFullscreen();
+		} else if ((canvas as any).mozRequestFullScreen) {
+			fullscreenRequest = (canvas as any).mozRequestFullScreen();
+		} else if ((canvas as any).msRequestFullscreen) {
+			fullscreenRequest = (canvas as any).msRequestFullscreen();
+		} else {
+			reject(new Error('Fullscreen not supported'));
+			return;
+		}
+
+		fullscreenRequest
+			.then(() => {
+				console.log('Fullscreen entered successfully');
+				updateCanvasForFullscreen(true);
+				
+				// Try to lock orientation after fullscreen is confirmed
+				if (screen.orientation && (screen.orientation as any).lock) {
+					(screen.orientation as any).lock('landscape').catch((err: any) => {
+						console.log('Orientation lock failed:', err);
+					});
+				}
+				resolve();
+			})
+			.catch((err) => {
+				console.log('Fullscreen failed:', err);
+				// Still update canvas for better mobile experience even if fullscreen fails
+				updateCanvasForFullscreen(true);
+				reject(err);
+			});
+	});
 }
 
 function exitFullscreen(): void {
@@ -108,12 +133,54 @@ function exitFullscreen(): void {
 		document.exitFullscreen();
 	} else if ((document as any).webkitExitFullscreen) {
 		(document as any).webkitExitFullscreen();
+	} else if ((document as any).mozCancelFullScreen) {
+		(document as any).mozCancelFullScreen();
 	} else if ((document as any).msExitFullscreen) {
 		(document as any).msExitFullscreen();
 	}
 
 	// Update canvas for normal mode
 	updateCanvasForFullscreen(false);
+}
+
+function showFullscreenPrompt(): void {
+	// Create a fullscreen prompt overlay
+	const prompt = document.createElement('div');
+	prompt.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+	prompt.id = 'fullscreen-prompt';
+	
+	prompt.innerHTML = `
+		<div class="bg-[rgba(3,27,27,0.95)] rounded-xl p-6 max-w-sm mx-4 border border-[rgba(102,252,241,0.25)] shadow-2xl text-center">
+			<div class="text-4xl mb-4">📱</div>
+			<h2 class="text-xl font-bold text-[#66fcf1] mb-3 font-[jura]">
+				Enter Fullscreen
+			</h2>
+			<p class="text-[#66fcf1] mb-4 text-sm font-[jura]">
+				For the best gaming experience, tap the button below to enter fullscreen mode.
+			</p>
+			<button
+				id="fullscreen-btn"
+				class="btn py-2.5 px-6 text-lg font-bold w-full"
+			>
+				Enter Fullscreen
+			</button>
+		</div>
+	`;
+	
+	document.body.appendChild(prompt);
+	
+	// Add click handler for fullscreen button
+	const fullscreenBtn = prompt.querySelector('#fullscreen-btn');
+	fullscreenBtn?.addEventListener('click', async () => {
+		try {
+			await enterFullscreen();
+			prompt.remove();
+		} catch (err) {
+			console.log('Manual fullscreen failed:', err);
+			// Remove prompt anyway to not block the game
+			prompt.remove();
+		}
+	});
 }
 
 function updatePaddlePositions(): void {
@@ -480,8 +547,15 @@ export function loadConfig(fourPlayers: boolean) {
 	// Auto-enter fullscreen on mobile devices
 	if (isMobile()) {
 		// Small delay to ensure canvas is ready
-		setTimeout(() => {
-			enterFullscreen();
+		setTimeout(async () => {
+			try {
+				await enterFullscreen();
+			} catch (error) {
+				console.log('Auto fullscreen failed, showing manual prompt:', error);
+				// If automatic fullscreen fails (Firefox requires user gesture),
+				// show a button to enter fullscreen manually
+				showFullscreenPrompt();
+			}
 		}, 100);
 	}
 	var p: playerData[] = [];

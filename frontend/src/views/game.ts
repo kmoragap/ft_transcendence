@@ -1,6 +1,7 @@
 import { t, getCurrentLang, updateText } from './../i18n';
 import { store } from './../store';
 import { showLoginModal } from './../components/login-modal';
+import { alertSuccess, alertError } from './../utils/modal-alerts';
 
 let iframeRef: HTMLIFrameElement | null = null;
 
@@ -74,13 +75,18 @@ export function renderGame(): HTMLElement {
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
       updateText(); // Apply translations after HTML is inserted into DOM
+      // Remove game-active class when in menu
+      document.body.classList.remove('game-active');
     } else {
       showBack();
       hideTitle();
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector('#pong-frame') as HTMLIFrameElement;
+      // Add game-active class when game is running
+      document.body.classList.add('game-active');
     }
   }
+
 
   function reloadIframe() {
     if (iframeRef) {
@@ -164,7 +170,7 @@ export function renderGame(): HTMLElement {
       
     
     return `
-      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px]"> 
+      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
       </div>
     `;
@@ -213,7 +219,7 @@ export function renderGame(): HTMLElement {
           title: 'Login Second Player',
           gameOnly: true, 
           onSuccess: (user) => {
-            alert('Second player logged in: ' + user.username);
+            alertSuccess('Second player logged in: ' + user.username);
           },
           onCancel: () => {
             if (iframeRef?.contentWindow) {
@@ -236,7 +242,7 @@ export function renderGame(): HTMLElement {
         }
 
       } catch (error) {
-        alert('Login failed or cancelled:' + error);
+        alertError('Login failed or cancelled: ' + error);
         if (iframeRef?.contentWindow) {
           iframeRef.contentWindow.postMessage({
             type: 'LOGIN_CANCELLED',
@@ -256,6 +262,14 @@ export function renderGame(): HTMLElement {
 
   (section as any).__destroyGameView = destroyGameView;
 
+  // Cleanup function to remove game-active class when component is destroyed
+  const cleanup = () => {
+    document.body.classList.remove('game-active');
+  };
+  
+  // Store cleanup function for potential use
+  (section as any).cleanup = cleanup;
+  
   return section;
 }
 
@@ -267,4 +281,6 @@ export function destroyGameView() {
     iframeRef.remove();
     iframeRef = null;
   }
+  // Remove game-active class when destroying game view
+  document.body.classList.remove('game-active');
 }

@@ -1,6 +1,7 @@
 import { t } from './../i18n';
 import { store } from '../store';
 import { redirectIfAuthenticated } from '../utils/auth';
+import { alertError, alertSuccess } from './../utils/modal-alerts';
 
 export function renderLogin(): HTMLElement {
   // Redirect authenticated users to dashboard
@@ -123,7 +124,7 @@ export function renderLogin(): HTMLElement {
           const err = await res.json();
           msg = err.message || err.error || msg;
         } catch {}
-        alert(`Login failed: ${msg}`);
+        alertError(`Login failed: ${msg}`);
         return;
       }
 
@@ -131,15 +132,14 @@ export function renderLogin(): HTMLElement {
       localStorage.setItem('accessToken',  token);
       localStorage.setItem('refreshToken', refresh);
 
-      // Use the user data from login response directly
       const user = { username, firstname, email, avatarUrl };
       store.dispatch({ type: 'LOGIN', payload: user });
 
-      alert('Login successful!');
+      alertSuccess('Login successful!');
       window.location.hash = '/';
     } catch (err) {
       console.error(err);
-      alert('An unexpected error occurred.');
+      alertError('An unexpected error occurred.');
     }
   });
 

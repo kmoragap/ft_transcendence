@@ -329,8 +329,8 @@ export function renderHeader(): HTMLElement {
       menu.setAttribute('role', 'menu');
 
       menu.innerHTML = `
-        <button data-i18n="my_profile" data-action="me"
-          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('my_profile')}</button>
+        <button data-i18n="myprofile" data-action="me"
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('myprofile')}</button>
         <button data-i18n="logout" data-action="logout"
           class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('logout')}</button>
       `;

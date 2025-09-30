@@ -1,5 +1,6 @@
 import { t } from './../i18n';
 import { store } from '../store';
+import { alertError } from './../utils/modal-alerts';
 
 export function renderOAuthCallback(): HTMLElement {
 	const section = document.createElement('section');
@@ -28,7 +29,7 @@ async function processOAuthCallback() {
 
     if (error) {
       console.error('OAuth error:', error);
-      alert('OAuth authentication failed. Please try again.');
+      alertError('OAuth authentication failed. Please try again.');
       window.location.hash = '/login';
       return;
     }
@@ -52,18 +53,18 @@ async function processOAuthCallback() {
         }
       } catch (err) {
         console.error('Failed to fetch user data after OAuth:', err);
-        alert('Authentication completed but failed to load user data.');
+        alertError('Authentication completed but failed to load user data.');
         window.location.hash = '/login';
       }
     } else {
       console.error('OAuth callback missing success parameter');
-      alert('Authentication status unclear. Please try logging in again.');
+      alertError('Authentication status unclear. Please try logging in again.');
       window.location.hash = '/login';
     }
 
   } catch (error) {
     console.error('OAuth callback processing error:', error);
-    alert('An error occurred during authentication. Please try again.');
+    alertError('An error occurred during authentication. Please try again.');
     window.location.hash = '/login';
   }
 }

@@ -3,6 +3,7 @@ import { t, updateText } from '../i18n';
 import { uploadMyAvatar, updateMyProfile } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from '../utils/session';
+import { alertError, alertSuccess, alertWarning } from './../utils/modal-alerts';
 
 export interface UserProfile {
   username: string
@@ -73,7 +74,7 @@ export function renderMyProfile(): HTMLElement {
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
     <h1 class="title uppercase mobile-title">
-      <span class="mid_line" data-i18n="my_profile">MY PROFILE</span>
+      <span class="mid_line" data-i18n="myprofile">MY PROFILE</span>
     </h1>
 
     <section class="w-full
@@ -153,7 +154,7 @@ export function renderMyProfile(): HTMLElement {
   const getEditHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
     <h1 class="title uppercase mobile-title">
-      <span class="mid_line" data-i18n="my_profile">MY PROFILE</span>
+      <span class="mid_line" data-i18n="myprofile">MY PROFILE</span>
     </h1>
       
       <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4">
@@ -232,7 +233,7 @@ export function renderMyProfile(): HTMLElement {
 
         // Optional 2MB client-side guard (match backend)
         if (file.size > 2 * 1024 * 1024) {
-          alert(t('image_too_large'));
+          alertWarning(t('image_too_large'));
           fileInput.value = '';
           return;
         }
@@ -251,7 +252,7 @@ export function renderMyProfile(): HTMLElement {
           user = { ...user, avatarUrl: url };
           updateCurrentUserAvatar(url);
         } catch (e: any) {
-          alert(e?.message || t('upload_failed'));
+          alertError(e?.message || t('upload_failed'));
         } finally {
           // Reset UI state
           if (avatarImg) {
@@ -298,18 +299,15 @@ export function renderMyProfile(): HTMLElement {
       }
 
       try {
-        // Save to backend
         await updateMyProfile(profileData);
         
-        // Update local store
         updateCurrentUserProfile(profileData);
         
-        // Update local user data
         const updated: UserProfile = {
           name: profileData.firstname,
           username: profileData.username,
           email: profileData.email,
-          avatarUrl: user.avatarUrl, // Keep existing avatar URL
+          avatarUrl: user.avatarUrl,
           wins: user.wins,
           losses: user.losses,
           totalGames: user.totalGames,
@@ -322,10 +320,10 @@ export function renderMyProfile(): HTMLElement {
         bindViewEvents()
         updateText(); // Apply translations after successful update
         
-        alert(t('profile_updated'));
+        alertSuccess(t('profile_updated'));
       } catch (error: any) {
         console.error('Failed to update profile:', error);
-        alert(error?.message || t('update_failed'));
+        alertError(error?.message || t('update_failed'));
       }
     })
   }

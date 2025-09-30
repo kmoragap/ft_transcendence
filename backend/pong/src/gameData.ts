@@ -89,16 +89,13 @@ function enterFullscreen(): Promise<void> {
 		return Promise.reject(new Error('Canvas not found'));
 	}
 
-	// Try different fullscreen APIs for better browser compatibility
 	return new Promise<void>((resolve, reject) => {
-		// Check which fullscreen method is available and call it
 		if (canvas.requestFullscreen) {
 			canvas.requestFullscreen()
 				.then(() => {
 					console.log('Fullscreen entered successfully');
 					updateCanvasForFullscreen(true);
 					
-					// Try to lock orientation after fullscreen is confirmed
 					if (screen.orientation && (screen.orientation as any).lock) {
 						(screen.orientation as any).lock('landscape').catch((err: any) => {
 							console.log('Orientation lock failed:', err);
@@ -108,7 +105,6 @@ function enterFullscreen(): Promise<void> {
 				})
 				.catch((err) => {
 					console.log('Fullscreen failed:', err);
-					// Still update canvas for better mobile experience even if fullscreen fails
 					updateCanvasForFullscreen(true);
 					reject(err);
 				});
@@ -118,7 +114,6 @@ function enterFullscreen(): Promise<void> {
 					console.log('Fullscreen entered successfully');
 					updateCanvasForFullscreen(true);
 					
-					// Try to lock orientation after fullscreen is confirmed
 					if (screen.orientation && (screen.orientation as any).lock) {
 						(screen.orientation as any).lock('landscape').catch((err: any) => {
 							console.log('Orientation lock failed:', err);
@@ -128,7 +123,6 @@ function enterFullscreen(): Promise<void> {
 				})
 				.catch((err) => {
 					console.log('Fullscreen failed:', err);
-					// Still update canvas for better mobile experience even if fullscreen fails
 					updateCanvasForFullscreen(true);
 					reject(err);
 				});
@@ -138,7 +132,6 @@ function enterFullscreen(): Promise<void> {
 					console.log('Fullscreen entered successfully');
 					updateCanvasForFullscreen(true);
 					
-					// Try to lock orientation after fullscreen is confirmed
 					if (screen.orientation && (screen.orientation as any).lock) {
 						(screen.orientation as any).lock('landscape').catch((err: any) => {
 							console.log('Orientation lock failed:', err);
@@ -148,7 +141,6 @@ function enterFullscreen(): Promise<void> {
 				})
 				.catch((err) => {
 					console.log('Fullscreen failed:', err);
-					// Still update canvas for better mobile experience even if fullscreen fails
 					updateCanvasForFullscreen(true);
 					reject(err);
 				});
@@ -158,7 +150,6 @@ function enterFullscreen(): Promise<void> {
 					console.log('Fullscreen entered successfully');
 					updateCanvasForFullscreen(true);
 					
-					// Try to lock orientation after fullscreen is confirmed
 					if (screen.orientation && (screen.orientation as any).lock) {
 						(screen.orientation as any).lock('landscape').catch((err: any) => {
 							console.log('Orientation lock failed:', err);
@@ -168,7 +159,6 @@ function enterFullscreen(): Promise<void> {
 				})
 				.catch((err) => {
 					console.log('Fullscreen failed:', err);
-					// Still update canvas for better mobile experience even if fullscreen fails
 					updateCanvasForFullscreen(true);
 					reject(err);
 				});

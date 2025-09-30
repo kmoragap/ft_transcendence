@@ -37,10 +37,8 @@ export function replaceGlobalAlert() {
   };
   
   const originalConfirm = window.confirm;
-  
-  window.confirm = (message: string): Promise<boolean> => {
-    return showConfirmModal(message);
-  };
+  // Do NOT override window.confirm with an async function, as it breaks synchronous expectations.
+  // If you need a custom confirm modal, use alertConfirm() directly.
   
   return {
     restore: () => {

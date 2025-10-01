@@ -366,30 +366,119 @@ function toggleFullscreen() {
 }
 function enterFullscreen() {
   const canvas = document.getElementById("board");
-  if (!canvas) return;
-  if (canvas.requestFullscreen) {
-    canvas.requestFullscreen();
-  } else if (canvas.webkitRequestFullscreen) {
-    canvas.webkitRequestFullscreen();
-  } else if (canvas.msRequestFullscreen) {
-    canvas.msRequestFullscreen();
+  if (!canvas) {
+    return Promise.reject(new Error("Canvas not found"));
   }
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock("landscape").catch((err) => {
-      console.log("Orientation lock failed:", err);
-    });
-  }
-  updateCanvasForFullscreen(true);
+  return new Promise((resolve, reject) => {
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
+    } else if (canvas.webkitRequestFullscreen) {
+      canvas.webkitRequestFullscreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
+    } else if (canvas.mozRequestFullScreen) {
+      canvas.mozRequestFullScreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
+    } else if (canvas.msRequestFullscreen) {
+      canvas.msRequestFullscreen().then(() => {
+        console.log("Fullscreen entered successfully");
+        updateCanvasForFullscreen(true);
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch((err) => {
+            console.log("Orientation lock failed:", err);
+          });
+        }
+        resolve();
+      }).catch((err) => {
+        console.log("Fullscreen failed:", err);
+        updateCanvasForFullscreen(true);
+        reject(err);
+      });
+    } else {
+      reject(new Error("Fullscreen not supported"));
+    }
+  });
 }
 function exitFullscreen() {
   if (document.exitFullscreen) {
     document.exitFullscreen();
   } else if (document.webkitExitFullscreen) {
     document.webkitExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
   } else if (document.msExitFullscreen) {
     document.msExitFullscreen();
   }
   updateCanvasForFullscreen(false);
+}
+function showFullscreenPrompt() {
+  const prompt = document.createElement("div");
+  prompt.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-50";
+  prompt.id = "fullscreen-prompt";
+  prompt.innerHTML = `
+		<div class="bg-[rgba(3,27,27,0.95)] rounded-xl p-6 max-w-sm mx-4 border border-[rgba(102,252,241,0.25)] shadow-2xl text-center">
+			<div class="text-4xl mb-4">\u{1F4F1}</div>
+			<h2 class="text-xl font-bold text-[#66fcf1] mb-3 font-[jura]">
+				Enter Fullscreen
+			</h2>
+			<p class="text-[#66fcf1] mb-4 text-sm font-[jura]">
+				For the best gaming experience, tap the button below to enter fullscreen mode.
+			</p>
+			<button
+				id="fullscreen-btn"
+				class="btn py-2.5 px-6 text-lg font-bold w-full"
+			>
+				Enter Fullscreen
+			</button>
+		</div>
+	`;
+  document.body.appendChild(prompt);
+  const fullscreenBtn = prompt.querySelector("#fullscreen-btn");
+  fullscreenBtn?.addEventListener("click", async () => {
+    try {
+      await enterFullscreen();
+      prompt.remove();
+    } catch (err) {
+      console.log("Manual fullscreen failed:", err);
+      prompt.remove();
+    }
+  });
 }
 function updatePaddlePositions() {
   if (!pad || pad.length === 0) return;
@@ -672,8 +761,13 @@ function loadConfig(fourPlayers) {
     }
   }, { passive: false });
   if (isMobile()) {
-    setTimeout(() => {
-      enterFullscreen();
+    setTimeout(async () => {
+      try {
+        await enterFullscreen();
+      } catch (error) {
+        console.log("Auto fullscreen failed, showing manual prompt:", error);
+        showFullscreenPrompt();
+      }
     }, 100);
   }
   var p = [];

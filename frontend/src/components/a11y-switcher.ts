@@ -22,7 +22,6 @@ export function renderA11yControls(): HTMLElement {
     </svg>
   `;
 
-  // ── Dropdown panel ───────────────────────────────────────────────────────────
   const panel = document.createElement('div');
   panel.id = 'a11y-menu';
   panel.setAttribute('role', 'menu');

@@ -1,9 +1,9 @@
 import { t } from './../i18n';
 import { attachValidation } from './../form-validation';
 import { redirectIfAuthenticated } from '../utils/auth';
+import { alertError, alertSuccess } from './../utils/modal-alerts';
 
 export function renderRegistration(): HTMLElement {
-  // Redirect authenticated users to dashboard
   redirectIfAuthenticated();
   const section = document.createElement('section');
   section.className =
@@ -132,15 +132,15 @@ export function renderRegistration(): HTMLElement {
 
       if (!res.ok) {
         const { message } = await res.json();
-        alert(`Registration failed: ${message}`);
+        alertError(`Registration failed: ${message}`);
         return;
       }
 
-      alert('Registration successful! You can now log in.');
+      alertSuccess('Registration successful! You can now log in.');
       window.location.href = '#/login';
     } catch (err) {
       console.error(err);
-      alert('An unexpected error occurred.');
+      alertError('An unexpected error occurred.');
     }
   });
 

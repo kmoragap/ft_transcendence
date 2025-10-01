@@ -1,6 +1,7 @@
 import { t, getCurrentLang, updateText } from './../i18n';
 import { store } from './../store';
 import { showLoginModal } from './../components/login-modal';
+import { alertSuccess, alertError } from './../utils/modal-alerts';
 
 let iframeRef: HTMLIFrameElement | null = null;
 
@@ -73,22 +74,14 @@ export function renderGame(): HTMLElement {
       destroyIframe();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
-      updateText(); // Apply translations after HTML is inserted into DOM
+      updateText();
+      document.body.classList.remove('game-active');
     } else {
       showBack();
       hideTitle();
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector('#pong-frame') as HTMLIFrameElement;
-    }
-  }
-
-  function reloadIframe() {
-    if (iframeRef) {
-      const currentLang = getCurrentLang();
-      const currentSrc = iframeRef.src;
-      const url = new URL(currentSrc);
-      url.searchParams.set('lang', currentLang);
-      iframeRef.src = url.toString();
+      document.body.classList.add('game-active');
     }
   }
 
@@ -145,7 +138,6 @@ export function renderGame(): HTMLElement {
     `;
   }
 
-
   function wireMenuHandlers() {
     root.querySelector<HTMLButtonElement>('#btn-single')?.addEventListener('click', () => setMode('single'));
     root.querySelector<HTMLButtonElement>('#btn-multi')?.addEventListener('click', () => setMode('multi'));
@@ -160,11 +152,10 @@ export function renderGame(): HTMLElement {
 
       if (mode === 'single' && currentUser?.username) {
         src += `&username=${encodeURIComponent(currentUser.username)}`;
-      }
-      
+      } 
     
     return `
-      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px]"> 
+      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
       </div>
     `;
@@ -213,7 +204,7 @@ export function renderGame(): HTMLElement {
           title: 'Login Second Player',
           gameOnly: true, 
           onSuccess: (user) => {
-            alert('Second player logged in: ' + user.username);
+            alertSuccess('Second player logged in: ' + user.username);
           },
           onCancel: () => {
             if (iframeRef?.contentWindow) {
@@ -231,12 +222,12 @@ export function renderGame(): HTMLElement {
             playerId: playerId,
             playerName: playerName,
             username: user.username,
-            userData: user // Send full user data for game statistics
+            userData: user
           }, window.location.origin);
         }
 
       } catch (error) {
-        alert('Login failed or cancelled:' + error);
+        alertError('Login failed or cancelled: ' + error);
         if (iframeRef?.contentWindow) {
           iframeRef.contentWindow.postMessage({
             type: 'LOGIN_CANCELLED',
@@ -245,17 +236,21 @@ export function renderGame(): HTMLElement {
         }
       }
     } else if (event.data.type === 'EXIT_GAME') {
-      // Handle game exit from mobile fullscreen
       const { winner } = event.data;
       console.log(`Game ended. Winner: ${winner}`);
       
-      // Navigate back to home page
       window.location.href = '#/home';
     }
   });
 
   (section as any).__destroyGameView = destroyGameView;
 
+  const cleanup = () => {
+    document.body.classList.remove('game-active');
+  };
+  
+  (section as any).cleanup = cleanup;
+  
   return section;
 }
 
@@ -267,4 +262,5 @@ export function destroyGameView() {
     iframeRef.remove();
     iframeRef = null;
   }
+  document.body.classList.remove('game-active');
 }

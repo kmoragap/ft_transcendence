@@ -42,7 +42,6 @@ const titles: Record<string, string> = {
 ensureA11yScaffold();
 
 export function navigate(path: string) {
-  // Redirect unauthenticated users away from protected routes
   if (protectedRoutes.has(path) && shouldRedirectFromProtected()) {
     if (location.hash !== '#/home') {
       location.hash = '/home';
@@ -50,7 +49,6 @@ export function navigate(path: string) {
     return;
   }
   
-  // Redirect authenticated users away from auth routes (login/register)
   if (authRoutes.has(path) && shouldRedirectFromAuth()) {
     if (location.hash !== '#/dashboard') {
       location.hash = '/dashboard';
@@ -61,12 +59,10 @@ export function navigate(path: string) {
   const app = document.getElementById('app');
   if (!app) return;
 
-  // Ensure body classes are maintained for pull-to-refresh functionality
   if (!document.body.classList.contains('overscroll-auto')) {
     document.body.classList.add('overscroll-auto');
   }
   
-  // Ensure overscroll behavior is properly set
   if (document.body.style.overscrollBehavior === 'none') {
     document.body.style.overscrollBehavior = '';
   }

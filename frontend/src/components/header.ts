@@ -29,16 +29,17 @@ export function renderHeader(): HTMLElement {
     }
     
     const currentAuthState = store.getState();
+    const authStateChanged = !lastAuthState || 
+      lastAuthState.isAuthenticated !== currentAuthState.isAuthenticated;
+    const userDataChanged = !lastAuthState ||
+      JSON.stringify(lastAuthState.currentUser) !== JSON.stringify(currentAuthState.currentUser);
     
-    if (lastAuthState && 
-        lastAuthState.isAuthenticated === currentAuthState.isAuthenticated &&
-        lastAuthState.currentUser?.id === currentAuthState.currentUser?.id) {
+    if (!authStateChanged && !userDataChanged) {
       return;
     }
     
     lastAuthState = { ...currentAuthState };
     
-    // Clean up previous event listeners
     if (abortController) {
       abortController.abort();
     }
@@ -46,7 +47,6 @@ export function renderHeader(): HTMLElement {
     
     header.innerHTML = '';
 
-    // Define languages array once for reuse
     const languages = [
       { code: 'en', label: 'EN' },
       { code: 'de', label: 'DE' },
@@ -154,7 +154,6 @@ export function renderHeader(): HTMLElement {
     const mobileMenuHeader = document.createElement('div');
     mobileMenuHeader.className = 'flex items-center justify-between p-4 border-b border-[#66fcf1]/20';
     
-    // Create a compact language selector for the header
     const headerLangSelect = document.createElement('select');
     headerLangSelect.className = 'px-2 py-1 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1]/30 rounded text-sm';
     languages.forEach(({ code, label }) => {
@@ -329,8 +328,8 @@ export function renderHeader(): HTMLElement {
       menu.setAttribute('role', 'menu');
 
       menu.innerHTML = `
-        <button data-i18n="my_profile" data-action="me"
-          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('my_profile')}</button>
+        <button data-i18n="myprofile" data-action="me"
+          class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('myprofile')}</button>
         <button data-i18n="logout" data-action="logout"
           class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('logout')}</button>
       `;

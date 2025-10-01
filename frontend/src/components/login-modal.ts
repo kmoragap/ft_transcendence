@@ -5,7 +5,7 @@ export interface LoginModalOptions {
   onSuccess?: (user: any) => void;
   onCancel?: () => void;
   title?: string;
-  gameOnly?: boolean; // If true, don't update global auth state
+  gameOnly?: boolean;
 }
 
 export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
@@ -85,13 +85,11 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
 
   modal.appendChild(modalContent);
 
-  // Add event listeners
   const form = modal.querySelector<HTMLFormElement>('#modal-login-form')!;
   const identifierInput = form.querySelector<HTMLInputElement>('#modal-identifier')!;
   const passwordInput = form.querySelector<HTMLInputElement>('#modal-password')!;
   const cancelBtn = modal.querySelector<HTMLButtonElement>('#modal-cancel')!;
 
-  // Login form submission
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!form.checkValidity()) {
@@ -101,7 +99,6 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
 
     const identifier = identifierInput.value.trim();
     const password = passwordInput.value;
-
     const payload: Record<string, string> = { password };
     if (identifier.includes('@')) {
       payload.email = identifier;
@@ -128,22 +125,18 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
 
       const { token, refresh, username, firstname, email, avatarUrl } = await res.json();
       
-      // Use the user data from login response
       const user = { username, firstname, email, avatarUrl };
       
-      // Only update global auth state if not game-only login
       if (!options.gameOnly) {
         localStorage.setItem('accessToken', token);
         localStorage.setItem('refreshToken', refresh);
         store.dispatch({ type: 'LOGIN', payload: user });
       }
 
-      // Call success callback if provided
       if (options.onSuccess) {
         options.onSuccess(user);
       }
 
-      // Close modal
       closeModal();
 
     } catch (err) {
@@ -152,7 +145,6 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     }
   });
 
-  // Cancel button
   cancelBtn.addEventListener('click', () => {
     if (options.onCancel) {
       options.onCancel();
@@ -160,7 +152,6 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     closeModal();
   });
 
-  // Close modal when clicking outside
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       if (options.onCancel) {
@@ -193,7 +184,6 @@ export function showLoginModal(options: LoginModalOptions = {}): Promise<any> {
 
     document.body.appendChild(modal);
     
-    // Focus the first input
     setTimeout(() => {
       const input = modal.querySelector<HTMLInputElement>('#modal-identifier');
       input?.focus();

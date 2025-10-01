@@ -4,7 +4,6 @@ import { redirectIfAuthenticated } from '../utils/auth';
 import { alertError, alertSuccess } from './../utils/modal-alerts';
 
 export function renderLogin(): HTMLElement {
-  // Redirect authenticated users to dashboard
   redirectIfAuthenticated();
 
   const section = document.createElement('section');

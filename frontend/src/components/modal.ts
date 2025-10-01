@@ -9,7 +9,7 @@ export interface ModalOptions {
   cancelText?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
-  autoClose?: number; // Auto close after X milliseconds
+  autoClose?: number;
 }
 
 export function createModal(options: ModalOptions): HTMLElement {

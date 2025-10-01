@@ -35,12 +35,10 @@ async function processOAuthCallback() {
     }
 
     if (success === 'true') {
-      // the user is now auth via cookie
-      // we fetch user data from the /me endpoint
       try {
         const meRes = await fetch('/api/auth/me', {
-			method: 'GET',
-			credentials: 'include' // we include cookies for the req
+          method: 'GET',
+          credentials: 'include'
         });
         
         if (meRes.ok) {

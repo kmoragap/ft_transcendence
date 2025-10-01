@@ -36,7 +36,6 @@ function buildShell() {
 }
 
 async function restoreSession() {
-  // first we try to get token from localstorage for regular login
   const token = localStorage.getItem('accessToken');
   
   if (token) {
@@ -61,10 +60,9 @@ async function restoreSession() {
     }
   }
 
-  // if no token in localstorage, try cookie-based auth for OAuth
   try {
     const meRes = await fetch('/api/auth/me', {
-      credentials: 'include' // cookies
+      credentials: 'include'
     });
     
     if (meRes.ok) {

@@ -1,6 +1,3 @@
-// form-validation.ts
-
-// show/hide helpers
 function showError(input: HTMLInputElement, message: string) {
   const err = document.getElementById(`${input.id}-error`)! as HTMLElement;
   err.textContent = message;
@@ -14,7 +11,6 @@ function clearError(input: HTMLInputElement) {
   input.setAttribute('aria-invalid', 'false');
 }
 
-// field validators
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function validateField(input: HTMLInputElement): string {
   switch (input.name) {

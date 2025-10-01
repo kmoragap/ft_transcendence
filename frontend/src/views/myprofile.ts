@@ -63,9 +63,7 @@ let user: UserProfile = getCurrentUser();
 export function renderMyProfile(): HTMLElement {
   const section = document.createElement('section')
   section.className = [
-    'flex flex-col w-full h-full absolute',
-    'top-1/2 left-1/2 transform',
-    '-translate-x-1/2 -translate-y-1/2',
+    'flex flex-col w-full h-full',
     'items-center justify-center text-center',
     'z-[3] text-[#66fcf1] font-[jura]',
     ''
@@ -82,7 +80,7 @@ export function renderMyProfile(): HTMLElement {
                     max-w-7xl mx-auto px-4 md:px-15 py-4 md:py-7.5">
       <div class="flex flex-col md:flex-row items-stretch gap-4 md:gap-x-8">
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-4 md:px-10 py-4 md:py-5">
+                    shadow-lg px-4 md:px-10 py-4 min-h-50 md:py-5">
           <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
           <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]"></div>
         </div>
@@ -199,14 +197,13 @@ export function renderMyProfile(): HTMLElement {
     user = getCurrentUser();
     section.innerHTML = getViewHTML();
     bindViewEvents();
-    updateText(); // Ensure translations are applied after re-rendering
+    updateText();
   };
 
   updateUserData();
   store.subscribe(updateUserData);
   sessionManager.onSessionRestored(updateUserData);
   
-  // Listen for language changes
   window.addEventListener('languageChanged', () => {
     updateUserData();
   });
@@ -219,26 +216,22 @@ export function renderMyProfile(): HTMLElement {
     const editBtn = section.querySelector('#edit-btn') as HTMLButtonElement
     const refreshStatsBtn = section.querySelector('#refresh-stats-btn') as HTMLButtonElement
 
-    // ---- Avatar upload bindings (VIEW MODE) ----
     const fileInput = section.querySelector('#avatar-file-input') as HTMLInputElement | null;
     const avatarImg = section.querySelector('#profile-avatar-img') as HTMLImageElement | null;
 
     if (avatarImg && fileInput) {
-      // Make avatar image clickable
       avatarImg.addEventListener('click', () => fileInput.click());
 
       fileInput.addEventListener('change', async () => {
         const file = fileInput.files?.[0];
         if (!file) return;
 
-        // Optional 2MB client-side guard (match backend)
         if (file.size > 2 * 1024 * 1024) {
           alertWarning(t('image_too_large'));
           fileInput.value = '';
           return;
         }
 
-        // UI feedback - show loading state on avatar
         if (avatarImg) {
           avatarImg.style.opacity = '0.5';
           avatarImg.style.cursor = 'wait';
@@ -246,15 +239,12 @@ export function renderMyProfile(): HTMLElement {
 
         try {
           const url = await uploadMyAvatar(file);
-          // Update UI immediately
           if (avatarImg) avatarImg.src = url;
-          // Update local data + global store
           user = { ...user, avatarUrl: url };
           updateCurrentUserAvatar(url);
         } catch (e: any) {
           alertError(e?.message || t('upload_failed'));
         } finally {
-          // Reset UI state
           if (avatarImg) {
             avatarImg.style.opacity = '1';
             avatarImg.style.cursor = 'pointer';
@@ -263,7 +253,6 @@ export function renderMyProfile(): HTMLElement {
         }
       });
     }
-    // -------------------------------------------
 
     editBtn?.addEventListener('click', enterEditMode)
     
@@ -272,20 +261,20 @@ export function renderMyProfile(): HTMLElement {
       user = { ...user, ...newStats }
       section.innerHTML = getViewHTML()
       bindViewEvents()
-      updateText(); // Apply translations after refresh
+      updateText();
     })
   }
 
   function enterEditMode() {
     section.innerHTML = getEditHTML()
-    updateText(); // Apply translations to edit mode
+    updateText();
     const form = section.querySelector('form') as HTMLFormElement
     const cancel = section.querySelector('#cancel-btn') as HTMLButtonElement
 
     cancel.addEventListener('click', () => {
       section.innerHTML = getViewHTML()
       bindViewEvents()
-      updateText(); // Apply translations when returning to view mode
+      updateText();
     })
 
     form.addEventListener('submit', async e => {
@@ -299,8 +288,7 @@ export function renderMyProfile(): HTMLElement {
       }
 
       try {
-        await updateMyProfile(profileData);
-        
+        await updateMyProfile(profileData); 
         updateCurrentUserProfile(profileData);
         
         const updated: UserProfile = {
@@ -318,7 +306,7 @@ export function renderMyProfile(): HTMLElement {
         user = updated
         section.innerHTML = getViewHTML()
         bindViewEvents()
-        updateText(); // Apply translations after successful update
+        updateText();
         
         alertSuccess(t('profile_updated'));
       } catch (error: any) {

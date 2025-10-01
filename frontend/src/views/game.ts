@@ -74,27 +74,14 @@ export function renderGame(): HTMLElement {
       destroyIframe();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
-      updateText(); // Apply translations after HTML is inserted into DOM
-      // Remove game-active class when in menu
+      updateText();
       document.body.classList.remove('game-active');
     } else {
       showBack();
       hideTitle();
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector('#pong-frame') as HTMLIFrameElement;
-      // Add game-active class when game is running
       document.body.classList.add('game-active');
-    }
-  }
-
-
-  function reloadIframe() {
-    if (iframeRef) {
-      const currentLang = getCurrentLang();
-      const currentSrc = iframeRef.src;
-      const url = new URL(currentSrc);
-      url.searchParams.set('lang', currentLang);
-      iframeRef.src = url.toString();
     }
   }
 
@@ -151,7 +138,6 @@ export function renderGame(): HTMLElement {
     `;
   }
 
-
   function wireMenuHandlers() {
     root.querySelector<HTMLButtonElement>('#btn-single')?.addEventListener('click', () => setMode('single'));
     root.querySelector<HTMLButtonElement>('#btn-multi')?.addEventListener('click', () => setMode('multi'));
@@ -166,8 +152,7 @@ export function renderGame(): HTMLElement {
 
       if (mode === 'single' && currentUser?.username) {
         src += `&username=${encodeURIComponent(currentUser.username)}`;
-      }
-      
+      } 
     
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
@@ -237,7 +222,7 @@ export function renderGame(): HTMLElement {
             playerId: playerId,
             playerName: playerName,
             username: user.username,
-            userData: user // Send full user data for game statistics
+            userData: user
           }, window.location.origin);
         }
 
@@ -251,23 +236,19 @@ export function renderGame(): HTMLElement {
         }
       }
     } else if (event.data.type === 'EXIT_GAME') {
-      // Handle game exit from mobile fullscreen
       const { winner } = event.data;
       console.log(`Game ended. Winner: ${winner}`);
       
-      // Navigate back to home page
       window.location.href = '#/home';
     }
   });
 
   (section as any).__destroyGameView = destroyGameView;
 
-  // Cleanup function to remove game-active class when component is destroyed
   const cleanup = () => {
     document.body.classList.remove('game-active');
   };
   
-  // Store cleanup function for potential use
   (section as any).cleanup = cleanup;
   
   return section;
@@ -281,6 +262,5 @@ export function destroyGameView() {
     iframeRef.remove();
     iframeRef = null;
   }
-  // Remove game-active class when destroying game view
   document.body.classList.remove('game-active');
 }

@@ -1,0 +1,15 @@
+# compose.elasticsearch.yml
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1 # 9.x not released yet; pinned for reproducibility
+    container_name: elasticsearch
+    restart: always
+    volumes: 
+      - elastic_data:/usr/share/elasticsearch/data
+      # Mount our custom elasticsearch.yml (path is relative to this include file)
+      - ../elk/elasticsearch/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - '9200:9200'
+    networks:
+      - elk-network
+

@@ -1,0 +1,17 @@
+# compose.logstash.yml
+services:
+  logstash:
+    image: logstash:9.1.3
+    container_name: logstash
+    restart: always
+    volumes:
+      - ./logstash/:/logstash_dir
+    command: logstash -f /logstash_dir/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+    ports:
+      - '5044:5044'
+    environment:
+      - LS_JAVA_OPTS= Xmx256m -Xms256m
+    networks:
+      - elk-network

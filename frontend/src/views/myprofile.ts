@@ -1,6 +1,6 @@
 import { store } from '../store';
 import { t, updateText } from '../i18n';
-import { uploadMyAvatar, updateMyProfile } from "../api/users";
+import { uploadMyAvatar, updateMyProfile, acceptReceivedFriendRequest, rejectFriendRequest, removeFriendRequest } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from '../utils/session';
 import { alertError, alertSuccess, alertWarning } from './../utils/modal-alerts';
@@ -82,7 +82,12 @@ export function renderMyProfile(): HTMLElement {
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
                     shadow-lg px-4 md:px-10 py-4 min-h-50 md:py-5">
           <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="social">Social</h2>
-          <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)]"></div>
+          <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)] p-4">
+            <div id="friend-requests-section">
+              <div id="friend-requests-list" class="space-y-2">
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
@@ -193,11 +198,154 @@ export function renderMyProfile(): HTMLElement {
   </div>
   `
 
-  const updateUserData = () => {
+  const updateUserData = async () => {
     user = getCurrentUser();
     section.innerHTML = getViewHTML();
     bindViewEvents();
+    await populateFriendRequests();
     updateText();
+  };
+
+  const populateFriendRequests = async () => {
+    const friendRequestsList = section.querySelector('#friend-requests-list');
+    if (!friendRequestsList) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      friendRequestsList.innerHTML = '<p class="text-gray-400 text-sm">Please log in to see friends</p>';
+      return;
+    }
+
+    try {
+      const [friendsRes, requestsRes] = await Promise.all([
+        fetch('/api/users/friends', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/users/friends/requests/pending', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
+
+      let allFriends = [];
+      
+      if (friendsRes.ok) {
+        const friends = await friendsRes.json();
+        allFriends = friends.map((friend: any) => ({
+          id: friend.id,
+          username: friend.username,
+          avatarUrl: friend.avatarUrl || '/assets/img/avatar.jpg',
+          type: 'friend',
+          status: 'accepted'
+        }));
+      }
+
+      if (requestsRes.ok) {
+        const requests = await requestsRes.json();
+        const pendingFriends = requests.map((request: any) => ({
+          id: request.id,
+          username: request.requester?.username || 'Unknown User',
+          avatarUrl: request.requester?.avatarUrl || '/assets/img/avatar.jpg',
+          type: 'request',
+          status: 'pending'
+        }));
+        allFriends = [...allFriends, ...pendingFriends];
+      }
+
+      if (allFriends.length === 0) {
+        friendRequestsList.innerHTML = '<p class="text-gray-400 text-sm">No friends or pending requests</p>';
+        return;
+      }
+
+      friendRequestsList.innerHTML = allFriends.map((friend: any) => {
+        if (friend.type === 'friend') {
+          // Current friend - show with "Remove" button
+          return `
+            <div class="flex items-center justify-between p-2">
+              <div class="flex items-center space-x-3">
+                <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
+                <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
+              </div>
+              <button class="remove-friend-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-username="${friend.username}" title="Remove Friend">
+                ✗
+              </button>
+            </div>
+          `;
+        } else {
+          // Pending request - show with Accept/Reject buttons
+          return `
+            <div class="flex items-center justify-between p-2">
+              <div class="flex items-center space-x-3">
+                <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
+                <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
+              </div>
+              <div class="flex space-x-2">
+                <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Accept">
+                  ✓
+                </button>
+                <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Reject">
+                  ✗
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+    } catch (error) {
+      console.error('Error loading friend requests:', error);
+      friendRequestsList.innerHTML = '<p class="text-red-400 text-sm">Error loading friend requests</p>';
+    }
+
+    // Bind event listeners for accept/reject buttons
+    friendRequestsList.querySelectorAll('.accept-friend-request-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.target as HTMLButtonElement;
+        const requestId = target.dataset.requestId;
+        const username = target.dataset.username;
+        if (requestId && username) {
+          try {
+            await acceptReceivedFriendRequest(username, requestId);
+            await populateFriendRequests();
+            alertSuccess('Friend request accepted!');
+          } catch (error: any) {
+            alertError(error?.message || 'Failed to accept friend request');
+          }
+        }
+      });
+    });
+
+    friendRequestsList.querySelectorAll('.reject-friend-request-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.target as HTMLButtonElement;
+        const requestId = target.dataset.requestId;
+        const username = target.dataset.username;
+        if (requestId && username) {
+          try {
+            await rejectFriendRequest(requestId);
+            await populateFriendRequests();
+            alertSuccess('Friend request rejected');
+          } catch (error: any) {
+            alertError(error?.message || 'Failed to reject friend request');
+          }
+        }
+      });
+    });
+
+    // Bind event listeners for remove friend buttons
+    friendRequestsList.querySelectorAll('.remove-friend-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.target as HTMLButtonElement;
+        const username = target.dataset.username;
+        if (username) {
+          try {
+            await removeFriendRequest(username);
+            await populateFriendRequests();
+            alertSuccess('Friend removed successfully');
+          } catch (error: any) {
+            alertError(error?.message || 'Failed to remove friend');
+          }
+        }
+      });
+    });
   };
 
   updateUserData();

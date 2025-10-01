@@ -65,5 +65,16 @@
 	"no_winners_yet": "No winners yet.",
 	"yes": "Yes",
 	"no": "No",
-	"ok": "OK"
+	"ok": "OK",
+	"user_not_found": "User Not Found",
+	"user_not_found_desc": "The user you're looking for doesn't exist or has been removed.",
+	"send_friend_request": "Send Friend Request",
+	"remove_friend": "Remove Friend",
+	"friend_request_pending": "Friend Request Pending",
+	"friend_request_sent": "Friend request sent successfully!",
+	"friend_request_failed": "Failed to send friend request. Please try again.",
+	"remove_friend_failed": "Failed to remove friend. Please try again.",
+	"remove_friend_not_implemented": "Remove friend functionality not yet implemented.",
+	"cancel_friend_request": "Cancel Friend Request",
+	"friend_requests": "Friend Requests"
 }

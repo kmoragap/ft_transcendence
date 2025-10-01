@@ -89,7 +89,7 @@ export async function deleteUserHandler(request: FastifyRequest, reply: FastifyR
 
 export async function getUsersHandler(request:FastifyRequest, reply: FastifyReply) {
   const users = await prisma.user.findMany({
-    select: {id: true, username: true, email: true, firstname: true}, 
+    select: {id: true, username: true, email: true, firstname: true, avatarUrl: true}, 
   });
   return users;    
 }

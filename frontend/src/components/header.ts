@@ -3,6 +3,7 @@ import { store } from '../store';
 import { logout } from '../utils/auth';
 import { renderA11yControls } from './a11y-switcher';
 import { sessionManager } from '../utils/session';
+import { searchUsers, UserSearchResult } from '../api/users';
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -11,6 +12,11 @@ export function renderHeader(): HTMLElement {
 
   let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
   let abortController: AbortController | null = null;
+  
+  // Search functionality - persistent across header updates
+  let searchTimeout: NodeJS.Timeout | null = null;
+  let searchResults: UserSearchResult[] = [];
+  let searchDropdown: HTMLDivElement | null = null;
   
   const SEARCH_USERS_FALLBACK = 'Search users…';
   function updateSearchInputPlaceholder() {
@@ -21,6 +27,84 @@ export function renderHeader(): HTMLElement {
       searchInput.setAttribute('aria-label', searchText);
     }
   }
+
+  const createSearchDropdown = () => {
+    if (searchDropdown) {
+      searchDropdown.remove();
+    }
+    
+    searchDropdown = document.createElement('div');
+    searchDropdown.className = [
+      'absolute top-full left-0 right-0 mt-1',
+      'bg-[rgba(3,27,27,0.95)] border border-[#66fcf1]/30',
+      'rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto'
+    ].join(' ');
+    
+    if (searchResults.length === 0) {
+      searchDropdown.innerHTML = `
+        <div class="p-3 text-[#66fcf1]/60 text-center">
+          No users found
+        </div>
+      `;
+    } else {
+      searchDropdown.innerHTML = searchResults.map(user => `
+        <div class="p-3 hover:bg-[#66fcf1]/10 cursor-pointer border-b border-[#66fcf1]/10 last:border-b-0"
+             data-username="${user.username}">
+          <div class="flex items-center gap-3">
+            <img src="${user.avatarUrl || '/assets/img/avatar.jpg'}" alt="${user.username}" 
+                 class="w-8 h-8 rounded-full object-cover border border-[#66fcf1]/30"
+                 onerror="this.src='/assets/img/avatar.jpg'">
+            <div class="flex-1">
+              <div class="text-[#66fcf1] font-bold">${user.username}</div>
+              <div class="text-[#66fcf1]/70 text-sm">${user.firstname}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      // Add click handlers for search results
+      searchDropdown.querySelectorAll('[data-username]').forEach(element => {
+        element.addEventListener('click', () => {
+          const username = element.getAttribute('data-username');
+          if (username) {
+            location.hash = `/profile/${username}`;
+            const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+            if (searchInput) searchInput.value = '';
+            searchDropdown?.remove();
+            searchDropdown = null;
+          }
+        });
+      });
+    }
+    
+    const searchWrap = document.querySelector('.search-wrap') as HTMLDivElement;
+    if (searchWrap) {
+      searchWrap.appendChild(searchDropdown);
+    }
+  };
+
+  const performSearch = async (query: string) => {
+    if (query.length < 2) {
+      if (searchDropdown) {
+        searchDropdown.remove();
+        searchDropdown = null;
+      }
+      return;
+    }
+
+    try {
+      searchResults = await searchUsers(query);
+      createSearchDropdown();
+    } catch (error) {
+      if (searchDropdown) {
+        searchDropdown.innerHTML = `
+          <div class="p-3 text-red-400 text-center">
+            Search failed: ${error instanceof Error ? error.message : 'Unknown error'}
+          </div>
+        `;
+      }
+    }
+  };
 
   function updateHeader() {
     if (!sessionManager.isSessionRestored()) {
@@ -57,7 +141,7 @@ export function renderHeader(): HTMLElement {
     bar.className = 'flex items-center justify-between';
 
     const searchWrap = document.createElement('div');
-    searchWrap.className = 'flex items-center gap-2 flex-1 md:flex-none';
+    searchWrap.className = 'flex items-center gap-2 flex-1 md:flex-none relative search-wrap';
     
     const searchInput = document.createElement('input');
     searchInput.type = 'search';
@@ -71,8 +155,48 @@ export function renderHeader(): HTMLElement {
       'outline-none font-[jura]'
     ].join(' ');
 
+    // Add search event listeners
+    searchInput.addEventListener('input', (e) => {
+      const query = (e.target as HTMLInputElement).value.trim();
+      
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+      
+      if (query.length >= 2) {
+        searchTimeout = setTimeout(() => {
+          performSearch(query);
+        }, 300);
+      } else {
+        if (searchDropdown) {
+          searchDropdown.remove();
+          searchDropdown = null;
+        }
+      }
+    });
+
     searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') e.preventDefault();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query.length >= 2) {
+          performSearch(query);
+        }
+      } else if (e.key === 'Escape') {
+        if (searchDropdown) {
+          searchDropdown.remove();
+          searchDropdown = null;
+        }
+        searchInput.blur();
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (searchDropdown && !searchWrap.contains(e.target as Node)) {
+        searchDropdown.remove();
+        searchDropdown = null;
+      }
     });
 
     searchWrap.appendChild(searchInput);

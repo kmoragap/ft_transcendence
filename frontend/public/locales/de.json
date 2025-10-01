@@ -57,5 +57,16 @@
   "cancel": "Abbrechen",
   "yes": "Ja",
   "no": "Nein",
-  "ok": "OK"
+  "ok": "OK",
+  "user_not_found": "Benutzer nicht gefunden",
+  "user_not_found_desc": "Der gesuchte Benutzer existiert nicht oder wurde entfernt.",
+  "send_friend_request": "Freundschaftsanfrage senden",
+  "remove_friend": "Freund entfernen",
+  "friend_request_pending": "Freundschaftsanfrage ausstehend",
+  "friend_request_sent": "Freundschaftsanfrage erfolgreich gesendet!",
+  "friend_request_failed": "Freundschaftsanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+  "remove_friend_failed": "Freund konnte nicht entfernt werden. Bitte versuchen Sie es erneut.",
+  "remove_friend_not_implemented": "Freund entfernen Funktion noch nicht implementiert.",
+  "cancel_friend_request": "Freundschaftsanfrage stornieren",
+  "friend_requests": "Freundschaftsanfragen"
 }

@@ -103,7 +103,7 @@ function enterFullscreen(): Promise<void> {
 					}
 					resolve();
 				})
-				.catch((err) => {
+				.catch((err: any) => {
 					console.log('Fullscreen failed:', err);
 					updateCanvasForFullscreen(true);
 					reject(err);
@@ -121,7 +121,7 @@ function enterFullscreen(): Promise<void> {
 					}
 					resolve();
 				})
-				.catch((err) => {
+				.catch((err: any) => {
 					console.log('Fullscreen failed:', err);
 					updateCanvasForFullscreen(true);
 					reject(err);
@@ -139,7 +139,7 @@ function enterFullscreen(): Promise<void> {
 					}
 					resolve();
 				})
-				.catch((err) => {
+				.catch((err: any) => {
 					console.log('Fullscreen failed:', err);
 					updateCanvasForFullscreen(true);
 					reject(err);
@@ -157,7 +157,7 @@ function enterFullscreen(): Promise<void> {
 					}
 					resolve();
 				})
-				.catch((err) => {
+				.catch((err: any) => {
 					console.log('Fullscreen failed:', err);
 					updateCanvasForFullscreen(true);
 					reject(err);

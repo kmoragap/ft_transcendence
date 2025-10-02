@@ -496,81 +496,71 @@ export async function rejectFriendRequest(requestId: string): Promise<void> {
   }
 }
 
+// Helper function to remove a friend request, parameterized by auth options
+async function removeFriendRequestHelper(
+  userId: string,
+  fetchOptions: RequestInit,
+  deleteOptions: (friendshipId: string) => RequestInit
+): Promise<void> {
+  const friendsRes = await fetch('/api/users/friends', fetchOptions);
+  if (!friendsRes.ok) {
+    throw new Error('Failed to get friends list');
+  }
+  const friends = await friendsRes.json();
+  const friendship = friends.find((friend: any) => friend.username === userId);
+  if (!friendship) {
+    throw new Error('Friend not found');
+  }
+  const res = await fetch(`/api/users/friends/${friendship.id}`, deleteOptions(friendship.id));
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Remove friend failed (${res.status})`);
+  }
+}
+
 export async function removeFriendRequest(userId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
-  
-  
   if (!token) {
     try {
-      const friendsRes = await fetch('/api/users/friends', {
-        headers: {
-          'Content-Type': 'application/json'
+      await removeFriendRequestHelper(
+        userId,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         },
-        credentials: 'include' 
-      });
-
-
-      if (!friendsRes.ok) {
-        throw new Error('Failed to get friends list');
-      }
-
-      const friends = await friendsRes.json();
-      const friendship = friends.find((friend: any) => friend.username === userId);
-      
-      if (!friendship) {
-        throw new Error('Friend not found');
-      }
-
-      const res = await fetch(`/api/users/friends/${friendship.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({})
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Remove friend failed (${res.status})`);
-      }
-      return;
+        (friendshipId: string) => ({
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({})
+        })
+      );
     } catch (error) {
       throw new Error('No access token found');
     }
+    return;
   }
-
   try {
-    const friendsRes = await fetch('/api/users/friends', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!friendsRes.ok) {
-      throw new Error('Failed to get friends list');
-    }
-
-    const friends = await friendsRes.json();
-    const friendship = friends.find((friend: any) => friend.username === userId);
-    
-    if (!friendship) {
-      throw new Error('Friend not found');
-    }
-
-    const res = await fetch(`/api/users/friends/${friendship.id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    await removeFriendRequestHelper(
+      userId,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       },
-      body: JSON.stringify({})
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Remove friend failed (${res.status})`);
-    }
+      (friendshipId: string) => ({
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      })
+    );
   } catch (error) {
     console.error('Remove friend error:', error);
     throw error;

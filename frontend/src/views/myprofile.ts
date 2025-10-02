@@ -404,11 +404,20 @@ export function renderMyProfile(): HTMLElement {
 
   startStatusPolling();
 
-  const originalRemove = section.remove;
-  section.remove = function() {
-    stopStatusPolling();
-    return originalRemove.call(this);
-  };
+  // Use MutationObserver to detect when section is removed from the DOM
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const removedNode of Array.from(mutation.removedNodes)) {
+        if (removedNode === section) {
+          stopStatusPolling();
+          observer.disconnect();
+        }
+      }
+    }
+  });
+  if (section.parentNode) {
+    observer.observe(section.parentNode, { childList: true });
+  }
 
   function bindViewEvents() {
     const editBtn = section.querySelector('#edit-btn') as HTMLButtonElement

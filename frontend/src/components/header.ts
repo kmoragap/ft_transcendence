@@ -14,7 +14,7 @@ export function renderHeader(): HTMLElement {
   let abortController: AbortController | null = null;
   
   // Search functionality - persistent across header updates
-  let searchTimeout: NodeJS.Timeout | null = null;
+  let searchTimeout: number | null = null;
   let searchResults: UserSearchResult[] = [];
   let searchDropdown: HTMLDivElement | null = null;
   

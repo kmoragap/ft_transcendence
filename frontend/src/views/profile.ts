@@ -218,9 +218,9 @@ export function renderProfile(username: string): HTMLElement {
         section.innerHTML = getViewHTML();
         bindEvents();
         updateText();
-        alertSuccess('Friend request cancelled');
+        alertSuccess(t('friend_request_cancelled'));
       } catch (error: any) {
-        alertError(error?.message || t('cancel_friend_request_failed'));
+        alertError(error?.message || t('cancel_friend_request_failed'));  
       }
     });
   };

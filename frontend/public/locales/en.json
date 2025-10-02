@@ -76,5 +76,15 @@
 	"remove_friend_failed": "Failed to remove friend. Please try again.",
 	"remove_friend_not_implemented": "Remove friend functionality not yet implemented.",
 	"cancel_friend_request": "Cancel Friend Request",
-	"friend_requests": "Friend Requests"
+	"friend_requests": "Friend Requests",
+	"friend_request_accepted": "Friend request accepted!",
+	"friend_request_accept_failed": "Failed to accept friend request",
+	"friend_request_rejected": "Friend request rejected",
+	"friend_request_reject_failed": "Failed to reject friend request",
+	"friend_removed_successfully": "Friend removed successfully",
+	"friend_remove_failed": "Failed to remove friend",
+	"friend_status_refreshed": "Friend status refreshed!",
+	"friend_status_refresh_failed": "Failed to refresh friend status",
+	"friend_request_cancelled": "Friend request cancelled",
+	"cancel_friend_request_failed": "Failed to cancel friend request"
 }

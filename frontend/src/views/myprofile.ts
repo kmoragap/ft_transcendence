@@ -306,9 +306,9 @@ export function renderMyProfile(): HTMLElement {
           try {
             await acceptReceivedFriendRequest(username, requestId);
             await populateFriendRequests();
-            alertSuccess('Friend request accepted!');
+            alertSuccess(t('friend_request_accepted'));
           } catch (error: any) {
-            alertError(error?.message || 'Failed to accept friend request');
+            alertError(error?.message || t('friend_request_accept_failed'));
           }
         }
       });
@@ -323,9 +323,9 @@ export function renderMyProfile(): HTMLElement {
           try {
             await rejectFriendRequest(requestId);
             await populateFriendRequests();
-            alertSuccess('Friend request rejected');
+            alertSuccess(t('friend_request_rejected'));
           } catch (error: any) {
-            alertError(error?.message || 'Failed to reject friend request');
+            alertError(error?.message || t('friend_request_reject_failed'));
           }
         }
       });
@@ -340,9 +340,9 @@ export function renderMyProfile(): HTMLElement {
           try {
             await removeFriendRequest(username);
             await populateFriendRequests();
-            alertSuccess('Friend removed successfully');
+            alertSuccess(t('friend_removed_successfully'));
           } catch (error: any) {
-            alertError(error?.message || 'Failed to remove friend');
+            alertError(error?.message || t('friend_remove_failed'));
           }
         }
       });
@@ -466,10 +466,10 @@ export function renderMyProfile(): HTMLElement {
     refreshFriendsBtn?.addEventListener('click', async () => {
       try {
         await populateFriendRequests();
-        alertSuccess('Friend status refreshed!');
+        alertSuccess(t('friend_status_refreshed'));
       } catch (error) {
         console.error('Error refreshing friends:', error);
-        alertError('Failed to refresh friend status');
+        alertError(t('friend_status_refresh_failed'));
       }
     })
   }

@@ -68,5 +68,15 @@
   "remove_friend_failed": "Freund konnte nicht entfernt werden. Bitte versuchen Sie es erneut.",
   "remove_friend_not_implemented": "Freund entfernen Funktion noch nicht implementiert.",
   "cancel_friend_request": "Freundschaftsanfrage stornieren",
-  "friend_requests": "Freundschaftsanfragen"
+  "friend_requests": "Freundschaftsanfragen",
+  "friend_request_accepted": "Freundschaftsanfrage akzeptiert!",
+  "friend_request_accept_failed": "Freundschaftsanfrage konnte nicht akzeptiert werden",
+  "friend_request_rejected": "Freundschaftsanfrage abgelehnt",
+  "friend_request_reject_failed": "Freundschaftsanfrage konnte nicht abgelehnt werden",
+  "friend_removed_successfully": "Freund erfolgreich entfernt",
+  "friend_remove_failed": "Freund konnte nicht entfernt werden",
+  "friend_status_refreshed": "Freundschaftsstatus aktualisiert!",
+  "friend_status_refresh_failed": "Freundschaftsstatus konnte nicht aktualisiert werden",
+  "friend_request_cancelled": "Freundschaftsanfrage storniert",
+  "cancel_friend_request_failed": "Freundschaftsanfrage konnte nicht storniert werden"
 }

@@ -76,5 +76,15 @@
   "remove_friend_failed": "Не удалось удалить из друзей. Попробуйте еще раз.",
   "remove_friend_not_implemented": "Функция удаления из друзей еще не реализована.",
   "cancel_friend_request": "Отменить запрос в друзья",
-  "friend_requests": "Запросы в друзья"
+  "friend_requests": "Запросы в друзья",
+  "friend_request_accepted": "Запрос в друзья принят!",
+  "friend_request_accept_failed": "Не удалось принять запрос в друзья",
+  "friend_request_rejected": "Запрос в друзья отклонен",
+  "friend_request_reject_failed": "Не удалось отклонить запрос в друзья",
+  "friend_removed_successfully": "Друг успешно удален",
+  "friend_remove_failed": "Не удалось удалить друга",
+  "friend_status_refreshed": "Статус дружбы обновлен!",
+  "friend_status_refresh_failed": "Не удалось обновить статус дружбы",
+  "friend_request_cancelled": "Запрос в друзья отменен",
+  "cancel_friend_request_failed": "Не удалось отменить запрос в друзья"
 }

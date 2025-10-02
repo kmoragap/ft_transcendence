@@ -203,7 +203,7 @@ export function renderProfile(username: string): HTMLElement {
         section.innerHTML = getViewHTML();
         bindEvents();
         updateText();
-        alertSuccess('Friend removed successfully');
+        alertSuccess(t('friend_removed_successfully'));
       } catch (error: any) {
         alertError(error?.message || t('remove_friend_failed'));
       }

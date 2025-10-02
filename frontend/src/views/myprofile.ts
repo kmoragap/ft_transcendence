@@ -381,7 +381,6 @@ export function renderMyProfile(): HTMLElement {
               </div>
               <div class="flex items-center space-x-2">
                 <div class="w-3 h-3 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-red-500'}" title="${friend.isOnline ? 'Online' : 'Offline'}"></div>
-
               </div>
             </div>
           `;

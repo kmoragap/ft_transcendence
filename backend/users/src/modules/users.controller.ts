@@ -105,8 +105,8 @@ export async function searchUsersHandler(request: FastifyRequest, reply: Fastify
     const users = await prisma.user.findMany({
       where: {
         OR: [
-          { username: { contains: q } },
-          { firstname: { contains: q } }
+          { username: { contains: q, mode: 'insensitive' } },
+          { firstname: { contains: q, mode: 'insensitive' } }
         ]
       },
       select: {

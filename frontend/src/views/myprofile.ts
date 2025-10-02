@@ -1,27 +1,42 @@
-import { store } from '../store';
-import { t, updateText } from '../i18n';
-import { uploadMyAvatar, updateMyProfile, acceptReceivedFriendRequest, rejectFriendRequest, removeFriendRequest } from "../api/users";
+import { store } from "../store";
+import { t, updateText } from "../i18n";
+import {
+  uploadMyAvatar,
+  updateMyProfile,
+  acceptReceivedFriendRequest,
+  rejectFriendRequest,
+  removeFriendRequest,
+} from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
-import { sessionManager } from '../utils/session';
-import { alertError, alertSuccess, alertWarning } from './../utils/modal-alerts';
+import { sessionManager } from "../utils/session";
+import {
+  alertError,
+  alertSuccess,
+  alertWarning,
+} from "./../utils/modal-alerts";
 
 export interface UserProfile {
-  username: string
-  email: string
-  name: string
-  avatarUrl: string
-  wins: number
-  losses: number
-  totalGames: number
-  winRate: number
+  username: string;
+  email: string;
+  name: string;
+  avatarUrl: string;
+  wins: number;
+  losses: number;
+  totalGames: number;
+  winRate: number;
 }
 
-function getStaticStats(): { wins: number; losses: number; totalGames: number; winRate: number } {
+function getStaticStats(): {
+  wins: number;
+  losses: number;
+  totalGames: number;
+  winRate: number;
+} {
   return {
     wins: 127,
     losses: 89,
     totalGames: 216,
-    winRate: 59
+    winRate: 59,
   };
 }
 
@@ -31,43 +46,43 @@ function getCurrentUser(): UserProfile {
 
   if (!sessionManager.isSessionRestored()) {
     return {
-      username: 'Loading...',
-      email: 'Loading...',
-      name: 'Loading',
-      avatarUrl: '/assets/img/avatar.jpg',
-      ...getStaticStats()
+      username: "Loading...",
+      email: "Loading...",
+      name: "Loading",
+      avatarUrl: "/assets/img/avatar.jpg",
+      ...getStaticStats(),
     };
   }
-  
+
   if (!currentUser) {
     return {
-      username: 'Guest',
-      email: 'guest@example.com',
-      name: 'Guest User',
-      avatarUrl: '/assets/img/avatar.jpg',
-      ...getStaticStats()
+      username: "Guest",
+      email: "guest@example.com",
+      name: "Guest User",
+      avatarUrl: "/assets/img/avatar.jpg",
+      ...getStaticStats(),
     };
   }
-  
+
   return {
     username: currentUser.username,
     email: currentUser.email,
     name: currentUser.firstname || currentUser.username,
-    avatarUrl: currentUser.avatarUrl || '/assets/img/avatar.jpg',
-    ...getStaticStats()
+    avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
+    ...getStaticStats(),
   };
 }
 
 let user: UserProfile = getCurrentUser();
 
 export function renderMyProfile(): HTMLElement {
-  const section = document.createElement('section')
+  const section = document.createElement("section");
   section.className = [
-    'flex flex-col w-full h-full',
-    'items-center justify-center text-center',
-    'z-[3] text-[#66fcf1] font-[jura]',
-    ''
-  ].join(' ')
+    "flex flex-col w-full h-full",
+    "items-center justify-center text-center",
+    "z-[3] text-[#66fcf1] font-[jura]",
+    "",
+  ].join(" ");
 
   const getViewHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
@@ -157,7 +172,7 @@ export function renderMyProfile(): HTMLElement {
       </div>
     </section>
   </div>
-  `
+  `;
 
   const getEditHTML = () => `
     <div class="flex flex-col items-center space-y-6 w-full px-4">
@@ -201,7 +216,7 @@ export function renderMyProfile(): HTMLElement {
       </form>
     </div>
   </div>
-  `
+  `;
 
   const updateUserData = async () => {
     user = getCurrentUser();
@@ -216,28 +231,28 @@ export function renderMyProfile(): HTMLElement {
   };
 
   const fetchFriendsAndRequests = async (token: string | null) => {
-    const headers: Record<string, string> = token 
-      ? { 'Authorization': `Bearer ${token}` }
-      : { 'Content-Type': 'application/json' };
-    
-    const credentials = token ? undefined : 'include';
-    
+    const headers: Record<string, string> = token
+      ? { Authorization: `Bearer ${token}` }
+      : { "Content-Type": "application/json" };
+
+    const credentials = token ? undefined : "include";
+
     const [friendsRes, requestsRes] = await Promise.all([
-      fetch('/api/users/friends', { headers, credentials }),
-      fetch('/api/users/friends/requests/pending', { headers, credentials })
+      fetch("/api/users/friends", { headers, credentials }),
+      fetch("/api/users/friends/requests/pending", { headers, credentials }),
     ]);
 
     let allFriends: any[] = [];
-    
+
     if (friendsRes.ok) {
       const friends = await friendsRes.json();
       allFriends = friends.map((friend: any) => ({
         id: friend.id,
         username: friend.username,
-        avatarUrl: friend.avatarUrl || '/assets/img/avatar.jpg',
-        type: 'friend',
-        status: 'accepted',
-        isOnline: friend.isOnline || false
+        avatarUrl: friend.avatarUrl || "/assets/img/avatar.jpg",
+        type: "friend",
+        status: "accepted",
+        isOnline: friend.isOnline || false,
       }));
     }
 
@@ -245,10 +260,10 @@ export function renderMyProfile(): HTMLElement {
       const requests = await requestsRes.json();
       const pendingFriends = requests.map((request: any) => ({
         id: request.id,
-        username: request.requester?.username || 'Unknown User',
-        avatarUrl: request.requester?.avatarUrl || '/assets/img/avatar.jpg',
-        type: 'request',
-        status: 'pending'
+        username: request.requester?.username || "Unknown User",
+        avatarUrl: request.requester?.avatarUrl || "/assets/img/avatar.jpg",
+        type: "request",
+        status: "pending",
       }));
       allFriends = [...allFriends, ...pendingFriends];
     }
@@ -256,93 +271,122 @@ export function renderMyProfile(): HTMLElement {
     return allFriends;
   };
 
-  const renderFriendsList = (allFriends: any[], friendRequestsList: HTMLElement) => {
+  const renderFriendsList = (
+    allFriends: any[],
+    friendRequestsList: HTMLElement
+  ) => {
     if (allFriends.length === 0) {
-      friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t('no_friends_or_requests')}</p>`;
+      friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t(
+        "no_friends_or_requests"
+      )}</p>`;
       return;
     }
 
-    friendRequestsList.innerHTML = allFriends.map((friend: any) => {
-      if (friend.type === 'friend') {
-        return `
+    friendRequestsList.innerHTML = allFriends
+      .map((friend: any) => {
+        if (friend.type === "friend") {
+          return `
           <div class="flex items-center justify-between p-2">
             <div class="flex items-center space-x-3">
-              <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
-              <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
+              <img src="${
+                friend.avatarUrl || "/assets/img/avatar.jpg"
+              }" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
+              <a href="#/profile/${
+                friend.username
+              }" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${
+            friend.username
+          }</a>
             </div>
             <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-red-500'}" title="${friend.isOnline ? 'Online' : 'Offline'}"></div>
+              <div class="w-3 h-3 rounded-full ${
+                friend.isOnline ? "bg-green-500" : "bg-red-500"
+              }" title="${friend.isOnline ? "Online" : "Offline"}"></div>
             </div>
           </div>
         `;
-      } else {
-        return `
+        } else {
+          return `
           <div class="flex items-center justify-between p-2">
             <div class="flex items-center space-x-3">
-              <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
-              <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
+              <img src="${
+                friend.avatarUrl || "/assets/img/avatar.jpg"
+              }" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
+              <a href="#/profile/${
+                friend.username
+              }" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${
+            friend.username
+          }</a>
             </div>
             <div class="flex space-x-2">
-              <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Accept">
+              <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${
+                friend.id
+              }" data-username="${friend.username}" title="Accept">
                 ✓
               </button>
-              <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Reject">
+              <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${
+                friend.id
+              }" data-username="${friend.username}" title="Reject">
                 ✗
               </button>
             </div>
           </div>
         `;
-      }
-    }).join('');
+        }
+      })
+      .join("");
   };
 
   const bindFriendRequestEvents = (friendRequestsList: HTMLElement) => {
-    friendRequestsList.querySelectorAll('.accept-friend-request-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const target = e.target as HTMLButtonElement;
-        const requestId = target.dataset.requestId;
-        const username = target.dataset.username;
-        if (requestId && username) {
-          try {
-            await acceptReceivedFriendRequest(username, requestId);
-            await populateFriendRequests();
-            alertSuccess(t('friend_request_accepted'));
-          } catch (error: any) {
-            alertError(error?.message || t('friend_request_accept_failed'));
+    friendRequestsList
+      .querySelectorAll(".accept-friend-request-btn")
+      .forEach(btn => {
+        btn.addEventListener("click", async e => {
+          const target = e.target as HTMLButtonElement;
+          const requestId = target.dataset.requestId;
+          const username = target.dataset.username;
+          if (requestId && username) {
+            try {
+              await acceptReceivedFriendRequest(username, requestId);
+              await populateFriendRequests();
+              alertSuccess(t("friend_request_accepted"));
+            } catch (error: any) {
+              alertError(error?.message || t("friend_request_accept_failed"));
+            }
           }
-        }
+        });
       });
-    });
 
-    friendRequestsList.querySelectorAll('.reject-friend-request-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const target = e.target as HTMLButtonElement;
-        const requestId = target.dataset.requestId;
-        const username = target.dataset.username;
-        if (requestId && username) {
-          try {
-            await rejectFriendRequest(requestId);
-            await populateFriendRequests();
-            alertSuccess(t('friend_request_rejected'));
-          } catch (error: any) {
-            alertError(error?.message || t('friend_request_reject_failed'));
+    friendRequestsList
+      .querySelectorAll(".reject-friend-request-btn")
+      .forEach(btn => {
+        btn.addEventListener("click", async e => {
+          const target = e.target as HTMLButtonElement;
+          const requestId = target.dataset.requestId;
+          const username = target.dataset.username;
+          if (requestId && username) {
+            try {
+              await rejectFriendRequest(requestId);
+              await populateFriendRequests();
+              alertSuccess(t("friend_request_rejected"));
+            } catch (error: any) {
+              alertError(error?.message || t("friend_request_reject_failed"));
+            }
           }
-        }
+        });
       });
-    });
 
     // Bind event listeners for remove friend buttons
-    friendRequestsList.querySelectorAll('.remove-friend-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+    friendRequestsList.querySelectorAll(".remove-friend-btn").forEach(btn => {
+      btn.addEventListener("click", async e => {
         const target = e.target as HTMLButtonElement;
         const username = target.dataset.username;
         if (username) {
           try {
             await removeFriendRequest(username);
             await populateFriendRequests();
-            alertSuccess(t('friend_removed_successfully'));
+            alertSuccess(t("friend_removed_successfully"));
           } catch (error: any) {
-            alertError(error?.message || t('friend_remove_failed'));
+            alertError(error?.message || t("friend_remove_failed"));
           }
         }
       });
@@ -350,21 +394,27 @@ export function renderMyProfile(): HTMLElement {
   };
 
   const populateFriendRequests = async () => {
-    const friendRequestsList = section.querySelector('#friend-requests-list') as HTMLElement;
+    const friendRequestsList = section.querySelector(
+      "#friend-requests-list"
+    ) as HTMLElement;
     if (!friendRequestsList) return;
 
-    const token = localStorage.getItem('accessToken');
-    
+    const token = localStorage.getItem("accessToken");
+
     try {
       const allFriends = await fetchFriendsAndRequests(token);
       renderFriendsList(allFriends, friendRequestsList);
       bindFriendRequestEvents(friendRequestsList);
     } catch (error) {
-      console.error('Error loading friend requests:', error);
+      console.error("Error loading friend requests:", error);
       if (!token) {
-        friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t('please_login_to_see_friends')}</p>`;
+        friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t(
+          "please_login_to_see_friends"
+        )}</p>`;
       } else {
-        friendRequestsList.innerHTML = `<p class="text-red-400 text-sm">${t('error_loading_friend_requests')}</p>`;
+        friendRequestsList.innerHTML = `<p class="text-red-400 text-sm">${t(
+          "error_loading_friend_requests"
+        )}</p>`;
       }
     }
   };
@@ -372,25 +422,30 @@ export function renderMyProfile(): HTMLElement {
   updateUserData();
   store.subscribe(updateUserData);
   sessionManager.onSessionRestored(updateUserData);
-  
-  window.addEventListener('languageChanged', () => {
+
+  window.addEventListener("languageChanged", () => {
     updateUserData();
   });
-  
+
   setTimeout(() => {
     updateUserData();
   }, 500);
 
   let statusPollingInterval: number | null = null;
-  
+  let isComponentMounted = true;
   const startStatusPolling = () => {
     if (statusPollingInterval) return;
-    
+
     statusPollingInterval = window.setInterval(async () => {
+      //we check if component is still mounted and if we're on the profile page
+      if (!isComponentMounted || !location.hash.includes("/myprofile")) {
+        stopStatusPolling();
+        return;
+      }
       try {
         await populateFriendRequests();
       } catch (error) {
-        console.error('Error polling friend status:', error);
+        console.error("Error polling friend status:", error);
       }
     }, 5000);
   };
@@ -402,13 +457,16 @@ export function renderMyProfile(): HTMLElement {
     }
   };
 
-  startStatusPolling();
+  if (location.hash.includes("/myprofile")) {
+    startStatusPolling();
+  }
 
   // Use MutationObserver to detect when section is removed from the DOM
-  const observer = new MutationObserver((mutations) => {
+  const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       for (const removedNode of Array.from(mutation.removedNodes)) {
         if (removedNode === section) {
+          isComponentMounted = false;
           stopStatusPolling();
           observer.disconnect();
         }
@@ -420,29 +478,37 @@ export function renderMyProfile(): HTMLElement {
   }
 
   function bindViewEvents() {
-    const editBtn = section.querySelector('#edit-btn') as HTMLButtonElement
-    const refreshStatsBtn = section.querySelector('#refresh-stats-btn') as HTMLButtonElement
-    const refreshFriendsBtn = section.querySelector('#refresh-friends-btn') as HTMLButtonElement
+    const editBtn = section.querySelector("#edit-btn") as HTMLButtonElement;
+    const refreshStatsBtn = section.querySelector(
+      "#refresh-stats-btn"
+    ) as HTMLButtonElement;
+    const refreshFriendsBtn = section.querySelector(
+      "#refresh-friends-btn"
+    ) as HTMLButtonElement;
 
-    const fileInput = section.querySelector('#avatar-file-input') as HTMLInputElement | null;
-    const avatarImg = section.querySelector('#profile-avatar-img') as HTMLImageElement | null;
+    const fileInput = section.querySelector(
+      "#avatar-file-input"
+    ) as HTMLInputElement | null;
+    const avatarImg = section.querySelector(
+      "#profile-avatar-img"
+    ) as HTMLImageElement | null;
 
     if (avatarImg && fileInput) {
-      avatarImg.addEventListener('click', () => fileInput.click());
+      avatarImg.addEventListener("click", () => fileInput.click());
 
-      fileInput.addEventListener('change', async () => {
+      fileInput.addEventListener("change", async () => {
         const file = fileInput.files?.[0];
         if (!file) return;
 
         if (file.size > 2 * 1024 * 1024) {
-          alertWarning(t('image_too_large'));
-          fileInput.value = '';
+          alertWarning(t("image_too_large"));
+          fileInput.value = "";
           return;
         }
 
         if (avatarImg) {
-          avatarImg.style.opacity = '0.5';
-          avatarImg.style.cursor = 'wait';
+          avatarImg.style.opacity = "0.5";
+          avatarImg.style.cursor = "wait";
         }
 
         try {
@@ -451,64 +517,64 @@ export function renderMyProfile(): HTMLElement {
           user = { ...user, avatarUrl: url };
           updateCurrentUserAvatar(url);
         } catch (e: any) {
-          alertError(e?.message || t('upload_failed'));
+          alertError(e?.message || t("upload_failed"));
         } finally {
           if (avatarImg) {
-            avatarImg.style.opacity = '1';
-            avatarImg.style.cursor = 'pointer';
+            avatarImg.style.opacity = "1";
+            avatarImg.style.cursor = "pointer";
           }
-          fileInput.value = '';
+          fileInput.value = "";
         }
       });
     }
 
-    editBtn?.addEventListener('click', enterEditMode)
-    
-    refreshStatsBtn?.addEventListener('click', () => {
-      const newStats = getStaticStats()
-      user = { ...user, ...newStats }
-      section.innerHTML = getViewHTML()
-      bindViewEvents()
-      updateText();
-    })
+    editBtn?.addEventListener("click", enterEditMode);
 
-    refreshFriendsBtn?.addEventListener('click', async () => {
+    refreshStatsBtn?.addEventListener("click", () => {
+      const newStats = getStaticStats();
+      user = { ...user, ...newStats };
+      section.innerHTML = getViewHTML();
+      bindViewEvents();
+      updateText();
+    });
+
+    refreshFriendsBtn?.addEventListener("click", async () => {
       try {
         await populateFriendRequests();
-        alertSuccess(t('friend_status_refreshed'));
+        alertSuccess(t("friend_status_refreshed"));
       } catch (error) {
-        console.error('Error refreshing friends:', error);
-        alertError(t('friend_status_refresh_failed'));
+        console.error("Error refreshing friends:", error);
+        alertError(t("friend_status_refresh_failed"));
       }
-    })
+    });
   }
 
   function enterEditMode() {
-    section.innerHTML = getEditHTML()
+    section.innerHTML = getEditHTML();
     updateText();
-    const form = section.querySelector('form') as HTMLFormElement
-    const cancel = section.querySelector('#cancel-btn') as HTMLButtonElement
+    const form = section.querySelector("form") as HTMLFormElement;
+    const cancel = section.querySelector("#cancel-btn") as HTMLButtonElement;
 
-    cancel.addEventListener('click', () => {
-      section.innerHTML = getViewHTML()
-      bindViewEvents()
+    cancel.addEventListener("click", () => {
+      section.innerHTML = getViewHTML();
+      bindViewEvents();
       updateText();
-    })
+    });
 
-    form.addEventListener('submit', async e => {
-      e.preventDefault()
-      const data = new FormData(form)
-      
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const data = new FormData(form);
+
       const profileData = {
-        username: data.get('username') as string,
-        firstname: data.get('name') as string,
-        email: data.get('email') as string,
-      }
+        username: data.get("username") as string,
+        firstname: data.get("name") as string,
+        email: data.get("email") as string,
+      };
 
       try {
-        await updateMyProfile(profileData); 
+        await updateMyProfile(profileData);
         updateCurrentUserProfile(profileData);
-        
+
         const updated: UserProfile = {
           name: profileData.firstname,
           username: profileData.username,
@@ -518,21 +584,20 @@ export function renderMyProfile(): HTMLElement {
           losses: user.losses,
           totalGames: user.totalGames,
           winRate: user.winRate,
-        }
+        };
 
-
-        user = updated
-        section.innerHTML = getViewHTML()
-        bindViewEvents()
+        user = updated;
+        section.innerHTML = getViewHTML();
+        bindViewEvents();
         updateText();
-        
-        alertSuccess(t('profile_updated'));
+
+        alertSuccess(t("profile_updated"));
       } catch (error: any) {
-        console.error('Failed to update profile:', error);
-        alertError(error?.message || t('update_failed'));
+        console.error("Failed to update profile:", error);
+        alertError(error?.message || t("update_failed"));
       }
-    })
+    });
   }
   updateText();
-  return section
+  return section;
 }

@@ -521,49 +521,43 @@ async function removeFriendRequestHelper(
 export async function removeFriendRequest(userId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
   
+  let headers: Record<string, string>;
+  let options: Record<string, any> = {};
+  let requestBuilder: (friendshipId: string) => RequestInit;
+
   if (!token) {
-    try {
-      await removeFriendRequestHelper(
-        userId,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        },
-        (friendshipId: string) => ({
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({})
-        })
-      );
-    } catch (error) {
-      throw new Error('No access token found');
-    }
-    return;
+    headers = { 'Content-Type': 'application/json' };
+    options = { headers, credentials: 'include' };
+    requestBuilder = (friendshipId: string) => ({
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({})
+    });
+  } else {
+    headers = { 'Authorization': `Bearer ${token}` };
+    options = { headers };
+    requestBuilder = (friendshipId: string) => ({
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
   }
   try {
     await removeFriendRequestHelper(
       userId,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      },
-      (friendshipId: string) => ({
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
-      })
+      options,
+      requestBuilder
     );
   } catch (error) {
-    console.error('Remove friend error:', error);
-    throw error;
+    if (!token) {
+      throw new Error('No access token found');
+    } else {
+      console.error('Remove friend error:', error);
+      throw error;
+    }
   }
 }

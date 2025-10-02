@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import { authenticateToken } from "../modules/users.middleware";
 import {
   createUserHandler,
   deleteUserHandler,
@@ -18,13 +19,14 @@ import {
   deleteFriendHandler,
   getAllFriendshipsHandler,
 } from "./friends.controller";
-import { authenticateToken } from "../modules/users.middleware";
 import {
-  getUserStats,
-  updateUserStats,
   updateOnlineStatusHandler,
   updateOnlineStatusByIdHandler,
+  updateUserStatsHandler,
+  getUserStatsHandler,
+  getMatchHistoryHandler,
 } from "./stats.controller";
+import { userIdParamsSchema, updateStatsBodySchema } from "./stats.schema";
 
 export default async function userRoutes(fastify: FastifyInstance) {
   // profile routes (register first to avoid conflicts)
@@ -95,33 +97,36 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
   // pong routes
   fastify.get(
-    "/users/:id/stats",
+    "/:id/stats",
     {
+      preHandler: [authenticateToken],
       schema: {
-        params: {
-          type: "object",
-          properties: {
-            id: { type: "string", pattern: "^c[a-z0-9]{24}$" },
-          },
-        },
+        params: userIdParamsSchema,
       },
     },
-    getUserStats
+    getUserStatsHandler
   );
 
   fastify.put(
-    "/users/:id/stats",
+    "/:id/stats",
     {
+      preHandler: [authenticateToken],
       schema: {
-        params: {
-          type: "object",
-          properties: {
-            id: { type: "string", pattern: "^c[a-z0-9]{24}$" },
-          },
-        },
+        params: userIdParamsSchema,
+        body: updateStatsBodySchema,
       },
     },
-    updateUserStats
+    updateUserStatsHandler
+  );
+  fastify.get(
+    "/:id/matches",
+    {
+      preHandler: [authenticateToken],
+      schema: {
+        params: userIdParamsSchema,
+      },
+    },
+    getMatchHistoryHandler
   );
 
   fastify.post("/users/batch", getUsersByIds);

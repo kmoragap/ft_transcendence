@@ -220,7 +220,7 @@ export function renderProfile(username: string): HTMLElement {
         updateText();
         alertSuccess('Friend request cancelled');
       } catch (error: any) {
-        alertError(error?.message || 'Failed to cancel friend request');
+        alertError(error?.message || t('cancel_friend_request_failed'));
       }
     });
   };

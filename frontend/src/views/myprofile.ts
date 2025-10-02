@@ -199,7 +199,7 @@ export function renderMyProfile(): HTMLElement {
   </div>
   `
 
-  const updateUserData = async () => {
+  const updateUserData: Promise<void> = async () => {
     user = getCurrentUser();
     section.innerHTML = getViewHTML();
     bindViewEvents();

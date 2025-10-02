@@ -203,7 +203,7 @@ export function renderMyProfile(): HTMLElement {
   </div>
   `
 
-  const updateUserData: Promise<void> = async () => {
+  const updateUserData = async () => {
     user = getCurrentUser();
     section.innerHTML = getViewHTML();
     bindViewEvents();
@@ -258,157 +258,41 @@ export function renderMyProfile(): HTMLElement {
       return;
     }
 
-        friendRequestsList.innerHTML = allFriends.map((friend: any) => {
-          if (friend.type === 'friend') {
-            return `
-              <div class="flex items-center justify-between p-2">
-                <div class="flex items-center space-x-3">
-                  <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
-                  <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <div class="w-3 h-3 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-red-500'}" title="${friend.isOnline ? 'Online' : 'Offline'}"></div>
-                </div>
-              </div>
-            `;
-          } else {
-            return `
-              <div class="flex items-center justify-between p-2">
-                <div class="flex items-center space-x-3">
-                  <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
-                  <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
-                </div>
-                <div class="flex space-x-2">
-                  <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Accept">
-                    ✓
-                  </button>
-                  <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Reject">
-                    ✗
-                  </button>
-                </div>
-              </div>
-            `;
-          }
-        }).join('');
-        
-        friendRequestsList.querySelectorAll('.accept-friend-request-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const target = e.target as HTMLButtonElement;
-            const requestId = target.dataset.requestId;
-            const username = target.dataset.username;
-            if (requestId && username) {
-              try {
-                await acceptReceivedFriendRequest(username, requestId);
-                await populateFriendRequests();
-              } catch (error) {
-                console.error('Error accepting friend request:', error);
-              }
-            }
-          });
-        });
-
-        friendRequestsList.querySelectorAll('.reject-friend-request-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const target = e.target as HTMLButtonElement;
-            const requestId = target.dataset.requestId;
-            if (requestId) {
-              try {
-                await rejectFriendRequest(requestId);
-                await populateFriendRequests();
-              } catch (error) {
-                console.error('Error rejecting friend request:', error);
-              }
-            }
-          });
-        });
-        
-        return;
-      } catch (error) {
-        friendRequestsList.innerHTML = '<p class="text-gray-400 text-sm">Please log in to see friends</p>';
-        return;
-      }
-    }
-
-    try {
-      const [friendsRes, requestsRes] = await Promise.all([
-        fetch('/api/users/friends', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch('/api/users/friends/requests/pending', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ]);
-
-
-      let allFriends = [];
-      
-      if (friendsRes.ok) {
-        const friends = await friendsRes.json();
-        allFriends = friends.map((friend: any) => ({
-          id: friend.id,
-          username: friend.username,
-          avatarUrl: friend.avatarUrl || '/assets/img/avatar.jpg',
-          type: 'friend',
-          status: 'accepted',
-          isOnline: friend.isOnline || false
-        }));
-      }
-
-      if (requestsRes.ok) {
-        const requests = await requestsRes.json();
-        const pendingFriends = requests.map((request: any) => ({
-          id: request.id,
-          username: request.requester?.username || 'Unknown User',
-          avatarUrl: request.requester?.avatarUrl || '/assets/img/avatar.jpg',
-          type: 'request',
-          status: 'pending'
-        }));
-        allFriends = [...allFriends, ...pendingFriends];
-      }
-
-      if (allFriends.length === 0) {
-        friendRequestsList.innerHTML = '<p class="text-gray-400 text-sm">No friends or pending requests</p>';
-        return;
-      }
-
-      friendRequestsList.innerHTML = allFriends.map((friend: any) => {
-        if (friend.type === 'friend') {
-          return `
-            <div class="flex items-center justify-between p-2">
-              <div class="flex items-center space-x-3">
-                <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
-                <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-red-500'}" title="${friend.isOnline ? 'Online' : 'Offline'}"></div>
-              </div>
+    friendRequestsList.innerHTML = allFriends.map((friend: any) => {
+      if (friend.type === 'friend') {
+        return `
+          <div class="flex items-center justify-between p-2">
+            <div class="flex items-center space-x-3">
+              <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
+              <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
             </div>
-          `;
-        } else {
-          return `
-            <div class="flex items-center justify-between p-2">
-              <div class="flex items-center space-x-3">
-                <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
-                <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
-              </div>
-              <div class="flex space-x-2">
-                <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Accept">
-                  ✓
-                </button>
-                <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Reject">
-                  ✗
-                </button>
-              </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-red-500'}" title="${friend.isOnline ? 'Online' : 'Offline'}"></div>
             </div>
-          `;
-        }
-      }).join('');
-      
-    } catch (error) {
-      console.error('Error loading friend requests:', error);
-      friendRequestsList.innerHTML = '<p class="text-red-400 text-sm">Error loading friend requests</p>';
-    }
+          </div>
+        `;
+      } else {
+        return `
+          <div class="flex items-center justify-between p-2">
+            <div class="flex items-center space-x-3">
+              <img src="${friend.avatarUrl || '/assets/img/avatar.jpg'}" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
+              <a href="#/profile/${friend.username}" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${friend.username}</a>
+            </div>
+            <div class="flex space-x-2">
+              <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Accept">
+                ✓
+              </button>
+              <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${friend.id}" data-username="${friend.username}" title="Reject">
+                ✗
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+  };
 
+  const bindFriendRequestEvents = (friendRequestsList: HTMLElement) => {
     friendRequestsList.querySelectorAll('.accept-friend-request-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const target = e.target as HTMLButtonElement;

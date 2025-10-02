@@ -499,7 +499,6 @@ export async function rejectFriendRequest(requestId: string): Promise<void> {
 export async function removeFriendRequest(userId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
   
-  
   if (!token) {
     try {
       const friendsRes = await fetch('/api/users/friends', {

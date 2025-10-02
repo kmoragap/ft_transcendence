@@ -207,7 +207,11 @@ export function renderMyProfile(): HTMLElement {
     user = getCurrentUser();
     section.innerHTML = getViewHTML();
     bindViewEvents();
-    await populateFriendRequests();
+    try {
+      await populateFriendRequests();
+    } catch (err) {
+      console.error("Failed to populate friend requests:", err);
+    }
     updateText();
   };
 

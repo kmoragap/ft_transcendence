@@ -99,7 +99,11 @@ export function renderMyProfile(): HTMLElement {
               <img id="profile-avatar-img" src="${user.avatarUrl}" alt="${user.username}'s avatar"
                   class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover cursor-pointer" 
                   title="Click to change photo" />
-              <div class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+              <div
+                class="absolute inset-0 rounded-full bg-black/50 opacity-0
+                       group-hover:opacity-100 transition-opacity duration-300
+                       flex items-center justify-center pointer-events-none"
+              >
                 <span class="text-white text-xs font-bold" data-i18n="change_photo">Change Photo</span>
               </div>
             </div>

@@ -2,6 +2,7 @@ import fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
+import cookie from '@fastify/cookie';
 import path from 'node:path';
 import userRoutes from '../modules/users.routes';
 
@@ -16,6 +17,12 @@ export async function buildServer(): Promise<FastifyInstance> {
         },
       },
     },
+  });
+
+  // Cookie support
+  server.register(cookie, {
+    secret: process.env.COOKIE_SECRET || 'change-this-in-prod',
+    parseOptions: {}
   });
 
   // CORS

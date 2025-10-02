@@ -2,6 +2,7 @@ import { renderHome } from './views/home.ts';
 import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';
 import { renderMyProfile } from './views/myprofile.ts';
+import { renderProfile } from './views/profile.ts';
 import { renderDashboard } from './views/dashboard.ts';
 import { renderGame} from './views/game';
 import { updateText } from './i18n';
@@ -67,11 +68,21 @@ export function navigate(path: string) {
     document.body.style.overscrollBehavior = '';
   }
 
-  const renderFn = routes[path] || renderHome;
+  let renderFn = routes[path];
+  let title = titles[path] || 'App';
+  
+  if (!renderFn && path.startsWith('/profile/')) {
+    const username = path.split('/')[2];
+    renderFn = () => {
+      return renderProfile(username);
+    };
+    title = `Profile - ${username}`;
+  }
+  
+  renderFn = renderFn || renderHome;
   app.innerHTML = '';
   app.appendChild(renderFn());
 
-  const title = titles[path] || 'App';
   document.title = `Transcendence — ${title}`;
   setPageTitleAndFocus(title);
   announce(`Navigated to ${title}`);

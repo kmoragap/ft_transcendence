@@ -3,14 +3,19 @@ import {
   createUserHandler, 
   deleteUserHandler, 
   getUsersHandler, 
+  searchUsersHandler,
   getUserByEmailHandler,
   getUserByUsernameHandler,
   uploadAvatarHandler,
   updateMyProfileHandler,
+  updateOnlineStatusHandler,
+  updateOnlineStatusByIdHandler,
   sendFriendRequestHandler,
   getFriendRequestsHandler,
   respondToFriendRequestHandler,
   getFriendsHandler,
+  deleteFriendHandler,
+  getAllFriendshipsHandler,
 } from '../modules/users.controller';
 import { authenticateToken } from '../modules/users.middleware';
 import { getUserStats, updateUserStats, getUsersByIds } from './users.controller';
@@ -19,6 +24,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // profile routes (register first to avoid conflicts)
   fastify.put('/me', { preHandler: [authenticateToken] }, updateMyProfileHandler);
   fastify.post('/me/avatar', { preHandler: [authenticateToken] }, uploadAvatarHandler);
+  fastify.put('/me/online-status', { preHandler: [authenticateToken] }, updateOnlineStatusHandler);
+  
+  // internal service route for auth service
+  fastify.put('/:userId/online-status', updateOnlineStatusByIdHandler);
   
   // public routes
   fastify.post('/', createUserHandler);  // user registartion
@@ -27,6 +36,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   
   // protected routes
   fastify.get('/', { preHandler: [authenticateToken] }, getUsersHandler);
+  fastify.get('/search', { preHandler: [authenticateToken] }, searchUsersHandler);
   fastify.delete('/', { preHandler: [authenticateToken] }, deleteUserHandler);
   
 // --- Friend Request Routes ---
@@ -34,6 +44,8 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.get('/friends/requests/pending', { preHandler: [authenticateToken] }, getFriendRequestsHandler);
   fastify.put('/friends/requests/:friendshipId', { preHandler: [authenticateToken] }, respondToFriendRequestHandler);
   fastify.get('/friends', { preHandler: [authenticateToken] }, getFriendsHandler);
+  fastify.get('/friendships', { preHandler: [authenticateToken] }, getAllFriendshipsHandler);
+  fastify.delete('/friends/:friendshipId', { preHandler: [authenticateToken] }, deleteFriendHandler);
 
   // pong routes
   fastify.get('/users/:id/stats', {

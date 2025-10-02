@@ -258,7 +258,7 @@ export function renderMyProfile(): HTMLElement {
 
   const renderFriendsList = (allFriends: any[], friendRequestsList: HTMLElement) => {
     if (allFriends.length === 0) {
-      friendRequestsList.innerHTML = '<p class="text-gray-400 text-sm">No friends or pending requests</p>';
+      friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t('no_friends_or_requests')}</p>`;
       return;
     }
 
@@ -362,9 +362,9 @@ export function renderMyProfile(): HTMLElement {
     } catch (error) {
       console.error('Error loading friend requests:', error);
       if (!token) {
-        friendRequestsList.innerHTML = '<p class="text-gray-400 text-sm">Please log in to see friends</p>';
+        friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t('please_login_to_see_friends')}</p>`;
       } else {
-        friendRequestsList.innerHTML = '<p class="text-red-400 text-sm">Error loading friend requests</p>';
+        friendRequestsList.innerHTML = `<p class="text-red-400 text-sm">${t('error_loading_friend_requests')}</p>`;
       }
     }
   };

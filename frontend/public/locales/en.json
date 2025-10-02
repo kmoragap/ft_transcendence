@@ -86,5 +86,8 @@
 	"friend_status_refreshed": "Friend status refreshed!",
 	"friend_status_refresh_failed": "Failed to refresh friend status",
 	"friend_request_cancelled": "Friend request cancelled",
-	"cancel_friend_request_failed": "Failed to cancel friend request"
+	"cancel_friend_request_failed": "Failed to cancel friend request",
+	"no_friends_or_requests": "No friends or pending requests",
+	"please_login_to_see_friends": "Please log in to see friends",
+	"error_loading_friend_requests": "Error loading friend requests"
 }

@@ -78,5 +78,8 @@
   "friend_status_refreshed": "Freundschaftsstatus aktualisiert!",
   "friend_status_refresh_failed": "Freundschaftsstatus konnte nicht aktualisiert werden",
   "friend_request_cancelled": "Freundschaftsanfrage storniert",
-  "cancel_friend_request_failed": "Freundschaftsanfrage konnte nicht storniert werden"
+  "cancel_friend_request_failed": "Freundschaftsanfrage konnte nicht storniert werden",
+  "no_friends_or_requests": "Keine Freunde oder ausstehende Anfragen",
+  "please_login_to_see_friends": "Bitte melden Sie sich an, um Freunde zu sehen",
+  "error_loading_friend_requests": "Fehler beim Laden der Freundschaftsanfragen"
 }

@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { randomBytes } from 'crypto';
-import { createUser, getUserByEmail } from './auth.controller';
+import { createUser, getUserByEmail, updateUserOnlineStatus } from './auth.controller';
 import prisma from '../utils/prisma';
 
 const OAUTH_CONFIG = {
@@ -109,6 +109,9 @@ export async function oauth42CallbackHandler(request: FastifyRequest, reply: Fas
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
+
+    // Set user as online
+    await updateUserOnlineStatus(user.id, true);
 
     // Set secure HTTP-only cookie with the token
     reply.setCookie('authToken', token, {

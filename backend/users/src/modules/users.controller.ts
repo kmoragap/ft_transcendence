@@ -89,9 +89,42 @@ export async function deleteUserHandler(request: FastifyRequest, reply: FastifyR
 
 export async function getUsersHandler(request:FastifyRequest, reply: FastifyReply) {
   const users = await prisma.user.findMany({
-    select: {id: true, username: true, email: true, firstname: true, avatarUrl: true}, 
+    select: {id: true, username: true, email: true, firstname: true, avatarUrl: true, gamesPlayed: true, gamesWon: true, totalScore: true}, 
   });
   return users;    
+}
+
+export async function searchUsersHandler(request: FastifyRequest, reply: FastifyReply) {
+  const { q } = request.query as { q: string };
+  
+  if (!q || q.length < 2) {
+    return reply.send([]);
+  }
+  
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: q } },
+          { firstname: { contains: q } }
+        ]
+      },
+      select: {
+        id: true,
+        username: true,
+        firstname: true,
+        avatarUrl: true,
+        gamesPlayed: true,
+        gamesWon: true,
+        totalScore: true
+      }
+    });
+    
+    return reply.send(users);
+  } catch (error) {
+    console.error('Error searching users:', error);
+    return reply.code(500).send({ error: 'Failed to search users' });
+  }
 }
 
 export async function getUserByEmailHandler(request: FastifyRequest, reply: FastifyReply) {
@@ -131,7 +164,6 @@ export async function getUserByUsernameHandler(request: FastifyRequest, reply: F
     if (!user) {
       return reply.code(404).send({ error: 'User not found' });
     }
-    
     return {
       id: user.id,
       username: user.username,
@@ -398,13 +430,19 @@ export async function getFriendsHandler(request: FastifyRequest, reply: FastifyR
                 ],
             },
             include: {
-                requester: { select: { id: true, username: true, avatarUrl: true } },
-                receiver: { select: { id: true, username: true, avatarUrl: true } },
+                requester: { select: { id: true, username: true, avatarUrl: true, isOnline: true } },
+                receiver: { select: { id: true, username: true, avatarUrl: true, isOnline: true } },
             },
         });
 
         const friends = friendships.map(f => {
-            return f.requesterId === userId ? f.receiver : f.requester;
+            const friend = f.requesterId === userId ? f.receiver : f.requester;
+            return {
+                id: f.id, // Include friendship ID for deletion
+                username: friend.username,
+                avatarUrl: friend.avatarUrl,
+                isOnline: friend.isOnline
+            };
         });
 
         return reply.send(friends);
@@ -412,6 +450,85 @@ export async function getFriendsHandler(request: FastifyRequest, reply: FastifyR
         console.error("Error fetching friends:", error);
         return reply.code(500).send({ error: "Failed to retrieve friends." });
     }
+}
+
+export async function getAllFriendshipsHandler(request: FastifyRequest, reply: FastifyReply) {
+    if (!request.user) {
+      return reply.code(401).send({ error: "Unauthorized: No user token provided." });
+    }
+    const userId = request.user.id;
+
+    try {
+        const friendships = await prisma.friendship.findMany({
+            where: {
+                OR: [
+                    { requesterId: userId },
+                    { receiverId: userId },
+                ],
+            },
+            include: {
+                requester: { select: { id: true, username: true, avatarUrl: true, isOnline: true } },
+                receiver: { select: { id: true, username: true, avatarUrl: true, isOnline: true } },
+            },
+        });
+
+        const allFriendships = friendships.map(f => {
+            const otherUser = f.requesterId === userId ? f.receiver : f.requester;
+            return {
+                id: f.id,
+                status: f.status,
+                otherUser: {
+                    username: otherUser.username,
+                    avatarUrl: otherUser.avatarUrl,
+                    isOnline: otherUser.isOnline
+                },
+                isRequester: f.requesterId === userId
+            };
+        });
+
+        return reply.send(allFriendships);
+    } catch (error) {
+        console.error("Error fetching all friendships:", error);
+        return reply.code(500).send({ error: "Failed to retrieve friendships." });
+    }
+}
+
+export async function deleteFriendHandler(request: FastifyRequest, reply: FastifyReply) {
+  if (!request.user) {
+    return reply.code(401).send({ error: "Unauthorized: No user token provided." });
+  }
+  
+  const { friendshipId } = request.params as { friendshipId: string };
+  const userId = request.user.id;
+
+  try {
+    // First, verify that the friendship exists and the user is part of it
+    const friendship = await prisma.friendship.findUnique({
+      where: { id: friendshipId },
+      include: {
+        requester: { select: { id: true, username: true } },
+        receiver: { select: { id: true, username: true } }
+      }
+    });
+
+    if (!friendship) {
+      return reply.code(404).send({ error: "Friendship not found." });
+    }
+
+    // Check if the current user is either the requester or receiver
+    if (friendship.requesterId !== userId && friendship.receiverId !== userId) {
+      return reply.code(403).send({ error: "You are not authorized to delete this friendship." });
+    }
+
+    // Delete the friendship
+    await prisma.friendship.delete({
+      where: { id: friendshipId }
+    });
+    return reply.send({ message: "Friend removed successfully." });
+  } catch (error) {
+    console.error("Error deleting friend:", error);
+    return reply.code(500).send({ error: "Failed to delete friend." });
+  }
 }
 
 
@@ -526,4 +643,50 @@ export async function uploadAvatarHandler(request: FastifyRequest, reply: Fastif
   });
 
   return reply.send({ avatarUrl: publicUrl });
+}
+
+export async function updateOnlineStatusHandler(request: FastifyRequest, reply: FastifyReply) {
+  const userId = request.user?.id;
+  if (!userId) return reply.code(401).send({ error: 'Unauthorized' });
+
+  const { isOnline } = request.body as { isOnline: boolean };
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isOnline }
+    });
+
+    return reply.send({ 
+      message: 'Online status updated successfully',
+      isOnline 
+    });
+  } catch (error: any) {
+    console.error('Error updating online status:', error);
+    return reply.code(500).send({ error: 'Failed to update online status' });
+  }
+}
+
+export async function updateOnlineStatusByIdHandler(request: FastifyRequest, reply: FastifyReply) {
+  const { userId } = request.params as { userId: string };
+  const { isOnline } = request.body as { isOnline: boolean };
+
+  if (!isValidCuid(userId)) {
+    return reply.code(400).send({ error: 'Invalid user ID format' });
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isOnline }
+    });
+
+    return reply.send({ 
+      message: 'Online status updated successfully',
+      isOnline 
+    });
+  } catch (error: any) {
+    console.error('Error updating online status:', error);
+    return reply.code(500).send({ error: 'Failed to update online status' });
+  }
 }

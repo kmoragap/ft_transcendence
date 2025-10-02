@@ -58,14 +58,29 @@ export interface UserSearchResult {
 export async function searchUsers(query: string): Promise<UserSearchResult[]> {
   const token = localStorage.getItem('accessToken');
   
-  // If no token, go straight to mock data
+  // If no token, try with cookies
   if (!token) {
+    try {
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+    } catch (error) {
+    }
+    
     const { mockSearchUsers } = await import('./mockUsers');
     return mockSearchUsers(query);
   }
   
   try {
-    // Try the search endpoint first, if it doesn't exist, fall back to getting all users
     const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
       method: "GET",
       headers: {
@@ -75,7 +90,6 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
     });
 
     if (!res.ok) {
-      // If search endpoint doesn't exist (404), try getting all users and filter on frontend
       if (res.status === 404) {
         try {
           const allUsersRes = await fetch('/api/users/', {
@@ -88,7 +102,6 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
           
           if (allUsersRes.ok) {
             const allUsers = await allUsersRes.json();
-            // Filter users on frontend
             const filteredUsers = allUsers.filter((user: any) => 
               user.username.toLowerCase().includes(query.toLowerCase()) ||
               user.firstname.toLowerCase().includes(query.toLowerCase())
@@ -96,7 +109,6 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
             return filteredUsers;
           }
         } catch (fallbackError) {
-          // If that also fails, use mock data
         }
         
         const { mockSearchUsers } = await import('./mockUsers');
@@ -109,7 +121,6 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
     const data = await res.json();
     return data;
   } catch (error) {
-    // Fallback to mock data for testing
     const { mockSearchUsers } = await import('./mockUsers');
     return mockSearchUsers(query);
   }
@@ -118,8 +129,23 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
 export async function getUserProfile(username: string): Promise<UserSearchResult> {
   const token = localStorage.getItem('accessToken');
   
-  // If no token, go straight to mock data
   if (!token) {
+    try {
+      const byUsernameRes = await fetch(`/api/users/by-username/${username}`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      if (byUsernameRes.ok) {
+        const data = await byUsernameRes.json();
+        return data;
+      }
+    } catch (error) {
+    }
+    
     const { mockGetUserProfile } = await import('./mockUsers');
     const mockUser = mockGetUserProfile(username);
     if (!mockUser) {
@@ -139,7 +165,6 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
     });
 
     if (!res.ok) {
-      // If direct user endpoint doesn't exist (404), try the by-username endpoint
       if (res.status === 404) {
         try {
           const byUsernameRes = await fetch(`/api/users/by-username/${username}`, {
@@ -151,10 +176,10 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
           });
           
           if (byUsernameRes.ok) {
-            return await byUsernameRes.json();
+            const data = await byUsernameRes.json();
+            return data;
           }
         } catch (fallbackError) {
-          // If that also fails, use mock data
         }
         
         const { mockGetUserProfile } = await import('./mockUsers');
@@ -171,7 +196,6 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
     const data = await res.json();
     return data;
   } catch (error) {
-    // Fallback to mock data for testing
     const { mockGetUserProfile } = await import('./mockUsers');
     const mockUser = mockGetUserProfile(username);
     if (!mockUser) {
@@ -183,9 +207,27 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
 
 export async function sendFriendRequest(userId: string, username?: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
-  
+
   if (!token) {
-    throw new Error('No access token found');
+    try {
+      const res = await fetch("/api/users/friends/requests", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username: username || userId })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Friend request failed (${res.status})`);
+      }
+
+      return;
+    } catch (error) {
+      throw new Error('No access token found');
+    }
   }
 
   try {
@@ -210,79 +252,147 @@ export async function sendFriendRequest(userId: string, username?: string): Prom
 
 export async function acceptFriendRequest(friendshipId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
+
   if (!token) {
-    throw new Error('No authentication token found');
+    try {
+      const res = await fetch(`/api/users/friends/${friendshipId}/accept`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' 
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Accept friend request failed (${res.status})`);
+      }
+
+      return;
+    } catch (error) {
+      throw new Error('No authentication token found');
+    }
   }
 
-  const res = await fetch(`/api/users/friends/${friendshipId}/accept`, {
-    method: "PUT",
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  });
+  try {
+    const res = await fetch(`/api/users/friends/${friendshipId}/accept`, {
+      method: "PUT",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Accept friend request failed (${res.status})`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Accept friend request failed (${res.status})`);
+    }
+  } catch (error) {
+    console.error('Accept friend request error:', error);
+    throw error;
   }
 }
 
 export async function removeFriend(friendshipId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
+
   if (!token) {
-    throw new Error('No authentication token found');
+    try {
+      const res = await fetch(`/api/users/friends/${friendshipId}`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({})
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Remove friend failed (${res.status})`);
+      }
+      
+      return;
+    } catch (error) {
+      throw new Error('No authentication token found');
+    }
   }
 
-  const res = await fetch(`/api/users/friends/${friendshipId}`, {
-    method: "DELETE",
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  });
+  try {
+    const res = await fetch(`/api/users/friends/${friendshipId}`, {
+      method: "DELETE",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Remove friend failed (${res.status})`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Remove friend failed (${res.status})`);
+    }
+  } catch (error) {
+    console.error('Remove friend error:', error);
+    throw error;
   }
 }
 
 
 export async function getFriendshipStatus(userId: string, currentUsername?: string): Promise<'none' | 'pending' | 'accepted' | 'rejected'> {
   const token = localStorage.getItem('accessToken');
+  
   if (!token) {
-    return 'none';
+    try {
+      const friendshipsRes = await fetch('/api/users/friendships', {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (friendshipsRes.ok) {
+        const friendships = await friendshipsRes.json();
+        
+        const friendship = friendships.find((f: any) => f.otherUser.username === userId);
+        
+        if (friendship) {
+          if (friendship.status === 'ACCEPTED') {
+            return 'accepted';
+          } else if (friendship.status === 'PENDING') {
+            return 'pending';
+          } else if (friendship.status === 'REJECTED') {
+            return 'rejected';
+          }
+        }
+      }
+
+      return 'none';
+    } catch (error) {
+      return 'none';
+    }
   }
 
   try {
-    // Get current user's friends list
-    const friendsRes = await fetch('/api/users/friends', {
+    const friendshipsRes = await fetch('/api/users/friendships', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
 
-    if (friendsRes.ok) {
-      const friends = await friendsRes.json();
-      const isFriend = friends.some((friend: any) => friend.username === userId);
-      if (isFriend) {
-        return 'accepted';
-      }
-    }
-
-    // Get pending friend requests
-    const requestsRes = await fetch('/api/users/friends/requests/pending', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (requestsRes.ok) {
-      const requests = await requestsRes.json();
-      const hasPendingRequest = requests.some((request: any) => request.username === userId);
-      if (hasPendingRequest) {
-        return 'pending';
+    if (friendshipsRes.ok) {
+      const friendships = await friendshipsRes.json();
+      
+      const friendship = friendships.find((f: any) => f.otherUser.username === userId);
+      
+      if (friendship) {
+        if (friendship.status === 'ACCEPTED') {
+          return 'accepted';
+        } else if (friendship.status === 'PENDING') {
+          return 'pending';
+        } else if (friendship.status === 'REJECTED') {
+          return 'rejected';
+        }
       }
     }
 
@@ -298,12 +408,30 @@ export async function getFriendshipStatus(userId: string, currentUsername?: stri
 
 export async function acceptReceivedFriendRequest(username: string, requestId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
+  
   if (!token) {
-    throw new Error('No access token found');
+    try {
+      const res = await fetch(`/api/users/friends/requests/${requestId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'ACCEPTED' })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Accept friend request failed (${res.status})`);
+      }
+      
+      return;
+    } catch (error) {
+      throw new Error('No access token found');
+    }
   }
 
   try {
-    // Accept the friend request using the request ID directly
     const res = await fetch(`/api/users/friends/requests/${requestId}`, {
       method: 'PUT',
       headers: {
@@ -325,12 +453,30 @@ export async function acceptReceivedFriendRequest(username: string, requestId: s
 
 export async function rejectFriendRequest(requestId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
+  
   if (!token) {
-    throw new Error('No access token found');
+    try {
+      const res = await fetch(`/api/users/friends/requests/${requestId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'REJECTED' })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Reject friend request failed (${res.status})`);
+      }
+      
+      return;
+    } catch (error) {
+      throw new Error('No access token found');
+    }
   }
 
   try {
-    // Reject the friend request using the request ID directly
     const res = await fetch(`/api/users/friends/requests/${requestId}`, {
       method: 'PUT',
       headers: {
@@ -352,12 +498,49 @@ export async function rejectFriendRequest(requestId: string): Promise<void> {
 
 export async function removeFriendRequest(userId: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
+  
+  
   if (!token) {
-    throw new Error('No access token found');
+    try {
+      const friendsRes = await fetch('/api/users/friends', {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' 
+      });
+
+
+      if (!friendsRes.ok) {
+        throw new Error('Failed to get friends list');
+      }
+
+      const friends = await friendsRes.json();
+      const friendship = friends.find((friend: any) => friend.username === userId);
+      
+      if (!friendship) {
+        throw new Error('Friend not found');
+      }
+
+      const res = await fetch(`/api/users/friends/${friendship.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({})
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Remove friend failed (${res.status})`);
+      }
+      return;
+    } catch (error) {
+      throw new Error('No access token found');
+    }
   }
 
   try {
-    // First, get the friendship ID from friends list
     const friendsRes = await fetch('/api/users/friends', {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -375,12 +558,13 @@ export async function removeFriendRequest(userId: string): Promise<void> {
       throw new Error('Friend not found');
     }
 
-    // Remove the friendship
     const res = await fetch(`/api/users/friends/${friendship.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
     });
 
     if (!res.ok) {

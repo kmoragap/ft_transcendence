@@ -4,7 +4,12 @@ import prisma from '../utils/prisma';
 
 export async function authenticateToken(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const token = request.headers.authorization?.replace('Bearer ', '');
+    let token = request.headers.authorization?.replace('Bearer ', '');
+    
+    // If no Bearer token, try to get token from cookies (for OAuth users)
+    if (!token) {
+      token = request.cookies?.authToken;
+    }
     
     if (!token) {
       return reply.code(401).send({ error: 'No token provided' });

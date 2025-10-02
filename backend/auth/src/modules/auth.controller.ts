@@ -96,6 +96,24 @@ export async function createUser(
     throw err;
   }
 }
+
+// Update user's online status by calling users service directly
+export async function updateUserOnlineStatus(userId: string, isOnline: boolean) {
+  try {
+    const res = await fetch(`http://users:3000/api/users/${userId}/online-status`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ isOnline }),
+    });
+    if (!res.ok) {
+      console.error("Failed to update online status:", await res.text());
+    }
+  } catch (err) {
+    console.error("Error updating online status:", err);
+  }
+}
 //register handler
 export async function registerHandler(
   request: FastifyRequest<{Body: RegisterRequest}>, 
@@ -136,6 +154,9 @@ export async function registerHandler(
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
             },
         });
+
+        // 4.Set user as online
+        await updateUserOnlineStatus(user.id, true);
 
         return {
           message: 'Registration successful',
@@ -195,6 +216,8 @@ export async function loginHandler(
       },
     });
 
+    await updateUserOnlineStatus(user.id, true);
+
     return {
       message: "Login successful",
       token,
@@ -247,6 +270,9 @@ export async function logoutHandler(
       await prisma.session.deleteMany({
         where: { token, userId: decoded.userId },
       });
+      
+      // Set user as offline
+      await updateUserOnlineStatus(decoded.userId, false);
     }
 
     // clear the auth cookie

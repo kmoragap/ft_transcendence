@@ -10,152 +10,220 @@ export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
 
 export function removeBall(ball: Ball): void {
-	let shrunk: Ball[] = [];
-	for (let i: number = 0; i < balls.length; i++)
-		if (balls[i] != ball) shrunk.push(balls[i]);
-	balls = shrunk;
+  let shrunk: Ball[] = [];
+  for (let i: number = 0; i < balls.length; i++)
+    if (balls[i] != ball) shrunk.push(balls[i]);
+  balls = shrunk;
 }
 
 export async function startGame(fourPlayers: boolean) {
-	try {
-		const urlParams = new URLSearchParams(window.location.search);
-		const lang = urlParams.get('lang') || 'en';
-		
-		await initI18n(lang);
-		await newGame(fourPlayers);
-		document.getElementById("board")?.focus();
-//		collisionTest()
-	} catch (error) {
-		console.error('Failed to load configuration:', error);
-	}
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get("lang") || "en";
+
+    await initI18n(lang);
+    await newGame(fourPlayers);
+    document.getElementById("board")?.focus();
+    //		collisionTest()
+  } catch (error) {
+    console.error("Failed to load configuration:", error);
+  }
 }
 
 export function countdown(nr: number, ms: number) {
-	data.showingText = true;
-	data.ctx.fillStyle = data.bg;
-	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-	data.ctx.fill();
-	data.ctx.font = `bold ${data.canvas.height * 0.75}px system-ui`;
-	data.ctx.fillStyle = "yellow";
-	data.ctx.strokeStyle = "red";
-	data.ctx.lineWidth = data.canvas.height / 60;
-	data.ctx.textAlign = "center";
-	data.ctx.textBaseline = "middle";
-	data.ctx.strokeText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
-	data.ctx.fillText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
-	if (nr - 1) setTimeout(() => countdown(nr - 1, ms), ms);
-	else setTimeout(() => startRound(), ms);
+  data.showingText = true;
+  data.ctx.fillStyle = data.bg;
+  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+  data.ctx.fill();
+  data.ctx.font = `bold ${data.canvas.height * 0.75}px system-ui`;
+  data.ctx.fillStyle = "yellow";
+  data.ctx.strokeStyle = "red";
+  data.ctx.lineWidth = data.canvas.height / 60;
+  data.ctx.textAlign = "center";
+  data.ctx.textBaseline = "middle";
+  data.ctx.strokeText(
+    String(nr),
+    data.canvas.width / 2,
+    data.canvas.height / 2
+  );
+  data.ctx.fillText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
+  if (nr - 1) setTimeout(() => countdown(nr - 1, ms), ms);
+  else setTimeout(() => startRound(), ms);
 }
 
 export function startRound(): void {
-	initBoard();
-	pad[0].go();
-	pad[1].go();
-	if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
-	if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
-	balls[0].go();
-	data.go = true;
-	window.requestAnimationFrame(loop);
+  initBoard();
+  pad[0].go();
+  pad[1].go();
+  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
+  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
+  balls[0].go();
+  data.go = true;
+  window.requestAnimationFrame(loop);
 }
 
-function initBoard():void {
-	data.showingText = false;
-	data.keys = {};
-	balls.push(new Ball());
-	pad = new Array(new Paddle(0, data.p[0]));
-	if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
-	if (data.mode == "doublePaddle") {
-		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
-		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
-		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
-	}
-	if (data.mode == "fourPlayers")	{
-		pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
-		pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
-		pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
-	}
+function initBoard(): void {
+  data.showingText = false;
+  data.keys = {};
+  balls.push(new Ball());
+  pad = new Array(new Paddle(0, data.p[0]));
+  if (data.mode == "twoPlayers")
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
+  if (data.mode == "doublePaddle") {
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
+    pad.push(
+      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0])
+    );
+    pad.push(
+      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
+    );
+  }
+  if (data.mode == "fourPlayers") {
+    pad.push(
+      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
+    );
+    pad.push(
+      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
+    );
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
+  }
 }
 
-function loop():void {
-	if (data.go){
-		update();
-		render();
-		window.requestAnimationFrame(loop);
-	}
+function loop(): void {
+  if (data.go) {
+    update();
+    render();
+    window.requestAnimationFrame(loop);
+  }
 }
 
 function update(): void {
-	const now = performance.now();
-	if (now - data.lastTime > 1000 / data.fps) {
-		data.lastTime = now;
-		for (let i: number = 0; i < balls.length; i++) balls[i].move();
-		for (let i: number = 0; i < pad.length; i++) {
-			if (pad[i].isAi()) pad[i].moveAI();
-			else pad[i].movePaddle();
-		}
-	}
+  const now = performance.now();
+  if (now - data.lastTime > 1000 / data.fps) {
+    data.lastTime = now;
+    for (let i: number = 0; i < balls.length; i++) balls[i].move();
+    for (let i: number = 0; i < pad.length; i++) {
+      if (pad[i].isAi()) pad[i].moveAI();
+      else pad[i].movePaddle();
+    }
+  }
 }
 
 function render(): void {
-	data.ctx.fillStyle = data.bg;
-	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-	data.ctx.fill();
-	midline();
-	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
-	if (data.trailLength) for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
-	for (let i: number = 0; i < balls.length; i++) balls[i].draw();
-	if (data.touchControl) touchControlArrows();
+  data.ctx.fillStyle = data.bg;
+  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+  data.ctx.fill();
+  midline();
+  for (let i: number = 0; i < pad.length; i++) pad[i].draw();
+  if (data.trailLength)
+    for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
+  for (let i: number = 0; i < balls.length; i++) balls[i].draw();
+  if (data.touchControl) touchControlArrows();
 }
 
 export function endRound(): void {
-	//gameService.updateScore(data.gameID, data.p[0].score, data.p[1].score);
-	while (balls.length) {
-		balls[0].stop();
-		balls.shift();
-	}
-	while(pad.length) {
-		pad[0].stop();
-		pad.shift();
-	}
-	if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) setTimeout(startRound, 1500);
-	else endGame();
+  //gameService.updateScore(data.[0].id, data.gameID, data.p[0].score, data.p[1].score);
+  while (balls.length) {
+    balls[0].stop();
+    balls.shift();
+  }
+  while (pad.length) {
+    pad[0].stop();
+    pad.shift();
+  }
+  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
+    setTimeout(startRound, 1500);
+  else {
+    console.log("ahhhhhhhhhhhh");
+    endGame();
+  }
 }
 
 export async function endGame() {
-	var winner: string;
-	if (data.p[0].score > data.p[1].score)
-		winner = data.p[0].name;
-	else winner = data.p[1].name;
-	data.showingText = false;
-	
-	// Example: Get second player data for game statistics
-	const secondPlayerData = getSecondPlayerData();
-	if (secondPlayerData) {
-		console.log('Second player data available for statistics:', secondPlayerData);
-		// Here you could send game results to update the second player's statistics
-		// without affecting the global authentication state
-	}
-	
-	// Add exit button for mobile users
-	if (isMobile()) {
-		showExitButton(winner);
-	}
-	
-	//const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
-	//console.log(res);
+  var winner: string;
+  var losser: string;
+  var winnerId: string;
+  var losserId: string;
+  var isWinner: boolean = false;
+
+  if (data.p[0].score > data.p[1].score) {
+    winner = data.p[0].name;
+    losser = data.p[1].name;
+    isWinner = true;
+    winnerId = data.p[0].id;
+    losserId = data.p[1].id;
+  } else {
+    winner = data.p[1].name;
+    losser = data.p[0].name;
+    winnerId = data.p[1].id;
+    losserId = data.p[0].id;
+  }
+
+  data.showingText = false;
+  // Get second player data for game statistics
+  const secondPlayerData = getSecondPlayerData();
+  if (secondPlayerData) {
+    console.log(
+      "Second player data available for statistics:",
+      secondPlayerData
+    );
+  }
+  const gameId = "sldfjskldkfjksdklfjsdklf";
+  // Finish game and update stats
+  try {
+    const result = await gameService.finishGame(
+      winnerId,
+      gameId,
+      isWinner,
+      data.p[0].score,
+      losser,
+      data.p[1].score,
+      losserId
+    );
+    console.log("Game finished successfully:", result);
+  } catch (error) {
+    console.error("Failed to finish game:", error);
+  }
+
+  // Add exit button for mobile users
+  if (isMobile()) {
+    showExitButton(winner);
+  } else {
+    setTimeout(() => {
+      exitGameMessage(winner);
+    }, 3000);
+  }
+
+  //const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
+  //console.log(res);
+}
+
+function exitGameMessage(winner: string): void {
+  window.parent.postMessage(
+    {
+      type: "EXIT_GAME",
+      winner: winner,
+    },
+    window.location.origin
+  );
 }
 
 // Mobile exit functionality
 function isMobile(): boolean {
-	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-		   (window.innerWidth <= 768 && window.innerHeight <= 1024);
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ) ||
+    (window.innerWidth <= 768 && window.innerHeight <= 1024)
+  );
 }
 
 function showExitButton(winner: string): void {
-	// Create exit button overlay
-	const exitOverlay = document.createElement('div');
-	exitOverlay.className = 'fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]';
-	exitOverlay.innerHTML = `
+  // Create exit button overlay
+  const exitOverlay = document.createElement("div");
+  exitOverlay.className =
+    "fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]";
+  exitOverlay.innerHTML = `
 		<div class="text-center text-white mb-8">
 			<h2 class="text-4xl font-bold mb-4">Game Over!</h2>
 			<p class="text-2xl">Winner: ${winner}</p>
@@ -164,86 +232,128 @@ function showExitButton(winner: string): void {
 			Exit Game
 		</button>
 	`;
-	
-	document.body.appendChild(exitOverlay);
-	
-	// Add exit functionality
-	const exitBtn = document.getElementById('exit-game-btn');
-	if (exitBtn) {
-		exitBtn.addEventListener('click', () => {
-			// Exit fullscreen first
-			if (document.exitFullscreen) {
-				document.exitFullscreen();
-			} else if ((document as any).webkitExitFullscreen) {
-				(document as any).webkitExitFullscreen();
-			} else if ((document as any).msExitFullscreen) {
-				(document as any).msExitFullscreen();
-			}
-			
-			// Navigate back to game page
-			window.parent.postMessage({
-				type: 'EXIT_GAME',
-				winner: winner
-			}, window.location.origin);
-			
-			// Remove the overlay
-			document.body.removeChild(exitOverlay);
-		});
-	}
-}
 
+  document.body.appendChild(exitOverlay);
 
+  // Add exit functionality
+  const exitBtn = document.getElementById("exit-game-btn");
+  if (exitBtn) {
+    exitBtn.addEventListener("click", () => {
+      // Exit fullscreen first
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
 
+      // Navigate back to game page
+      exitGameMessage(winner);
 
-//testcase for the game
-async function testCreateGame() {
-  const gameData = {
-    player1Id: 'player1-id',
-    player2Id: 'player2-id',
-    player1Name: 'Player One',
-    player2Name: 'Player Two',
-    maxScore: 5,
-    gameType: 'VS_HUMAN' as const
-  };
-  const result = await gameService.createGame(gameData);
-  console.log('Result test:', result);
+      // Remove the overlay
+      document.body.removeChild(exitOverlay);
+    });
+  }
 }
 
 function collisionTest(): void {
-	data.showingText = false;
-	data.p[0].isAi = false;
-//	data.p[1].isAi = false;
-	data.multiball = false;
-	data.trailLength = 0;
-	data.maxScore = 1;
-	data.ballSpeed = 70;
-	//x axis
-	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2,                                           -0.1, 0));
-	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 4, -0.1, 0));
-	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 2, -0.1, 0));
-	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 2, -0.1, 0));
-	balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 4, -0.1, 0));
-	//y axis
-	balls.push(new Ball(data.canvas.width / 2 - data.paddleWidth * 2 - (data.canvas.width / data.ballSize) / 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 6, 0, +0.1));
-	balls.push(new Ball(data.canvas.width / 2 - data.paddleWidth * 3 + (data.canvas.width / data.ballSize) / 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6, 0, -0.1));
-	balls.push(new Ball(data.canvas.width / 2 + data.paddleWidth * 2, data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 6, 0, +0.1));
-	balls.push(new Ball(data.canvas.width / 2 + data.paddleWidth * 2, data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6, 0, -0.1));
-	
-	
-	pad = new Array(new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p[0]), new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p[1]));
-	pad[0].go();
-	pad[1].go();
-	balls[0].go();
-	balls[1].go();
-	balls[2].go();
-	balls[3].go();
-	balls[4].go();
-	balls[5].go();
-	balls[6].go();
-	balls[7].go();
-	balls[8].go();
-	data.go = true;
-	window.requestAnimationFrame(loop);
+  data.showingText = false;
+  data.p[0].isAi = false;
+  //	data.p[1].isAi = false;
+  data.multiball = false;
+  data.trailLength = 0;
+  data.maxScore = 1;
+  data.ballSpeed = 70;
+  //x axis
+  balls.push(new Ball(data.canvas.width / 2, data.canvas.height / 2, -0.1, 0));
+  balls.push(
+    new Ball(
+      data.canvas.width / 2,
+      data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 4,
+      -0.1,
+      0
+    )
+  );
+  balls.push(
+    new Ball(
+      data.canvas.width / 2,
+      data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 2,
+      -0.1,
+      0
+    )
+  );
+  balls.push(
+    new Ball(
+      data.canvas.width / 2,
+      data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 2,
+      -0.1,
+      0
+    )
+  );
+  balls.push(
+    new Ball(
+      data.canvas.width / 2,
+      data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 4,
+      -0.1,
+      0
+    )
+  );
+  //y axis
+  balls.push(
+    new Ball(
+      data.canvas.width / 2 -
+        data.paddleWidth * 2 -
+        data.canvas.width / data.ballSize / 2,
+      data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 6,
+      0,
+      +0.1
+    )
+  );
+  balls.push(
+    new Ball(
+      data.canvas.width / 2 -
+        data.paddleWidth * 3 +
+        data.canvas.width / data.ballSize / 2,
+      data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6,
+      0,
+      -0.1
+    )
+  );
+  balls.push(
+    new Ball(
+      data.canvas.width / 2 + data.paddleWidth * 2,
+      data.canvas.height / 2 - (data.canvas.width / data.ballSize) * 6,
+      0,
+      +0.1
+    )
+  );
+  balls.push(
+    new Ball(
+      data.canvas.width / 2 + data.paddleWidth * 2,
+      data.canvas.height / 2 + (data.canvas.width / data.ballSize) * 6,
+      0,
+      -0.1
+    )
+  );
+
+  pad = new Array(
+    new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p[0]),
+    new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p[1])
+  );
+  pad[0].go();
+  pad[1].go();
+  balls[0].go();
+  balls[1].go();
+  balls[2].go();
+  balls[3].go();
+  balls[4].go();
+  balls[5].go();
+  balls[6].go();
+  balls[7].go();
+  balls[8].go();
+  data.go = true;
+  window.requestAnimationFrame(loop);
 }
 
 //testCreateGame();

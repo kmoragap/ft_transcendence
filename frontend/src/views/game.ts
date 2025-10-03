@@ -1,16 +1,16 @@
-import { t, getCurrentLang, updateText } from './../i18n';
-import { store } from './../store';
-import { showLoginModal } from './../components/login-modal';
-import { alertSuccess, alertError } from './../utils/modal-alerts';
+import { t, getCurrentLang, updateText } from "./../i18n";
+import { store } from "./../store";
+import { showLoginModal } from "./../components/login-modal";
+import { alertSuccess, alertError } from "./../utils/modal-alerts";
 
 let iframeRef: HTMLIFrameElement | null = null;
 
-type GameMode = 'menu' | 'single' | 'multi';
+type GameMode = "menu" | "single" | "multi";
 
 export function renderGame(): HTMLElement {
-  const section = document.createElement('section');
+  const section = document.createElement("section");
   section.className =
-    'w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10';
+    "w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10";
 
   section.innerHTML = `
      <h1 id="game-title" class="title uppercase mobile-title">
@@ -34,33 +34,36 @@ export function renderGame(): HTMLElement {
     </div>
   `;
 
-  const root = section.querySelector('#game-root') as HTMLDivElement;
-  const exitBtn = section.querySelector('#game-exit') as HTMLButtonElement;
-  const backBtn = section.querySelector('#game-back') as HTMLButtonElement;
-  const title = section.querySelector('#game-title') as HTMLHeadingElement;
+  const root = section.querySelector("#game-root") as HTMLDivElement;
+  const exitBtn = section.querySelector("#game-exit") as HTMLButtonElement;
+  const backBtn = section.querySelector("#game-back") as HTMLButtonElement;
+  const title = section.querySelector("#game-title") as HTMLHeadingElement;
 
-    function showBack() {
-      backBtn.classList.remove('invisible', 'pointer-events-none');
-      backBtn.removeAttribute('aria-hidden');
-    }
+  function showBack() {
+    backBtn.classList.remove("invisible", "pointer-events-none");
+    backBtn.removeAttribute("aria-hidden");
+  }
 
-    function hideBack() {
-      backBtn.classList.add('invisible', 'pointer-events-none');
-      backBtn.setAttribute('aria-hidden', 'true');
-    }
+  function hideBack() {
+    backBtn.classList.add("invisible", "pointer-events-none");
+    backBtn.setAttribute("aria-hidden", "true");
+  }
 
-    function showTitle() {
-      title.style.display = 'table';
-    }
+  function showTitle() {
+    title.style.display = "table";
+  }
 
-    function hideTitle() {
-      title.style.display = 'none';
-    }
+  function hideTitle() {
+    title.style.display = "none";
+  }
 
   function destroyIframe() {
     if (iframeRef) {
       try {
-        iframeRef.contentWindow?.postMessage({ type: 'PONG_DESTROY' }, window.location.origin);
+        iframeRef.contentWindow?.postMessage(
+          { type: "PONG_DESTROY" },
+          window.location.origin
+        );
       } catch {}
       iframeRef.remove();
       iframeRef = null;
@@ -68,20 +71,20 @@ export function renderGame(): HTMLElement {
   }
 
   function setMode(mode: GameMode) {
-    if (mode === 'menu') {
+    if (mode === "menu") {
       hideBack();
       showTitle();
       destroyIframe();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
       updateText();
-      document.body.classList.remove('game-active');
+      document.body.classList.remove("game-active");
     } else {
       showBack();
       hideTitle();
       root.innerHTML = renderIframeHTML(mode);
-      iframeRef = root.querySelector('#pong-frame') as HTMLIFrameElement;
-      document.body.classList.add('game-active');
+      iframeRef = root.querySelector("#pong-frame") as HTMLIFrameElement;
+      document.body.classList.add("game-active");
     }
   }
 
@@ -96,7 +99,7 @@ export function renderGame(): HTMLElement {
                   shadow-lg
                   cursor-not-allowed opacity-50"
             aria-disabled="true"
-            title="${t('coming_soon') || 'Coming soon'}"
+            title="${t("coming_soon") || "Coming soon"}"
             data-i18n="create_tournament"
           >
             Create a tournament
@@ -108,7 +111,7 @@ export function renderGame(): HTMLElement {
                   shadow-lg
                   cursor-not-allowed opacity-50"
             aria-disabled="true"
-            title="${t('coming_soon') || 'Coming soon'}"
+            title="${t("coming_soon") || "Coming soon"}"
             data-i18n="join_tournament"
           >
             Join a tournament
@@ -139,21 +142,26 @@ export function renderGame(): HTMLElement {
   }
 
   function wireMenuHandlers() {
-    root.querySelector<HTMLButtonElement>('#btn-single')?.addEventListener('click', () => setMode('single'));
-    root.querySelector<HTMLButtonElement>('#btn-multi')?.addEventListener('click', () => setMode('multi'));
+    root
+      .querySelector<HTMLButtonElement>("#btn-single")
+      ?.addEventListener("click", () => setMode("single"));
+    root
+      .querySelector<HTMLButtonElement>("#btn-multi")
+      ?.addEventListener("click", () => setMode("multi"));
   }
 
-  function renderIframeHTML(mode: Exclude<GameMode, 'menu'>) {
+  function renderIframeHTML(mode: Exclude<GameMode, "menu">) {
     const currentLang = getCurrentLang();
     const { currentUser } = store.getState();
-    let src = mode === 'single' 
-      ? `/pong/?mode=single&lang=${currentLang}` 
-      : `/pong/?mode=multi&lang=${currentLang}`;
+    let src =
+      mode === "single"
+        ? `/pong/?mode=single&lang=${currentLang}`
+        : `/pong/?mode=multi&lang=${currentLang}`;
 
-      if (mode === 'single' && currentUser?.username) {
-        src += `&username=${encodeURIComponent(currentUser.username)}`;
-      } 
-    
+    if (mode === "single" && currentUser?.username) {
+      src += `&username=${encodeURIComponent(currentUser.username)}`;
+    }
+
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
@@ -161,106 +169,117 @@ export function renderGame(): HTMLElement {
     `;
   }
 
-  backBtn.addEventListener('click', () => setMode('menu'));
-  exitBtn.addEventListener('click', () => {
+  backBtn.addEventListener("click", () => setMode("menu"));
+  exitBtn.addEventListener("click", () => {
     destroyIframe();
-    window.location.href = '#/home';
+    window.location.href = "#/home";
   });
 
-  setMode('menu');
+  setMode("menu");
 
   const languageChangeHandler = () => {
     if (iframeRef) {
       const currentSrc = iframeRef.src;
       const url = new URL(currentSrc);
-      const mode = url.searchParams.get('mode');
-      
-      if (mode === 'single' || mode === 'multi') {
-        setMode(mode as Exclude<GameMode, 'menu'>);
+      const mode = url.searchParams.get("mode");
+
+      if (mode === "single" || mode === "multi") {
+        setMode(mode as Exclude<GameMode, "menu">);
       }
     } else {
       updateText();
     }
   };
-  
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'lang') {
+
+  window.addEventListener("storage", e => {
+    if (e.key === "lang") {
       languageChangeHandler();
     }
   });
-  
-  window.addEventListener('languageChanged', languageChangeHandler);
 
-  window.addEventListener('message', async (event) => {
+  window.addEventListener("languageChanged", languageChangeHandler);
+
+  window.addEventListener("message", async event => {
     if (event.origin !== window.location.origin) {
       return;
     }
 
-    if (event.data.type === 'REQUEST_LOGIN') {
+    if (event.data.type === "REQUEST_LOGIN") {
       const { playerId, playerName } = event.data;
-      
+
       try {
         const user = await showLoginModal({
-          title: 'Login Second Player',
-          gameOnly: true, 
-          onSuccess: (user) => {
-            alertSuccess('Second player logged in: ' + user.username);
+          title: "Login Second Player",
+          gameOnly: true,
+          onSuccess: user => {
+            alertSuccess("Second player logged in: " + user.username);
           },
           onCancel: () => {
             if (iframeRef?.contentWindow) {
-              iframeRef.contentWindow.postMessage({
-                type: 'LOGIN_CANCELLED',
-                playerId: playerId
-              }, window.location.origin);
+              iframeRef.contentWindow.postMessage(
+                {
+                  type: "LOGIN_CANCELLED",
+                  playerId: playerId,
+                },
+                window.location.origin
+              );
             }
-          }
+          },
         });
 
         if (iframeRef?.contentWindow) {
-          iframeRef.contentWindow.postMessage({
-            type: 'LOGIN_SUCCESS',
-            playerId: playerId,
-            playerName: playerName,
-            username: user.username,
-            userData: user
-          }, window.location.origin);
+          iframeRef.contentWindow.postMessage(
+            {
+              type: "LOGIN_SUCCESS",
+              playerId: playerId,
+              playerName: playerName,
+              username: user.username,
+              userData: user,
+            },
+            window.location.origin
+          );
         }
-
       } catch (error) {
-        alertError('Login failed or cancelled: ' + error);
+        alertError("Login failed or cancelled: " + error);
         if (iframeRef?.contentWindow) {
-          iframeRef.contentWindow.postMessage({
-            type: 'LOGIN_CANCELLED',
-            playerId: playerId
-          }, window.location.origin);
+          iframeRef.contentWindow.postMessage(
+            {
+              type: "LOGIN_CANCELLED",
+              playerId: playerId,
+            },
+            window.location.origin
+          );
         }
       }
-    } else if (event.data.type === 'EXIT_GAME') {
+    } else if (event.data.type === "EXIT_GAME") {
       const { winner } = event.data;
       console.log(`Game ended. Winner: ${winner}`);
-      
-      window.location.href = '#/home';
+      destroyGameView();
+      setMode("menu");
     }
   });
 
   (section as any).__destroyGameView = destroyGameView;
 
   const cleanup = () => {
-    document.body.classList.remove('game-active');
+    document.body.classList.remove("game-active");
   };
-  
+
   (section as any).cleanup = cleanup;
-  
+
   return section;
 }
 
 export function destroyGameView() {
   if (iframeRef) {
     try {
-      iframeRef.contentWindow?.postMessage({ type: 'PONG_DESTROY' }, window.location.origin);
+      iframeRef.contentWindow?.postMessage(
+        { type: "PONG_DESTROY" },
+        window.location.origin
+      );
     } catch {}
     iframeRef.remove();
     iframeRef = null;
   }
-  document.body.classList.remove('game-active');
+  document.body.classList.remove("game-active");
 }

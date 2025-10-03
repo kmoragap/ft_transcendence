@@ -1,24 +1,31 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import prisma from '../utils/prisma';
+import { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../utils/prisma";
 
-
-export async function authenticateToken(request: FastifyRequest, reply: FastifyReply) {
+export async function authenticateToken(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
   try {
-    const token = request.headers.authorization?.replace('Bearer ', '');
-    
+    let token = request.headers.authorization?.replace("Bearer ", "");
+
+    // If no Bearer token, try to get token from cookies (for OAuth users)
     if (!token) {
-      return reply.code(401).send({ error: 'No token provided' });
+      token = request.cookies?.authToken;
     }
-    
+
+    if (!token) {
+      return reply.code(401).send({ error: "No token provided" });
+    }
+
     // step 1:check token with the auth service
-    const response = await fetch('http://auth:3000/api/auth/verify', {
+    const response = await fetch("http://auth:3000/api/auth/verify", {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     if (!response.ok) {
-      return reply.code(401).send({ error: 'Invalid token' });
+      return reply.code(401).send({ error: "Invalid token" });
     }
 
     const authData = await response.json();
@@ -31,12 +38,11 @@ export async function authenticateToken(request: FastifyRequest, reply: FastifyR
 
     if (!user) {
       // This case is important: the user exists in auth but not here.
-      return reply.code(404).send({ error: 'User not found' });
+      return reply.code(404).send({ error: "User not found" });
     }
     request.user = user;
-
   } catch (error) {
-    console.error('Token verification failed:', error);
-    return reply.code(401).send({ error: 'Token verification failed' });
+    console.error("Token verification failed:", error);
+    return reply.code(401).send({ error: "Token verification failed" });
   }
 }

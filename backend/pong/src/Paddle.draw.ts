@@ -3,6 +3,11 @@ import Paddle from "./Paddle";
 import { t } from "./i18n";
 import { endRound, pad } from "./pong";
 
+const upImg = new Image();
+upImg.src = "img/up_arrow.svg";
+const downImg = new Image();
+downImg.src = "img/down_arrow.svg";
+
 export function debugOutline(pad: Paddle) {
 	data.ctx.beginPath();
 	data.ctx.strokeStyle = data.uiCol;
@@ -97,14 +102,8 @@ export function scoreText(p: Paddle, wins: boolean): void {
 }
 
 export function touchControlArrows(): void {
-	const upImg = new Image();
-	upImg.src = "img/up_arrow.svg";
-	const downImg = new Image();
-	downImg.src = "img/down_arrow.svg";
-	console.log(upImg);
-	console.log(downImg);
 	const arrowSize = data.canvas.height / 6;
-	data.ctx.globalAlpha = 0.4;
+	data.ctx.globalAlpha = 0.5;
 	data.ctx.fillStyle = "rgb(50 50 50 / 50%)";
 	data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
 	for (let i: number = 0; i < pad.length; i++) {

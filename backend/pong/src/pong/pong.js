@@ -1278,6 +1278,10 @@ function loadConfig(fourPlayers) {
 }
 
 // src/Paddle.draw.ts
+var upImg = new Image();
+upImg.src = "img/up_arrow.svg";
+var downImg = new Image();
+downImg.src = "img/down_arrow.svg";
 function quarterCorner(pad2) {
   if (pad2.getX() < data.canvas.width / 2) {
     data.ctx.beginPath();
@@ -1355,12 +1359,6 @@ function scoreText(p, wins) {
   endRound();
 }
 function touchControlArrows() {
-  const upImg = new Image();
-  upImg.src = "img/up_arrow.svg";
-  const downImg = new Image();
-  downImg.src = "img/down_arrow.svg";
-  console.log(upImg);
-  console.log(downImg);
   const arrowSize = data.canvas.height / 6;
   data.ctx.globalAlpha = 0.5;
   data.ctx.fillStyle = "rgb(50 50 50 / 50%)";

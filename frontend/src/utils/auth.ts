@@ -24,11 +24,11 @@ export function shouldRedirectFromProtected(): boolean {
 /**
  * Redirects authenticated users away from auth routes
  */
-export function redirectIfAuthenticated(): void {
-  if (shouldRedirectFromAuth()) {
-    location.hash = '/dashboard';
-  }
-}
+// export function redirectIfAuthenticated(): void {
+//   if (shouldRedirectFromAuth()) {
+//     location.hash = '/dashboard';
+//   }
+// }
 
 /**
  * Redirects unauthenticated users away from protected routes

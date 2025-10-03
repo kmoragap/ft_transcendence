@@ -23,7 +23,8 @@ export function renderOAuthCallback(): HTMLElement {
 
 async function processOAuthCallback() {
   try {
-    const urlParams = new URLSearchParams(window.location.search);
+    const hashPart = window.location.hash.split('?')[1] || '';
+    const urlParams = new URLSearchParams(hashPart);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
 

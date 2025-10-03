@@ -47,7 +47,7 @@ async function processOAuthCallback() {
           const user = await meRes.json();
           store.dispatch({ type: 'LOGIN', payload: user });
           console.log('OAuth login successful:', user);
-          window.location.hash = '/dashboard';
+          window.location.hash = '/myprofile';
         } else {
           throw new Error('Failed to fetch user data');
         }

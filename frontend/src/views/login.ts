@@ -1,10 +1,10 @@
 import { t } from './../i18n';
 import { store } from '../store';
-import { redirectIfAuthenticated } from '../utils/auth';
+//import { redirectIfAuthenticated } from '../utils/auth';
 import { alertError, alertSuccess } from './../utils/modal-alerts';
 
 export function renderLogin(): HTMLElement {
-  redirectIfAuthenticated();
+  //redirectIfAuthenticated();
 
   const section = document.createElement('section');
   section.className =

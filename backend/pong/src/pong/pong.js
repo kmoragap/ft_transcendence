@@ -1278,6 +1278,10 @@ function loadConfig(fourPlayers) {
 }
 
 // src/Paddle.draw.ts
+var upImg = new Image();
+upImg.src = "img/up_arrow.svg";
+var downImg = new Image();
+downImg.src = "img/down_arrow.svg";
 function quarterCorner(pad2) {
   if (pad2.getX() < data.canvas.width / 2) {
     data.ctx.beginPath();
@@ -1355,15 +1359,17 @@ function scoreText(p, wins) {
   endRound();
 }
 function touchControlArrows() {
+  const arrowSize = data.canvas.height / 6;
+  data.ctx.globalAlpha = 0.5;
   data.ctx.fillStyle = "rgb(50 50 50 / 50%)";
   data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
   for (let i = 0; i < pad.length; i++) {
     if (i == 0 && !pad[i].isAi()) {
       data.ctx.textBaseline = "top";
       data.ctx.textAlign = "left";
-      data.ctx.fillText("\u2B06", data.canvas.width / 16, 0);
+      data.ctx.drawImage(upImg, data.canvas.width / 16 - arrowSize / 2, 0, arrowSize, arrowSize);
       data.ctx.textBaseline = "bottom";
-      data.ctx.fillText("\u2B07", data.canvas.width / 16, data.canvas.height);
+      data.ctx.drawImage(downImg, data.canvas.width / 16 - arrowSize / 2, data.canvas.height - arrowSize, arrowSize, arrowSize);
     }
     if (data.mode != "fourPlayers") {
       if (i == 1 && !pad[i].isAi()) {

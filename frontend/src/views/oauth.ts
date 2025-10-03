@@ -23,7 +23,8 @@ export function renderOAuthCallback(): HTMLElement {
 
 async function processOAuthCallback() {
   try {
-    const urlParams = new URLSearchParams(window.location.search);
+    const hashPart = window.location.hash.split('?')[1] || '';
+    const urlParams = new URLSearchParams(hashPart);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
 
@@ -44,8 +45,7 @@ async function processOAuthCallback() {
         if (meRes.ok) {
           const user = await meRes.json();
           store.dispatch({ type: 'LOGIN', payload: user });
-          console.log('OAuth login successful:', user);
-          window.location.hash = '/dashboard';
+          window.location.hash = '/myprofile';
         } else {
           throw new Error('Failed to fetch user data');
         }

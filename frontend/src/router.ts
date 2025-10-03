@@ -22,7 +22,7 @@ const routes: Record<string, () => HTMLElement> = {
   '/game': renderGame,
   '/myprofile': renderMyProfile,
   '/dashboard': renderDashboard,
-  '/login/callback': renderOAuthCallback,
+  '/login/callback?success=true': renderOAuthCallback,
   '/login_42': () => {
     window.location.href = '/api/auth/oauth/42';
     return document.createElement('div');

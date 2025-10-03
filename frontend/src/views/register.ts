@@ -1,10 +1,11 @@
 import { t } from './../i18n';
 import { attachValidation } from './../form-validation';
-import { redirectIfAuthenticated } from '../utils/auth';
+//import { redirectIfAuthenticated } from '../utils/auth';
 import { alertError, alertSuccess } from './../utils/modal-alerts';
+import { store } from '../store';
 
 export function renderRegistration(): HTMLElement {
-  redirectIfAuthenticated();
+  //redirectIfAuthenticated();
   const section = document.createElement('section');
   section.className =
     'flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]';
@@ -136,8 +137,20 @@ export function renderRegistration(): HTMLElement {
         return;
       }
 
-      alertSuccess('Registration successful! You can now log in.');
-      window.location.href = '#/login';
+      const responseData = await res.json();
+
+      if (responseData.token) {
+        localStorage.setItem('accessToken', responseData.token);
+        localStorage.setItem('refreshToken', responseData.refresh);
+        
+        const user = { username, firstname, email, avatarUrl: responseData.avatarUrl };
+        store.dispatch({ type: 'LOGIN', payload: user });   
+        window.location.hash = '/';
+        alertSuccess('Registration successful! You are now logged in.');
+      } else {
+        alertSuccess('Registration successful! Please log in.');
+        window.location.hash = '/login';
+      }
     } catch (err) {
       console.error(err);
       alertError('An unexpected error occurred.');

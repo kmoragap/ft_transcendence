@@ -163,17 +163,28 @@ window.addEventListener("message", (event) => {
     if (nameInput) {
       nameInput.value = username;
     }
+    const idInput = document.getElementById(
+      `p${playerId}Id`
+    );
+    if (idInput && userData?.id) {
+      idInput.value = userData.id;
+    }
     if (playerId === "2") {
       window.gamePlayer2 = {
+        id: userData?.id,
         username,
         userData,
         loggedIn: true
       };
     }
-    console.log(`Player ${playerId} logged in as: ${username}`);
+    console.log(
+      `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
+    );
   } else if (event.data.type === "LOGIN_CANCELLED") {
     const { playerId } = event.data;
-    const aiCheckbox = document.getElementById(`p${playerId}Ai`);
+    const aiCheckbox = document.getElementById(
+      `p${playerId}Ai`
+    );
     if (aiCheckbox) {
       aiCheckbox.checked = true;
     }
@@ -184,38 +195,131 @@ window.addEventListener("message", (event) => {
   }
 });
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
-  const form = Object.assign(document.createElement("form"), { id: `player${p}Menu`, className: `editBox` });
-  const e1 = Object.assign(document.createElement("label"), { className: "game-text", for: `name_p${p}`, textContent: `${t("player")} ${p}: ` });
-  const e2 = Object.assign(document.createElement("input"), { className: "custom-input ml-1 px-1 py-1", size: "16", id: `name_p${p}`, name: `name_p${p}`, value: name });
-  const e3 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Ai`, textContent: `${t("ai")} ` });
-  const e4 = Object.assign(document.createElement("input"), { type: "checkbox", id: `p${p}Ai`, name: `p${p}Ai`, checked: isAi, className: "ml-1" });
+  const idInput = Object.assign(document.createElement("input"), {
+    type: "hidden",
+    id: `p${p}Id`,
+    name: `p${p}Id`,
+    value: ""
+  });
+  list.appendChild(idInput);
+  const form = Object.assign(document.createElement("form"), {
+    id: `player${p}Menu`,
+    className: `editBox`
+  });
+  const e1 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: `name_p${p}`,
+    textContent: `${t("player")} ${p}: `
+  });
+  const e2 = Object.assign(document.createElement("input"), {
+    className: "custom-input ml-1 px-1 py-1",
+    size: "16",
+    id: `name_p${p}`,
+    name: `name_p${p}`,
+    value: name
+  });
+  const e3 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: `p${p}Ai`,
+    textContent: `${t("ai")} `
+  });
+  const e4 = Object.assign(document.createElement("input"), {
+    type: "checkbox",
+    id: `p${p}Ai`,
+    name: `p${p}Ai`,
+    checked: isAi,
+    className: "ml-1"
+  });
   if (p === "2") {
     e4.addEventListener("change", (event) => {
       const target = event.target;
       if (!target.checked) {
-        window.parent.postMessage({
-          type: "REQUEST_LOGIN",
-          playerId: "2",
-          playerName: `name_p${p}`
-        }, window.location.origin);
+        window.parent.postMessage(
+          {
+            type: "REQUEST_LOGIN",
+            playerId: "2",
+            playerName: `name_p${p}`
+          },
+          window.location.origin
+        );
       }
     });
   }
-  const e5 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Up`, textContent: `${t("up")}: ` });
-  const e6 = Object.assign(document.createElement("input"), { className: "custom-input px-1 py-1 ml-1", type: "text", size: "9", id: `p${p}Up`, value: up });
-  const e7 = Object.assign(document.createElement("label"), { className: "game-text", for: `p${p}Down`, textContent: `${t("down")}: ` });
-  const e8 = Object.assign(document.createElement("input"), { className: "custom-input px-1 py-1 ml-1", type: "text", size: "9", id: `p${p}Down`, value: down });
-  const e9 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}InnerCol`, name: `p${p}InnerCol`, value: c1 });
-  const e10 = Object.assign(document.createElement("label"), { className: "game-text", for: ` p${p}InnerCol`, textContent: `${t("innerColor")}` });
-  const e11 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}OuterCol`, name: `p${p}OuterCol`, value: c2 });
-  const e12 = Object.assign(document.createElement("label"), { className: "game-text", for: ` p${p}OuterCol`, textContent: `${t("outerColor")}` });
-  const e13 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: `p${p}CornerCol`, name: `p${p}CornerCol`, value: c3 });
-  const e14 = Object.assign(document.createElement("label"), { className: "game-text", for: ` p${p}CornerCol`, textContent: `${t("cornerColor")}` });
-  const nameRow = Object.assign(document.createElement("div"), { className: "flex w-full justify-between items-center mb-2" });
-  const keysRow = Object.assign(document.createElement("div"), { className: "flex w-full justify-between items-center mb-2" });
-  const innerColRow = Object.assign(document.createElement("div"), { className: "flex w-full justify-between items-center mb-2" });
-  const outerColRow = Object.assign(document.createElement("div"), { className: "flex w-full justify-between items-center mb-2" });
-  const cornerColRow = Object.assign(document.createElement("div"), { className: "flex w-full justify-between items-center mb-2" });
+  const e5 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: `p${p}Up`,
+    textContent: `${t("up")}: `
+  });
+  const e6 = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 ml-1",
+    type: "text",
+    size: "9",
+    id: `p${p}Up`,
+    value: up
+  });
+  const e7 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: `p${p}Down`,
+    textContent: `${t("down")}: `
+  });
+  const e8 = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 ml-1",
+    type: "text",
+    size: "9",
+    id: `p${p}Down`,
+    value: down
+  });
+  const e9 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: `p${p}InnerCol`,
+    name: `p${p}InnerCol`,
+    value: c1
+  });
+  const e10 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: ` p${p}InnerCol`,
+    textContent: `${t("innerColor")}`
+  });
+  const e11 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: `p${p}OuterCol`,
+    name: `p${p}OuterCol`,
+    value: c2
+  });
+  const e12 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: ` p${p}OuterCol`,
+    textContent: `${t("outerColor")}`
+  });
+  const e13 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: `p${p}CornerCol`,
+    name: `p${p}CornerCol`,
+    value: c3
+  });
+  const e14 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: ` p${p}CornerCol`,
+    textContent: `${t("cornerColor")}`
+  });
+  const nameRow = Object.assign(document.createElement("div"), {
+    className: "flex w-full justify-between items-center mb-2"
+  });
+  const keysRow = Object.assign(document.createElement("div"), {
+    className: "flex w-full justify-between items-center mb-2"
+  });
+  const innerColRow = Object.assign(document.createElement("div"), {
+    className: "flex w-full justify-between items-center mb-2"
+  });
+  const outerColRow = Object.assign(document.createElement("div"), {
+    className: "flex w-full justify-between items-center mb-2"
+  });
+  const cornerColRow = Object.assign(document.createElement("div"), {
+    className: "flex w-full justify-between items-center mb-2"
+  });
   nameRow.appendChild(e1);
   nameRow.appendChild(e2);
   nameRow.appendChild(e3);
@@ -240,10 +344,24 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   list.appendChild(ul);
 }
 function gameSetupMenu(fourPlayers) {
-  const settings = Object.assign(document.createElement("form"), { id: "settings", className: "editBox flex-1 flex flex-col h-full p-2 md:p-4" });
-  const bgColors = Object.assign(document.createElement("form"), { id: "bgColors", className: "editBox flex-1 flex flex-col h-full p-2 md:p-4" });
-  const e3 = Object.assign(document.createElement("label"), { className: "game-text text-sm md:text-base", htmlFor: "paddleSpeed", textContent: `${t("paddleSpeed")}` });
-  const e1 = Object.assign(document.createElement("select"), { name: "paddleSpeed", id: "paddleSpeed", className: "custom-select px-1 py-1 text-sm md:text-base" });
+  const settings = Object.assign(document.createElement("form"), {
+    id: "settings",
+    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
+  });
+  const bgColors = Object.assign(document.createElement("form"), {
+    id: "bgColors",
+    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
+  });
+  const e3 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "paddleSpeed",
+    textContent: `${t("paddleSpeed")}`
+  });
+  const e1 = Object.assign(document.createElement("select"), {
+    name: "paddleSpeed",
+    id: "paddleSpeed",
+    className: "custom-select px-1 py-1 text-sm md:text-base"
+  });
   const e2 = [
     { value: "glacial", text: `${t("glacial")}` },
     { value: "slow", text: `${t("slow")}` },
@@ -252,12 +370,23 @@ function gameSetupMenu(fourPlayers) {
     { value: "insane", text: `${t("insane")}` }
   ];
   e2.forEach((option) => {
-    const opt = Object.assign(document.createElement("option"), { value: option.value, textContent: option.text });
+    const opt = Object.assign(document.createElement("option"), {
+      value: option.value,
+      textContent: option.text
+    });
     if (option.selected) opt.selected = true;
     e1.appendChild(opt);
   });
-  const e6 = Object.assign(document.createElement("label"), { className: "game-text text-sm md:text-base", htmlFor: "ballSpeed", textContent: `${t("ballSpeed")}` });
-  const e4 = Object.assign(document.createElement("select"), { name: "ballSpeed", id: "ballSpeed", className: "custom-select px-1 py-1 text-sm md:text-base" });
+  const e6 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "ballSpeed",
+    textContent: `${t("ballSpeed")}`
+  });
+  const e4 = Object.assign(document.createElement("select"), {
+    name: "ballSpeed",
+    id: "ballSpeed",
+    className: "custom-select px-1 py-1 text-sm md:text-base"
+  });
   const e5 = [
     { value: "glacial", text: `${t("glacial")}` },
     { value: "slow", text: `${t("slow")}` },
@@ -273,8 +402,17 @@ function gameSetupMenu(fourPlayers) {
     if (option.selected) opt.selected = true;
     e4.appendChild(opt);
   });
-  const e9 = Object.assign(document.createElement("label"), { className: "game-text text-sm md:text-base", htmlFor: "ballSize", textContent: `${t("ballSize")}` });
-  const e7 = Object.assign(document.createElement("select"), { name: "ballSize", id: "ballSize", className: "custom-select px-1 py-1 text-sm md:text-base", style: { width: "20px" } });
+  const e9 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "ballSize",
+    textContent: `${t("ballSize")}`
+  });
+  const e7 = Object.assign(document.createElement("select"), {
+    name: "ballSize",
+    id: "ballSize",
+    className: "custom-select px-1 py-1 text-sm md:text-base",
+    style: { width: "20px" }
+  });
   const e8 = [
     { value: "tiny", text: `${t("tiny")}` },
     { value: "small", text: `${t("small")}` },
@@ -283,32 +421,115 @@ function gameSetupMenu(fourPlayers) {
     { value: "huge", text: `${t("huge")}` }
   ];
   e8.forEach((option) => {
-    const opt = Object.assign(document.createElement("option"), { value: option.value, textContent: option.text });
+    const opt = Object.assign(document.createElement("option"), {
+      value: option.value,
+      textContent: option.text
+    });
     if (option.selected) opt.selected = true;
     e7.appendChild(opt);
   });
-  const e10 = Object.assign(document.createElement("input"), { type: "checkbox", id: "multiball", name: "multiball", checked: false });
-  const e11 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "multiball", textContent: ` ${t("multiball")}` });
-  const e12 = Object.assign(document.createElement("input"), { type: "checkbox", id: "doublePaddle", name: "doublePaddle", checked: false });
-  const e13 = Object.assign(document.createElement("label"), { className: "game-text", htmlFor: "doublePaddle", textContent: ` ${t("doublePaddle")}` });
-  const e14 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "uiCol", name: "uiCol", value: "#ffffff" });
-  const e15 = Object.assign(document.createElement("label"), { className: "game-text", for: "uiCol", textContent: ` ${t("uiCol")}` });
-  const e16 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "ballCol", name: "ballCol", value: "#0000ff" });
-  const e17 = Object.assign(document.createElement("label"), { className: "game-text", for: "ballCol", textContent: ` ${t("ballCol")}` });
-  const e18 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "innerBg", name: "innerBg", value: "#008000" });
-  const e19 = Object.assign(document.createElement("label"), { className: "game-text", for: "innerBg", textContent: ` ${t("innerBg")}` });
-  const e20 = Object.assign(document.createElement("input"), { className: "game-text", type: "color", id: "outerBg", name: "outerBg", value: "#000000" });
-  const e21 = Object.assign(document.createElement("label"), { className: "game-text", for: "outerBg", textContent: ` ${t("outerBg")}` });
-  const e22 = Object.assign(document.createElement("input"), { type: "submit", className: "btn w-auto py-2 md:py-1.5 px-6 md:px-8 m-0 text-base md:text-lg font-bold w-25 cursor-pointer", value: `${t("start")}` });
-  const row1 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const row2 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const row3 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const row4 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const row5 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const colorRow1 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const colorRow2 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const colorRow3 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
-  const colorRow4 = Object.assign(document.createElement("div"), { className: "flex justify-between items-center mb-2" });
+  const e10 = Object.assign(document.createElement("input"), {
+    type: "checkbox",
+    id: "multiball",
+    name: "multiball",
+    checked: false
+  });
+  const e11 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    htmlFor: "multiball",
+    textContent: ` ${t("multiball")}`
+  });
+  const e12 = Object.assign(document.createElement("input"), {
+    type: "checkbox",
+    id: "doublePaddle",
+    name: "doublePaddle",
+    checked: false
+  });
+  const e13 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    htmlFor: "doublePaddle",
+    textContent: ` ${t("doublePaddle")}`
+  });
+  const e14 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: "uiCol",
+    name: "uiCol",
+    value: "#ffffff"
+  });
+  const e15 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: "uiCol",
+    textContent: ` ${t("uiCol")}`
+  });
+  const e16 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: "ballCol",
+    name: "ballCol",
+    value: "#0000ff"
+  });
+  const e17 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: "ballCol",
+    textContent: ` ${t("ballCol")}`
+  });
+  const e18 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: "innerBg",
+    name: "innerBg",
+    value: "#008000"
+  });
+  const e19 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: "innerBg",
+    textContent: ` ${t("innerBg")}`
+  });
+  const e20 = Object.assign(document.createElement("input"), {
+    className: "game-text",
+    type: "color",
+    id: "outerBg",
+    name: "outerBg",
+    value: "#000000"
+  });
+  const e21 = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    for: "outerBg",
+    textContent: ` ${t("outerBg")}`
+  });
+  const e22 = Object.assign(document.createElement("input"), {
+    type: "submit",
+    className: "btn w-auto py-2 md:py-1.5 px-6 md:px-8 m-0 text-base md:text-lg font-bold w-25 cursor-pointer",
+    value: `${t("start")}`
+  });
+  const row1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const row2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const row3 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const row4 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const row5 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const colorRow1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const colorRow2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const colorRow3 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const colorRow4 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -340,8 +561,13 @@ function gameSetupMenu(fourPlayers) {
   bgColors.appendChild(colorRow2);
   bgColors.appendChild(colorRow3);
   bgColors.appendChild(colorRow4);
-  const container = Object.assign(document.createElement("div"), { className: "game-setup-container" });
-  const ul = Object.assign(document.createElement("ul"), { id: "gameSetup", className: "flex flex-col md:flex-row gap-4 justify-between items-stretch list-none" });
+  const container = Object.assign(document.createElement("div"), {
+    className: "game-setup-container"
+  });
+  const ul = Object.assign(document.createElement("ul"), {
+    id: "gameSetup",
+    className: "flex flex-col md:flex-row gap-4 justify-between items-stretch list-none"
+  });
   ul.appendChild(settings);
   ul.appendChild(bgColors);
   container.appendChild(ul);
@@ -355,7 +581,9 @@ function getSecondPlayerData() {
 }
 var isFullscreen = false;
 function isMobile() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 && window.innerHeight <= 1024;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  ) || window.innerWidth <= 768 && window.innerHeight <= 1024;
 }
 function toggleFullscreen() {
   if (!isFullscreen) {
@@ -549,7 +777,7 @@ function handleFullscreenChange() {
 function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
     name,
-    id,
+    id: id || "",
     score: 0,
     isAi,
     up,
@@ -558,7 +786,7 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
     outerCol: outercol,
     cornerCol
   };
-  if (isAi) p.name = "Marvin";
+  if (isAi) p.name = "Roger Fed-error";
   return p;
 }
 function loadIn(id) {
@@ -574,7 +802,9 @@ async function newGame(fourPlayers) {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  const appDiv = Object.assign(document.createElement("div"), { id: "app" });
+  const appDiv = Object.assign(document.createElement("div"), {
+    id: "app"
+  });
   appDiv.className = [
     "fixed inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
@@ -611,8 +841,29 @@ async function newGame(fourPlayers) {
   });
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get("username") || "Player 1";
-  playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
-  playerSetupMenu(player2List, "2", "Arthur Dent", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  const userId = urlParams.get("userId") || "";
+  playerSetupMenu(
+    player1List,
+    "1",
+    username,
+    false,
+    "Shift",
+    "Control",
+    "#ffffff",
+    "#808080",
+    "#ff0000"
+  );
+  playerSetupMenu(
+    player2List,
+    "2",
+    "Arthur Dent",
+    true,
+    "ArrowUp",
+    "ArrowDown",
+    "#ffffff",
+    "#808080",
+    "#ff0000"
+  );
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);
   if (fourPlayers) {
@@ -628,8 +879,32 @@ async function newGame(fourPlayers) {
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none"
     });
-    playerSetupMenu(player3List, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000");
-    playerSetupMenu(player4List, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+    const p1IdInput = document.getElementById("p1Id");
+    if (p1IdInput && userId) {
+      p1IdInput.value = userId;
+    }
+    playerSetupMenu(
+      player3List,
+      "3",
+      "Trillian Astra",
+      true,
+      "i",
+      "k",
+      "#ffffff",
+      "#808080",
+      "#ff0000"
+    );
+    playerSetupMenu(
+      player4List,
+      "4",
+      "Zaphod Beeblebrox",
+      true,
+      "PageUp",
+      "PageDown",
+      "#ffffff",
+      "#808080",
+      "#ff0000"
+    );
     player3Container.appendChild(player3List);
     player4Container.appendChild(player4List);
     allBoxesContainer.appendChild(player3Container);
@@ -643,7 +918,9 @@ async function newGame(fourPlayers) {
   allBoxesContainer.appendChild(settingsForm);
   allBoxesContainer.appendChild(bgColorsForm);
   card.appendChild(allBoxesContainer);
-  const buttonContainer = Object.assign(document.createElement("div"), { className: "flex justify-center mt-6" });
+  const buttonContainer = Object.assign(document.createElement("div"), {
+    className: "flex justify-center mt-6"
+  });
   buttonContainer.appendChild(startButton);
   appDiv.appendChild(buttonContainer);
   startButton.addEventListener("click", (e) => {
@@ -686,15 +963,44 @@ async function newGame(fourPlayers) {
 }
 function loadConfig(fourPlayers) {
   const appDiv = document.getElementById("app");
-  const scoreboard = Object.assign(document.createElement("div"), { className: "scoreboard w-full flex justify-between items-center" });
-  const leftSide = Object.assign(document.createElement("div"), { className: "flex items-center" });
-  const p1name = Object.assign(document.createElement("textarea"), { className: "p1name game-text", rows: "1", cols: "30", disabled: "true" });
-  const p1score = Object.assign(document.createElement("textarea"), { className: "p1score game-text", rows: "1", cols: "2", disabled: "true" });
+  const scoreboard = Object.assign(document.createElement("div"), {
+    className: "scoreboard w-full flex justify-between items-center"
+  });
+  const leftSide = Object.assign(document.createElement("div"), {
+    className: "flex items-center"
+  });
+  const p1name = Object.assign(document.createElement("textarea"), {
+    className: "p1name game-text",
+    rows: "1",
+    cols: "30",
+    disabled: "true"
+  });
+  const p1score = Object.assign(document.createElement("textarea"), {
+    className: "p1score game-text",
+    rows: "1",
+    cols: "2",
+    disabled: "true"
+  });
   leftSide.append(p1name, p1score);
-  const center = Object.assign(document.createElement("span"), { className: "game-text", textContent: " : " });
-  const rightSide = Object.assign(document.createElement("div"), { className: "flex items-center" });
-  const p2score = Object.assign(document.createElement("textarea"), { className: "p2score game-text", rows: "1", cols: "2", disabled: "true" });
-  const p2name = Object.assign(document.createElement("textarea"), { className: "p2name game-text", rows: "1", cols: "30", disabled: "true" });
+  const center = Object.assign(document.createElement("span"), {
+    className: "game-text",
+    textContent: " : "
+  });
+  const rightSide = Object.assign(document.createElement("div"), {
+    className: "flex items-center"
+  });
+  const p2score = Object.assign(document.createElement("textarea"), {
+    className: "p2score game-text",
+    rows: "1",
+    cols: "2",
+    disabled: "true"
+  });
+  const p2name = Object.assign(document.createElement("textarea"), {
+    className: "p2name game-text",
+    rows: "1",
+    cols: "30",
+    disabled: "true"
+  });
   const fullscreenBtn = Object.assign(document.createElement("button"), {
     className: "fullscreen-btn game-text",
     textContent: "\u26F6",
@@ -703,7 +1009,10 @@ function loadConfig(fourPlayers) {
   fullscreenBtn.addEventListener("click", toggleFullscreen);
   rightSide.append(p2score, p2name, fullscreenBtn);
   scoreboard.append(leftSide, center, rightSide);
-  const canvas = Object.assign(document.createElement("canvas"), { id: "board", tabIndex: 1 });
+  const canvas = Object.assign(document.createElement("canvas"), {
+    id: "board",
+    tabIndex: 1
+  });
   const margin = 47;
   const availableHeight = window.innerHeight - margin;
   canvas.width = window.innerWidth;
@@ -718,48 +1027,60 @@ function loadConfig(fourPlayers) {
   const ctx = canvas.getContext("2d");
   let touchStartY = 0;
   let touchStartX = 0;
-  canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    touchStartY = touch.clientY;
-    touchStartX = touch.clientX;
-  }, { passive: false });
-  canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    if (!data || !data.p) return;
-    const touch = e.touches[0];
-    const deltaY = touch.clientY - touchStartY;
-    const deltaX = touch.clientX - touchStartX;
-    const canvasRect = canvas.getBoundingClientRect();
-    const touchX = touch.clientX - canvasRect.left;
-    const isLeftSide = touchX < canvas.width / 2;
-    if (isLeftSide && data.p[0]) {
-      if (deltaY < -10) {
-        data.keys[data.p[0].up] = true;
-        data.keys[data.p[0].down] = false;
-      } else if (deltaY > 10) {
-        data.keys[data.p[0].down] = true;
-        data.keys[data.p[0].up] = false;
+  canvas.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      touchStartY = touch.clientY;
+      touchStartX = touch.clientX;
+    },
+    { passive: false }
+  );
+  canvas.addEventListener(
+    "touchmove",
+    (e) => {
+      e.preventDefault();
+      if (!data || !data.p) return;
+      const touch = e.touches[0];
+      const deltaY = touch.clientY - touchStartY;
+      const deltaX = touch.clientX - touchStartX;
+      const canvasRect = canvas.getBoundingClientRect();
+      const touchX = touch.clientX - canvasRect.left;
+      const isLeftSide = touchX < canvas.width / 2;
+      if (isLeftSide && data.p[0]) {
+        if (deltaY < -10) {
+          data.keys[data.p[0].up] = true;
+          data.keys[data.p[0].down] = false;
+        } else if (deltaY > 10) {
+          data.keys[data.p[0].down] = true;
+          data.keys[data.p[0].up] = false;
+        }
+      } else if (!isLeftSide && data.p[1]) {
+        if (deltaY < -10) {
+          data.keys[data.p[1].up] = true;
+          data.keys[data.p[1].down] = false;
+        } else if (deltaY > 10) {
+          data.keys[data.p[1].down] = true;
+          data.keys[data.p[1].up] = false;
+        }
       }
-    } else if (!isLeftSide && data.p[1]) {
-      if (deltaY < -10) {
-        data.keys[data.p[1].up] = true;
-        data.keys[data.p[1].down] = false;
-      } else if (deltaY > 10) {
-        data.keys[data.p[1].down] = true;
-        data.keys[data.p[1].up] = false;
+    },
+    { passive: false }
+  );
+  canvas.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      if (data && data.p) {
+        data.p.forEach((player) => {
+          data.keys[player.up] = false;
+          data.keys[player.down] = false;
+        });
       }
-    }
-  }, { passive: false });
-  canvas.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    if (data && data.p) {
-      data.p.forEach((player) => {
-        data.keys[player.up] = false;
-        data.keys[player.down] = false;
-      });
-    }
-  }, { passive: false });
+    },
+    { passive: false }
+  );
   if (isMobile()) {
     setTimeout(async () => {
       try {
@@ -771,50 +1092,60 @@ function loadConfig(fourPlayers) {
     }, 100);
   }
   var p = [];
-  p.push(loadPlayer(
-    loadIn("name_p1"),
-    "",
-    //player ID
-    loadInB("p1Ai"),
-    loadIn("p1Up"),
-    loadIn("p1Down"),
-    loadIn("p1InnerCol"),
-    loadIn("p1OuterCol"),
-    loadIn("p1CornerCol")
-  ));
-  p.push(loadPlayer(
-    loadIn("name_p2"),
-    "",
-    //player ID
-    loadInB("p2Ai"),
-    loadIn("p2Up"),
-    loadIn("p2Down"),
-    loadIn("p2InnerCol"),
-    loadIn("p2OuterCol"),
-    loadIn("p2CornerCol")
-  ));
-  if (fourPlayers) p.push(loadPlayer(
-    loadIn("name_p3"),
-    "",
-    //player ID
-    loadInB("p3Ai"),
-    loadIn("p3Up"),
-    loadIn("p3Down"),
-    loadIn("p3InnerCol"),
-    loadIn("p3OuterCol"),
-    loadIn("p3CornerCol")
-  ));
-  if (fourPlayers) p.push(loadPlayer(
-    loadIn("name_p4"),
-    "",
-    //player ID
-    loadInB("p4Ai"),
-    loadIn("p4Up"),
-    loadIn("p4Down"),
-    loadIn("p4InnerCol"),
-    loadIn("p4OuterCol"),
-    loadIn("p4CornerCol")
-  ));
+  p.push(
+    loadPlayer(
+      loadIn("name_p1"),
+      loadIn("p1Id"),
+      // get user id from hidden input
+      loadInB("p1Ai"),
+      loadIn("p1Up"),
+      loadIn("p1Down"),
+      loadIn("p1InnerCol"),
+      loadIn("p1OuterCol"),
+      loadIn("p1CornerCol")
+    )
+  );
+  p.push(
+    loadPlayer(
+      loadIn("name_p2"),
+      loadIn("p2Id"),
+      // get user ID from hidden input
+      loadInB("p2Ai"),
+      loadIn("p2Up"),
+      loadIn("p2Down"),
+      loadIn("p2InnerCol"),
+      loadIn("p2OuterCol"),
+      loadIn("p2CornerCol")
+    )
+  );
+  if (fourPlayers)
+    p.push(
+      loadPlayer(
+        loadIn("name_p3"),
+        "",
+        //player ID
+        loadInB("p3Ai"),
+        loadIn("p3Up"),
+        loadIn("p3Down"),
+        loadIn("p3InnerCol"),
+        loadIn("p3OuterCol"),
+        loadIn("p3CornerCol")
+      )
+    );
+  if (fourPlayers)
+    p.push(
+      loadPlayer(
+        loadIn("name_p4"),
+        "",
+        //player ID
+        loadInB("p4Ai"),
+        loadIn("p4Up"),
+        loadIn("p4Down"),
+        loadIn("p4InnerCol"),
+        loadIn("p4OuterCol"),
+        loadIn("p4CornerCol")
+      )
+    );
   const loadData = {
     canvas,
     fps: 50,
@@ -1448,46 +1779,22 @@ function spawnMultiball(ball) {
 // src/services/gameService.ts
 var GameService = class {
   constructor() {
-    this.baseUrl = "/api/pong";
+    this.baseUrl = "/api/pong-db";
   }
-  async createGame(gameData) {
-    console.log("Fetching to:", `${this.baseUrl}/games`);
-    try {
-      const response = await fetch(`${this.baseUrl}/games`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(gameData)
-      });
-      console.log("Response status:", response.status);
-      if (!response.ok) throw new Error("Failed to create game");
-      return await response.json();
-    } catch (error) {
-      console.error("Error creating game:", error);
-      return null;
-    }
-  }
-  async createAIGame(playerData2) {
-    try {
-      const gameData = {
-        player1Id: playerData2.playerId,
-        player2Id: "ai_opponent",
-        player1Name: playerData2.playerName,
-        player2Name: "IA_OPPONENT",
-        maxScore: playerData2.maxScore || 5,
-        gameType: "VS_AI"
-      };
-      return await this.createGame(gameData);
-    } catch (error) {
-      console.error("Error creating AI game:", error);
-      return null;
-    }
-  }
-  async updateScore(gameId, score1, score2) {
+  async updateScore(userId, gameId, isWinner, userScore, opponentName, opponentScore, opponentId) {
     try {
       const response = await fetch(`${this.baseUrl}/games/${gameId}/score`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score1, score2 })
+        body: JSON.stringify({
+          userId,
+          gameId,
+          isWinner,
+          userScore,
+          opponentName,
+          opponentScore,
+          opponentId
+        })
       });
       return response.ok;
     } catch (error) {
@@ -1495,12 +1802,20 @@ var GameService = class {
       return false;
     }
   }
-  async finishGame(gameId, score1, score2, winnerId) {
+  async finishGame(userId, gameId, isWinner, userScore, opponentName, opponentScore, opponentId) {
     try {
       const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score1, score2, winnerId })
+        body: JSON.stringify({
+          userId,
+          gameId,
+          isWinner,
+          userScore,
+          opponentName,
+          opponentScore,
+          opponentId
+        })
       });
       return response.ok;
     } catch (error) {
@@ -1542,7 +1857,11 @@ function countdown(nr, ms) {
   data.ctx.lineWidth = data.canvas.height / 60;
   data.ctx.textAlign = "center";
   data.ctx.textBaseline = "middle";
-  data.ctx.strokeText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
+  data.ctx.strokeText(
+    String(nr),
+    data.canvas.width / 2,
+    data.canvas.height / 2
+  );
   data.ctx.fillText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
   if (nr - 1) setTimeout(() => countdown(nr - 1, ms), ms);
   else setTimeout(() => startRound(), ms);
@@ -1562,15 +1881,24 @@ function initBoard() {
   data.keys = {};
   balls.push(new Ball());
   pad = new Array(new Paddle(0, data.p[0]));
-  if (data.mode == "twoPlayers") pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
+  if (data.mode == "twoPlayers")
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   if (data.mode == "doublePaddle") {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
+    pad.push(
+      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0])
+    );
+    pad.push(
+      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
+    );
   }
   if (data.mode == "fourPlayers") {
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
+    pad.push(
+      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
+    );
+    pad.push(
+      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
+    );
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
   }
 }
@@ -1598,7 +1926,8 @@ function render() {
   data.ctx.fill();
   midline();
   for (let i = 0; i < pad.length; i++) pad[i].draw();
-  if (data.trailLength) for (let i = 0; i < balls.length; i++) balls[i].drawTrail();
+  if (data.trailLength)
+    for (let i = 0; i < balls.length; i++) balls[i].drawTrail();
   for (let i = 0; i < balls.length; i++) balls[i].draw();
   if (data.touchControl) touchControlArrows();
 }
@@ -1611,25 +1940,75 @@ function endRound() {
     pad[0].stop();
     pad.shift();
   }
-  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) setTimeout(startRound, 1500);
-  else endGame();
+  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
+    setTimeout(startRound, 1500);
+  else {
+    console.log("ahhhhhhhhhhhh");
+    endGame();
+  }
 }
 async function endGame() {
   var winner;
-  if (data.p[0].score > data.p[1].score)
+  var losser;
+  var winnerId;
+  var losserId;
+  var isWinner = false;
+  if (data.p[0].score > data.p[1].score) {
     winner = data.p[0].name;
-  else winner = data.p[1].name;
+    losser = data.p[1].name;
+    isWinner = true;
+    winnerId = data.p[0].id;
+    losserId = data.p[1].id;
+  } else {
+    winner = data.p[1].name;
+    losser = data.p[0].name;
+    winnerId = data.p[1].id;
+    losserId = data.p[0].id;
+  }
   data.showingText = false;
   const secondPlayerData = getSecondPlayerData();
   if (secondPlayerData) {
-    console.log("Second player data available for statistics:", secondPlayerData);
+    console.log(
+      "Second player data available for statistics:",
+      secondPlayerData
+    );
+  }
+  const gameId = "sldfjskldkfjksdklfjsdklf";
+  try {
+    const result = await gameService.finishGame(
+      winnerId,
+      gameId,
+      isWinner,
+      data.p[0].score,
+      losser,
+      data.p[1].score,
+      losserId
+    );
+    console.log("Game finished successfully:", result);
+  } catch (error) {
+    console.error("Failed to finish game:", error);
   }
   if (isMobile2()) {
     showExitButton(winner);
+  } else {
+    setTimeout(() => {
+      exitGameMessage(winner);
+    }, 3e3);
   }
 }
+function exitGameMessage(winner) {
+  window.parent.postMessage(
+    {
+      type: "EXIT_GAME",
+      winner
+    },
+    window.location.origin
+  );
+}
 function isMobile2() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 && window.innerHeight <= 1024;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  ) || window.innerWidth <= 768 && window.innerHeight <= 1024;
 }
 function showExitButton(winner) {
   const exitOverlay = document.createElement("div");
@@ -1654,10 +2033,7 @@ function showExitButton(winner) {
       } else if (document.msExitFullscreen) {
         document.msExitFullscreen();
       }
-      window.parent.postMessage({
-        type: "EXIT_GAME",
-        winner
-      }, window.location.origin);
+      exitGameMessage(winner);
       document.body.removeChild(exitOverlay);
     });
   }

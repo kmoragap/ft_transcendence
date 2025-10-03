@@ -23,7 +23,8 @@ export function renderOAuthCallback(): HTMLElement {
 
 async function processOAuthCallback() {
   try {
-    const urlParams = new URLSearchParams(window.location.search);
+    const hashPart = window.location.hash.split('?')[1] || '';
+    const urlParams = new URLSearchParams(hashPart);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
 
@@ -35,6 +36,7 @@ async function processOAuthCallback() {
     }
 
     if (success === 'true') {
+      console.log('OAuth login successful');
       try {
         const meRes = await fetch('/api/auth/me', {
           method: 'GET',

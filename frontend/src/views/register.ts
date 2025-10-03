@@ -137,12 +137,10 @@ export function renderRegistration(): HTMLElement {
         return;
       }
 
-      alertSuccess('Registration successful! You can now log in.');
       const user = { username, firstname, email };
-
       store.dispatch({ type: 'LOGIN', payload: user });   
-      alertSuccess('Login successful!');
       window.location.hash = '/';
+      alertSuccess('Registration successful! You are now logged in.');
     } catch (err) {
       console.error(err);
       alertError('An unexpected error occurred.');

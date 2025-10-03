@@ -17,7 +17,7 @@ export function notifyGameResult(userId: string, payload: StatsPayload): void {
   const url = `${USERS_SERVICE_URL}/users/${userId}/stats`;
 
   fetch(url, {
-    method: "PUT",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },

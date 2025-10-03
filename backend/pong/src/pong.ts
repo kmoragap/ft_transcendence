@@ -133,7 +133,10 @@ export function endRound(): void {
   }
   if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
     setTimeout(startRound, 1500);
-  else endGame();
+  else {
+    console.log("ahhhhhhhhhhhh");
+    endGame();
+  }
 }
 
 export async function endGame() {
@@ -165,32 +168,44 @@ export async function endGame() {
       secondPlayerData
     );
   }
-
+  const gameId = "sldfjskldkfjksdklfjsdklf";
   // Finish game and update stats
-  if (data.gameID) {
-    try {
-      const result = await gameService.finishGame(
-        winnerId,
-        data.gameID,
-        isWinner,
-        data.p[0].score,
-        losser,
-        data.p[1].score,
-        losserId
-      );
-      console.log("Game finished successfully:", result);
-    } catch (error) {
-      console.error("Failed to finish game:", error);
-    }
+  try {
+    const result = await gameService.finishGame(
+      winnerId,
+      gameId,
+      isWinner,
+      data.p[0].score,
+      losser,
+      data.p[1].score,
+      losserId
+    );
+    console.log("Game finished successfully:", result);
+  } catch (error) {
+    console.error("Failed to finish game:", error);
   }
 
   // Add exit button for mobile users
   if (isMobile()) {
     showExitButton(winner);
+  } else {
+    setTimeout(() => {
+      exitGameMessage(winner);
+    }, 3000);
   }
 
   //const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
   //console.log(res);
+}
+
+function exitGameMessage(winner: string): void {
+  window.parent.postMessage(
+    {
+      type: "EXIT_GAME",
+      winner: winner,
+    },
+    window.location.origin
+  );
 }
 
 // Mobile exit functionality
@@ -234,13 +249,7 @@ function showExitButton(winner: string): void {
       }
 
       // Navigate back to game page
-      window.parent.postMessage(
-        {
-          type: "EXIT_GAME",
-          winner: winner,
-        },
-        window.location.origin
-      );
+      exitGameMessage(winner);
 
       // Remove the overlay
       document.body.removeChild(exitOverlay);

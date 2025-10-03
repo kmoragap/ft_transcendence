@@ -107,7 +107,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
     getUserStatsHandler
   );
 
-  fastify.put(
+  fastify.post(
     "/:id/stats",
     {
       schema: {

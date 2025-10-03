@@ -16,7 +16,7 @@ export default async function pongRoutes(fastify: FastifyInstance) {
   fastify.put("/games/:id/score", updateScore);
 
   // finish game
-  fastify.put("/games/:id/finish", finishGame);
+  fastify.post("/games/:id/finish", finishGame);
 
   // leaderboard route
   fastify.get("/leaderboard", leaderboard);

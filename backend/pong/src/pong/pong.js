@@ -1771,7 +1771,7 @@ function spawnMultiball(ball) {
 // src/services/gameService.ts
 var GameService = class {
   constructor() {
-    this.baseUrl = "http://pong-db:3000/api/pong-db";
+    this.baseUrl = "/api/pong-db";
   }
   async updateScore(userId, gameId, isWinner, userScore, opponentName, opponentScore, opponentId) {
     try {
@@ -1797,7 +1797,7 @@ var GameService = class {
   async finishGame(userId, gameId, isWinner, userScore, opponentName, opponentScore, opponentId) {
     try {
       const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,
@@ -1834,7 +1834,6 @@ async function startGame(fourPlayers) {
     await initI18n(lang);
     await newGame(fourPlayers);
     document.getElementById("board")?.focus();
-    endGame();
   } catch (error) {
     console.error("Failed to load configuration:", error);
   }
@@ -1935,7 +1934,10 @@ function endRound() {
   }
   if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
     setTimeout(startRound, 1500);
-  else endGame();
+  else {
+    console.log("ahhhhhhhhhhhh");
+    endGame();
+  }
 }
 async function endGame() {
   var winner;
@@ -1963,25 +1965,37 @@ async function endGame() {
       secondPlayerData
     );
   }
-  if (data.gameID) {
-    try {
-      const result = await gameService.finishGame(
-        winnerId,
-        data.gameID,
-        isWinner,
-        data.p[0].score,
-        losser,
-        data.p[1].score,
-        losserId
-      );
-      console.log("Game finished successfully:", result);
-    } catch (error) {
-      console.error("Failed to finish game:", error);
-    }
+  const gameId = "sldfjskldkfjksdklfjsdklf";
+  try {
+    const result = await gameService.finishGame(
+      winnerId,
+      gameId,
+      isWinner,
+      data.p[0].score,
+      losser,
+      data.p[1].score,
+      losserId
+    );
+    console.log("Game finished successfully:", result);
+  } catch (error) {
+    console.error("Failed to finish game:", error);
   }
   if (isMobile2()) {
     showExitButton(winner);
+  } else {
+    setTimeout(() => {
+      exitGameMessage(winner);
+    }, 3e3);
   }
+}
+function exitGameMessage(winner) {
+  window.parent.postMessage(
+    {
+      type: "EXIT_GAME",
+      winner
+    },
+    window.location.origin
+  );
 }
 function isMobile2() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -2011,13 +2025,7 @@ function showExitButton(winner) {
       } else if (document.msExitFullscreen) {
         document.msExitFullscreen();
       }
-      window.parent.postMessage(
-        {
-          type: "EXIT_GAME",
-          winner
-        },
-        window.location.origin
-      );
+      exitGameMessage(winner);
       document.body.removeChild(exitOverlay);
     });
   }

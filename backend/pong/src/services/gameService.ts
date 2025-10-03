@@ -54,7 +54,7 @@ class GameService {
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,

@@ -137,10 +137,22 @@ export function renderRegistration(): HTMLElement {
         return;
       }
 
-      const user = { username, firstname, email };
-      store.dispatch({ type: 'LOGIN', payload: user });   
-      window.location.hash = '/';
-      alertSuccess('Registration successful! You are now logged in.');
+      const responseData = await res.json();
+
+      // Check if registration returns tokens (auto-login)
+      if (responseData.token) {
+        localStorage.setItem('accessToken', responseData.token);
+        localStorage.setItem('refreshToken', responseData.refresh);
+        
+        const user = { username, firstname, email, avatarUrl: responseData.avatarUrl };
+        store.dispatch({ type: 'LOGIN', payload: user });   
+        window.location.hash = '/';
+        alertSuccess('Registration successful! You are now logged in.');
+      } else {
+        // No tokens returned, redirect to login
+        alertSuccess('Registration successful! Please log in.');
+        window.location.hash = '/login';
+      }
     } catch (err) {
       console.error(err);
       alertError('An unexpected error occurred.');

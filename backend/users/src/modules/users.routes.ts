@@ -110,7 +110,6 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.put(
     "/:id/stats",
     {
-      preHandler: [authenticateToken],
       schema: {
         params: userIdParamsSchema,
         body: updateStatsBodySchema,

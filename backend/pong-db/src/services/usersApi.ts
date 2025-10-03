@@ -1,12 +1,15 @@
-const USERS_SERVICE_URL =
+export const USERS_SERVICE_URL =
   process.env.USERS_SERVICE_URL || "http://users:3000/api";
 
 // this interface of the type of data that we are sending and need to match with the one that is in the users
 interface StatsPayload {
-  isWinner: boolean;
-  score: number;
+  userId: string;
   gameId: string;
-  opponentId: string;
+  isWinner: boolean;
+  userScore: number;
+  opponentName: string;
+  opponentScore?: number;
+  opponentId?: string;
 }
 
 //notify to user service the result of a match, it doesnt wait for a response (fire-and-forget)

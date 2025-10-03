@@ -1,12 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import prisma from "../utils/prisma";
 import { Oponent } from "@prisma/client"; // Agregar import si no está
-import { notifyGameResult } from "../services/usersApi";
+import { notifyGameResult, USERS_SERVICE_URL } from "../services/usersApi";
+
 interface CreateGameBody {
   player1Id: string;
   player2Id: string;
-  player1Name: string;
-  player2Name: string;
   maxScore?: number;
   gameType: Oponent;
 }
@@ -17,45 +16,14 @@ interface UpdateScoreBody {
 }
 
 interface FinishGameBody {
-  score1: number;
-  score2: number;
-  winnerId: string;
+  userId: string;
+  gameId: string;
+  isWinner: boolean;
+  userScore: number;
+  opponentName: string;
+  opponentScore?: number;
+  opponentId: string;
 }
-
-export const createGame = async (
-  request: FastifyRequest<{ Body: CreateGameBody }>,
-  reply: FastifyReply
-) => {
-  try {
-    const {
-      player1Id,
-      player2Id,
-      player1Name,
-      player2Name,
-      maxScore = 3,
-      gameType = Oponent.VS_HUMAN,
-    } = request.body;
-    const finalPlayer2Id =
-      gameType === Oponent.VS_AI ? "ai_opponent" : player2Id;
-    const finalPlayer2Name =
-      gameType === Oponent.VS_AI ? "IA_OPPONENT" : player2Name; //TODO: check this bc could be that an user take the same name
-
-    const game = await prisma.game.create({
-      data: {
-        player1Id,
-        player2Id: finalPlayer2Id,
-        player1Name,
-        player2Name: finalPlayer2Name,
-        maxScore,
-        gameType,
-      },
-    });
-
-    return reply.status(201).send(game);
-  } catch (error) {
-    return reply.status(500).send({ error: "Failed to create game" });
-  }
-};
 
 export const updateScore = async (
   request: FastifyRequest<{ Params: { id: string }; Body: UpdateScoreBody }>,
@@ -77,54 +45,50 @@ export const updateScore = async (
 };
 
 export const finishGame = async (
-  request: FastifyRequest<{
-    Params: { id: string };
-    Body: { score1: number; score2: number; winnerId: string };
-  }>,
+  request: FastifyRequest<{ Params: { id: string }; Body: FinishGameBody }>,
   reply: FastifyReply
 ) => {
   try {
-    const game = await prisma.game.update({
-      where: { id: request.params.id },
-      data: {
-        score1: request.body.score1,
-        score2: request.body.score2,
-        winnerId: request.body.winnerId,
-        status: "FINISHED",
-        updatedAt: new Date(),
-      },
-    });
+    // notify user service about game results for both players
+    const { id } = request.params;
+    const game: FinishGameBody = request.body;
+    let isPlayer1Real = true;
+    let isPlayer2Real = true;
+    let losserId;
 
-    if (game.gameType === "VS_HUMAN" && game.player1Id && game.player2Id) {
-      const {
-        player1Id,
-        player2Id,
-        id: gameId,
-        score1,
-        score2,
-        winnerId,
-      } = game;
+    // dont notify ai opponents or guests
+    if (game.opponentName === "Roger Fed-error" && game.opponentId === "") {
+      isPlayer2Real = false;
+      losserId = "AI-Roger-Federror";
+    }
 
-      // notify result to player1
-      notifyGameResult(player1Id, {
-        gameId,
-        isWinner: winnerId === player1Id,
-        score: score1,
-        opponentId: player2Id,
+    if (isPlayer1Real) {
+      await notifyGameResult(game.userId, {
+        userId: game.userId,
+        gameId: game.gameId,
+        isWinner: game.isWinner,
+        userScore: game.userScore,
+        opponentName: game.opponentName,
+        opponentScore: game.opponentScore,
+        opponentId: game.opponentId,
       });
+    }
 
-      // notify result to player2
-      notifyGameResult(player2Id, {
-        gameId,
-        isWinner: winnerId === player2Id,
-        score: score2,
-        opponentId: player1Id,
+    if (isPlayer2Real) {
+      await notifyGameResult(game.opponentId, {
+        userId: game.opponentId,
+        gameId: game.gameId,
+        isWinner: game.isWinner ? false : true,
+        userScore: game.userScore,
+        opponentName: game.opponentName,
+        opponentScore: game.opponentScore,
+        opponentId: game.opponentId,
       });
     }
 
     return reply.send(game);
   } catch (error) {
-    console.error(`Error finishing game ${request.params.id}:`, error);
+    console.error("Error finishing game:", error);
     return reply.status(500).send({ error: "Failed to finish game" });
   }
 };

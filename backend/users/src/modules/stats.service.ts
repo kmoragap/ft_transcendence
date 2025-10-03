@@ -14,26 +14,43 @@ export async function updateUserStatsAndHistory(
 ): Promise<void> {
   await prisma.$transaction(async tx => {
     const user = await tx.user.findUnique({ where: { id: userId } });
-    const opponent = await tx.user.findUnique({
-      where: { id: data.opponentId },
-    });
-
-    if (!user || !opponent) {
-      throw new Error("User or opponent not found");
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    //a lot to say here so if u want to learn: https://www.geeksforgeeks.org/dsa/elo-rating-algorithm/
-    const expectedScore =
-      1 / (1 + Math.pow(10, (opponent.elo - user.elo) / 400));
-    const actualScore = data.isWinner ? 1 : 0;
-    const newElo = Math.round(
-      user.elo + ELO_K_FACTOR * (actualScore - expectedScore)
-    );
+    // check if opponent is AI or guest
+    const isAIOpponent = data.opponentId === "";
 
-    // 1. update user
+    let newElo = user.elo;
+    let eloChange = 0;
+    //a lot to say here so if u want to learn: https://www.geeksforgeeks.org/dsa/elo-rating-algorithm/
+    // we only calculate elo if playing against a real user
+    if (!isAIOpponent) {
+      const opponent = await tx.user.findUnique({
+        where: { id: data.opponentId },
+      });
+
+      if (opponent) {
+        const expectedScore =
+          1 / (1 + Math.pow(10, (opponent.elo - user.elo) / 400));
+        const actualScore = data.isWinner ? 1 : 0;
+        newElo = Math.round(
+          user.elo + ELO_K_FACTOR * (actualScore - expectedScore)
+        );
+        eloChange = newElo - user.elo;
+      }
+    } else {
+      // against ai/guest: smaller ELO changes
+      const smallEloChange = data.isWinner ? 5 : -3;
+      newElo = user.elo + smallEloChange;
+      eloChange = smallEloChange;
+    }
+
+    // 1. update user stats
     await tx.user.update({
       where: { id: userId },
       data: {
+        gamesPlayed: { increment: 1 },
         wins: { increment: data.isWinner ? 1 : 0 },
         losses: { increment: data.isWinner ? 0 : 1 },
         elo: newElo,
@@ -45,10 +62,11 @@ export async function updateUserStatsAndHistory(
       data: {
         userId: userId,
         gameId: data.gameId,
-        opponentId: data.opponentId,
+        opponentId: isAIOpponent ? null : data.opponentId,
         isWinner: data.isWinner,
-        userScore: data.score,
-        eloChange: newElo,
+        userScore: data.userScore,
+        opponentScore: data.opponentScore ?? 0,
+        eloChange: eloChange,
       },
     });
   });

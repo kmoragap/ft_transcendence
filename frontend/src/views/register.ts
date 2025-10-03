@@ -139,7 +139,6 @@ export function renderRegistration(): HTMLElement {
 
       const responseData = await res.json();
 
-      // Check if registration returns tokens (auto-login)
       if (responseData.token) {
         localStorage.setItem('accessToken', responseData.token);
         localStorage.setItem('refreshToken', responseData.refresh);
@@ -149,7 +148,6 @@ export function renderRegistration(): HTMLElement {
         window.location.hash = '/';
         alertSuccess('Registration successful! You are now logged in.');
       } else {
-        // No tokens returned, redirect to login
         alertSuccess('Registration successful! Please log in.');
         window.location.hash = '/login';
       }

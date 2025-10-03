@@ -22,7 +22,8 @@ up:
 
 down: 
 	@echo "🛑 Stopping containers..."
-	@$(DC) down > /dev/null 2>&1
+	@$(DC) down
+	@docker system prune -f	
 	@echo "✅ Containers have been stopped."
 
 rebuild: down show-url

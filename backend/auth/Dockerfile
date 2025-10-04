@@ -6,6 +6,8 @@ COPY package*.json ./
 
 RUN npm clean-install
 
+RUN npm install @simplewebauthn/server --save
+
 COPY . .
 
 RUN npx prisma generate

@@ -226,7 +226,7 @@ export async function sendFriendRequest(userId: string, username?: string): Prom
 
       return;
     } catch (error: any) {
-      if (error instanceof Error && error.message !== 'Failed to fetch') {
+      if (error instanceof Error && error.message === 'Failed to fetch') {
         throw error;
       }
       throw new Error('No access token found');

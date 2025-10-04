@@ -16,3 +16,20 @@ model Session {
 
     @@map("sessions")
 }
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  name     String?
+  passkeys Passkey[] // Link to the Passkey model
+}
+
+model Passkey {
+  id         String   @id @default(cuid())
+  userId     String
+  credentialId String   @unique // The public ID of the credential
+  publicKey  String   // The public key of the credential
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

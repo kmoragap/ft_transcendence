@@ -168,12 +168,11 @@ export async function endGame() {
       secondPlayerData
     );
   }
-  const gameId = "sldfjskldkfjksdklfjsdklf";
   // Finish game and update stats
   try {
     const result = await gameService.finishGame(
       winnerId,
-      gameId,
+      "akjsfhaksfdata.gameID",
       isWinner,
       data.p[0].score,
       losser,

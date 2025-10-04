@@ -8,7 +8,6 @@ export type UserIdParams = Static<typeof userIdParamsSchema>;
 
 // body schema req for update stats
 export const updateStatsBodySchema = Type.Object({
-  id: Type.String({ format: "cuid" }), // we check that the id has cuid format
   gameId: Type.String(),
   isWinner: Type.Boolean(),
   userScore: Type.Integer({ minimum: 0 }),

@@ -19,7 +19,7 @@ export async function updateUserStatsAndHistory(
     }
 
     // check if opponent is AI or guest
-    const isAIOpponent = data.opponentId === "";
+    const isAIOpponent = data.opponentId === "AI-Roger-Federror";
 
     let newElo = user.elo;
     let eloChange = 0;
@@ -57,18 +57,37 @@ export async function updateUserStatsAndHistory(
       },
     });
 
-    // 2. create the entry in the game history
-    await tx.userGameHistory.create({
-      data: {
-        userId: userId,
-        gameId: data.gameId,
-        opponentId: isAIOpponent ? null : data.opponentId,
-        isWinner: data.isWinner,
-        userScore: data.userScore,
-        opponentScore: data.opponentScore ?? 0,
-        eloChange: eloChange,
-      },
+    // Check if game exists, create or update accordingly
+    const existingGame = await tx.userGameHistory.findUnique({
+      where: { gameId: data.gameId },
     });
+
+    if (!existingGame) {
+      await tx.userGameHistory.create({
+        data: {
+          userId: userId,
+          gameId: data.gameId,
+          opponentId: isAIOpponent ? null : data.opponentId,
+          isWinner: data.isWinner,
+          userScore: data.userScore,
+          opponentScore: data.opponentScore ?? 0,
+          eloChange: eloChange,
+        },
+      });
+    } else {
+      await tx.userGameHistory.update({
+        where: { gameId: data.gameId },
+        data: {
+          userId: userId,
+          gameId: data.gameId,
+          opponentId: isAIOpponent ? null : data.opponentId,
+          isWinner: data.isWinner,
+          userScore: data.userScore,
+          opponentScore: data.opponentScore ?? 0,
+          eloChange: eloChange,
+        },
+      });
+    }
   });
 }
 

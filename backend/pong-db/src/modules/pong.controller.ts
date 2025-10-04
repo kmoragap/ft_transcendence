@@ -49,22 +49,25 @@ export const finishGame = async (
   reply: FastifyReply
 ) => {
   try {
-    // notify user service about game results for both players
     const { id } = request.params;
     const game: FinishGameBody = request.body;
     let isPlayer1Real = true;
     let isPlayer2Real = true;
     let losserId;
 
-    // dont notify ai opponents or guests
-    if (game.opponentName === "Roger Fed-error" && game.opponentId === "") {
+    // Don't notify AI opponents or guests
+    if (
+      game.opponentName === "Federror" ||
+      !game.opponentId ||
+      game.opponentId === ""
+    ) {
       isPlayer2Real = false;
       losserId = "AI-Roger-Federror";
     }
-
-    if (isPlayer1Real) {
+    console.log("Game data:", JSON.stringify(game, null, 2));
+    // Only notify if player1 has a valid ID
+    if (isPlayer1Real && id && id !== "") {
       await notifyGameResult(game.userId, {
-        userId: game.userId,
         gameId: game.gameId,
         isWinner: game.isWinner,
         userScore: game.userScore,
@@ -74,15 +77,15 @@ export const finishGame = async (
       });
     }
 
-    if (isPlayer2Real) {
+    // Only notify if player2 has a valid ID
+    if (isPlayer2Real && game.opponentId && game.opponentId !== "") {
       await notifyGameResult(game.opponentId, {
-        userId: game.opponentId,
         gameId: game.gameId,
-        isWinner: game.isWinner ? false : true,
-        userScore: game.userScore,
+        isWinner: !game.isWinner,
+        userScore: game.opponentScore || 0,
         opponentName: game.opponentName,
-        opponentScore: game.opponentScore,
-        opponentId: game.opponentId,
+        opponentScore: game.userScore,
+        opponentId: game.userId,
       });
     }
 

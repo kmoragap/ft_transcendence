@@ -3,7 +3,6 @@ export const USERS_SERVICE_URL =
 
 // this interface of the type of data that we are sending and need to match with the one that is in the users
 interface StatsPayload {
-  userId: string;
   gameId: string;
   isWinner: boolean;
   userScore: number;
@@ -17,7 +16,7 @@ export function notifyGameResult(userId: string, payload: StatsPayload): void {
   const url = `${USERS_SERVICE_URL}/users/${userId}/stats`;
 
   fetch(url, {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

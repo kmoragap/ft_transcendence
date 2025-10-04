@@ -9,39 +9,7 @@ interface StatsPayload {
 }
 
 class GameService {
-  private baseUrl = "/api/pong-db";
-
-  async updateScore(
-    userId: string,
-    gameId: string,
-    isWinner: boolean,
-    userScore: number,
-    opponentName: string,
-    opponentScore?: number,
-    opponentId?: string
-  ): Promise<boolean> {
-    try {
-      //TODO: cambiar esto a users pq es redundante
-      const response = await fetch(`${this.baseUrl}/games/${gameId}/score`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          gameId,
-          isWinner,
-          userScore,
-          opponentName,
-          opponentScore,
-          opponentId,
-        }),
-      });
-
-      return response.ok;
-    } catch (error) {
-      console.error("Error updating score:", error);
-      return false;
-    }
-  }
+  private baseUrl = "/api/pong";
 
   async finishGame(
     userId: string,
@@ -54,7 +22,7 @@ class GameService {
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,

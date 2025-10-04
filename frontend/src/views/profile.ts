@@ -155,8 +155,6 @@ export function renderProfile(username: string): HTMLElement {
       updateText();
       
       user = await getUserProfile(username);
-      // Check friendship status with current user
-      // Use username as identifier since that's what we store in localStorage
       const { store } = await import('../store');
       const currentUser = store.getState().currentUser;
       friendshipStatus = await getFriendshipStatus(user.username, currentUser?.username);
@@ -171,6 +169,25 @@ export function renderProfile(username: string): HTMLElement {
       user = null;
       section.innerHTML = getViewHTML();
       updateText();
+    }
+  };
+
+  const refreshFriendshipStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { store } = await import('../store');
+      const currentUser = store.getState().currentUser;
+      const newStatus = await getFriendshipStatus(user.username, currentUser?.username);
+      
+      if (newStatus !== friendshipStatus) {
+        friendshipStatus = newStatus;
+        section.innerHTML = getViewHTML();
+        bindEvents();
+        updateText();
+      }
+    } catch (error) {
+      console.error('Failed to refresh friendship status:', error);
     }
   };
 
@@ -190,7 +207,19 @@ export function renderProfile(username: string): HTMLElement {
         updateText();
         alertSuccess(t('friend_request_sent'));
       } catch (error: any) {
-        alertError(error?.message || t('friend_request_failed'));
+        if (error?.message?.includes('already exists') || error?.message?.includes('already been')) {
+          try {
+            friendshipStatus = await getFriendshipStatus(user.username);
+            section.innerHTML = getViewHTML();
+            bindEvents();
+            updateText();
+            alertWarning(t('friend_request_already_exists') || 'Friend request already exists');
+          } catch (refreshError) {
+            alertError(error?.message || t('friend_request_failed'));
+          }
+        } else {
+          alertError(error?.message || t('friend_request_failed'));
+        }
       }
     });
 
@@ -227,10 +256,17 @@ export function renderProfile(username: string): HTMLElement {
 
   loadUserProfile();
   
+  window.addEventListener('focus', refreshFriendshipStatus);
   window.addEventListener('languageChanged', () => {
     section.innerHTML = getViewHTML();
     bindEvents();
   });
+  
+  const cleanup = () => {
+    window.removeEventListener('focus', refreshFriendshipStatus);
+  };
+  
+  (section as any).cleanup = cleanup;
   
   updateText();
   return section;

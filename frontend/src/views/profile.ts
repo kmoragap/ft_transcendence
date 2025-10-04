@@ -217,7 +217,7 @@ export function renderProfile(username: string): HTMLElement {
             updateText();
             alertWarning(t('friend_request_already_exists') || 'Friend request already exists');
           } catch (refreshError) {
-            alertError(error?.message || t('friend_request_failed'));
+            alertError(refreshError?.message || t('friend_request_failed'));
           }
         } else {
           alertError(error?.message || t('friend_request_failed'));

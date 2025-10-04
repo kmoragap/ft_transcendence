@@ -209,7 +209,9 @@ export function renderProfile(username: string): HTMLElement {
       } catch (error: any) {
         if (error?.message?.includes('already exists') || error?.message?.includes('already been')) {
           try {
-            friendshipStatus = await getFriendshipStatus(user.username);
+            const { store } = await import('../store');
+            const currentUser = store.getState().currentUser;
+            friendshipStatus = await getFriendshipStatus(user.username, currentUser?.username);
             section.innerHTML = getViewHTML();
             bindEvents();
             updateText();

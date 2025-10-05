@@ -165,7 +165,6 @@ export function renderProfile(username: string): HTMLElement {
       
       user = await getUserProfile(username);
       
-      // Fetch real stats if user has an ID
       if (user && user.id) {
         try {
           userStats = await getUserStats(user.id);

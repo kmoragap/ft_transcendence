@@ -115,26 +115,18 @@ export function renderDashboard(): HTMLElement {
         const line = document.createElement('div');
         line.className = 'flex flex-col md:flex-row md:items-center justify-between p-2 md:p-3 hover:bg-[rgba(102,252,241,0.06)] gap-1 md:gap-0';
 
-        const left = document.createElement('div');
-        left.className = 'flex flex-col md:flex-row md:items-center gap-1 md:gap-2';
-        const vs = `${g.player1Name} ${g.score1}:${g.score2} ${g.player2Name}`;
-        const names = document.createElement('div');
-        names.className = 'text-white text-sm md:text-base';
-        names.textContent = vs;
+        // Main game info: "dvaisman 0:3 Roger Federror"
+        const gameInfo = document.createElement('div');
+        gameInfo.className = 'text-white text-sm md:text-base';
+        gameInfo.textContent = `${g.player1Name} ${g.score1}:${g.score2} ${g.player2Name}`;
 
-        const meta = document.createElement('div');
-        meta.className = 'text-xs text-[rgba(255,255,255,0.6)]';
-        meta.textContent = `${g.gameType.replace('VS_', 'vs ')} • to ${g.maxScore} • ${fmtDate(g.createdAt)}`;
+        // Time info
+        const timeInfo = document.createElement('div');
+        timeInfo.className = 'text-xs text-[rgba(255,255,255,0.6)]';
+        timeInfo.textContent = fmtDate(g.createdAt);
 
-        left.appendChild(names);
-        left.appendChild(meta);
-
-        const right = document.createElement('div');
-        right.className = 'text-[#66fcf1] text-sm';
-        right.textContent = g.winnerId ? 'Winner set' : '—';
-
-        line.appendChild(left);
-        line.appendChild(right);
+        line.appendChild(gameInfo);
+        line.appendChild(timeInfo);
         list.appendChild(line);
       });
     }

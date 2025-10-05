@@ -50,7 +50,6 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
   const currentUser = state.currentUser;
 
   console.log('getCurrentUserWithStats - currentUser:', currentUser);
-  console.log('getCurrentUserWithStats - sessionRestored:', sessionManager.isSessionRestored());
 
   if (!sessionManager.isSessionRestored()) {
     return {

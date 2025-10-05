@@ -181,13 +181,10 @@ export function renderProfile(username: string): HTMLElement {
       const newStatus = await getFriendshipStatus(user.username, currentUser?.username);
       
       if (newStatus !== friendshipStatus) {
-        const oldStatus = friendshipStatus;
         friendshipStatus = newStatus;
         section.innerHTML = getViewHTML();
         bindEvents();
         updateText();
-        if (oldStatus === 'pending' && newStatus === 'none') {
-        }
       }
     } catch (error) {
       console.error('Failed to refresh friendship status:', error);

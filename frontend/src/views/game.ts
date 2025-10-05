@@ -209,10 +209,10 @@ export function renderGame(): HTMLElement {
 
       try {
         const user = await showLoginModal({
-          title: "Login Second Player",
+          title: t("login_second_player"),
           gameOnly: true,
           onSuccess: user => {
-            alertSuccess("Second player logged in: " + user.username);
+            alertSuccess(t("second_player_logged_in") + ": " + user.username);
           },
           onCancel: () => {
             if (iframeRef?.contentWindow) {

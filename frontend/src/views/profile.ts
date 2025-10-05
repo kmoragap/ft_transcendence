@@ -1,6 +1,6 @@
 import { store } from '../store';
 import { t, updateText } from '../i18n';
-import { getUserProfile, sendFriendRequest, getFriendshipStatus, removeFriendRequest, UserSearchResult } from "../api/users";
+import { getUserProfile, sendFriendRequest, getFriendshipStatus, removeFriendRequest, UserSearchResult, getUserStats, UserStats } from "../api/users";
 import { alertError, alertSuccess, alertWarning } from './../utils/modal-alerts';
 
 export function renderProfile(username: string): HTMLElement {
@@ -13,6 +13,7 @@ export function renderProfile(username: string): HTMLElement {
   ].join(' ')
 
   let user: UserSearchResult | null = null;
+  let userStats: UserStats | null = null;
   let isLoading = true;
   let isFriend = false;
   let friendshipStatus: 'none' | 'pending' | 'accepted' | 'rejected' = 'none';
@@ -45,8 +46,12 @@ export function renderProfile(username: string): HTMLElement {
       `;
     }
 
-    const winRate = user.gamesPlayed > 0 ? Math.round((user.gamesWon / user.gamesPlayed) * 100) : 0;
-    const losses = user.gamesPlayed - user.gamesWon;
+    // Use real stats if available, otherwise fallback to basic stats
+    const wins = userStats ? userStats.wins : user.gamesWon;
+    const losses = userStats ? userStats.losses : (user.gamesPlayed - user.gamesWon);
+    const totalGames = userStats ? (userStats.wins + userStats.losses) : user.gamesPlayed;
+    const winRate = userStats ? userStats.winRate : (user.gamesPlayed > 0 ? Math.round((user.gamesWon / user.gamesPlayed) * 100) : 0);
+    const elo = userStats ? userStats.elo : 1000;
 
     return `
       <div class="flex flex-col items-center space-y-6 w-full px-4">
@@ -84,7 +89,7 @@ export function renderProfile(username: string): HTMLElement {
               <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
               <div class="grid grid-cols-2 gap-2 md:gap-4 mb-4 md:mb-6">
                 <div class="p-2 md:p-4 text-center">
-                  <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.gamesWon}</div>
+                  <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${wins}</div>
                   <div class="text-xs md:text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
                 </div>
                 <div class="p-2 md:p-4 text-center">
@@ -92,12 +97,16 @@ export function renderProfile(username: string): HTMLElement {
                   <div class="text-xs md:text-sm text-gray-300" data-i18n="losses">Losses</div>
                 </div>
                 <div class="p-2 md:p-4 text-center">
-                  <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.gamesPlayed}</div>
+                  <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${totalGames}</div>
                   <div class="text-xs md:text-sm text-gray-300" data-i18n="total_games">Total Games</div>
                 </div>
                 <div class="p-2 md:p-4 text-center">
                   <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${winRate}%</div>
                   <div class="text-xs md:text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
+                </div>
+                <div class="p-2 md:p-4 text-center col-span-2">
+                  <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${elo}</div>
+                  <div class="text-xs md:text-sm text-gray-300" data-i18n="elo_rating">ELO Rating</div>
                 </div>
               </div>
             </div>
@@ -155,6 +164,17 @@ export function renderProfile(username: string): HTMLElement {
       updateText();
       
       user = await getUserProfile(username);
+      
+      // Fetch real stats if user has an ID
+      if (user && user.id) {
+        try {
+          userStats = await getUserStats(user.id);
+        } catch (error) {
+          console.error('Failed to fetch user stats:', error);
+          userStats = null; // Will fallback to basic stats
+        }
+      }
+      
       const { store } = await import('../store');
       const currentUser = store.getState().currentUser;
       friendshipStatus = await getFriendshipStatus(user.username, currentUser?.username);
@@ -167,6 +187,7 @@ export function renderProfile(username: string): HTMLElement {
       console.error('Failed to load user profile:', error);
       isLoading = false;
       user = null;
+      userStats = null;
       section.innerHTML = getViewHTML();
       updateText();
     }

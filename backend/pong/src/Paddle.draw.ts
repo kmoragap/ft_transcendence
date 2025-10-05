@@ -114,7 +114,7 @@ export function touchControlArrows(): void {
 			data.ctx.textBaseline = "bottom";
 			data.ctx.drawImage(downImg, data.canvas.width / 16 - arrowSize/2, data.canvas.height - arrowSize, arrowSize, arrowSize);
 		}
-		if (data.mode != "fourPlayers") {
+		if (data.mode === "single") {
 			if (i == 1 && !pad[i].isAi()) {
 				data.ctx.textBaseline = "top";
 				data.ctx.textAlign = "right";

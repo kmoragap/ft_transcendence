@@ -1,7 +1,8 @@
 //import { userService } from "./services/userService";
 import { controlKeys } from "./controls";
 import { countdown, pad } from "./pong";
-import { playerSetupMenu, gameSetupMenu } from "./menus";
+import { playerSetupMenu, gameSetupMenu, tournamentSetupMenu } from "./menus";
+import { t } from "./i18n";
 import { gameService } from "./services/gameService";
 
 export type playerData = {
@@ -248,7 +249,7 @@ function updatePaddlePositions(): void {
     pad[1].setX(data.canvas.width - data.paddleWidth);
     pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
     pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
-  } else if (data.mode === "fourPlayers") {
+  } else if (data.mode === "multi") {
     pad[0].setX(0);
     pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
     pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
@@ -362,7 +363,7 @@ export async function newGame(mode: string): Promise<void> {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-
+  console.log("Starting new game in mode:", mode);
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app",
   }) as HTMLDivElement;
@@ -375,7 +376,12 @@ export async function newGame(mode: string): Promise<void> {
 
   document.body.appendChild(appDiv);
   const title = document.createElement("h2");
-  title.textContent = "Game Setup";
+  if (mode === "tournament") {
+    title.textContent = t("tournamentSetup");
+  }
+  else {
+    title.textContent = t("gameSetup");
+  }
   title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
   appDiv.appendChild(title);
   const card = document.createElement("div");
@@ -391,7 +397,6 @@ export async function newGame(mode: string): Promise<void> {
   const allBoxesContainer = Object.assign(document.createElement("div"), {
     className: "flex flex-col md:flex-row gap-4 justify-between items-stretch",
   }) as HTMLDivElement;
-
   const tournamentContiner = Object.assign(document.createElement("div"), {
     className: "flex-1",
   }) as HTMLDivElement;
@@ -448,7 +453,7 @@ export async function newGame(mode: string): Promise<void> {
   player2Container.appendChild(player2List);
 
   // Handle 4 players case
-  if (mode === multy) {
+  if (mode === "multi") {
     // Create additional containers for players 3 and 4
     const player3Container = Object.assign(document.createElement("div"), {
       className: "flex-1",
@@ -517,7 +522,7 @@ export async function newGame(mode: string): Promise<void> {
 
   startButton.addEventListener("click", e => {
     e.preventDefault();
-    loadConfig(fourPlayers);
+    loadConfig(mode);
   });
 
   window.addEventListener("resize", () => {
@@ -563,7 +568,7 @@ export async function newGame(mode: string): Promise<void> {
   });
 }
 
-export function loadConfig(fourPlayers: boolean) {
+export function loadConfig(mode: string): void {
   const appDiv = document.getElementById("app") as HTMLDivElement;
   //create scoreboard
   const scoreboard = Object.assign(document.createElement("div"), {
@@ -748,7 +753,7 @@ export function loadConfig(fourPlayers: boolean) {
       loadIn("p2CornerCol")
     )
   );
-  if (fourPlayers)
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p3"),
@@ -761,7 +766,7 @@ export function loadConfig(fourPlayers: boolean) {
         loadIn("p3CornerCol")
       )
     );
-  if (fourPlayers)
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p4"),
@@ -811,15 +816,15 @@ export function loadConfig(fourPlayers: boolean) {
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
-
+    isTournament: (false),
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0,
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (fourPlayers) {
-    loadData.mode = "fourPlayers";
+  if (mode === "multi") {
+    loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;
   } else {

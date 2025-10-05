@@ -31,5 +31,8 @@
   "small": "klein",
   "normal": "normal",
   "big": "groß",
-  "huge": "riesig"
+  "huge": "riesig",
+  "gameSetup": "Spiel-Einstellungen",
+  "tournamentSetup": "Turnier-Einstellungen",
+  "numberOfPlayers": "Anzahl der Spieler"
 }

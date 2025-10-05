@@ -55,8 +55,8 @@ export function startRound(): void {
   initBoard();
   pad[0].go();
   pad[1].go();
-  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
-  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
+  if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
+  if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -78,7 +78,7 @@ function initBoard(): void {
       new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
     );
   }
-  if (data.mode == "fourPlayers") {
+  if (data.mode == "multi") {
     pad.push(
       new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
     );

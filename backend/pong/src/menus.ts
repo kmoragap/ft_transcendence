@@ -50,6 +50,49 @@ function br(): HTMLBRElement {
   return Object.assign(document.createElement("br")) as HTMLBRElement;
 }
 
+export function tournamentSetupMenu(): {
+  form: HTMLDivElement;
+} {
+  const settings = Object.assign(document.createElement("form"), {
+    id: "tournamentSettings",
+    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
+  }) as HTMLFormElement;
+  
+  //match length
+  const matchLengthLabel = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    htmlFor: "matchLength",
+    textContent: `${t("matchLength")}: `,
+  }) as HTMLLabelElement;
+  const matchLengthInput = Object.assign(document.createElement("input"), {
+    className: "custom-input",
+    type: "number",
+    id: "matchLength",
+    name: "matchLength",
+    min: "1",
+    value: "5",
+  }) as HTMLInputElement;
+  const playersNumberLabel = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    htmlFor: "playersNumber",
+    textContent: `${t("numberOfPlayers")}: `,
+  }) as HTMLLabelElement;
+  const playersNumberInput = Object.assign(document.createElement("input"), {
+    className: "custom-input",
+    type: "number",
+    id: "playersNumber",
+    name: "playersNumber",
+    min: "2",
+    value: "4",
+  }) as HTMLInputElement;
+  
+  settings.appendChild(playersNumberLabel);
+  settings.appendChild(playersNumberInput);
+  settings.appendChild(br());
+  settings.appendChild(matchLengthLabel);
+  settings.appendChild(matchLengthInput);
+}
+
 export function playerSetupMenu(
   list: HTMLUListElement,
   p: string,
@@ -227,35 +270,6 @@ export function gameSetupMenu(mode: string): {
   form: HTMLDivElement;
   startButton: HTMLInputElement;
 } {
-  const tournam_row1 = Object.assign(document.createElement("div"), {
-    className: "flex justify-between items-center mb-2",
-  }) as HTMLDivElement;
-  const tournam_row2 = Object.assign(document.createElement("div"), {
-    className: "flex justify-between items-center mb-2",
-  }) as HTMLDivElement;
-  const t1 = Object.assign(document.createElement("label"), {
-    className: "game-text text-sm md:text-base",
-    htmlFor: "tournamentName",
-    textContent: `${t("tournamentName")}`,
-  }) as HTMLLabelElement;
-  const t2 = Object.assign(document.createElement("input"), {
-    className: "custom-input px-1 py-1 text-sm md:text-base",
-    type: "text",
-    size: "20",
-    id: "tournamentName",
-    name: "tournamentName",
-    value: "",
-  }) as HTMLInputElement;
-  const t3 = Object.assign(document.createElement("label"), {
-    className: "game-text text-sm md:text-base",
-    htmlFor: "tournamentMode",
-    textContent: `${t("tournamentMode")}`,
-  }) as HTMLLabelElement;
-  const t4 = Object.assign(document.createElement("select"), {
-    className: "custom-select px-1 py-1 text-sm md:text-base",
-    id: "tournamentMode",
-    name: "tournamentMode",
-  }) as HTMLSelectElement;
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
     className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
@@ -454,10 +468,6 @@ export function gameSetupMenu(mode: string): {
   }) as HTMLDivElement;
 
 
-  tournam_row1.appendChild(t1);
-  tournam_row1.appendChild(t2);
-  tournam_row2.appendChild(t3);
-  tournam_row2.appendChild(t4);
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -466,7 +476,7 @@ export function gameSetupMenu(mode: string): {
   row3.appendChild(e7);
   row4.appendChild(e11);
   row4.appendChild(e10);
-  if (!fourPlayers) {
+  if (mode === "multi") {
     row5.appendChild(e13);
     row5.appendChild(e12);
   }
@@ -484,7 +494,7 @@ export function gameSetupMenu(mode: string): {
   settings.appendChild(row2);
   settings.appendChild(row3);
   settings.appendChild(row4);
-  if (!fourPlayers) {
+  if (mode === "multi") {
     settings.appendChild(row5);
   }
 

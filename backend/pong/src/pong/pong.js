@@ -53,7 +53,7 @@ function touchDown(ev) {
       if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
       if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
     }
-    if (data.mode != "fourPlayers") {
+    if (data.mode != "multi") {
       if (x > data.canvas.width * 3 / 4) {
         if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
         if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
@@ -82,7 +82,7 @@ function touchUp() {
       pad[0].setDir(0);
       if (data.mode == "doublePaddle") pad[2].setDir(0);
     }
-    if (data.mode != "fourPlayers") {
+    if (data.mode != "multi") {
       if (lastX > data.canvas.width * 3 / 4) {
         data.keys[data.p[1].up] = false;
         data.keys[data.p[1].down] = false;
@@ -194,6 +194,46 @@ window.addEventListener("message", (event) => {
     console.log("Player 2 data cleared");
   }
 });
+function br() {
+  return Object.assign(document.createElement("br"));
+}
+function tournamentSetupMenu() {
+  const settings = Object.assign(document.createElement("form"), {
+    id: "tournamentSettings",
+    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
+  });
+  const matchLengthLabel = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    htmlFor: "matchLength",
+    textContent: `${t("matchLength")}: `
+  });
+  const matchLengthInput = Object.assign(document.createElement("input"), {
+    className: "custom-input",
+    type: "number",
+    id: "matchLength",
+    name: "matchLength",
+    min: "1",
+    value: "5"
+  });
+  const playersNumberLabel = Object.assign(document.createElement("label"), {
+    className: "game-text",
+    htmlFor: "playersNumber",
+    textContent: `${t("numberOfPlayers")}: `
+  });
+  const playersNumberInput = Object.assign(document.createElement("input"), {
+    className: "custom-input",
+    type: "number",
+    id: "playersNumber",
+    name: "playersNumber",
+    min: "2",
+    value: "4"
+  });
+  settings.appendChild(playersNumberLabel);
+  settings.appendChild(playersNumberInput);
+  settings.appendChild(br());
+  settings.appendChild(matchLengthLabel);
+  settings.appendChild(matchLengthInput);
+}
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   const idInput = Object.assign(document.createElement("input"), {
     type: "hidden",
@@ -343,36 +383,7 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   ul.appendChild(form);
   list.appendChild(ul);
 }
-function gameSetupMenu(fourPlayers) {
-  const tournam_row1 = Object.assign(document.createElement("div"), {
-    className: "flex justify-between items-center mb-2"
-  });
-  const tournam_row2 = Object.assign(document.createElement("div"), {
-    className: "flex justify-between items-center mb-2"
-  });
-  const t1 = Object.assign(document.createElement("label"), {
-    className: "game-text text-sm md:text-base",
-    htmlFor: "tournamentName",
-    textContent: `${t("tournamentName")}`
-  });
-  const t2 = Object.assign(document.createElement("input"), {
-    className: "custom-input px-1 py-1 text-sm md:text-base",
-    type: "text",
-    size: "20",
-    id: "tournamentName",
-    name: "tournamentName",
-    value: ""
-  });
-  const t3 = Object.assign(document.createElement("label"), {
-    className: "game-text text-sm md:text-base",
-    htmlFor: "tournamentMode",
-    textContent: `${t("tournamentMode")}`
-  });
-  const t4 = Object.assign(document.createElement("select"), {
-    className: "custom-select px-1 py-1 text-sm md:text-base",
-    id: "tournamentMode",
-    name: "tournamentMode"
-  });
+function gameSetupMenu(mode) {
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
     className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
@@ -559,10 +570,6 @@ function gameSetupMenu(fourPlayers) {
   const colorRow4 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2"
   });
-  tournam_row1.appendChild(t1);
-  tournam_row1.appendChild(t2);
-  tournam_row2.appendChild(t3);
-  tournam_row2.appendChild(t4);
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -571,7 +578,7 @@ function gameSetupMenu(fourPlayers) {
   row3.appendChild(e7);
   row4.appendChild(e11);
   row4.appendChild(e10);
-  if (!fourPlayers) {
+  if (mode === "multi") {
     row5.appendChild(e13);
     row5.appendChild(e12);
   }
@@ -587,7 +594,7 @@ function gameSetupMenu(fourPlayers) {
   settings.appendChild(row2);
   settings.appendChild(row3);
   settings.appendChild(row4);
-  if (!fourPlayers) {
+  if (mode === "multi") {
     settings.appendChild(row5);
   }
   bgColors.appendChild(colorRow1);
@@ -748,7 +755,7 @@ function updatePaddlePositions() {
     pad[1].setX(data.canvas.width - data.paddleWidth);
     pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
     pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
-  } else if (data.mode === "fourPlayers") {
+  } else if (data.mode === "multi") {
     pad[0].setX(0);
     pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
     pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
@@ -827,11 +834,12 @@ function loadInB(id) {
   const el = document.getElementById(id);
   return el.checked;
 }
-async function newGame(fourPlayers) {
+async function newGame(mode) {
   await new Promise((resolve) => {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
+  console.log("Starting new game in mode:", mode);
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app"
   });
@@ -842,7 +850,11 @@ async function newGame(fourPlayers) {
   ].join(" ");
   document.body.appendChild(appDiv);
   const title = document.createElement("h2");
-  title.textContent = "Game Setup";
+  if (mode === "tournament") {
+    title.textContent = t("tournamentSetup");
+  } else {
+    title.textContent = t("gameSetup");
+  }
   title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
   appDiv.appendChild(title);
   const card = document.createElement("div");
@@ -856,6 +868,9 @@ async function newGame(fourPlayers) {
   appDiv.appendChild(card);
   const allBoxesContainer = Object.assign(document.createElement("div"), {
     className: "flex flex-col md:flex-row gap-4 justify-between items-stretch"
+  });
+  const tournamentContiner = Object.assign(document.createElement("div"), {
+    className: "flex-1"
   });
   const player1Container = Object.assign(document.createElement("div"), {
     className: "flex-1"
@@ -872,6 +887,10 @@ async function newGame(fourPlayers) {
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get("username") || "Player 1";
   const userId = urlParams.get("userId") || "";
+  if (mode === "tournament") {
+    const tournamentSetup = tournamentSetupMenu();
+    tournamentContiner.appendChild(tournamentSetup.form);
+  }
   playerSetupMenu(
     player1List,
     "1",
@@ -902,7 +921,7 @@ async function newGame(fourPlayers) {
   );
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);
-  if (fourPlayers) {
+  if (mode === "multi") {
     const player3Container = Object.assign(document.createElement("div"), {
       className: "flex-1"
     });
@@ -915,7 +934,6 @@ async function newGame(fourPlayers) {
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none"
     });
-    "", //player ID
     playerSetupMenu(
       player3List,
       "3",
@@ -943,9 +961,12 @@ async function newGame(fourPlayers) {
     allBoxesContainer.appendChild(player3Container);
     allBoxesContainer.appendChild(player4Container);
   }
-  const { form: setupForm, startButton } = gameSetupMenu(fourPlayers);
+  const { form: setupForm, startButton } = gameSetupMenu(mode);
   const settingsForm = setupForm.querySelector("#settings");
   const bgColorsForm = setupForm.querySelector("#bgColors");
+  if (mode === "tournament") {
+    allBoxesContainer.appendChild(tournamentContiner);
+  }
   allBoxesContainer.appendChild(player1Container);
   allBoxesContainer.appendChild(player2Container);
   allBoxesContainer.appendChild(settingsForm);
@@ -958,7 +979,7 @@ async function newGame(fourPlayers) {
   appDiv.appendChild(buttonContainer);
   startButton.addEventListener("click", (e) => {
     e.preventDefault();
-    loadConfig(fourPlayers);
+    loadConfig(mode);
   });
   window.addEventListener("resize", () => {
     const canvas = document.getElementById("board");
@@ -994,7 +1015,7 @@ async function newGame(fourPlayers) {
     }
   });
 }
-function loadConfig(fourPlayers) {
+function loadConfig(mode) {
   const appDiv = document.getElementById("app");
   const scoreboard = Object.assign(document.createElement("div"), {
     className: "scoreboard w-full flex justify-between items-center"
@@ -1151,7 +1172,7 @@ function loadConfig(fourPlayers) {
       loadIn("p2CornerCol")
     )
   );
-  if (fourPlayers)
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p3"),
@@ -1165,7 +1186,7 @@ function loadConfig(fourPlayers) {
         loadIn("p3CornerCol")
       )
     );
-  if (fourPlayers)
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p4"),
@@ -1214,14 +1235,15 @@ function loadConfig(fourPlayers) {
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
+    isTournament: false,
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (fourPlayers) {
-    loadData.mode = "fourPlayers";
+  if (mode === "multi") {
+    loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;
   } else {
@@ -1404,7 +1426,7 @@ function touchControlArrows() {
       data.ctx.textBaseline = "bottom";
       data.ctx.drawImage(downImg, data.canvas.width / 16 - arrowSize / 2, data.canvas.height - arrowSize, arrowSize, arrowSize);
     }
-    if (data.mode != "fourPlayers") {
+    if (data.mode === "single") {
       if (i == 1 && !pad[i].isAi()) {
         data.ctx.textBaseline = "top";
         data.ctx.textAlign = "right";
@@ -1837,13 +1859,13 @@ function removeBall(ball) {
     if (balls[i] != ball) shrunk.push(balls[i]);
   balls = shrunk;
 }
-async function startGame(fourPlayers) {
+async function startGame() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get("lang") || "en";
-    console.log("urlParams: ", Object.fromEntries(urlParams));
+    const mode = urlParams.get("mode") || "twoPlayers";
     await initI18n(lang);
-    await newGame(fourPlayers);
+    await newGame(mode);
     document.getElementById("board")?.focus();
   } catch (error) {
     console.error("Failed to load configuration:", error);
@@ -1873,8 +1895,8 @@ function startRound() {
   initBoard();
   pad[0].go();
   pad[1].go();
-  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
-  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
+  if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
+  if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -1895,7 +1917,7 @@ function initBoard() {
       new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
     );
   }
-  if (data.mode == "fourPlayers") {
+  if (data.mode == "multi") {
     pad.push(
       new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
     );
@@ -1967,6 +1989,7 @@ async function finito() {
     maxScore: data.maxScore,
     multiBall: data.multiball,
     mode: data.mode,
+    isTournament: data.isTournament,
     winnerId
   };
   const result = await gameService.finishGame(gameData);
@@ -2042,7 +2065,7 @@ function showExitButton(winner) {
     });
   }
 }
-startGame(false);
+startGame();
 export {
   balls,
   countdown,

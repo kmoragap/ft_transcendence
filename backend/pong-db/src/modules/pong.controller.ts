@@ -23,6 +23,7 @@ export interface gameInfo {
   maxScore: number;
   multiBall: boolean;
   mode: string;
+  isTournament: boolean;
   //winner
   winnerId: string;
 }
@@ -45,6 +46,7 @@ export const createGame = async (
         maxScore: game.maxScore,
         multiBall: game.multiBall,
         mode: game.mode,
+        isTournament: game.isTournament,
         winnerId: game.winnerId,
       },
     });
@@ -137,7 +139,7 @@ export const getGames = async (
 ) => {
   try {
     const take = request.query.take ? parseInt(request.query.take) : 5;
-    
+
     const games = await prisma.game.findMany({
       where: { status: "FINISHED" },
       orderBy: { finishedAt: "desc" }, // Using finishedAt from the actual schema
@@ -153,7 +155,7 @@ export const getGames = async (
       score2: game.score2,
       maxScore: game.maxScore,
       winnerId: game.winnerId,
-      gameType: game.mode === 'ai' ? 'VS_AI' as const : 'VS_HUMAN' as const,
+      isTournament: game.isTournament,
       createdAt: game.finishedAt.toISOString(),
     }));
 
@@ -170,11 +172,11 @@ export const getLeaderboard = async (
 ) => {
   try {
     const limit = request.query.limit ? parseInt(request.query.limit) : 5;
-    
+
     const games = await prisma.game.findMany({
-      where: { 
+      where: {
         status: "FINISHED",
-        winnerId: { not: "" }
+        winnerId: { not: "" },
       },
       select: {
         winnerId: true,
@@ -182,12 +184,15 @@ export const getLeaderboard = async (
         player1Name: true,
         player2Id: true,
         player2Name: true,
-      }
+      },
     });
 
     // Count wins per player
-    const winCounts = new Map<string, { playerId: string | null; name: string; wins: number }>();
-    
+    const winCounts = new Map<
+      string,
+      { playerId: string | null; name: string; wins: number }
+    >();
+
     games.forEach(game => {
       if (game.winnerId) {
         const existing = winCounts.get(game.winnerId);
@@ -195,12 +200,14 @@ export const getLeaderboard = async (
           existing.wins++;
         } else {
           const isPlayer1Winner = game.winnerId === game.player1Id;
-          const winnerName = isPlayer1Winner ? game.player1Name : game.player2Name;
-          
+          const winnerName = isPlayer1Winner
+            ? game.player1Name
+            : game.player2Name;
+
           winCounts.set(game.winnerId, {
             playerId: game.winnerId,
             name: winnerName,
-            wins: 1
+            wins: 1,
           });
         }
       }

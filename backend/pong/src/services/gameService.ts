@@ -12,6 +12,7 @@ export interface gameInfo {
   maxScore: number;
   multiBall: boolean;
   mode: string;
+  isTournament: boolean;
   //winner
   winnerId: string;
 }

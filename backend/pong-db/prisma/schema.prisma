@@ -29,11 +29,12 @@ model Game {
     score2      Int    @default(0)
 
     // Game settings
-    maxScore  Int     @default(3)
-    multiBall Boolean @default(false)
-    mode      String  @default("classic")
+    maxScore     Int     @default(3)
+    multiBall    Boolean @default(false)
+    mode         String  @default("classic")
+    isTournament Boolean @default(false)
     // Winner
-    winnerId  String
+    winnerId     String
 
     // Timestamps
     finishedAt DateTime @default(now())

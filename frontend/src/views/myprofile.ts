@@ -6,6 +6,8 @@ import {
   acceptReceivedFriendRequest,
   rejectFriendRequest,
   removeFriendRequest,
+  getUserStats,
+  UserStats,
 } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from "../utils/session";
@@ -24,25 +26,30 @@ export interface UserProfile {
   losses: number;
   totalGames: number;
   winRate: number;
+  elo?: number;
 }
 
-function getStaticStats(): {
+function getDefaultStats(): {
   wins: number;
   losses: number;
   totalGames: number;
   winRate: number;
+  elo: number;
 } {
   return {
-    wins: 127,
-    losses: 89,
-    totalGames: 216,
-    winRate: 59,
+    wins: 0,
+    losses: 0,
+    totalGames: 0,
+    winRate: 0,
+    elo: 1000,
   };
 }
 
-function getCurrentUser(): UserProfile {
+async function getCurrentUserWithStats(): Promise<UserProfile> {
   const state = store.getState();
   const currentUser = state.currentUser;
+
+  console.log('getCurrentUserWithStats - currentUser:', currentUser);
 
   if (!sessionManager.isSessionRestored()) {
     return {
@@ -50,7 +57,7 @@ function getCurrentUser(): UserProfile {
       email: "Loading...",
       name: "Loading",
       avatarUrl: "/assets/img/avatar.jpg",
-      ...getStaticStats(),
+      ...getDefaultStats(),
     };
   }
 
@@ -60,20 +67,53 @@ function getCurrentUser(): UserProfile {
       email: "guest@example.com",
       name: "Guest User",
       avatarUrl: "/assets/img/avatar.jpg",
-      ...getStaticStats(),
+      ...getDefaultStats(),
     };
   }
 
-  return {
-    username: currentUser.username,
-    email: currentUser.email,
-    name: currentUser.firstname || currentUser.username,
-    avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
-    ...getStaticStats(),
-  };
+  if (!currentUser.id) {
+    alertWarning('User ID not available, using default stats');
+    return {
+      username: currentUser.username,
+      email: currentUser.email,
+      name: currentUser.firstname || currentUser.username,
+      avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
+      ...getDefaultStats(),
+    };
+  }
+
+  try {
+    const stats = await getUserStats(currentUser.id);
+    return {
+      username: currentUser.username,
+      email: currentUser.email,
+      name: currentUser.firstname || currentUser.username,
+      avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
+      wins: stats.wins,
+      losses: stats.losses,
+      totalGames: stats.wins + stats.losses,
+      winRate: stats.winRate,
+      elo: stats.elo,
+    };
+  } catch (error) {
+    console.error('Failed to fetch user stats:', error);
+    return {
+      username: currentUser.username,
+      email: currentUser.email,
+      name: currentUser.firstname || currentUser.username,
+      avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
+      ...getDefaultStats(),
+    };
+  }
 }
 
-let user: UserProfile = getCurrentUser();
+let user: UserProfile = {
+  username: "Loading...",
+  email: "Loading...",
+  name: "Loading",
+  avatarUrl: "/assets/img/avatar.jpg",
+  ...getDefaultStats(),
+};
 
 export function renderMyProfile(): HTMLElement {
   const section = document.createElement("section");
@@ -167,6 +207,10 @@ export function renderMyProfile(): HTMLElement {
               <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
               <div class="text-xs md:text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
             </div>
+            <div class="p-2 md:p-4 text-center col-span-2">
+              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.elo || 1000}</div>
+              <div class="text-xs md:text-sm text-gray-300" data-i18n="elo_rating">ELO Rating</div>
+            </div>
           </div>
         </div>
       </div>
@@ -219,7 +263,21 @@ export function renderMyProfile(): HTMLElement {
   `;
 
   const updateUserData = async () => {
-    user = getCurrentUser();
+    if (!sessionManager.isSessionRestored()) {
+      user = {
+        username: "Loading...",
+        email: "Loading...",
+        name: "Loading",
+        avatarUrl: "/assets/img/avatar.jpg",
+        ...getDefaultStats(),
+      };
+      section.innerHTML = getViewHTML();
+      bindViewEvents();
+      updateText();
+      return;
+    }
+
+    user = await getCurrentUserWithStats();
     section.innerHTML = getViewHTML();
     bindViewEvents();
     try {
@@ -530,12 +588,17 @@ export function renderMyProfile(): HTMLElement {
 
     editBtn?.addEventListener("click", enterEditMode);
 
-    refreshStatsBtn?.addEventListener("click", () => {
-      const newStats = getStaticStats();
-      user = { ...user, ...newStats };
-      section.innerHTML = getViewHTML();
-      bindViewEvents();
-      updateText();
+    refreshStatsBtn?.addEventListener("click", async () => {
+      try {
+        user = await getCurrentUserWithStats();
+        section.innerHTML = getViewHTML();
+        bindViewEvents();
+        updateText();
+        alertSuccess(t("stats_refreshed"));
+      } catch (error) {
+        console.error("Error refreshing stats:", error);
+        alertError(t("stats_refresh_failed"));
+      }
     });
 
     refreshFriendsBtn?.addEventListener("click", async () => {

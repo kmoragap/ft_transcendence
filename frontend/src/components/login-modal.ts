@@ -1,5 +1,6 @@
 import { t } from "../i18n";
 import { store } from "../store";
+import { alertError, alertSuccess } from "../utils/modal-alerts";
 
 export interface LoginModalOptions {
   onSuccess?: (user: any) => void;
@@ -125,7 +126,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
           const err = await res.json();
           msg = err.message || err.error || msg;
         } catch {}
-        alert(`Login failed: ${msg}`);
+        alertError(`${t("login_failed")}: ${msg}`);
         return;
       }
 
@@ -144,10 +145,14 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
         options.onSuccess(user);
       }
 
+      if (!options.gameOnly) {
+        alertSuccess(t("login_successful"));
+      }
+
       closeModal();
     } catch (err) {
       console.error(err);
-      alert("An unexpected error occurred.");
+      alertError(t("unexpected_error"));
     }
   });
 
@@ -183,7 +188,7 @@ export function showLoginModal(options: LoginModalOptions = {}): Promise<any> {
         options.onSuccess?.(user);
       },
       onCancel: () => {
-        reject(new Error("Login cancelled"));
+        reject(new Error(t("login_cancelled")));
         options.onCancel?.();
       },
     });

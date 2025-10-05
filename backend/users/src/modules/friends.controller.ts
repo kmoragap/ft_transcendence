@@ -41,6 +41,9 @@ export async function sendFriendRequestHandler(
           { requesterId, receiverId },
           { requesterId: receiverId, receiverId: requesterId },
         ],
+        status: {
+          in: ['PENDING', 'ACCEPTED']
+        }
       },
     });
 
@@ -49,6 +52,17 @@ export async function sendFriendRequestHandler(
         error: "A friend request already exists or you are already friends.",
       });
     }
+
+    // If there's a rejected friendship, delete it to allow a new request
+    await prisma.friendship.deleteMany({
+      where: {
+        OR: [
+          { requesterId, receiverId },
+          { requesterId: receiverId, receiverId: requesterId },
+        ],
+        status: 'REJECTED'
+      },
+    });
 
     const friendship = await prisma.friendship.create({
       data: {

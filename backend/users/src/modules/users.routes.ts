@@ -23,6 +23,7 @@ import {
   updateOnlineStatusHandler,
   updateOnlineStatusByIdHandler,
   updateUserStatsHandler,
+  updateUserHistoryHandler,
   getUserStatsHandler,
   getMatchHistoryHandler,
 } from "./stats.controller";
@@ -99,12 +100,23 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.get(
     "/:id/stats",
     {
-      preHandler: [authenticateToken],
+      //preHandler: [authenticateToken],
       schema: {
         params: userIdParamsSchema,
       },
     },
     getUserStatsHandler
+  );
+
+  fastify.put(
+    "/:id/match_history",
+    {
+      schema: {
+        params: userIdParamsSchema,
+        body: updateStatsBodySchema,
+      },
+    },
+    updateUserHistoryHandler
   );
 
   fastify.put(

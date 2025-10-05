@@ -333,7 +333,7 @@ function loadPlayer(
 ): playerData {
   var p: playerData = {
     name: name,
-    id: id || "AI-Roger-Federror",
+    id: isAi ? "AI-Roger-Federror" : id || "",
     score: 0,
     isAi: isAi,
     up: up,
@@ -342,7 +342,7 @@ function loadPlayer(
     outerCol: outercol,
     cornerCol: cornerCol,
   };
-  if (isAi) p.name = "Roger Fed-error";
+  if (isAi) p.name = "Roger Federror";
   return p;
 }
 
@@ -407,7 +407,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get("username") || "Player 1";
-  const userId = urlParams.get("id") || "";
+  const userId = urlParams.get("userId") || "";
 
   playerSetupMenu(
     player1List,

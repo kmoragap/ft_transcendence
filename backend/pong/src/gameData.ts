@@ -333,7 +333,7 @@ function loadPlayer(
 ): playerData {
   var p: playerData = {
     name: name,
-    id: id || "",
+    id: isAi ? "AI-Roger-Federror" : id || "",
     score: 0,
     isAi: isAi,
     up: up,
@@ -342,7 +342,7 @@ function loadPlayer(
     outerCol: outercol,
     cornerCol: cornerCol,
   };
-  if (isAi) p.name = "Roger Fed-error";
+  if (isAi) p.name = "Roger Federror";
   return p;
 }
 
@@ -420,6 +420,14 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     "#808080",
     "#ff0000"
   );
+  // Set the user ID in the hidden input for Player 1 (for both 2-player and 4-player modes)
+  // This needs to happen AFTER playerSetupMenu creates the hidden input
+  setTimeout(() => {
+    const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
+    if (p1IdInput && userId) {
+      p1IdInput.value = userId;
+    }
+  }, 0);
   playerSetupMenu(
     player2List,
     "2",
@@ -451,11 +459,6 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none",
     }) as HTMLUListElement;
-    // Set the user ID in the hidden input
-    const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
-    if (p1IdInput && userId) {
-      p1IdInput.value = userId;
-    }
     playerSetupMenu(
       player3List,
       "3",

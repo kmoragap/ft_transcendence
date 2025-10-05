@@ -2,9 +2,10 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import prisma from "../utils/prisma";
 import { isValidCuid } from "./users.controller";
 import {
-  updateUserStatsAndHistory,
   getMatchHistory,
   getUserStats,
+  updateUserStats,
+  updateUserHistory,
 } from "./stats.service";
 import { UpdateStatsBody } from "./stats.schema";
 
@@ -25,6 +26,25 @@ export async function getMatchHistoryHandler(
   }
 }
 
+export async function updateUserHistoryHandler(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const { id } = request.params as { id: string };
+    const history = await updateUserHistory(
+      id,
+      request.body as UpdateStatsBody
+    );
+    return reply.send(history);
+  } catch (error) {
+    console.error(`Failed to update user history:`, error);
+    return reply
+      .code(500)
+      .send({ error: "Internal server error while updating user history" });
+  }
+}
+
 //handles updating a user's stats after a game
 export async function updateUserStatsHandler(
   request: FastifyRequest,
@@ -32,7 +52,8 @@ export async function updateUserStatsHandler(
 ) {
   try {
     const { id } = request.params as { id: string };
-    await updateUserStatsAndHistory(id, request.body as UpdateStatsBody);
+
+    await updateUserStats(id, request.body as UpdateStatsBody);
     return reply.code(204).send();
   } catch (error) {
     console.error(`Failed to update stats:`, error);

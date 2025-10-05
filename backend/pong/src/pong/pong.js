@@ -576,9 +576,6 @@ function gameSetupMenu(fourPlayers) {
 
 // src/gameData.ts
 var data;
-function getSecondPlayerData() {
-  return window.gamePlayer2 || null;
-}
 var isFullscreen = false;
 function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -777,7 +774,7 @@ function handleFullscreenChange() {
 function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   var p = {
     name,
-    id: id || "",
+    id: isAi ? "AI-Roger-Federror" : id || "",
     score: 0,
     isAi,
     up,
@@ -786,7 +783,7 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
     outerCol: outercol,
     cornerCol
   };
-  if (isAi) p.name = "Roger Fed-error";
+  if (isAi) p.name = "Roger Federror";
   return p;
 }
 function loadIn(id) {
@@ -853,6 +850,12 @@ async function newGame(fourPlayers) {
     "#808080",
     "#ff0000"
   );
+  setTimeout(() => {
+    const p1IdInput = document.getElementById("p1Id");
+    if (p1IdInput && userId) {
+      p1IdInput.value = userId;
+    }
+  }, 0);
   playerSetupMenu(
     player2List,
     "2",
@@ -879,10 +882,6 @@ async function newGame(fourPlayers) {
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none"
     });
-    const p1IdInput = document.getElementById("p1Id");
-    if (p1IdInput && userId) {
-      p1IdInput.value = userId;
-    }
     playerSetupMenu(
       player3List,
       "3",
@@ -1777,43 +1776,14 @@ function spawnMultiball(ball) {
 // src/services/gameService.ts
 var GameService = class {
   constructor() {
-    this.baseUrl = "/api/pong-db";
+    this.baseUrl = "/api/pong";
   }
-  async updateScore(userId, gameId, isWinner, userScore, opponentName, opponentScore, opponentId) {
+  async finishGame(data2) {
     try {
-      const response = await fetch(`${this.baseUrl}/games/${gameId}/score`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          gameId,
-          isWinner,
-          userScore,
-          opponentName,
-          opponentScore,
-          opponentId
-        })
-      });
-      return response.ok;
-    } catch (error) {
-      console.error("Error updating score:", error);
-      return false;
-    }
-  }
-  async finishGame(userId, gameId, isWinner, userScore, opponentName, opponentScore, opponentId) {
-    try {
-      const response = await fetch(`${this.baseUrl}/games/${gameId}/finish`, {
+      const response = await fetch(`${this.baseUrl}/games`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          gameId,
-          isWinner,
-          userScore,
-          opponentName,
-          opponentScore,
-          opponentId
-        })
+        body: JSON.stringify({ data: data2 })
       });
       return response.ok;
     } catch (error) {
@@ -1945,44 +1915,46 @@ function endRound() {
     endGame();
   }
 }
+async function finito() {
+  let winnerId;
+  if (data.p[0].score > data.p[1].score) {
+    winnerId = data.p[0].id;
+  } else {
+    winnerId = data.p[1].id;
+  }
+  const gameData = {
+    player1Id: data.p[0].id,
+    player1Name: data.p[0].name,
+    score1: data.p[0].score,
+    player2Id: data.p[1].id,
+    player2Name: data.p[1].name,
+    score2: data.p[1].score,
+    maxScore: data.maxScore,
+    multiBall: data.multiball,
+    mode: data.mode,
+    winnerId
+  };
+  const result = await gameService.finishGame(gameData);
+  if (!result) {
+    console.error("Failed to finish game on server");
+  }
+  console.log("Game data successfully sent to server");
+  return;
+}
 async function endGame() {
   var winner;
-  var losser;
-  var winnerId;
-  var losserId;
-  var isWinner = false;
   if (data.p[0].score > data.p[1].score) {
     winner = data.p[0].name;
-    losser = data.p[1].name;
-    isWinner = true;
-    winnerId = data.p[0].id;
-    losserId = data.p[1].id;
   } else {
     winner = data.p[1].name;
-    losser = data.p[0].name;
-    winnerId = data.p[1].id;
-    losserId = data.p[0].id;
   }
   data.showingText = false;
-  const secondPlayerData = getSecondPlayerData();
-  if (secondPlayerData) {
-    console.log(
-      "Second player data available for statistics:",
-      secondPlayerData
-    );
-  }
-  const gameId = "sldfjskldkfjksdklfjsdklf";
+  const player2HasValidId = data.p[1].id && data.p[1].id !== "" && /^c[a-z0-9]{24}$/.test(data.p[1].id);
   try {
-    const result = await gameService.finishGame(
-      winnerId,
-      gameId,
-      isWinner,
-      data.p[0].score,
-      losser,
-      data.p[1].score,
-      losserId
-    );
-    console.log("Game finished successfully:", result);
+    console.log("Sending game data:", data);
+    console.log("player1ID: ", data.p[0].id);
+    console.log("player2ID: ", data.p[1].id);
+    finito();
   } catch (error) {
     console.error("Failed to finish game:", error);
   }
@@ -2042,6 +2014,7 @@ export {
   countdown,
   endGame,
   endRound,
+  finito,
   pad,
   removeBall,
   startGame,

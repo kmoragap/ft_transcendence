@@ -14,7 +14,7 @@ server.register(cors, {
     const allowedOrigins = [
       "http://localhost:5173", // dev
       "http://localhost", // nginx local
-      "http://localhost:80", // nginx local with port
+      "http://localhost:8080", // nginx local with port
       /^http:\/\/192\.168\.\d+\.\d+$/, // local net
       /^http:\/\/10\.\d+\.\d+\.\d+$/, // alternative local net
     ];
@@ -33,7 +33,7 @@ server.register(cors, {
   allowedHeaders: ["Content-Type", "Authorization"],
 });
 // register the route with the prefix
-server.register(pongRoutes, { prefix: "/api/pong-db" });
+server.register(pongRoutes, { prefix: "/api/pong" });
 
 server.get("/", async (req, reply) => {
   return { message: "Pong DB service is up!" };

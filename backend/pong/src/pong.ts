@@ -4,7 +4,7 @@ import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
 //import { userService, UserData } from "./services/userService";
 import { initI18n } from "./i18n";
-import { gameService } from "./services/gameService";
+import { gameService, gameInfo } from "./services/gameService";
 
 export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
@@ -139,48 +139,50 @@ export function endRound(): void {
   }
 }
 
+export async function finito(): Promise<void> {
+  let winnerId: string;
+  if (data.p[0].score > data.p[1].score) {
+    winnerId = data.p[0].id;
+  } else {
+    winnerId = data.p[1].id;
+  }
+
+  const gameData: gameInfo = {
+    player1Id: data.p[0].id,
+    player1Name: data.p[0].name,
+    score1: data.p[0].score,
+    player2Id: data.p[1].id,
+    player2Name: data.p[1].name,
+    score2: data.p[1].score,
+    maxScore: data.maxScore,
+    multiBall: data.multiball,
+    mode: data.mode,
+    winnerId: winnerId,
+  };
+  const result = await gameService.finishGame(gameData);
+  if (!result) {
+    console.error("Failed to finish game on server");
+  }
+  console.log("Game data successfully sent to server");
+  return;
+}
+
 export async function endGame() {
   var winner: string;
-  var losser: string;
-  var winnerId: string;
-  var losserId: string;
-  var isWinner: boolean = false;
 
   if (data.p[0].score > data.p[1].score) {
     winner = data.p[0].name;
-    losser = data.p[1].name;
-    isWinner = true;
-    winnerId = data.p[0].id;
-    losserId = data.p[1].id;
   } else {
     winner = data.p[1].name;
-    losser = data.p[0].name;
-    winnerId = data.p[1].id;
-    losserId = data.p[0].id;
   }
 
   data.showingText = false;
-  // Get second player data for game statistics
-  const secondPlayerData = getSecondPlayerData();
-  if (secondPlayerData) {
-    console.log(
-      "Second player data available for statistics:",
-      secondPlayerData
-    );
-  }
-  const gameId = "sldfjskldkfjksdklfjsdklf";
-  // Finish game and update stats
+
   try {
-    const result = await gameService.finishGame(
-      winnerId,
-      gameId,
-      isWinner,
-      data.p[0].score,
-      losser,
-      data.p[1].score,
-      losserId
-    );
-    console.log("Game finished successfully:", result);
+    console.log("Sending game data:", data);
+    console.log("player1ID: ", data.p[0].id);
+    console.log("player2ID: ", data.p[1].id);
+    finito();
   } catch (error) {
     console.error("Failed to finish game:", error);
   }
@@ -193,9 +195,6 @@ export async function endGame() {
       exitGameMessage(winner);
     }, 3000);
   }
-
-  //const res = await gameService.finishGame(data.gameID, data.p[0].score, data.p[1].score, winner);
-  //console.log(res);
 }
 
 function exitGameMessage(winner: string): void {

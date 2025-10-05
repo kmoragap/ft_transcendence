@@ -51,20 +51,18 @@ model Friendship {
 
 model UserGameHistory {
     id     String @id @default(cuid())
-    gameId String @unique // id of pong match in pong-db //TODO: cambiar esto
-    //user relation
+    gameId String // Reference to game in pong-db
+
+    // User relation
     userId String
     user   User   @relation("user_games", fields: [userId], references: [id])
 
-    //game data
-    isWinner      Boolean
-    opponentId    String?
-    opponentName  String?
-    opponentScore Int
-    userScore     Int // user score in the match
-    eloChange     Int // how much elo won or lost
-    playedAt      DateTime @default(now())
+    // Simplified - just track user's perspective
+    isWinner  Boolean
+    eloChange Int
+    playedAt  DateTime @default(now())
 
+    @@unique([userId, gameId], name: "userId_gameId")
     @@index([userId])
     @@map("user_game_history")
 }

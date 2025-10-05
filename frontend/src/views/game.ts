@@ -160,8 +160,8 @@ export function renderGame(): HTMLElement {
 
     if (mode === "single" && currentUser?.username) {
       src += `&username=${encodeURIComponent(currentUser.username)}`;
+      src += `&userId=${encodeURIComponent(currentUser.id)}`;
     }
-
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>

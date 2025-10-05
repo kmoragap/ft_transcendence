@@ -1,14 +1,14 @@
-import { t } from './../i18n';
-import { attachValidation } from './../form-validation';
+import { t } from "./../i18n";
+import { attachValidation } from "./../form-validation";
 //import { redirectIfAuthenticated } from '../utils/auth';
-import { alertError, alertSuccess } from './../utils/modal-alerts';
-import { store } from '../store';
+import { alertError, alertSuccess } from "./../utils/modal-alerts";
+import { store } from "../store";
 
 export function renderRegistration(): HTMLElement {
   //redirectIfAuthenticated();
-  const section = document.createElement('section');
+  const section = document.createElement("section");
   section.className =
-    'flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]';
+    "flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]";
 
   section.innerHTML = `
     <h1 class="title uppercase mobile-title">
@@ -108,26 +108,28 @@ export function renderRegistration(): HTMLElement {
     </form>
   `;
 
-  const form = section.querySelector<HTMLFormElement>('#register-form')!;
+  const form = section.querySelector<HTMLFormElement>("#register-form")!;
   attachValidation(form);
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();              
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
 
-    if (!form.checkValidity())
-	{
-		form.reportValidity();  
-		return;
-	}
-    const username = (form.querySelector('#username') as HTMLInputElement).value;
-    const email    = (form.querySelector('#email')    as HTMLInputElement).value;
-    const firstname= (form.querySelector('#firstname')as HTMLInputElement).value;
-    const password = (form.querySelector('#password') as HTMLInputElement).value;
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    const username = (form.querySelector("#username") as HTMLInputElement)
+      .value;
+    const email = (form.querySelector("#email") as HTMLInputElement).value;
+    const firstname = (form.querySelector("#firstname") as HTMLInputElement)
+      .value;
+    const password = (form.querySelector("#password") as HTMLInputElement)
+      .value;
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, firstname, password }),
       });
 
@@ -140,20 +142,26 @@ export function renderRegistration(): HTMLElement {
       const responseData = await res.json();
 
       if (responseData.token) {
-        localStorage.setItem('accessToken', responseData.token);
-        localStorage.setItem('refreshToken', responseData.refresh);
-        
-        const user = { username, firstname, email, avatarUrl: responseData.avatarUrl };
-        store.dispatch({ type: 'LOGIN', payload: user });   
-        window.location.hash = '/';
-        alertSuccess('Registration successful! You are now logged in.');
+        localStorage.setItem("accessToken", responseData.token);
+        localStorage.setItem("refreshToken", responseData.refresh);
+
+        const user = {
+          id: responseData.id,
+          username,
+          firstname,
+          email,
+          avatarUrl: responseData.avatarUrl,
+        };
+        store.dispatch({ type: "LOGIN", payload: user });
+        window.location.hash = "/";
+        alertSuccess("Registration successful! You are now logged in.");
       } else {
-        alertSuccess('Registration successful! Please log in.');
-        window.location.hash = '/login';
+        alertSuccess("Registration successful! Please log in.");
+        window.location.hash = "/login";
       }
     } catch (err) {
       console.error(err);
-      alertError('An unexpected error occurred.');
+      alertError("An unexpected error occurred.");
     }
   });
 

@@ -72,7 +72,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
   }
 
   if (!currentUser.id) {
-    console.warn('User ID not available, using default stats');
+    alertWarning('User ID not available, using default stats');
     return {
       username: currentUser.username,
       email: currentUser.email,

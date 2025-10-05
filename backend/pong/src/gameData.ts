@@ -357,7 +357,7 @@ function loadInB(id: string): boolean {
   return el.checked;
 }
 
-export async function newGame(fourPlayers: boolean): Promise<void> {
+export async function newGame(mode: string): Promise<void> {
   await new Promise<void>(resolve => {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
@@ -392,6 +392,9 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     className: "flex flex-col md:flex-row gap-4 justify-between items-stretch",
   }) as HTMLDivElement;
 
+  const tournamentContiner = Object.assign(document.createElement("div"), {
+    className: "flex-1",
+  }) as HTMLDivElement;
   const player1Container = Object.assign(document.createElement("div"), {
     className: "flex-1",
   }) as HTMLDivElement;
@@ -445,7 +448,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   player2Container.appendChild(player2List);
 
   // Handle 4 players case
-  if (fourPlayers) {
+  if (mode === multy) {
     // Create additional containers for players 3 and 4
     const player3Container = Object.assign(document.createElement("div"), {
       className: "flex-1",
@@ -459,7 +462,7 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     }) as HTMLUListElement;
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none",
-    }) as HTMLUListElement;        "", //player ID
+    }) as HTMLUListElement;
 
     playerSetupMenu(
       player3List,
@@ -491,11 +494,14 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     allBoxesContainer.appendChild(player4Container);
   }
 
-  const { form: setupForm, startButton } = gameSetupMenu(fourPlayers);
+  const { form: setupForm, startButton } = gameSetupMenu(mode);
 
   const settingsForm = setupForm.querySelector("#settings") as HTMLFormElement;
   const bgColorsForm = setupForm.querySelector("#bgColors") as HTMLFormElement;
 
+  if (mode === "tournament") {
+    allBoxesContainer.appendChild(tournamentContiner);
+  }
   allBoxesContainer.appendChild(player1Container);
   allBoxesContainer.appendChild(player2Container);
   allBoxesContainer.appendChild(settingsForm);

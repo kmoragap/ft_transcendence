@@ -4,7 +4,6 @@ window.addEventListener("message", event => {
   if (event.origin !== window.location.origin) {
     return;
   }
-  console.log("Received message:", event.data);
 
   if (event.data.type === "LOGIN_SUCCESS") {
     const { playerId, playerName, username, userData } = event.data;
@@ -224,7 +223,7 @@ export function playerSetupMenu(
   list.appendChild(ul);
 }
 
-export function gameSetupMenu(fourPlayers: boolean): {
+export function gameSetupMenu(mode: string): {
   form: HTMLDivElement;
   startButton: HTMLInputElement;
 } {

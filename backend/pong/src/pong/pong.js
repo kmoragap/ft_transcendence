@@ -344,6 +344,35 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   list.appendChild(ul);
 }
 function gameSetupMenu(fourPlayers) {
+  const tournam_row1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const tournam_row2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const t1 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentName",
+    textContent: `${t("tournamentName")}`
+  });
+  const t2 = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 text-sm md:text-base",
+    type: "text",
+    size: "20",
+    id: "tournamentName",
+    name: "tournamentName",
+    value: ""
+  });
+  const t3 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentMode",
+    textContent: `${t("tournamentMode")}`
+  });
+  const t4 = Object.assign(document.createElement("select"), {
+    className: "custom-select px-1 py-1 text-sm md:text-base",
+    id: "tournamentMode",
+    name: "tournamentMode"
+  });
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
     className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
@@ -530,6 +559,10 @@ function gameSetupMenu(fourPlayers) {
   const colorRow4 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2"
   });
+  tournam_row1.appendChild(t1);
+  tournam_row1.appendChild(t2);
+  tournam_row2.appendChild(t3);
+  tournam_row2.appendChild(t4);
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -882,6 +915,7 @@ async function newGame(fourPlayers) {
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none"
     });
+    "", //player ID
     playerSetupMenu(
       player3List,
       "3",
@@ -1807,6 +1841,7 @@ async function startGame(fourPlayers) {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get("lang") || "en";
+    console.log("urlParams: ", Object.fromEntries(urlParams));
     await initI18n(lang);
     await newGame(fourPlayers);
     document.getElementById("board")?.focus();
@@ -1949,7 +1984,6 @@ async function endGame() {
     winner = data.p[1].name;
   }
   data.showingText = false;
-  const player2HasValidId = data.p[1].id && data.p[1].id !== "" && /^c[a-z0-9]{24}$/.test(data.p[1].id);
   try {
     console.log("Sending game data:", data);
     console.log("player1ID: ", data.p[0].id);

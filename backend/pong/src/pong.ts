@@ -16,13 +16,14 @@ export function removeBall(ball: Ball): void {
   balls = shrunk;
 }
 
-export async function startGame(fourPlayers: boolean) {
+export async function startGame() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get("lang") || "en";
+    const mode = urlParams.get("mode") || "twoPlayers";
 
     await initI18n(lang);
-    await newGame(fourPlayers);
+    await newGame(mode);
     document.getElementById("board")?.focus();
   } catch (error) {
     console.error("Failed to load configuration:", error);
@@ -217,7 +218,6 @@ function isMobile(): boolean {
 }
 
 function showExitButton(winner: string): void {
-  // Create exit button overlay
   const exitOverlay = document.createElement("div");
   exitOverlay.className =
     "fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]";
@@ -354,5 +354,4 @@ function collisionTest(): void {
   window.requestAnimationFrame(loop);
 }
 
-//testCreateGame();
-startGame(false);
+startGame();

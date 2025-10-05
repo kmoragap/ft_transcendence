@@ -55,30 +55,40 @@ export function tournamentSetupMenu(): {
 } {
   const settings = Object.assign(document.createElement("form"), {
     id: "tournamentSettings",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   
-  //match length
+  // Create row containers for proper layout
+  const row1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  const row2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  
+  // Match length
   const matchLengthLabel = Object.assign(document.createElement("label"), {
-    className: "game-text",
+    className: "game-text text-sm md:text-base",
     htmlFor: "matchLength",
     textContent: `${t("matchLength")}: `,
   }) as HTMLLabelElement;
   const matchLengthInput = Object.assign(document.createElement("input"), {
-    className: "custom-input",
+    className: "custom-input px-1 py-1 text-sm md:text-base",
     type: "number",
     id: "matchLength",
     name: "matchLength",
     min: "1",
     value: "5",
   }) as HTMLInputElement;
+  
+  // Number of players
   const playersNumberLabel = Object.assign(document.createElement("label"), {
-    className: "game-text",
+    className: "game-text text-sm md:text-base",
     htmlFor: "playersNumber",
     textContent: `${t("numberOfPlayers")}: `,
   }) as HTMLLabelElement;
   const playersNumberInput = Object.assign(document.createElement("input"), {
-    className: "custom-input",
+    className: "custom-input px-1 py-1 text-sm md:text-base",
     type: "number",
     id: "playersNumber",
     name: "playersNumber",
@@ -86,11 +96,23 @@ export function tournamentSetupMenu(): {
     value: "4",
   }) as HTMLInputElement;
   
-  settings.appendChild(playersNumberLabel);
-  settings.appendChild(playersNumberInput);
-  settings.appendChild(br());
-  settings.appendChild(matchLengthLabel);
-  settings.appendChild(matchLengthInput);
+  // Add elements to rows
+  row1.appendChild(playersNumberLabel);
+  row1.appendChild(playersNumberInput);
+  row2.appendChild(matchLengthLabel);
+  row2.appendChild(matchLengthInput);
+  
+  // Add rows to settings form
+  settings.appendChild(row1);
+  settings.appendChild(row2);
+  
+  // Create container
+  const container = Object.assign(document.createElement("div"), {
+    className: "tournament-setup-container",
+  }) as HTMLDivElement;
+  container.appendChild(settings);
+  
+  return { form: container };
 }
 
 export function playerSetupMenu(
@@ -272,11 +294,11 @@ export function gameSetupMenu(mode: string): {
 } {
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   const bgColors = Object.assign(document.createElement("form"), {
     id: "bgColors",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   //paddle speed
   const e3 = Object.assign(document.createElement("label"), {

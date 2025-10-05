@@ -34,5 +34,8 @@
   "huge": "Огромный",
   "gameSetup": "Настройки игры",
   "tournamentSetup": "Настройки турнира",
-  "numberOfPlayers": "Количество игроков"
+  "numberOfPlayers": "Количество игроков",
+  "matchLength": "Длина матча",
+  "back": "Назад",
+  "next": "Далее"
 }

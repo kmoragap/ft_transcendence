@@ -34,5 +34,8 @@
   "huge": "Huge",
   "gameSetup": "Game Setup",
   "tournamentSetup": "Tournament Setup",
-  "numberOfPlayers": "Number of Players"
+  "numberOfPlayers": "Number of Players",
+  "matchLength": "Match Length",
+  "back": "Back",
+  "next": "Next"
 }

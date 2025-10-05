@@ -194,21 +194,24 @@ window.addEventListener("message", (event) => {
     console.log("Player 2 data cleared");
   }
 });
-function br() {
-  return Object.assign(document.createElement("br"));
-}
 function tournamentSetupMenu() {
   const settings = Object.assign(document.createElement("form"), {
     id: "tournamentSettings",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
+    className: "editBox flex flex-col h-full p-2 md:p-4"
+  });
+  const row1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
+  });
+  const row2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2"
   });
   const matchLengthLabel = Object.assign(document.createElement("label"), {
-    className: "game-text",
+    className: "game-text text-sm md:text-base",
     htmlFor: "matchLength",
     textContent: `${t("matchLength")}: `
   });
   const matchLengthInput = Object.assign(document.createElement("input"), {
-    className: "custom-input",
+    className: "custom-input px-1 py-1 text-sm md:text-base",
     type: "number",
     id: "matchLength",
     name: "matchLength",
@@ -216,23 +219,29 @@ function tournamentSetupMenu() {
     value: "5"
   });
   const playersNumberLabel = Object.assign(document.createElement("label"), {
-    className: "game-text",
+    className: "game-text text-sm md:text-base",
     htmlFor: "playersNumber",
     textContent: `${t("numberOfPlayers")}: `
   });
   const playersNumberInput = Object.assign(document.createElement("input"), {
-    className: "custom-input",
+    className: "custom-input px-1 py-1 text-sm md:text-base",
     type: "number",
     id: "playersNumber",
     name: "playersNumber",
     min: "2",
     value: "4"
   });
-  settings.appendChild(playersNumberLabel);
-  settings.appendChild(playersNumberInput);
-  settings.appendChild(br());
-  settings.appendChild(matchLengthLabel);
-  settings.appendChild(matchLengthInput);
+  row1.appendChild(playersNumberLabel);
+  row1.appendChild(playersNumberInput);
+  row2.appendChild(matchLengthLabel);
+  row2.appendChild(matchLengthInput);
+  settings.appendChild(row1);
+  settings.appendChild(row2);
+  const container = Object.assign(document.createElement("div"), {
+    className: "tournament-setup-container"
+  });
+  container.appendChild(settings);
+  return { form: container };
 }
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   const idInput = Object.assign(document.createElement("input"), {
@@ -386,11 +395,11 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
 function gameSetupMenu(mode) {
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
+    className: "editBox flex flex-col h-full p-2 md:p-4"
   });
   const bgColors = Object.assign(document.createElement("form"), {
     id: "bgColors",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4"
+    className: "editBox flex flex-col h-full p-2 md:p-4"
   });
   const e3 = Object.assign(document.createElement("label"), {
     className: "game-text text-sm md:text-base",
@@ -828,11 +837,11 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
 }
 function loadIn(id) {
   const el = document.getElementById(id);
-  return el.value;
+  return el ? el.value : "";
 }
 function loadInB(id) {
   const el = document.getElementById(id);
-  return el.checked;
+  return el ? el.checked : false;
 }
 async function newGame(mode) {
   await new Promise((resolve) => {
@@ -867,16 +876,16 @@ async function newGame(mode) {
   ].join(" ");
   appDiv.appendChild(card);
   const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-col md:flex-row gap-4 justify-between items-stretch"
+    className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
   });
   const tournamentContiner = Object.assign(document.createElement("div"), {
-    className: "flex-1"
+    className: "flex-1 min-w-[300px]"
   });
   const player1Container = Object.assign(document.createElement("div"), {
-    className: "flex-1"
+    className: "flex-1 min-w-[300px]"
   });
   const player2Container = Object.assign(document.createElement("div"), {
-    className: "flex-1"
+    className: "flex-1 min-w-[300px]"
   });
   const player1List = Object.assign(document.createElement("ul"), {
     className: "list-none"
@@ -887,10 +896,6 @@ async function newGame(mode) {
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get("username") || "Player 1";
   const userId = urlParams.get("userId") || "";
-  if (mode === "tournament") {
-    const tournamentSetup = tournamentSetupMenu();
-    tournamentContiner.appendChild(tournamentSetup.form);
-  }
   playerSetupMenu(
     player1List,
     "1",
@@ -921,66 +926,271 @@ async function newGame(mode) {
   );
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);
-  if (mode === "multi") {
-    const player3Container = Object.assign(document.createElement("div"), {
-      className: "flex-1"
-    });
-    const player4Container = Object.assign(document.createElement("div"), {
-      className: "flex-1"
-    });
-    const player3List = Object.assign(document.createElement("ul"), {
-      className: "list-none"
-    });
-    const player4List = Object.assign(document.createElement("ul"), {
-      className: "list-none"
-    });
-    playerSetupMenu(
-      player3List,
-      "3",
-      "Trillian Astra",
-      true,
-      "i",
-      "k",
-      "#ffffff",
-      "#808080",
-      "#ff0000"
-    );
-    playerSetupMenu(
-      player4List,
-      "4",
-      "Zaphod Beeblebrox",
-      true,
-      "PageUp",
-      "PageDown",
-      "#ffffff",
-      "#808080",
-      "#ff0000"
-    );
-    player3Container.appendChild(player3List);
-    player4Container.appendChild(player4List);
-    allBoxesContainer.appendChild(player3Container);
-    allBoxesContainer.appendChild(player4Container);
-  }
+  const player3Container = Object.assign(document.createElement("div"), {
+    className: "flex-1 min-w-[300px]"
+  });
+  const player4Container = Object.assign(document.createElement("div"), {
+    className: "flex-1 min-w-[300px]"
+  });
+  const player3List = Object.assign(document.createElement("ul"), {
+    className: "list-none"
+  });
+  const player4List = Object.assign(document.createElement("ul"), {
+    className: "list-none"
+  });
+  playerSetupMenu(
+    player3List,
+    "3",
+    "Trillian Astra",
+    true,
+    "i",
+    "k",
+    "#ffffff",
+    "#808080",
+    "#ff0000"
+  );
+  playerSetupMenu(
+    player4List,
+    "4",
+    "Zaphod Beeblebrox",
+    true,
+    "PageUp",
+    "PageDown",
+    "#ffffff",
+    "#808080",
+    "#ff0000"
+  );
+  player3Container.appendChild(player3List);
+  player4Container.appendChild(player4List);
   const { form: setupForm, startButton } = gameSetupMenu(mode);
   const settingsForm = setupForm.querySelector("#settings");
   const bgColorsForm = setupForm.querySelector("#bgColors");
   if (mode === "tournament") {
-    allBoxesContainer.appendChild(tournamentContiner);
+    let updatePlayerVisibility2 = function() {
+      const playersNumberInput2 = document.getElementById("playersNumber");
+      const numPlayers = playersNumberInput2 ? parseInt(playersNumberInput2.value) || 2 : 2;
+      player1Container.style.display = numPlayers >= 1 ? "block" : "none";
+      player2Container.style.display = numPlayers >= 2 ? "block" : "none";
+      player3Container.style.display = numPlayers >= 3 ? "block" : "none";
+      player4Container.style.display = numPlayers >= 4 ? "block" : "none";
+    }, showStep2 = function(step) {
+      document.querySelectorAll(".wizard-step").forEach((el) => {
+        el.classList.add("hidden");
+      });
+      const stepElement = document.getElementById(`step${step}`);
+      if (stepElement) {
+        stepElement.classList.remove("hidden");
+      }
+      backButton.classList.toggle("hidden", step === 1);
+      nextButton.classList.toggle("hidden", step === 3);
+      finishButton.classList.toggle("hidden", step !== 3);
+      currentStep = step;
+    };
+    var updatePlayerVisibility = updatePlayerVisibility2, showStep = showStep2;
+    const tournamentWizard = Object.assign(document.createElement("div"), {
+      className: "tournament-wizard"
+    });
+    const step1Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step",
+      id: "step1"
+    });
+    const step2Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step hidden",
+      id: "step2"
+    });
+    const step3Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step hidden",
+      id: "step3"
+    });
+    const navigationContainer = Object.assign(document.createElement("div"), {
+      className: "flex justify-between items-center mt-6"
+    });
+    const backButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("back") || "Back",
+      id: "backBtn"
+    });
+    const nextButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold",
+      textContent: t("next") || "Next",
+      id: "nextBtn"
+    });
+    const finishButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("start") || "Start",
+      id: "finishBtn"
+    });
+    const { form: tournamentForm } = tournamentSetupMenu();
+    step1Container.appendChild(tournamentForm);
+    const step2FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+    });
+    step2FlexContainer.appendChild(player1Container);
+    step2FlexContainer.appendChild(player2Container);
+    step2FlexContainer.appendChild(player3Container);
+    step2FlexContainer.appendChild(player4Container);
+    updatePlayerVisibility2();
+    const playersNumberInput = document.getElementById("playersNumber");
+    if (playersNumberInput) {
+      playersNumberInput.addEventListener("input", updatePlayerVisibility2);
+      playersNumberInput.addEventListener("change", updatePlayerVisibility2);
+    }
+    step2Container.appendChild(step2FlexContainer);
+    const step3FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+    });
+    step3FlexContainer.appendChild(settingsForm);
+    step3FlexContainer.appendChild(bgColorsForm);
+    step3Container.appendChild(step3FlexContainer);
+    tournamentWizard.appendChild(step1Container);
+    tournamentWizard.appendChild(step2Container);
+    tournamentWizard.appendChild(step3Container);
+    navigationContainer.appendChild(backButton);
+    navigationContainer.appendChild(nextButton);
+    navigationContainer.appendChild(finishButton);
+    tournamentWizard.appendChild(navigationContainer);
+    card.appendChild(tournamentWizard);
+    let currentStep = 1;
+    nextButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentStep < 3) {
+        showStep2(currentStep + 1);
+      }
+    });
+    backButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentStep > 1) {
+        showStep2(currentStep - 1);
+      }
+    });
+    finishButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      loadConfig(mode);
+    });
+  } else {
+    let showSingleStep2 = function(step) {
+      document.querySelectorAll(".single-player-wizard .wizard-step").forEach((el) => {
+        el.classList.add("hidden");
+      });
+      const stepElement = document.getElementById(`singleStep${step}`);
+      if (stepElement) {
+        stepElement.classList.remove("hidden");
+      }
+      singleBackButton.classList.toggle("hidden", step === 1);
+      singleNextButton.classList.toggle("hidden", step === 2);
+      singleFinishButton.classList.toggle("hidden", step !== 2);
+      singleCurrentStep = step;
+    };
+    var showSingleStep = showSingleStep2;
+    const singlePlayerWizard = Object.assign(document.createElement("div"), {
+      className: "single-player-wizard"
+    });
+    const singleStep1Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step",
+      id: "singleStep1"
+    });
+    const singleStep2Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step hidden",
+      id: "singleStep2"
+    });
+    const singleNavigationContainer = Object.assign(document.createElement("div"), {
+      className: "flex justify-between items-center mt-6"
+    });
+    const singleBackButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("back") || "Back",
+      id: "singleBackBtn"
+    });
+    const singleNextButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold",
+      textContent: t("next") || "Next",
+      id: "singleNextBtn"
+    });
+    const singleFinishButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("start") || "Start",
+      id: "singleFinishBtn"
+    });
+    const singleStep1FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+    });
+    if (mode === "multi") {
+      const player3Container2 = Object.assign(document.createElement("div"), {
+        className: "flex-1 min-w-[300px]"
+      });
+      const player4Container2 = Object.assign(document.createElement("div"), {
+        className: "flex-1 min-w-[300px]"
+      });
+      const player3List2 = Object.assign(document.createElement("ul"), {
+        className: "list-none"
+      });
+      const player4List2 = Object.assign(document.createElement("ul"), {
+        className: "list-none"
+      });
+      playerSetupMenu(
+        player3List2,
+        "3",
+        "Trillian Astra",
+        true,
+        "i",
+        "k",
+        "#ffffff",
+        "#808080",
+        "#ff0000"
+      );
+      playerSetupMenu(
+        player4List2,
+        "4",
+        "Zaphod Beeblebrox",
+        true,
+        "PageUp",
+        "PageDown",
+        "#ffffff",
+        "#808080",
+        "#ff0000"
+      );
+      player3Container2.appendChild(player3List2);
+      player4Container2.appendChild(player4List2);
+      singleStep1FlexContainer.appendChild(player1Container);
+      singleStep1FlexContainer.appendChild(player2Container);
+      singleStep1FlexContainer.appendChild(player3Container2);
+      singleStep1FlexContainer.appendChild(player4Container2);
+    } else {
+      singleStep1FlexContainer.appendChild(player1Container);
+      singleStep1FlexContainer.appendChild(player2Container);
+    }
+    singleStep1Container.appendChild(singleStep1FlexContainer);
+    const singleStep2FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+    });
+    singleStep2FlexContainer.appendChild(settingsForm);
+    singleStep2FlexContainer.appendChild(bgColorsForm);
+    singleStep2Container.appendChild(singleStep2FlexContainer);
+    singlePlayerWizard.appendChild(singleStep1Container);
+    singlePlayerWizard.appendChild(singleStep2Container);
+    singleNavigationContainer.appendChild(singleBackButton);
+    singleNavigationContainer.appendChild(singleNextButton);
+    singleNavigationContainer.appendChild(singleFinishButton);
+    singlePlayerWizard.appendChild(singleNavigationContainer);
+    card.appendChild(singlePlayerWizard);
+    let singleCurrentStep = 1;
+    singleNextButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (singleCurrentStep < 2) {
+        showSingleStep2(singleCurrentStep + 1);
+      }
+    });
+    singleBackButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (singleCurrentStep > 1) {
+        showSingleStep2(singleCurrentStep - 1);
+      }
+    });
+    singleFinishButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      loadConfig(mode);
+    });
   }
-  allBoxesContainer.appendChild(player1Container);
-  allBoxesContainer.appendChild(player2Container);
-  allBoxesContainer.appendChild(settingsForm);
-  allBoxesContainer.appendChild(bgColorsForm);
-  card.appendChild(allBoxesContainer);
-  const buttonContainer = Object.assign(document.createElement("div"), {
-    className: "flex justify-center mt-6"
-  });
-  buttonContainer.appendChild(startButton);
-  appDiv.appendChild(buttonContainer);
-  startButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    loadConfig(mode);
-  });
   window.addEventListener("resize", () => {
     const canvas = document.getElementById("board");
     if (canvas) {
@@ -1172,7 +1382,10 @@ function loadConfig(mode) {
       loadIn("p2CornerCol")
     )
   );
-  if (mode === "multi")
+  const isMultiPlayer = mode === "multi";
+  const tournamentNumPlayers = mode === "tournament" ? parseInt(loadIn("playersNumber") || "2", 10) : 2;
+  const isTournamentWith4Players = mode === "tournament" && tournamentNumPlayers === 4;
+  if (isMultiPlayer || isTournamentWith4Players) {
     p.push(
       loadPlayer(
         loadIn("name_p3"),
@@ -1186,7 +1399,6 @@ function loadConfig(mode) {
         loadIn("p3CornerCol")
       )
     );
-  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p4"),
@@ -1200,6 +1412,7 @@ function loadConfig(mode) {
         loadIn("p4CornerCol")
       )
     );
+  }
   const loadData = {
     canvas,
     fps: 50,
@@ -1216,8 +1429,7 @@ function loadConfig(mode) {
     paddleSpeed: 40,
     ballSpeed: 10,
     ballSize: 80,
-    maxScore: 3,
-    //parseInt(loadIn("maxScore") || "10", 10),
+    maxScore: mode === "tournament" ? parseInt(loadIn("matchLength") || "5", 10) : 3,
     trailLength: 20,
     //parseInt(loadIn("trailLength") || "20", 10),
     bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
@@ -1235,14 +1447,18 @@ function loadConfig(mode) {
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
-    isTournament: false,
+    isTournament: mode === "tournament",
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (mode === "multi") {
+  if (mode === "tournament") {
+    loadData.mode = "tournament";
+    loadData.nameTB1.value = p[0].name;
+    loadData.nameTB2.value = p[1].name;
+  } else if (mode === "multi") {
     loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;

@@ -1,5 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { createGame, getGame, getGames, getLeaderboard } from "./pong.controller";
+import {
+  createGame,
+  getGame,
+  getGames,
+  getLeaderboard,
+} from "./pong.controller";
+import { getTournament, createTournament } from "./tournament.controller";
 
 export default async function pongRoutes(fastify: FastifyInstance) {
   // create a new game
@@ -10,4 +16,8 @@ export default async function pongRoutes(fastify: FastifyInstance) {
   fastify.get("/games", getGames);
   // get leaderboard (for dashboard)
   fastify.get("/leaderboard", getLeaderboard);
+
+  //tournament routes
+  fastify.post("/tournaments", createTournament);
+  fastify.get("/tournaments/:id", getTournament);
 }

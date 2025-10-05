@@ -24,6 +24,9 @@ export interface gameInfo {
   multiBall: boolean;
   mode: string;
   isTournament: boolean;
+  tournamentId: string;
+  tournamentRound: number;
+  tournamentMatch: number;
   //winner
   winnerId: string;
 }
@@ -36,7 +39,7 @@ export const createGame = async (
     const { data: game } = request.body;
     const newGame = await prisma.game.create({
       data: {
-        status: "FINISHED",
+        status: "FINISHED", // TODO: i will change this to check first if its a tournament or not
         player1Id: game.player1Id,
         player1Name: game.player1Name,
         score1: game.score1,
@@ -47,6 +50,9 @@ export const createGame = async (
         multiBall: game.multiBall,
         mode: game.mode,
         isTournament: game.isTournament,
+        tournamentId: game.tournamentId,
+        tournamentRound: game.tournamentRound,
+        tournamentMatch: game.tournamentMatch,
         winnerId: game.winnerId,
       },
     });

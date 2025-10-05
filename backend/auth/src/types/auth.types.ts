@@ -41,3 +41,8 @@ export interface SessionData {
   userId: string;
   expiresAt: Date;
 }
+
+export interface TwoFaCode{
+	code: string;
+	expiresAt: Date;
+}

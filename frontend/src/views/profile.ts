@@ -181,10 +181,13 @@ export function renderProfile(username: string): HTMLElement {
       const newStatus = await getFriendshipStatus(user.username, currentUser?.username);
       
       if (newStatus !== friendshipStatus) {
+        const oldStatus = friendshipStatus;
         friendshipStatus = newStatus;
         section.innerHTML = getViewHTML();
         bindEvents();
         updateText();
+        if (oldStatus === 'pending' && newStatus === 'none') {
+        }
       }
     } catch (error) {
       console.error('Failed to refresh friendship status:', error);
@@ -215,7 +218,7 @@ export function renderProfile(username: string): HTMLElement {
             section.innerHTML = getViewHTML();
             bindEvents();
             updateText();
-            alertWarning(t('friend_request_already_exists') || 'Friend request already exists');
+            alertWarning(t('friend_request_already_exists'));
           } catch (refreshError) {
             alertError(refreshError?.message || t('friend_request_failed'));
           }
@@ -263,12 +266,6 @@ export function renderProfile(username: string): HTMLElement {
     section.innerHTML = getViewHTML();
     bindEvents();
   });
-  
-  const cleanup = () => {
-    window.removeEventListener('focus', refreshFriendshipStatus);
-  };
-  
-  (section as any).cleanup = cleanup;
   
   updateText();
   return section;

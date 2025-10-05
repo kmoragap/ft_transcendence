@@ -87,6 +87,7 @@
   "friend_status_refresh_failed": "Не удалось обновить статус дружбы",
   "friend_request_cancelled": "Запрос в друзья отменен",
   "cancel_friend_request_failed": "Не удалось отменить запрос в друзья",
+  "friend_request_already_exists": "Запрос в друзья уже существует или вы уже друзья",
   "no_friends_or_requests": "Нет друзей или ожидающих запросов",
   "please_login_to_see_friends": "Пожалуйста, войдите в систему, чтобы увидеть друзей",
   "error_loading_friend_requests": "Ошибка загрузки запросов в друзья"

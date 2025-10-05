@@ -49,6 +49,7 @@ export type gameData = {
   keys: Record<string, boolean>;
   showingText: boolean;
   gameID: string;
+  tournamentID: string;
   go: boolean;
   touchControl: boolean;
   mode: string;
@@ -458,7 +459,8 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
     }) as HTMLUListElement;
     const player4List = Object.assign(document.createElement("ul"), {
       className: "list-none",
-    }) as HTMLUListElement;
+    }) as HTMLUListElement;        "", //player ID
+
     playerSetupMenu(
       player3List,
       "3",

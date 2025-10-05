@@ -24,7 +24,6 @@ export async function startGame(fourPlayers: boolean) {
     await initI18n(lang);
     await newGame(fourPlayers);
     document.getElementById("board")?.focus();
-    //		collisionTest()
   } catch (error) {
     console.error("Failed to load configuration:", error);
   }

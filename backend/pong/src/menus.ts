@@ -4,6 +4,7 @@ window.addEventListener("message", event => {
   if (event.origin !== window.location.origin) {
     return;
   }
+  console.log("Received message:", event.data);
 
   if (event.data.type === "LOGIN_SUCCESS") {
     const { playerId, playerName, username, userData } = event.data;
@@ -12,7 +13,6 @@ window.addEventListener("message", event => {
       nameInput.value = username;
     }
 
-    // store user id for game creation
     const idInput = document.getElementById(
       `p${playerId}Id`
     ) as HTMLInputElement;
@@ -69,12 +69,10 @@ export function playerSetupMenu(
     value: "",
   }) as HTMLInputElement;
   list.appendChild(idInput);
-  //create player setup
   const form = Object.assign(document.createElement("form"), {
     id: `player${p}Menu`,
     className: `editBox`,
   }) as HTMLFormElement;
-  //name, AI
   const e1 = Object.assign(document.createElement("label"), {
     className: "game-text",
     for: `name_p${p}`,
@@ -230,6 +228,35 @@ export function gameSetupMenu(fourPlayers: boolean): {
   form: HTMLDivElement;
   startButton: HTMLInputElement;
 } {
+  const tournam_row1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  const tournam_row2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  const t1 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentName",
+    textContent: `${t("tournamentName")}`,
+  }) as HTMLLabelElement;
+  const t2 = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 text-sm md:text-base",
+    type: "text",
+    size: "20",
+    id: "tournamentName",
+    name: "tournamentName",
+    value: "",
+  }) as HTMLInputElement;
+  const t3 = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentMode",
+    textContent: `${t("tournamentMode")}`,
+  }) as HTMLLabelElement;
+  const t4 = Object.assign(document.createElement("select"), {
+    className: "custom-select px-1 py-1 text-sm md:text-base",
+    id: "tournamentMode",
+    name: "tournamentMode",
+  }) as HTMLSelectElement;
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
     className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
@@ -427,6 +454,11 @@ export function gameSetupMenu(fourPlayers: boolean): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
 
+
+  tournam_row1.appendChild(t1);
+  tournam_row1.appendChild(t2);
+  tournam_row2.appendChild(t3);
+  tournam_row2.appendChild(t4);
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -474,7 +506,6 @@ export function gameSetupMenu(fourPlayers: boolean): {
   ul.appendChild(bgColors);
   container.appendChild(ul);
 
-  // Note: Event listener is now handled in gameData.ts
 
   return { form: container, startButton: e22 };
 }

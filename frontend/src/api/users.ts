@@ -225,8 +225,11 @@ export async function sendFriendRequest(userId: string, username?: string): Prom
       }
 
       return;
-    } catch (error) {
-      throw new Error('No access token found');
+    } catch (error: any) {
+      if (error instanceof Error && error.message === 'Failed to fetch') {
+        throw new Error('No access token found');
+      }
+      throw error;
     }
   }
 
@@ -496,29 +499,28 @@ export async function rejectFriendRequest(requestId: string): Promise<void> {
   }
 }
 
-// Helper function to remove a friend request, parameterized by auth options
 async function removeFriendRequestHelper(
-  userId: string,
+  username: string,
   fetchOptions: RequestInit,
   deleteOptions: (friendshipId: string) => RequestInit
 ): Promise<void> {
-  const friendsRes = await fetch('/api/users/friends', fetchOptions);
-  if (!friendsRes.ok) {
-    throw new Error('Failed to get friends list');
+  const friendshipsRes = await fetch('/api/users/friendships', fetchOptions);
+  if (!friendshipsRes.ok) {
+    throw new Error('Failed to get friendships list');
   }
-  const friends = await friendsRes.json();
-  const friendship = friends.find((friend: any) => friend.username === userId);
+  const friendships = await friendshipsRes.json();
+  const friendship = friendships.find((f: any) => f.otherUser.username === username);
   if (!friendship) {
-    throw new Error('Friend not found');
+    throw new Error('Friendship not found');
   }
   const res = await fetch(`/api/users/friends/${friendship.id}`, deleteOptions(friendship.id));
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Remove friend failed (${res.status})`);
+    throw new Error(err.error || `Remove friend request failed (${res.status})`);
   }
 }
 
-export async function removeFriendRequest(userId: string): Promise<void> {
+export async function removeFriendRequest(username: string): Promise<void> {
   const token = localStorage.getItem('accessToken');
   
   let headers: Record<string, string>;
@@ -548,7 +550,7 @@ export async function removeFriendRequest(userId: string): Promise<void> {
   }
   try {
     await removeFriendRequestHelper(
-      userId,
+      username,
       options,
       requestBuilder
     );
@@ -556,7 +558,7 @@ export async function removeFriendRequest(userId: string): Promise<void> {
     if (!token) {
       throw new Error('No access token found');
     } else {
-      console.error('Remove friend error:', error);
+      console.error('Remove friend request error:', error);
       throw error;
     }
   }

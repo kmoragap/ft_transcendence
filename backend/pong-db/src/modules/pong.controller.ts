@@ -24,9 +24,9 @@ export interface gameInfo {
   multiBall: boolean;
   mode: string;
   isTournament: boolean;
-  tournamentId: string;
-  tournamentRound: number;
-  tournamentMatch: number;
+  tournamentId?: string;
+  tournamentRound?: number;
+  tournamentMatch?: number;
   //winner
   winnerId: string;
 }

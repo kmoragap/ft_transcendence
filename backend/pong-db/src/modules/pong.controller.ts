@@ -39,7 +39,7 @@ export const createGame = async (
     const { data: game } = request.body;
     const newGame = await prisma.game.create({
       data: {
-        status: "FINISHED", // TODO: i will change this to check first if its a tournament or not
+        status: game.isTournament ? "IN_PROGRESS" : "FINISHED",
         player1Id: game.player1Id,
         player1Name: game.player1Name,
         score1: game.score1,

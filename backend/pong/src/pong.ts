@@ -157,6 +157,7 @@ export async function finito(): Promise<void> {
     maxScore: data.maxScore,
     multiBall: data.multiball,
     mode: data.mode,
+    isTournament: data.isTournament,
     winnerId: winnerId,
   };
   const result = await gameService.finishGame(gameData);

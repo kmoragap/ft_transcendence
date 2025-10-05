@@ -53,7 +53,7 @@ export type gameData = {
   go: boolean;
   touchControl: boolean;
   mode: string;
-
+  isTournament: boolean;
   multiball: boolean;
   maxHits: number;
   hits: number;

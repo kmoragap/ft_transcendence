@@ -952,15 +952,22 @@ var init_tournamentGame = __esm({
       showTournamentWinner(winnerName) {
         const overlay = document.createElement("div");
         overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
-        overlay.innerHTML = `
-      <div class="bg-white p-8 rounded-lg text-center max-w-md mx-4">
-        <h2 class="text-3xl font-bold text-green-600 mb-4">\u{1F3C6} Tournament Complete!</h2>
-        <p class="text-xl mb-6">Winner: <span class="font-bold">${winnerName}</span></p>
-        <button id="tournamentExitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Exit Tournament
-        </button>
+        const modal = document.createElement("div");
+        modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
+        modal.innerHTML = `
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-[#66fcf1] mb-4">\u{1F3C6} Tournament Complete!</h2>
+        <div class="text-xl mb-4">
+          <span class="text-[#66fcf1]">Winner:</span>
+          <span class="font-bold text-yellow-400 ml-2">${winnerName}</span>
+        </div>
+        <p class="text-sm text-[#66fcf1] mt-4">Congratulations on your victory!</p>
       </div>
+      <button id="tournamentExitBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+        Exit Tournament
+      </button>
     `;
+        overlay.appendChild(modal);
         document.body.appendChild(overlay);
         const exitBtn = overlay.querySelector("#tournamentExitBtn");
         exitBtn.addEventListener("click", () => {

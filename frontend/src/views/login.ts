@@ -1,14 +1,14 @@
-import { t } from './../i18n';
-import { store } from '../store';
+import { t } from "./../i18n";
+import { store } from "../store";
 //import { redirectIfAuthenticated } from '../utils/auth';
-import { alertError, alertSuccess } from './../utils/modal-alerts';
+import { alertError, alertSuccess } from "./../utils/modal-alerts";
 
 export function renderLogin(): HTMLElement {
   //redirectIfAuthenticated();
 
-  const section = document.createElement('section');
+  const section = document.createElement("section");
   section.className =
-    'flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]';
+    "flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]";
 
   section.innerHTML = `
     <div class="flex flex-col items-center justify-center">
@@ -30,7 +30,7 @@ export function renderLogin(): HTMLElement {
           name="identifier"
           autocomplete="username"
           data-i18n-placeholder="username_or_email"
-          placeholder="${t('username_or_email')}"
+          placeholder="${t("username_or_email")}"
           required
           aria-required="true"
           aria-invalid="false"
@@ -47,7 +47,7 @@ export function renderLogin(): HTMLElement {
           name="password"
           autocomplete="current-password"
           data-i18n-placeholder="password"
-          placeholder="${t('password')}"
+          placeholder="${t("password")}"
           required
           aria-required="true"
           aria-invalid="false"
@@ -62,7 +62,7 @@ export function renderLogin(): HTMLElement {
         class="btn py-2 text-lg font-bold !w-full"
         data-i18n="submit"
       >
-        ${t('submit')}
+        ${t("submit")}
       </button>
 
       <button
@@ -72,7 +72,7 @@ export function renderLogin(): HTMLElement {
           href="#/login_42"
           data-i18n="login_42"
         >
-          ${t('login_42')}
+          ${t("login_42")}
         </a>
       </button>
 
@@ -83,17 +83,17 @@ export function renderLogin(): HTMLElement {
           href="#/register"
           data-i18n="register"
         >
-          ${t('register')}
+          ${t("register")}
         </a>
       </button>
     </form>
   `;
 
-  const form = section.querySelector<HTMLFormElement>('#login-form')!;
-  const identifierInput = form.querySelector<HTMLInputElement>('#identifier')!;
-  const passwordInput   = form.querySelector<HTMLInputElement>('#password')!;
+  const form = section.querySelector<HTMLFormElement>("#login-form")!;
+  const identifierInput = form.querySelector<HTMLInputElement>("#identifier")!;
+  const passwordInput = form.querySelector<HTMLInputElement>("#password")!;
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     if (!form.checkValidity()) {
       form.reportValidity();
@@ -101,19 +101,19 @@ export function renderLogin(): HTMLElement {
     }
 
     const identifier = identifierInput.value.trim();
-    const password   = passwordInput.value;
+    const password = passwordInput.value;
 
     const payload: Record<string, string> = { password };
-    if (identifier.includes('@')) {
+    if (identifier.includes("@")) {
       payload.email = identifier;
     } else {
       payload.username = identifier;
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -127,18 +127,19 @@ export function renderLogin(): HTMLElement {
         return;
       }
 
-      const { token, refresh, username, firstname, email, avatarUrl } = await res.json();
-      localStorage.setItem('accessToken',  token);
-      localStorage.setItem('refreshToken', refresh);
+      const { token, refresh, id, username, firstname, email, avatarUrl } =
+        await res.json();
+      localStorage.setItem("accessToken", token);
+      localStorage.setItem("refreshToken", refresh);
 
-      const user = { username, firstname, email, avatarUrl };
-      store.dispatch({ type: 'LOGIN', payload: user });
+      const user = { id, username, firstname, email, avatarUrl };
+      store.dispatch({ type: "LOGIN", payload: user });
 
-      alertSuccess('Login successful!');
-      window.location.hash = '/';
+      alertSuccess("Login successful!");
+      window.location.hash = "/";
     } catch (err) {
       console.error(err);
-      alertError('An unexpected error occurred.');
+      alertError("An unexpected error occurred.");
     }
   });
 

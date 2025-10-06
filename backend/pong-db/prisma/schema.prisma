@@ -8,31 +8,72 @@ datasource db {
     url      = "file:./prisma/pong-db.sqlite"
 }
 
-model Game {
-    id          String     @id @default(cuid())
-    player1Id   String
-    player2Id   String
-    player1Name String
-    player2Name String
-    score1      Int        @default(0)
-    score2      Int        @default(0)
-    maxScore    Int        @default(3)
-    status      GameStatus @default(WAITING)
-    gameType    Oponent    @default(VS_HUMAN)
-    winnerId    String?
-    createdAt   DateTime   @default(now())
-    updatedAt   DateTime   @updatedAt
+enum GameStatus {
+    IN_PROGRESS
+    FINISHED
+    CANCELLED
+}
 
+enum TournamentStatus {
+    IN_PROGRESS
+    FINISHED
+    CANCELLED
+}
+
+model Game {
+    id     String     @id @default(cuid())
+    status GameStatus @default(IN_PROGRESS)
+
+    // Player 1 info
+    player1Id   String
+    player1Name String
+    score1      Int    @default(0)
+
+    // Player 2 info
+    player2Id   String
+    player2Name String
+    score2      Int    @default(0)
+
+    // Game settings
+    maxScore  Int     @default(3)
+    multiBall Boolean @default(false)
+    mode      String  @default("classic")
+    // Winner
+    winnerId  String
+
+    // tournament
+    isTournament    Boolean     @default(false)
+    tournamentId    String?
+    tournament      Tournament? @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+    tournamentRound Int?
+    tournamentMatch Int?
+    //Timestamps
+    finishedAt      DateTime    @default(now())
+
+    @@index([player1Id])
+    @@index([player2Id])
+    @@index([winnerId])
+    @@index([status])
     @@map("games")
 }
 
-enum Oponent {
-    VS_HUMAN
-    VS_AI
-}
+/**
+ */
+model Tournament {
+    id     String           @id @default(cuid())
+    name   String
+    status TournamentStatus @default(IN_PROGRESS)
 
-enum GameStatus {
-    WAITING
-    IN_PROGRESS
-    FINISHED
+    //participants ids as JSON?
+    playersIds String
+
+    //Relations
+    games Game[]
+
+    // Additional fields can be added here for tournament details
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    finishedAt DateTime?
+
+    @@map("tournaments")
 }

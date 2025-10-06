@@ -1,5 +1,6 @@
-import { t } from '../i18n';
-import { store } from '../store';
+import { t } from "../i18n";
+import { store } from "../store";
+import { alertError, alertSuccess } from "../utils/modal-alerts";
 
 export interface LoginModalOptions {
   onSuccess?: (user: any) => void;
@@ -9,17 +10,21 @@ export interface LoginModalOptions {
 }
 
 export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-[rgba(3,27,27,0.75)] flex items-center justify-center z-50';
-  modal.id = 'login-modal';
+  const modal = document.createElement("div");
+  modal.className =
+    "fixed inset-0 bg-[rgba(3,27,27,0.75)] flex items-center justify-center z-50";
+  modal.id = "login-modal";
 
-  const modalContent = document.createElement('div');
-  modalContent.className = 'bg-[rgba(3,27,27,0.95)] rounded-lg p-8 max-w-md mx-4 border border-[rgba(102,252,241,0.15)]';
+  const modalContent = document.createElement("div");
+  modalContent.className =
+    "bg-[rgba(3,27,27,0.95)] rounded-lg p-8 max-w-md mx-4 border border-[rgba(102,252,241,0.15)]";
 
   modalContent.innerHTML = `
     <div class="flex flex-col items-center">
-      <h2 class="text-2xl font-bold text-[#66fcf1] mb-6 ${options.title ? '' : 'hidden'}" data-i18n='login'>
-        ${t('login')}
+      <h2 class="text-2xl font-bold text-[#66fcf1] mb-6 ${
+        options.title ? "" : "hidden"
+      }" data-i18n='login'>
+        ${t("login")}
       </h2>
       
       <form
@@ -34,7 +39,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
             name="identifier"
             autocomplete="username"
             data-i18n-placeholder="username_or_email"
-            placeholder="${t('username_or_email')}"
+            placeholder="${t("username_or_email")}"
             required
             aria-required="true"
             aria-invalid="false"
@@ -51,7 +56,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
             name="password"
             autocomplete="current-password"
             data-i18n-placeholder="password"
-            placeholder="${t('password')}"
+            placeholder="${t("password")}"
             required
             aria-required="true"
             aria-invalid="false"
@@ -67,7 +72,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
             class="btn py-2 text-lg font-bold flex-1"
             data-i18n="submit"
           >
-            ${t('submit')}
+            ${t("submit")}
           </button>
           
           <button
@@ -76,7 +81,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
             class="btn py-2 text-lg font-bold flex-1"
             data-i18n="cancel"
           >
-            ${t('cancel') || 'Cancel'}
+            ${t("cancel") || "Cancel"}
           </button>
         </div>
       </form>
@@ -85,12 +90,14 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
 
   modal.appendChild(modalContent);
 
-  const form = modal.querySelector<HTMLFormElement>('#modal-login-form')!;
-  const identifierInput = form.querySelector<HTMLInputElement>('#modal-identifier')!;
-  const passwordInput = form.querySelector<HTMLInputElement>('#modal-password')!;
-  const cancelBtn = modal.querySelector<HTMLButtonElement>('#modal-cancel')!;
+  const form = modal.querySelector<HTMLFormElement>("#modal-login-form")!;
+  const identifierInput =
+    form.querySelector<HTMLInputElement>("#modal-identifier")!;
+  const passwordInput =
+    form.querySelector<HTMLInputElement>("#modal-password")!;
+  const cancelBtn = modal.querySelector<HTMLButtonElement>("#modal-cancel")!;
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     if (!form.checkValidity()) {
       form.reportValidity();
@@ -100,16 +107,16 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     const identifier = identifierInput.value.trim();
     const password = passwordInput.value;
     const payload: Record<string, string> = { password };
-    if (identifier.includes('@')) {
+    if (identifier.includes("@")) {
       payload.email = identifier;
     } else {
       payload.username = identifier;
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -119,40 +126,44 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
           const err = await res.json();
           msg = err.message || err.error || msg;
         } catch {}
-        alert(`Login failed: ${msg}`);
+        alertError(`${t("login_failed")}: ${msg}`);
         return;
       }
 
-      const { token, refresh, username, firstname, email, avatarUrl } = await res.json();
-      
-      const user = { username, firstname, email, avatarUrl };
-      
+      const { token, refresh, id, username, firstname, email, avatarUrl } =
+        await res.json();
+
+      const user = { id, username, firstname, email, avatarUrl };
+
       if (!options.gameOnly) {
-        localStorage.setItem('accessToken', token);
-        localStorage.setItem('refreshToken', refresh);
-        store.dispatch({ type: 'LOGIN', payload: user });
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("refreshToken", refresh);
+        store.dispatch({ type: "LOGIN", payload: user });
       }
 
       if (options.onSuccess) {
         options.onSuccess(user);
       }
 
-      closeModal();
+      if (!options.gameOnly) {
+        alertSuccess(t("login_successful"));
+      }
 
+      closeModal();
     } catch (err) {
       console.error(err);
-      alert('An unexpected error occurred.');
+      alertError(t("unexpected_error"));
     }
   });
 
-  cancelBtn.addEventListener('click', () => {
+  cancelBtn.addEventListener("click", () => {
     if (options.onCancel) {
       options.onCancel();
     }
     closeModal();
   });
 
-  modal.addEventListener('click', (e) => {
+  modal.addEventListener("click", e => {
     if (e.target === modal) {
       if (options.onCancel) {
         options.onCancel();
@@ -172,20 +183,20 @@ export function showLoginModal(options: LoginModalOptions = {}): Promise<any> {
   return new Promise((resolve, reject) => {
     const modal = createLoginModal({
       ...options,
-      onSuccess: (user) => {
+      onSuccess: user => {
         resolve(user);
         options.onSuccess?.(user);
       },
       onCancel: () => {
-        reject(new Error('Login cancelled'));
+        reject(new Error(t("login_cancelled")));
         options.onCancel?.();
-      }
+      },
     });
 
     document.body.appendChild(modal);
-    
+
     setTimeout(() => {
-      const input = modal.querySelector<HTMLInputElement>('#modal-identifier');
+      const input = modal.querySelector<HTMLInputElement>("#modal-identifier");
       input?.focus();
     }, 100);
   });

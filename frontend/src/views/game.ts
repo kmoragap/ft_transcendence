@@ -4,13 +4,15 @@ import { showLoginModal } from "./../components/login-modal";
 import { alertSuccess, alertError } from "./../utils/modal-alerts";
 
 let iframeRef: HTMLIFrameElement | null = null;
+let loggedInUsers: Set<string> = new Set();
 
-type GameMode = "menu" | "single" | "multi";
+type GameMode = "menu" | "single" | "multi" | "tournament";
 
 export function renderGame(): HTMLElement {
   const section = document.createElement("section");
   section.className =
     "w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10";
+
 
   section.innerHTML = `
      <h1 id="game-title" class="title uppercase mobile-title">
@@ -75,6 +77,7 @@ export function renderGame(): HTMLElement {
       hideBack();
       showTitle();
       destroyIframe();
+      loggedInUsers.clear();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
       updateText();
@@ -82,6 +85,10 @@ export function renderGame(): HTMLElement {
     } else {
       showBack();
       hideTitle();
+      const currentState = store.getState();
+      if (currentState.isAuthenticated && currentState.currentUser?.username) {
+        loggedInUsers.add(currentState.currentUser.username);
+      }
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector("#pong-frame") as HTMLIFrameElement;
       document.body.classList.add("game-active");
@@ -91,30 +98,16 @@ export function renderGame(): HTMLElement {
   function renderMenuHTML() {
     return `
       <div class="p-6 flex flex-col justify-center items-center h-full">
-        <div class="flex flex-col md:grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+        <div class="flex flex-col gap-4 max-w-4xl mx-auto">
           <button
-            id="btn-create"
-            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
-                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-lg md:text-2xl
-                  shadow-lg
-                  cursor-not-allowed opacity-50"
-            aria-disabled="true"
-            title="${t("coming_soon") || "Coming soon"}"
+            id="btn-tournament"
+            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.25)]
+                  bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
+                  shadow-xl
+                  hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
             data-i18n="create_tournament"
           >
             Create a tournament
-          </button>
-          <button
-            id="btn-join"
-            class="px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[rgba(102,252,241,0.15)]
-                  bg-[rgba(102,252,241,0.06)] text-[#66fcf1] font-bold text-lg md:text-2xl
-                  shadow-lg
-                  cursor-not-allowed opacity-50"
-            aria-disabled="true"
-            title="${t("coming_soon") || "Coming soon"}"
-            data-i18n="join_tournament"
-          >
-            Join a tournament
           </button>
           <button
             id="btn-single"
@@ -148,20 +141,26 @@ export function renderGame(): HTMLElement {
     root
       .querySelector<HTMLButtonElement>("#btn-multi")
       ?.addEventListener("click", () => setMode("multi"));
+    root
+      .querySelector<HTMLButtonElement>("#btn-tournament")
+      ?.addEventListener("click", () => setMode("tournament"));
   }
 
   function renderIframeHTML(mode: Exclude<GameMode, "menu">) {
     const currentLang = getCurrentLang();
     const { currentUser } = store.getState();
-    let src =
-      mode === "single"
-        ? `/pong/?mode=single&lang=${currentLang}`
-        : `/pong/?mode=multi&lang=${currentLang}`;
-
-    if (mode === "single" && currentUser?.username) {
-      src += `&username=${encodeURIComponent(currentUser.username)}`;
+    let src = "";
+    if (mode === "single")
+      src = `/pong/?mode=single&lang=${currentLang}`;
+    else if (mode === "multi")
+      src = `/pong/?mode=multi&lang=${currentLang}`;
+    else if (mode === "tournament") {
+      src = `/pong/?mode=tournament&lang=${currentLang}`;
     }
-
+    if (["single", "tournament", "multi"].includes(mode) && currentUser?.username) {
+      src += `&username=${encodeURIComponent(currentUser.username)}`;
+      src += `&userId=${encodeURIComponent(currentUser.id)}`;
+    }
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
@@ -183,7 +182,7 @@ export function renderGame(): HTMLElement {
       const url = new URL(currentSrc);
       const mode = url.searchParams.get("mode");
 
-      if (mode === "single" || mode === "multi") {
+      if (mode === "single" || mode === "multi" || mode === "tournament") {
         setMode(mode as Exclude<GameMode, "menu">);
       }
     } else {
@@ -209,10 +208,13 @@ export function renderGame(): HTMLElement {
 
       try {
         const user = await showLoginModal({
-          title: "Login Second Player",
+          title: t("login_second_player"),
           gameOnly: true,
           onSuccess: user => {
-            alertSuccess("Second player logged in: " + user.username);
+            if (loggedInUsers.has(user.username)) {
+              return;
+            }
+            alertSuccess(t("second_player_logged_in") + ": " + user.username);
           },
           onCancel: () => {
             if (iframeRef?.contentWindow) {
@@ -226,6 +228,22 @@ export function renderGame(): HTMLElement {
             }
           },
         });
+
+        if (loggedInUsers.has(user.username)) {
+          alertError(t("username_already_in_use") || "This username is already being used by another player");
+          if (iframeRef?.contentWindow) {
+            iframeRef.contentWindow.postMessage(
+              {
+                type: "LOGIN_CANCELLED",
+                playerId: playerId,
+              },
+              window.location.origin
+            );
+          }
+          return;
+        }
+
+        loggedInUsers.add(user.username);
 
         if (iframeRef?.contentWindow) {
           iframeRef.contentWindow.postMessage(
@@ -254,8 +272,12 @@ export function renderGame(): HTMLElement {
     } else if (event.data.type === "EXIT_GAME") {
       const { winner } = event.data;
       console.log(`Game ended. Winner: ${winner}`);
+      loggedInUsers.clear();
       destroyGameView();
       setMode("menu");
+    } else if (event.data.type === "PLAYER_LOGOUT") {
+      const { username } = event.data;
+      loggedInUsers.delete(username);
     }
   });
 
@@ -271,6 +293,7 @@ export function renderGame(): HTMLElement {
 }
 
 export function destroyGameView() {
+  loggedInUsers.clear();
   if (iframeRef) {
     try {
       iframeRef.contentWindow?.postMessage(

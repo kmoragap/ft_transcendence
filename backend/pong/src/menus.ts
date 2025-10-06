@@ -1,5 +1,31 @@
 import { t } from "./i18n";
 
+let savedPlayerData: Record<string, any> = {};
+
+function savePlayerData(playerId: string): void {
+  const nameInput = document.getElementById(`name_p${playerId}`) as HTMLInputElement;
+  const idInput = document.getElementById(`p${playerId}Id`) as HTMLInputElement;
+  const aiCheckbox = document.getElementById(`p${playerId}Ai`) as HTMLInputElement;
+  
+  if (nameInput || idInput || aiCheckbox) {
+    savedPlayerData[playerId] = {
+      name: nameInput?.value || "",
+      id: idInput?.value || "",
+      isAi: aiCheckbox?.checked || false,
+      loggedInUsername: savedPlayerData[playerId]?.loggedInUsername || "", // Preserve the actual logged-in username
+    };
+  }
+}
+
+function restorePlayerData(playerId: string, nameInput: HTMLInputElement, idInput: HTMLInputElement, aiCheckbox: HTMLInputElement): void {
+  const saved = savedPlayerData[playerId];
+  if (saved) {
+    nameInput.value = saved.name;
+    idInput.value = saved.id;
+    aiCheckbox.checked = saved.isAi;
+  }
+}
+
 window.addEventListener("message", event => {
   if (event.origin !== window.location.origin) {
     return;
@@ -12,12 +38,18 @@ window.addEventListener("message", event => {
       nameInput.value = username;
     }
 
-    // store user id for game creation
     const idInput = document.getElementById(
       `p${playerId}Id`
     ) as HTMLInputElement;
     if (idInput && userData?.id) {
       idInput.value = userData.id;
+    }
+
+    if (savedPlayerData[playerId]) {
+      savedPlayerData[playerId].name = username;
+      savedPlayerData[playerId].id = userData?.id || "";
+      savedPlayerData[playerId].isAi = false;
+      savedPlayerData[playerId].loggedInUsername = username; // Store the actual logged-in username
     }
 
     if (playerId === "2") {
@@ -28,10 +60,6 @@ window.addEventListener("message", event => {
         loggedIn: true,
       };
     }
-
-    console.log(
-      `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
-    );
   } else if (event.data.type === "LOGIN_CANCELLED") {
     const { playerId } = event.data;
     const aiCheckbox = document.getElementById(
@@ -40,15 +68,78 @@ window.addEventListener("message", event => {
     if (aiCheckbox) {
       aiCheckbox.checked = true;
     }
-    console.log(`Login cancelled for player ${playerId}, reverting to AI`);
   } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
     (window as any).gamePlayer2 = null;
-    console.log("Player 2 data cleared");
   }
 });
 
 function br(): HTMLBRElement {
   return Object.assign(document.createElement("br")) as HTMLBRElement;
+}
+
+export function tournamentSetupMenu(): {
+  form: HTMLDivElement;
+} {
+  const settings = Object.assign(document.createElement("form"), {
+    id: "tournamentSettings",
+    className: "editBox flex flex-col h-full p-2 md:p-4",
+  }) as HTMLFormElement;
+  
+  // Create row containers for proper layout
+  const row1 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  const row2 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  
+  // Match length
+  const matchLengthLabel = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "matchLength",
+    textContent: `${t("matchLength")}: `,
+  }) as HTMLLabelElement;
+  const matchLengthInput = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 text-sm md:text-base",
+    type: "number",
+    id: "matchLength",
+    name: "matchLength",
+    min: "1",
+    value: "5",
+  }) as HTMLInputElement;
+  
+  // Number of players
+  const playersNumberLabel = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "playersNumber",
+    textContent: `${t("numberOfPlayers")}: `,
+  }) as HTMLLabelElement;
+  const playersNumberInput = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 text-sm md:text-base",
+    type: "number",
+    id: "playersNumber",
+    name: "playersNumber",
+    min: "2",
+    value: "4",
+  }) as HTMLInputElement;
+  
+  // Add elements to rows
+  row1.appendChild(playersNumberLabel);
+  row1.appendChild(playersNumberInput);
+  row2.appendChild(matchLengthLabel);
+  row2.appendChild(matchLengthInput);
+  
+  // Add rows to settings form
+  settings.appendChild(row1);
+  settings.appendChild(row2);
+  
+  // Create container
+  const container = Object.assign(document.createElement("div"), {
+    className: "tournament-setup-container",
+  }) as HTMLDivElement;
+  container.appendChild(settings);
+  
+  return { form: container };
 }
 
 export function playerSetupMenu(
@@ -62,6 +153,17 @@ export function playerSetupMenu(
   c2: string,
   c3: string
 ) {
+  savePlayerData(p);
+  
+  if (!savedPlayerData[p]) {
+    savedPlayerData[p] = {
+      name: name,
+      id: "",
+      isAi: isAi,
+      loggedInUsername: "",
+    };
+  }
+  
   const idInput = Object.assign(document.createElement("input"), {
     type: "hidden",
     id: `p${p}Id`,
@@ -69,12 +171,10 @@ export function playerSetupMenu(
     value: "",
   }) as HTMLInputElement;
   list.appendChild(idInput);
-  //create player setup
   const form = Object.assign(document.createElement("form"), {
     id: `player${p}Menu`,
     className: `editBox`,
   }) as HTMLFormElement;
-  //name, AI
   const e1 = Object.assign(document.createElement("label"), {
     className: "game-text",
     for: `name_p${p}`,
@@ -99,21 +199,56 @@ export function playerSetupMenu(
     checked: isAi,
     className: "ml-1",
   }) as HTMLInputElement;
-  if (p === "2") {
-    e4.addEventListener("change", event => {
-      const target = event.target as HTMLInputElement;
-      if (!target.checked) {
+  // Add login modal for any player when AI is unchecked, logout when checked
+  e4.addEventListener("change", event => {
+    const target = event.target as HTMLInputElement;
+    if (!target.checked) {
+      // Request login when AI is unchecked
+      window.parent.postMessage(
+        {
+          type: "REQUEST_LOGIN",
+          playerId: p,
+          playerName: `name_p${p}`,
+        },
+        window.location.origin
+      );
+    } else {
+      const nameInput = document.getElementById(`name_p${p}`) as HTMLInputElement;
+      const idInput = document.getElementById(`p${p}Id`) as HTMLInputElement;
+      
+      if (nameInput) {
+        nameInput.value = `AI-${t("player")}-${p}`;
+      }
+      
+      if (idInput) {
+        idInput.value = "";
+      }
+      
+      if (p === "2") {
+        (window as any).gamePlayer2 = null;
+      }
+      
+      const actualLoggedInUsername = savedPlayerData[p]?.loggedInUsername || "";
+      
+      if (savedPlayerData[p]) {
+        savedPlayerData[p].name = nameInput?.value || `AI-${t("player")}-${p}`;
+        savedPlayerData[p].id = "";
+        savedPlayerData[p].isAi = true;
+        savedPlayerData[p].loggedInUsername = ""; // Clear the logged-in username
+      }
+      
+      if (actualLoggedInUsername) {
         window.parent.postMessage(
           {
-            type: "REQUEST_LOGIN",
-            playerId: "2",
-            playerName: `name_p${p}`,
+            type: "PLAYER_LOGOUT",
+            playerId: p,
+            username: actualLoggedInUsername,
           },
           window.location.origin
         );
       }
-    });
-  }
+    }
+  });
   //keys
   const e5 = Object.assign(document.createElement("label"), {
     className: "game-text",
@@ -224,19 +359,21 @@ export function playerSetupMenu(
   const ul = document.createElement("li");
   ul.appendChild(form);
   list.appendChild(ul);
+  
+  restorePlayerData(p, e2, idInput, e4);
 }
 
-export function gameSetupMenu(fourPlayers: boolean): {
+export function gameSetupMenu(mode: string): {
   form: HTMLDivElement;
   startButton: HTMLInputElement;
 } {
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   const bgColors = Object.assign(document.createElement("form"), {
     id: "bgColors",
-    className: "editBox flex-1 flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   //paddle speed
   const e3 = Object.assign(document.createElement("label"), {
@@ -427,6 +564,7 @@ export function gameSetupMenu(fourPlayers: boolean): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
 
+
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -435,7 +573,7 @@ export function gameSetupMenu(fourPlayers: boolean): {
   row3.appendChild(e7);
   row4.appendChild(e11);
   row4.appendChild(e10);
-  if (!fourPlayers) {
+  if (mode === "multi") {
     row5.appendChild(e13);
     row5.appendChild(e12);
   }
@@ -453,7 +591,7 @@ export function gameSetupMenu(fourPlayers: boolean): {
   settings.appendChild(row2);
   settings.appendChild(row3);
   settings.appendChild(row4);
-  if (!fourPlayers) {
+  if (mode === "multi") {
     settings.appendChild(row5);
   }
 
@@ -474,7 +612,6 @@ export function gameSetupMenu(fourPlayers: boolean): {
   ul.appendChild(bgColors);
   container.appendChild(ul);
 
-  // Note: Event listener is now handled in gameData.ts
 
   return { form: container, startButton: e22 };
 }

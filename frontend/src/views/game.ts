@@ -294,7 +294,6 @@ export function renderGame(): HTMLElement {
 
 export function destroyGameView() {
   loggedInUsers.clear();
-  
   if (iframeRef) {
     try {
       iframeRef.contentWindow?.postMessage(

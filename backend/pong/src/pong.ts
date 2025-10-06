@@ -141,11 +141,20 @@ export function endRound(): void {
     pad[0].stop();
     pad.shift();
   }
-  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
+  
+  // Check if match is over (someone reached max score)
+  if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
+    if (data.isTournament) {
+      finito(); // Tournament match is over, handle tournament logic
+    } else {
+      endGame(); // Single player match is over
+    }
+    return;
+  }
+  
+  // Match continues - restart the next round
+  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) {
     setTimeout(startRound, 1500);
-  else {
-    console.log("ahhhhhhhhhhhh");
-    endGame();
   }
 }
 

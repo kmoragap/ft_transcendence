@@ -1,5 +1,14 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
 // src/controls.ts
-var lastX;
 function controlKeys() {
   document.addEventListener("keydown", (ev) => {
     ev.preventDefault();
@@ -108,10 +117,16 @@ function touchUp() {
     }
   }
 }
+var lastX;
+var init_controls = __esm({
+  "src/controls.ts"() {
+    "use strict";
+    init_gameData();
+    init_pong();
+  }
+});
 
 // src/i18n.ts
-var translations = {};
-var currentLanguage = "en";
 function t(key) {
   return translations[key] || key;
 }
@@ -151,49 +166,16 @@ function updateHTMLTranslations() {
     }
   });
 }
-
-// src/menus.ts
-window.addEventListener("message", (event) => {
-  if (event.origin !== window.location.origin) {
-    return;
-  }
-  if (event.data.type === "LOGIN_SUCCESS") {
-    const { playerId, playerName, username, userData } = event.data;
-    const nameInput = document.getElementById(playerName);
-    if (nameInput) {
-      nameInput.value = username;
-    }
-    const idInput = document.getElementById(
-      `p${playerId}Id`
-    );
-    if (idInput && userData?.id) {
-      idInput.value = userData.id;
-    }
-    if (playerId === "2") {
-      window.gamePlayer2 = {
-        id: userData?.id,
-        username,
-        userData,
-        loggedIn: true
-      };
-    }
-    console.log(
-      `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
-    );
-  } else if (event.data.type === "LOGIN_CANCELLED") {
-    const { playerId } = event.data;
-    const aiCheckbox = document.getElementById(
-      `p${playerId}Ai`
-    );
-    if (aiCheckbox) {
-      aiCheckbox.checked = true;
-    }
-    console.log(`Login cancelled for player ${playerId}, reverting to AI`);
-  } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
-    window.gamePlayer2 = null;
-    console.log("Player 2 data cleared");
+var translations, currentLanguage;
+var init_i18n = __esm({
+  "src/i18n.ts"() {
+    "use strict";
+    translations = {};
+    currentLanguage = "en";
   }
 });
+
+// src/menus.ts
 function tournamentSetupMenu() {
   const settings = Object.assign(document.createElement("form"), {
     id: "tournamentSettings",
@@ -620,343 +602,111 @@ function gameSetupMenu(mode) {
   container.appendChild(ul);
   return { form: container, startButton: e22 };
 }
+var init_menus = __esm({
+  "src/menus.ts"() {
+    "use strict";
+    init_i18n();
+    window.addEventListener("message", (event) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+      if (event.data.type === "LOGIN_SUCCESS") {
+        const { playerId, playerName, username, userData } = event.data;
+        const nameInput = document.getElementById(playerName);
+        if (nameInput) {
+          nameInput.value = username;
+        }
+        const idInput = document.getElementById(
+          `p${playerId}Id`
+        );
+        if (idInput && userData?.id) {
+          idInput.value = userData.id;
+        }
+        if (playerId === "2") {
+          window.gamePlayer2 = {
+            id: userData?.id,
+            username,
+            userData,
+            loggedIn: true
+          };
+        }
+        console.log(
+          `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
+        );
+      } else if (event.data.type === "LOGIN_CANCELLED") {
+        const { playerId } = event.data;
+        const aiCheckbox = document.getElementById(
+          `p${playerId}Ai`
+        );
+        if (aiCheckbox) {
+          aiCheckbox.checked = true;
+        }
+        console.log(`Login cancelled for player ${playerId}, reverting to AI`);
+      } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
+        window.gamePlayer2 = null;
+        console.log("Player 2 data cleared");
+      }
+    });
+  }
+});
 
 // src/services/tournamentService.ts
-var TournamentService = class {
-  constructor() {
-    this.baseUrl = "/api/pong";
-  }
-  async createTournament(data2) {
-    try {
-      const response = await fetch(`${this.baseUrl}/tournaments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: data2 })
-      });
-      if (!response.ok) return null;
-      return await response.json();
-    } catch (error) {
-      console.error("Error creating tournament:", error);
-      return null;
-    }
-  }
-  async addGameToTournament(tournamentId, gameId) {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/tournaments/${tournamentId}/games`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameId })
+var TournamentService, tournamentService;
+var init_tournamentService = __esm({
+  "src/services/tournamentService.ts"() {
+    "use strict";
+    TournamentService = class {
+      constructor() {
+        this.baseUrl = "/api/pong";
+      }
+      async createTournament(data2) {
+        try {
+          const response = await fetch(`${this.baseUrl}/tournaments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: data2 })
+          });
+          if (!response.ok) return null;
+          return await response.json();
+        } catch (error) {
+          console.error("Error creating tournament:", error);
+          return null;
         }
-      );
-      return response.ok;
-    } catch (error) {
-      console.error("Error adding game to tournament:", error);
-      return false;
-    }
+      }
+      async addGameToTournament(tournamentId, gameId) {
+        try {
+          const response = await fetch(
+            `${this.baseUrl}/tournaments/${tournamentId}/games`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ gameId })
+            }
+          );
+          return response.ok;
+        } catch (error) {
+          console.error("Error adding game to tournament:", error);
+          return false;
+        }
+      }
+      async getTournament(tournamentId) {
+        try {
+          const response = await fetch(
+            `${this.baseUrl}/tournaments/${tournamentId}`
+          );
+          if (!response.ok) return null;
+          return await response.json();
+        } catch (error) {
+          console.error("Error fetching tournament:", error);
+          return null;
+        }
+      }
+    };
+    tournamentService = new TournamentService();
   }
-  async getTournament(tournamentId) {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/tournaments/${tournamentId}`
-      );
-      if (!response.ok) return null;
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching tournament:", error);
-      return null;
-    }
-  }
-};
-var tournamentService = new TournamentService();
+});
 
 // src/tournamentGame.ts
-var TournamentManager = class {
-  constructor() {
-    this.tournament = null;
-  }
-  /**
-   * Initialize a new tournament with bracket generation
-   */
-  async initializeTournament(tournamentId) {
-    try {
-      const tournamentData = await tournamentService.getTournament(tournamentId);
-      if (!tournamentData) {
-        console.error("Tournament not found:", tournamentId);
-        return false;
-      }
-      this.tournament = {
-        id: tournamentData.id,
-        name: tournamentData.name,
-        players: tournamentData.playersIds,
-        rounds: this.generateBracket(tournamentData.playersIds),
-        currentRound: 0,
-        status: "IN_PROGRESS"
-      };
-      console.log("Tournament initialized:", this.tournament);
-      return true;
-    } catch (error) {
-      console.error("Error initializing tournament:", error);
-      return false;
-    }
-  }
-  /**
-   * Generate tournament bracket (single elimination)
-   */
-  generateBracket(players) {
-    console.log("=== Generating Tournament Bracket ===");
-    console.log("Players:", players);
-    const rounds = [];
-    let currentPlayers = [...players];
-    let roundNumber = 1;
-    const playerIdToNameMap = window.playerIdToNameMap || {};
-    console.log("Player ID to Name mapping:", playerIdToNameMap);
-    while (currentPlayers.length > 1) {
-      console.log(`Round ${roundNumber}: ${currentPlayers.length} players`);
-      const matches = [];
-      const nextRoundPlayers = [];
-      for (let i = 0; i < currentPlayers.length; i += 2) {
-        if (i + 1 < currentPlayers.length) {
-          const player1Id = currentPlayers[i];
-          const player2Id = currentPlayers[i + 1];
-          const player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
-          const player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
-          matches.push({
-            matchNumber: Math.floor(i / 2) + 1,
-            player1Id,
-            player1Name,
-            player2Id,
-            player2Name,
-            isComplete: false
-          });
-        } else {
-          nextRoundPlayers.push(currentPlayers[i]);
-        }
-      }
-      rounds.push({
-        roundNumber,
-        matches,
-        isComplete: false
-      });
-      console.log(`Round ${roundNumber} created with ${matches.length} matches`);
-      currentPlayers = nextRoundPlayers;
-      roundNumber++;
-    }
-    console.log("Tournament bracket generated:");
-    console.log("Total rounds:", rounds.length);
-    rounds.forEach((round, index) => {
-      console.log(`Round ${index + 1}: ${round.matches.length} matches`);
-      round.matches.forEach((match, matchIndex) => {
-        console.log(`  Match ${matchIndex + 1}: ${match.player1Name} vs ${match.player2Name}`);
-      });
-    });
-    return rounds;
-  }
-  /**
-   * Get the next match to play
-   */
-  getNextMatch() {
-    if (!this.tournament) return null;
-    const currentRound = this.tournament.rounds[this.tournament.currentRound];
-    if (!currentRound) return null;
-    const nextMatch = currentRound.matches.find((match) => !match.isComplete);
-    return nextMatch || null;
-  }
-  /**
-   * Start a tournament match
-   */
-  async startTournamentMatch(match) {
-    if (!this.tournament) return false;
-    data.isTournament = true;
-    data.tournamentId = this.tournament.id;
-    data.tournamentRound = match.matchNumber;
-    data.tournamentMatch = match.matchNumber;
-    data.p[0].id = match.player1Id;
-    data.p[0].name = match.player1Name;
-    data.p[1].id = match.player2Id;
-    data.p[1].name = match.player2Name;
-    console.log(`Starting tournament match: ${match.player1Name} vs ${match.player2Name}`);
-    return true;
-  }
-  /**
-   * Handle tournament match completion
-   */
-  async completeMatch(winnerId, gameId) {
-    if (!this.tournament) return false;
-    const currentRound = this.tournament.rounds[this.tournament.currentRound];
-    if (!currentRound) return false;
-    console.log("Completing match:");
-    console.log("Winner ID:", winnerId);
-    console.log("Current round:", this.tournament.currentRound);
-    console.log("Current round matches:", currentRound.matches.length);
-    console.log("Player 1 ID:", data.p[0].id, "Player 2 ID:", data.p[1].id);
-    const match = currentRound.matches.find(
-      (m) => m.player1Id === data.p[0].id && m.player2Id === data.p[1].id || m.player1Id === data.p[1].id && m.player2Id === data.p[0].id
-    );
-    if (!match) {
-      console.error("Match not found in tournament bracket");
-      return false;
-    }
-    match.winnerId = winnerId;
-    match.gameId = gameId;
-    match.isComplete = true;
-    const roundComplete = currentRound.matches.every((m) => m.isComplete);
-    console.log("Round complete:", roundComplete);
-    console.log("Match completion status:", currentRound.matches.map((m) => ({
-      match: `${m.player1Name} vs ${m.player2Name}`,
-      complete: m.isComplete
-    })));
-    if (roundComplete) {
-      currentRound.isComplete = true;
-      console.log("Round is complete, advancing to next round");
-      await this.advanceToNextRound();
-    }
-    return true;
-  }
-  /**
-   * Advance to the next round of the tournament
-   */
-  async advanceToNextRound() {
-    if (!this.tournament) return;
-    const currentRound = this.tournament.rounds[this.tournament.currentRound];
-    const nextRound = this.tournament.rounds[this.tournament.currentRound + 1];
-    console.log("Advancing to next round:");
-    console.log("Current round:", this.tournament.currentRound);
-    console.log("Total rounds:", this.tournament.rounds.length);
-    console.log("Current round matches:", currentRound?.matches.length);
-    console.log("Next round exists:", !!nextRound);
-    if (!nextRound) {
-      console.log("No next round found, completing tournament");
-      await this.completeTournament();
-      return;
-    }
-    const winners = currentRound.matches.filter((match) => match.winnerId).map((match) => match.winnerId);
-    const playerIdToNameMap = window.playerIdToNameMap || {};
-    let winnerIndex = 0;
-    for (const match of nextRound.matches) {
-      if (winnerIndex < winners.length) {
-        const player1Id = winners[winnerIndex];
-        match.player1Id = player1Id;
-        match.player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
-        winnerIndex++;
-      }
-      if (winnerIndex < winners.length) {
-        const player2Id = winners[winnerIndex];
-        match.player2Id = player2Id;
-        match.player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
-        winnerIndex++;
-      }
-    }
-    this.tournament.currentRound++;
-    console.log(`Advanced to round ${this.tournament.currentRound + 1}`);
-  }
-  /**
-   * Complete the tournament
-   */
-  async completeTournament() {
-    if (!this.tournament) return;
-    const finalRound = this.tournament.rounds[this.tournament.currentRound];
-    const winner = finalRound.matches[0]?.winnerId;
-    const winnerName = finalRound.matches[0]?.player1Id === winner ? finalRound.matches[0]?.player1Name : finalRound.matches[0]?.player2Name;
-    this.tournament.status = "FINISHED";
-    console.log(`Tournament "${this.tournament.name}" completed! Winner: ${winnerName}`);
-    this.showTournamentWinner(winnerName || "Unknown");
-  }
-  /**
-   * Show match transition window
-   */
-  showMatchTransition(nextMatch) {
-    const overlay = document.createElement("div");
-    overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
-    overlay.id = "matchTransitionOverlay";
-    const modal = document.createElement("div");
-    modal.className = "bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center";
-    modal.innerHTML = `
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Next Match</h2>
-        <div class="text-lg text-gray-600 mb-2">
-          <span class="font-semibold text-blue-600">${nextMatch.player1Name}</span>
-          <span class="mx-4 text-gray-400">vs</span>
-          <span class="font-semibold text-red-600">${nextMatch.player2Name}</span>
-        </div>
-        <p class="text-sm text-gray-500 mt-4">Get ready for the next round!</p>
-      </div>
-      <button id="startNextMatchBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
-        Start Match
-      </button>
-    `;
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    const startBtn = document.getElementById("startNextMatchBtn");
-    if (startBtn) {
-      startBtn.addEventListener("click", () => {
-        this.startTournamentMatch(nextMatch);
-        this.hideMatchTransition();
-      });
-    }
-  }
-  /**
-   * Hide match transition window
-   */
-  hideMatchTransition() {
-    const overlay = document.getElementById("matchTransitionOverlay");
-    if (overlay) {
-      overlay.remove();
-    }
-  }
-  /**
-   * Show tournament winner message
-   */
-  showTournamentWinner(winnerName) {
-    const overlay = document.createElement("div");
-    overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
-    overlay.innerHTML = `
-      <div class="bg-white p-8 rounded-lg text-center max-w-md mx-4">
-        <h2 class="text-3xl font-bold text-green-600 mb-4">\u{1F3C6} Tournament Complete!</h2>
-        <p class="text-xl mb-6">Winner: <span class="font-bold">${winnerName}</span></p>
-        <button id="tournamentExitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Exit Tournament
-        </button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    const exitBtn = overlay.querySelector("#tournamentExitBtn");
-    exitBtn.addEventListener("click", () => {
-      document.body.removeChild(overlay);
-      window.parent.postMessage({
-        type: "EXIT_GAME",
-        winner: winnerName,
-        isTournament: true
-      }, window.location.origin);
-    });
-  }
-  /**
-   * Check if tournament is complete
-   */
-  isTournamentComplete() {
-    return this.tournament?.status === "FINISHED";
-  }
-  /**
-   * Get tournament status
-   */
-  getTournamentStatus() {
-    if (!this.tournament) return null;
-    return {
-      name: this.tournament.name,
-      currentRound: this.tournament.currentRound + 1,
-      totalRounds: this.tournament.rounds.length,
-      status: this.tournament.status
-    };
-  }
-  /**
-   * Get tournament bracket for display
-   */
-  getTournamentBracket() {
-    return this.tournament;
-  }
-};
-var tournamentManager = new TournamentManager();
 async function newTournamentGame(tournamentId) {
   const initialized = await tournamentManager.initializeTournament(tournamentId);
   if (!initialized) return false;
@@ -968,34 +718,281 @@ async function newTournamentGame(tournamentId) {
   return await tournamentManager.startTournamentMatch(nextMatch);
 }
 async function handleTournamentGameCompletion(winnerId, gameId) {
-  console.log("=== Tournament Game Completion ===");
-  console.log("Winner ID:", winnerId);
-  console.log("Game ID:", gameId);
   const success = await tournamentManager.completeMatch(winnerId, gameId);
-  console.log("Match completion success:", success);
   const isComplete = tournamentManager.isTournamentComplete();
-  console.log("Tournament complete:", isComplete);
   if (success && !isComplete) {
     const nextMatch = tournamentManager.getNextMatch();
-    console.log("Next match found:", !!nextMatch);
     if (nextMatch) {
-      console.log("Next match:", `${nextMatch.player1Name} vs ${nextMatch.player2Name}`);
-      console.log("Showing match transition for next match...");
       tournamentManager.showMatchTransition(nextMatch);
       return true;
-    } else {
-      console.log("No next match found");
     }
-  } else if (isComplete) {
-    console.log("Tournament is complete, not showing transition");
   }
   return success;
 }
+var TournamentManager, tournamentManager;
+var init_tournamentGame = __esm({
+  "src/tournamentGame.ts"() {
+    "use strict";
+    init_gameData();
+    init_tournamentService();
+    TournamentManager = class {
+      constructor() {
+        this.tournament = null;
+      }
+      async initializeTournament(tournamentId) {
+        try {
+          const tournamentData = await tournamentService.getTournament(tournamentId);
+          if (!tournamentData) {
+            console.error("Tournament not found:", tournamentId);
+            return false;
+          }
+          this.tournament = {
+            id: tournamentData.id,
+            name: tournamentData.name,
+            players: tournamentData.playersIds,
+            rounds: this.generateBracket(tournamentData.playersIds),
+            currentRound: 0,
+            status: "IN_PROGRESS"
+          };
+          console.log("Tournament initialized:", this.tournament);
+          return true;
+        } catch (error) {
+          console.error("Error initializing tournament:", error);
+          return false;
+        }
+      }
+      generateBracket(players) {
+        const rounds = [];
+        const playerIdToNameMap = window.playerIdToNameMap || {};
+        let numPlayers = players.length;
+        let roundNumber = 1;
+        while (numPlayers > 1) {
+          const numMatches = Math.floor(numPlayers / 2);
+          const matches = [];
+          for (let i = 0; i < numMatches; i++) {
+            matches.push({
+              matchNumber: i + 1,
+              player1Id: `TBD_Round${roundNumber}_Match${i + 1}_Player1`,
+              player1Name: `TBD Round ${roundNumber} Match ${i + 1} Player 1`,
+              player2Id: `TBD_Round${roundNumber}_Match${i + 1}_Player2`,
+              player2Name: `TBD Round ${roundNumber} Match ${i + 1} Player 2`,
+              isComplete: false
+            });
+          }
+          rounds.push({
+            roundNumber,
+            matches,
+            isComplete: false
+          });
+          numPlayers = numMatches;
+          roundNumber++;
+        }
+        if (rounds.length > 0) {
+          const firstRound = rounds[0];
+          for (let i = 0; i < firstRound.matches.length; i++) {
+            const player1Index = i * 2;
+            const player2Index = player1Index + 1;
+            if (player1Index < players.length && player2Index < players.length) {
+              const player1Id = players[player1Index];
+              const player2Id = players[player2Index];
+              const player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+              const player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+              firstRound.matches[i] = {
+                matchNumber: i + 1,
+                player1Id,
+                player1Name,
+                player2Id,
+                player2Name,
+                isComplete: false
+              };
+            }
+          }
+        }
+        return rounds;
+      }
+      getNextMatch() {
+        if (!this.tournament) return null;
+        const currentRound = this.tournament.rounds[this.tournament.currentRound];
+        if (!currentRound) return null;
+        const nextMatch = currentRound.matches.find((match) => !match.isComplete);
+        return nextMatch || null;
+      }
+      async resetGameState() {
+        const { balls: balls2, pad: pad2 } = await Promise.resolve().then(() => (init_pong(), pong_exports));
+        while (balls2.length) {
+          balls2[0].stop();
+          balls2.shift();
+        }
+        while (pad2.length) {
+          pad2[0].stop();
+          pad2.shift();
+        }
+        const existingOverlay = document.getElementById("matchTransitionOverlay");
+        if (existingOverlay) {
+          existingOverlay.remove();
+        }
+        data.serve = Math.floor(Math.random() * 2) ? -1 : 1;
+      }
+      async startTournamentMatch(match) {
+        if (!this.tournament) return false;
+        await this.resetGameState();
+        data.isTournament = true;
+        data.tournamentId = this.tournament.id;
+        data.tournamentRound = match.matchNumber;
+        data.tournamentMatch = match.matchNumber;
+        data.p[0].id = match.player1Id;
+        data.p[0].name = match.player1Name;
+        data.p[0].score = 0;
+        data.p[1].id = match.player2Id;
+        data.p[1].name = match.player2Name;
+        data.p[1].score = 0;
+        data.nameTB1.value = match.player1Name;
+        data.nameTB2.value = match.player2Name;
+        data.scoreTB1.value = "0";
+        data.scoreTB2.value = "0";
+        data.showingText = false;
+        data.go = false;
+        const { countdown: countdown2 } = await Promise.resolve().then(() => (init_pong(), pong_exports));
+        setTimeout(() => countdown2(3, 500), 500);
+        return true;
+      }
+      async completeMatch(winnerId, gameId) {
+        if (!this.tournament) return false;
+        const currentRound = this.tournament.rounds[this.tournament.currentRound];
+        if (!currentRound) return false;
+        const match = currentRound.matches.find(
+          (m) => m.player1Id === data.p[0].id && m.player2Id === data.p[1].id || m.player1Id === data.p[1].id && m.player2Id === data.p[0].id
+        );
+        if (!match) {
+          console.error("Match not found in tournament bracket");
+          return false;
+        }
+        match.winnerId = winnerId;
+        match.gameId = gameId;
+        match.isComplete = true;
+        const roundComplete = currentRound.matches.every((m) => m.isComplete);
+        if (roundComplete) {
+          currentRound.isComplete = true;
+          await this.advanceToNextRound();
+        }
+        return true;
+      }
+      async advanceToNextRound() {
+        if (!this.tournament) return;
+        const currentRound = this.tournament.rounds[this.tournament.currentRound];
+        const nextRound = this.tournament.rounds[this.tournament.currentRound + 1];
+        if (!nextRound) {
+          await this.completeTournament();
+          return;
+        }
+        const winners = currentRound.matches.filter((match) => match.winnerId).map((match) => match.winnerId);
+        const playerIdToNameMap = window.playerIdToNameMap || {};
+        let winnerIndex = 0;
+        for (let i = 0; i < nextRound.matches.length; i++) {
+          const match = nextRound.matches[i];
+          if (winnerIndex < winners.length) {
+            const player1Id = winners[winnerIndex];
+            match.player1Id = player1Id;
+            match.player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+            winnerIndex++;
+          }
+          if (winnerIndex < winners.length) {
+            const player2Id = winners[winnerIndex];
+            match.player2Id = player2Id;
+            match.player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+            winnerIndex++;
+          }
+        }
+        this.tournament.currentRound++;
+      }
+      async completeTournament() {
+        if (!this.tournament) return;
+        const finalRound = this.tournament.rounds[this.tournament.currentRound];
+        const winner = finalRound.matches[0]?.winnerId;
+        const winnerName = finalRound.matches[0]?.player1Id === winner ? finalRound.matches[0]?.player1Name : finalRound.matches[0]?.player2Name;
+        this.tournament.status = "FINISHED";
+        this.showTournamentWinner(winnerName || "Unknown");
+      }
+      showMatchTransition(nextMatch) {
+        const overlay = document.createElement("div");
+        overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+        overlay.id = "matchTransitionOverlay";
+        const modal = document.createElement("div");
+        modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
+        modal.innerHTML = `
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">Next Match</h2>
+        <div class="text-lg text-gray-600 mb-2">
+          <span class="font-semibold text-[#66fcf1]">${nextMatch.player1Name}</span>
+          <span class="mx-4 text-[#66fcf1]">vs</span>
+          <span class="font-semibold text-red-600">${nextMatch.player2Name}</span>
+        </div>
+        <p class="text-sm text-[#66fcf1] mt-4">Get ready for the next round!</p>
+      </div>
+      <button id="startNextMatchBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+        Start Match
+      </button>
+    `;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        const startBtn = document.getElementById("startNextMatchBtn");
+        if (startBtn) {
+          startBtn.addEventListener("click", () => {
+            this.startTournamentMatch(nextMatch);
+            this.hideMatchTransition();
+          });
+        }
+      }
+      hideMatchTransition() {
+        const overlay = document.getElementById("matchTransitionOverlay");
+        if (overlay) {
+          overlay.remove();
+        }
+      }
+      showTournamentWinner(winnerName) {
+        const overlay = document.createElement("div");
+        overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+        overlay.innerHTML = `
+      <div class="bg-white p-8 rounded-lg text-center max-w-md mx-4">
+        <h2 class="text-3xl font-bold text-green-600 mb-4">\u{1F3C6} Tournament Complete!</h2>
+        <p class="text-xl mb-6">Winner: <span class="font-bold">${winnerName}</span></p>
+        <button id="tournamentExitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Exit Tournament
+        </button>
+      </div>
+    `;
+        document.body.appendChild(overlay);
+        const exitBtn = overlay.querySelector("#tournamentExitBtn");
+        exitBtn.addEventListener("click", () => {
+          document.body.removeChild(overlay);
+          window.parent.postMessage({
+            type: "EXIT_GAME",
+            winner: winnerName,
+            isTournament: true
+          }, window.location.origin);
+        });
+      }
+      isTournamentComplete() {
+        return this.tournament?.status === "FINISHED";
+      }
+      getTournamentStatus() {
+        if (!this.tournament) return null;
+        return {
+          name: this.tournament.name,
+          currentRound: this.tournament.currentRound + 1,
+          totalRounds: this.tournament.rounds.length,
+          status: this.tournament.status
+        };
+      }
+      getTournamentBracket() {
+        return this.tournament;
+      }
+    };
+    tournamentManager = new TournamentManager();
+  }
+});
 
 // src/gameData.ts
-var data;
-var pendingTournamentId = null;
-var isFullscreen = false;
 function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
@@ -1180,10 +1177,6 @@ function updateCanvasForFullscreen(fullscreen) {
     updatePaddlePositions();
   }
 }
-document.addEventListener("fullscreenchange", handleFullscreenChange);
-document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 function handleFullscreenChange() {
   const isCurrentlyFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
   if (isCurrentlyFullscreen !== isFullscreen) {
@@ -2056,14 +2049,30 @@ async function loadConfig(mode) {
   }
   controlKeys();
   document.getElementById("board")?.focus();
-  setTimeout(() => countdown(3, 500), 500);
+  if (mode !== "tournament") {
+    setTimeout(() => countdown(3, 500), 500);
+  }
 }
+var data, pendingTournamentId, isFullscreen;
+var init_gameData = __esm({
+  "src/gameData.ts"() {
+    "use strict";
+    init_controls();
+    init_pong();
+    init_menus();
+    init_i18n();
+    init_tournamentGame();
+    init_tournamentService();
+    pendingTournamentId = null;
+    isFullscreen = false;
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+  }
+});
 
 // src/Paddle.draw.ts
-var upImg = new Image();
-upImg.src = "img/up_arrow.svg";
-var downImg = new Image();
-downImg.src = "img/down_arrow.svg";
 function quarterCorner(pad2) {
   if (pad2.getX() < data.canvas.width / 2) {
     data.ctx.beginPath();
@@ -2186,370 +2195,216 @@ function touchControlArrows() {
     }
   }
 }
+var upImg, downImg;
+var init_Paddle_draw = __esm({
+  "src/Paddle.draw.ts"() {
+    "use strict";
+    init_gameData();
+    init_i18n();
+    init_pong();
+    upImg = new Image();
+    upImg.src = "img/up_arrow.svg";
+    downImg = new Image();
+    downImg.src = "img/down_arrow.svg";
+  }
+});
 
 // src/Paddle.ts
-var Paddle = class {
-  constructor(x, p) {
-    this._dir = 0;
-    this._goTime = 0;
-    this._moveSpeed = data.canvas.height / data.paddleSpeed;
-    this._aiTarget = data.canvas.height / 2;
-    this._aiRecalcTime = 0;
-    this._x = x;
-    this._y = data.canvas.height / 2 - data.paddleHeight / 2;
-    this._p = p;
-    this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
-    const outerCol = this._p.outerCol || "#808080";
-    const innerCol = this._p.innerCol || "#ffffff";
-    this._paddleGrad.addColorStop(0, outerCol);
-    this._paddleGrad.addColorStop(0.5, innerCol);
-    this._paddleGrad.addColorStop(1, outerCol);
-    this.draw();
-  }
-  go() {
-    if (this._p.isAi) {
-      this._aiRecalcTime = window.setInterval(() => this.calcTarget(), 1e3);
-    }
-    this._goTime = 1;
-  }
-  stop() {
-    window.clearTimeout(this._aiRecalcTime);
-    this._aiRecalcTime = 0;
-    this._goTime = 0;
-  }
-  getX() {
-    return this._x;
-  }
-  getY() {
-    return this._y;
-  }
-  getX2() {
-    return this._x + data.paddleWidth;
-  }
-  getY2() {
-    return this._y + data.paddleHeight;
-  }
-  setX(x) {
-    this._x = x;
-  }
-  setY(y) {
-    this._y = y;
-  }
-  getPl() {
-    return this._p;
-  }
-  getPG() {
-    return this._paddleGrad;
-  }
-  getTCG() {
-    return this._topCornerGrad;
-  }
-  getBCG() {
-    return this._bottomCornerGrad;
-  }
-  getPlr() {
-    return this._p;
-  }
-  getDir() {
-    return this._dir;
-  }
-  setDir(dir) {
-    this._dir = dir;
-  }
-  getMoveSpeed() {
-    return this._moveSpeed;
-  }
-  isAi() {
-    return this._p.isAi;
-  }
-  isGo() {
-    return this._goTime;
-  }
-  draw() {
-    data.ctx.beginPath();
-    data.ctx.fillStyle = this._paddleGrad;
-    data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
-    this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
-    this._topCornerGrad.addColorStop(0, "white");
-    this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
-    this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
-    this._bottomCornerGrad.addColorStop(0, "white");
-    this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
-    if (!this._p.isAi) quarterCorner(this);
-    else halfCorner(this);
-  }
-  hitY(ball) {
-    const ballCenterY = ball.getY() + ball.getSize() / 2;
-    return ballCenterY > this._y && ballCenterY < this.getY2() + ball.getSize();
-  }
-  hitX(ball) {
-    return ball.getX() + ball.getSize() > this._x && ball.getX() < this._x + data.paddleWidth + ball.getSize();
-  }
-  moveAI() {
-    if (this._aiTarget >= this._y && this._aiTarget < this.getY2()) {
-      this._dir = 0;
-      data.keys[this._p.up] = false;
-      data.keys[this._p.down] = false;
-    } else {
-      if (this._aiTarget < this._y + this._dir) {
-        data.keys[this._p.up] = true;
-        data.keys[this._p.down] = false;
-      } else if (this._aiTarget >= this.getY2() + this._dir) {
-        data.keys[this._p.down] = true;
-        data.keys[this._p.up] = false;
+var Paddle;
+var init_Paddle = __esm({
+  "src/Paddle.ts"() {
+    "use strict";
+    init_gameData();
+    init_pong();
+    init_Paddle_draw();
+    Paddle = class {
+      constructor(x, p) {
+        this._dir = 0;
+        this._goTime = 0;
+        this._moveSpeed = data.canvas.height / data.paddleSpeed;
+        this._aiTarget = data.canvas.height / 2;
+        this._aiRecalcTime = 0;
+        this._x = x;
+        this._y = data.canvas.height / 2 - data.paddleHeight / 2;
+        this._p = p;
+        this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
+        const outerCol = this._p.outerCol || "#808080";
+        const innerCol = this._p.innerCol || "#ffffff";
+        this._paddleGrad.addColorStop(0, outerCol);
+        this._paddleGrad.addColorStop(0.5, innerCol);
+        this._paddleGrad.addColorStop(1, outerCol);
+        this.draw();
       }
-    }
-    this.movePaddle();
-  }
-  movePaddle() {
-    if (data.keys[this._p.up])
-      if (this._y > 0) this._dir = -1;
-      else this._dir = 0;
-    if (data.keys[this._p.down])
-      if (this._y <= data.canvas.height - data.paddleHeight) this._dir = 1;
-      else this._dir = 0;
-    this.move();
-  }
-  move() {
-    this._y += this._dir * this._moveSpeed;
-    if (this._dir) {
-      for (let i = 0; i < balls.length; i++)
-        if (this.hitX(balls[i]) && this.hitY(balls[i])) {
-          if (balls[i].getY() < this._y + data.paddleHeight / 2)
-            balls[i].setY(this._y - balls[i].getSize() * 2);
-          else balls[i].setY(this.getY2() + balls[i].getSize() * 2);
-          balls[i].collision(this);
-          if (balls[i].getY() < balls[i].getSize()) {
-            balls[i].setY(balls[i].getSize() + 1);
+      go() {
+        if (this._p.isAi) {
+          this._aiRecalcTime = window.setInterval(() => this.calcTarget(), 1e3);
+        }
+        this._goTime = 1;
+      }
+      stop() {
+        window.clearTimeout(this._aiRecalcTime);
+        this._aiRecalcTime = 0;
+        this._goTime = 0;
+      }
+      getX() {
+        return this._x;
+      }
+      getY() {
+        return this._y;
+      }
+      getX2() {
+        return this._x + data.paddleWidth;
+      }
+      getY2() {
+        return this._y + data.paddleHeight;
+      }
+      setX(x) {
+        this._x = x;
+      }
+      setY(y) {
+        this._y = y;
+      }
+      getPl() {
+        return this._p;
+      }
+      getPG() {
+        return this._paddleGrad;
+      }
+      getTCG() {
+        return this._topCornerGrad;
+      }
+      getBCG() {
+        return this._bottomCornerGrad;
+      }
+      getPlr() {
+        return this._p;
+      }
+      getDir() {
+        return this._dir;
+      }
+      setDir(dir) {
+        this._dir = dir;
+      }
+      getMoveSpeed() {
+        return this._moveSpeed;
+      }
+      isAi() {
+        return this._p.isAi;
+      }
+      isGo() {
+        return this._goTime;
+      }
+      draw() {
+        data.ctx.beginPath();
+        data.ctx.fillStyle = this._paddleGrad;
+        data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
+        this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
+        this._topCornerGrad.addColorStop(0, "white");
+        this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
+        this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
+        this._bottomCornerGrad.addColorStop(0, "white");
+        this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
+        if (!this._p.isAi) quarterCorner(this);
+        else halfCorner(this);
+      }
+      hitY(ball) {
+        const ballCenterY = ball.getY() + ball.getSize() / 2;
+        return ballCenterY > this._y && ballCenterY < this.getY2() + ball.getSize();
+      }
+      hitX(ball) {
+        return ball.getX() + ball.getSize() > this._x && ball.getX() < this._x + data.paddleWidth + ball.getSize();
+      }
+      moveAI() {
+        if (this._aiTarget >= this._y && this._aiTarget < this.getY2()) {
+          this._dir = 0;
+          data.keys[this._p.up] = false;
+          data.keys[this._p.down] = false;
+        } else {
+          if (this._aiTarget < this._y + this._dir) {
+            data.keys[this._p.up] = true;
+            data.keys[this._p.down] = false;
+          } else if (this._aiTarget >= this.getY2() + this._dir) {
+            data.keys[this._p.down] = true;
+            data.keys[this._p.up] = false;
           }
         }
-    }
-    if (this._y < 0) this._y = 0;
-    if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
-  }
-  isApproaching(ball) {
-    const dX = ball.getX() + ball.getDirX();
-    if (dX < ball.getX()) return true;
-    return false;
-  }
-  getClosestBall() {
-    let closest = 0;
-    let closestSteps = Number.MAX_SAFE_INTEGER;
-    for (let i = 0; i < balls.length; i++) {
-      if (this.isApproaching(balls[i])) {
-        let steps = 0;
-        let x = balls[i].getX();
-        while (x < data.canvas.width && x > 0) {
-          x += balls[i].getDirX();
-          steps++;
-        }
-        if (steps < closestSteps) {
-          closest = i;
-          closestSteps = steps;
-        }
+        this.movePaddle();
       }
-    }
-    return closest;
-  }
-  calcTarget() {
-    if (pad.length && balls.length) {
-      const t2 = this.getClosestBall();
-      var x = balls[t2].getX();
-      var y = balls[t2].getY();
-      var dx = balls[t2].getDirX();
-      var dy = balls[t2].getDirY();
-      while (balls[t2].getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + balls[t2].getSize() || balls[t2].getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - balls[t2].getSize() - data.paddleWidth) {
-        if (y <= balls[t2].getSize() || y > data.canvas.height - balls[t2].getSize()) dy *= -1;
-        x += dx * 10;
-        y += dy * 10;
+      movePaddle() {
+        if (data.keys[this._p.up])
+          if (this._y > 0) this._dir = -1;
+          else this._dir = 0;
+        if (data.keys[this._p.down])
+          if (this._y <= data.canvas.height - data.paddleHeight) this._dir = 1;
+          else this._dir = 0;
+        this.move();
       }
-      if (y != balls[t2].getY()) {
-        var dir = 1;
-        if (Math.floor(Math.random() * 2)) dir = -1;
-        var deviation = Math.random() * data.paddleHeight * 0.75 * dir;
-        this._aiTarget = y + deviation;
-      }
-    }
-  }
-};
-
-// src/Ball.ts
-var Ball = class {
-  constructor(...args) {
-    this._go = false;
-    this._ballSpeed = data.canvas.width / data.ballSpeed;
-    this._x = data.canvas.width / 2;
-    this._y = data.canvas.height / 2;
-    this._dirY = (Math.random() * 30 - 15) / 1e3;
-    this._dirX = (0.1 - this._dirY) * data.serve;
-    this._size = data.canvas.width / data.ballSize;
-    this._trailPoints = [];
-    this._trailFade = 30 / data.trailLength;
-    if (!args.length) {
-      this._x = data.canvas.width / 2;
-      this._y = data.canvas.height / 2;
-    } else {
-      this._x = args[0];
-      this._y = args[1];
-      this._dirX = args[2];
-      this._dirY = args[3];
-    }
-  }
-  go() {
-    this._go = true;
-  }
-  isGo() {
-    return this._go;
-  }
-  getX() {
-    return this._x;
-  }
-  getY() {
-    return this._y;
-  }
-  setX(x) {
-    this._x = x;
-  }
-  setY(y) {
-    this._y = y;
-  }
-  getSize() {
-    return this._size;
-  }
-  getDirX() {
-    return this._dirX;
-  }
-  getDirY() {
-    return this._dirY;
-  }
-  setDirX(dir) {
-    this._dirX = dir;
-  }
-  setDirY(dir) {
-    this._dirY = dir;
-  }
-  stop() {
-    this._go = false;
-    this._dirX = 0;
-    this._dirY = 0;
-  }
-  draw() {
-    var grad = data.ctx.createRadialGradient(
-      this.getX() - this.getSize() / 2,
-      this.getY() - this.getSize() / 2,
-      this.getSize() / 10,
-      this.getX(),
-      this.getY(),
-      this.getSize()
-    );
-    grad.addColorStop(0, "white");
-    grad.addColorStop(0.3, data.ballCol);
-    grad.addColorStop(0.6, data.ballCol);
-    grad.addColorStop(1, "black");
-    data.ctx.beginPath();
-    data.ctx.ellipse(this._x, this._y, this._size, this._size, 0, 0, Math.PI * 2);
-    data.ctx.fillStyle = grad;
-    data.ctx.fill();
-    data.ctx.closePath();
-  }
-  drawTrail() {
-    const currentPoint = {
-      x: this._x,
-      y: this._y
-    };
-    this._trailPoints.unshift(currentPoint);
-    let opacity = 0;
-    for (let i = this._trailPoints.length - 1; i > 0; i--) {
-      data.ctx.beginPath();
-      data.ctx.ellipse(
-        this._trailPoints[i].x,
-        this._trailPoints[i].y,
-        this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
-        this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
-        0,
-        0,
-        Math.PI * 2
-      );
-      data.ctx.fillStyle = `rgb(${data.ballR} ${data.ballG} ${data.ballB} / ${opacity}%`;
-      data.ctx.fill();
-      data.ctx.closePath();
-      opacity += this._trailFade;
-    }
-    this._trailPoints = this._trailPoints.slice(0, data.trailLength);
-  }
-  collision(paddle) {
-    const hitPositionX = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
-    const hitPositionY = (this._x - (paddle.getX() + data.paddleWidth / 2)) / (data.paddleWidth / 2);
-    const clampedHitX = Math.max(-0.7, Math.min(0.7, hitPositionX));
-    const clampedHitY = Math.max(-0.7, Math.min(0.7, hitPositionY));
-    const xSide = paddle.getX() + data.paddleWidth / 2 > this.getX() + this._size / 2;
-    const ySide = paddle.getY() + data.paddleHeight / 2 > this.getY() + this._size / 2;
-    var variationAngle = 0;
-    var angle = 0;
-    if (paddle.hitY(this)) {
-      variationAngle = clampedHitX * (xSide ? -(Math.PI / 4) : Math.PI / 4);
-      angle = Math.atan2(this._dirY / 2, -this._dirX);
-    } else {
-      variationAngle = clampedHitY * (ySide ? Math.PI / 4 : -(Math.PI / 4));
-      angle = Math.atan2(-this._dirY, this._dirX / 2);
-    }
-    angle += variationAngle;
-    this._dirX = Math.cos(angle) / 10;
-    this._dirY = Math.sin(angle) / 10;
-  }
-  checkWalls() {
-    if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
-      this.stop();
-      if (balls.length == 1) {
-        data.go = false;
-        if (this._x <= this._size) {
-          data.p[1].score++;
-          data.scoreTB2.value = String(data.p[1].score);
-          if (pad.length) setTimeout(() => scoreText(pad[1], data.p[1].score == data.maxScore), 100);
-          data.serve = -1;
+      move() {
+        this._y += this._dir * this._moveSpeed;
+        if (this._dir) {
+          for (let i = 0; i < balls.length; i++)
+            if (this.hitX(balls[i]) && this.hitY(balls[i])) {
+              if (balls[i].getY() < this._y + data.paddleHeight / 2)
+                balls[i].setY(this._y - balls[i].getSize() * 2);
+              else balls[i].setY(this.getY2() + balls[i].getSize() * 2);
+              balls[i].collision(this);
+              if (balls[i].getY() < balls[i].getSize()) {
+                balls[i].setY(balls[i].getSize() + 1);
+              }
+            }
         }
-        if (this._x >= data.canvas.width - this._size) {
-          data.p[0].score++;
-          data.scoreTB1.value = String(data.p[0].score);
-          if (pad.length) setTimeout(() => scoreText(pad[0], data.p[0].score == data.maxScore), 100);
-          data.serve = 1;
-        }
+        if (this._y < 0) this._y = 0;
+        if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
       }
-      removeBall(this);
-    }
-    if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
-  }
-  advanceBall() {
-    var stop = false;
-    for (let i = 0; i < this._ballSpeed && !stop && this.isGo(); i++) {
-      this._x += this._dirX;
-      this._y += this._dirY;
-      if (this._x < this.getSize()) stop = true;
-      if (this._x >= data.canvas.width - this.getSize()) stop = true;
-      for (let i2 = 0; i2 < pad.length && pad.length; i2++)
-        if (pad[i2].hitX(this) && pad[i2].hitY(this)) {
-          stop = true;
-          this._x -= this._dirX * 2;
-          this._y -= this._dirY * 2;
-          this.collision(pad[i2]);
-          if (data.multiball) {
-            data.hits++;
-            if (data.hits == data.maxHits) {
-              data.hits = 0;
-              data.maxHits = Math.floor(Math.random() * 5 + 5);
-              spawnMultiball(this);
+      isApproaching(ball) {
+        const dX = ball.getX() + ball.getDirX();
+        if (dX < ball.getX()) return true;
+        return false;
+      }
+      getClosestBall() {
+        let closest = 0;
+        let closestSteps = Number.MAX_SAFE_INTEGER;
+        for (let i = 0; i < balls.length; i++) {
+          if (this.isApproaching(balls[i])) {
+            let steps = 0;
+            let x = balls[i].getX();
+            while (x < data.canvas.width && x > 0) {
+              x += balls[i].getDirX();
+              steps++;
+            }
+            if (steps < closestSteps) {
+              closest = i;
+              closestSteps = steps;
             }
           }
         }
-    }
+        return closest;
+      }
+      calcTarget() {
+        if (pad.length && balls.length) {
+          const t2 = this.getClosestBall();
+          var x = balls[t2].getX();
+          var y = balls[t2].getY();
+          var dx = balls[t2].getDirX();
+          var dy = balls[t2].getDirY();
+          while (balls[t2].getDirX() <= 0 && this._x < data.canvas.width / 2 && x > data.paddleWidth + balls[t2].getSize() || balls[t2].getDirX() > 0 && this._x > data.canvas.width / 2 && x < data.canvas.width - balls[t2].getSize() - data.paddleWidth) {
+            if (y <= balls[t2].getSize() || y > data.canvas.height - balls[t2].getSize()) dy *= -1;
+            x += dx * 10;
+            y += dy * 10;
+          }
+          if (y != balls[t2].getY()) {
+            var dir = 1;
+            if (Math.floor(Math.random() * 2)) dir = -1;
+            var deviation = Math.random() * data.paddleHeight * 0.75 * dir;
+            this._aiTarget = y + deviation;
+          }
+        }
+      }
+    };
   }
-  move() {
-    if (this._go) {
-      this.checkWalls();
-      this.advanceBall();
-    }
-  }
-};
+});
+
+// src/Ball.ts
 function spawnMultiball(ball) {
   if (balls.length < 25) {
     let angle = Math.atan2(ball.getDirY(), ball.getDirX());
@@ -2561,49 +2416,250 @@ function spawnMultiball(ball) {
     balls.push(newBall);
   }
 }
+var Ball;
+var init_Ball = __esm({
+  "src/Ball.ts"() {
+    "use strict";
+    init_Paddle_draw();
+    init_gameData();
+    init_pong();
+    Ball = class {
+      constructor(...args) {
+        this._go = false;
+        this._ballSpeed = data.canvas.width / data.ballSpeed;
+        this._x = data.canvas.width / 2;
+        this._y = data.canvas.height / 2;
+        this._dirY = (Math.random() * 30 - 15) / 1e3;
+        this._dirX = (0.1 - this._dirY) * data.serve;
+        this._size = data.canvas.width / data.ballSize;
+        this._trailPoints = [];
+        this._trailFade = 30 / data.trailLength;
+        if (!args.length) {
+          this._x = data.canvas.width / 2;
+          this._y = data.canvas.height / 2;
+        } else {
+          this._x = args[0];
+          this._y = args[1];
+          this._dirX = args[2];
+          this._dirY = args[3];
+        }
+      }
+      go() {
+        this._go = true;
+      }
+      isGo() {
+        return this._go;
+      }
+      getX() {
+        return this._x;
+      }
+      getY() {
+        return this._y;
+      }
+      setX(x) {
+        this._x = x;
+      }
+      setY(y) {
+        this._y = y;
+      }
+      getSize() {
+        return this._size;
+      }
+      getDirX() {
+        return this._dirX;
+      }
+      getDirY() {
+        return this._dirY;
+      }
+      setDirX(dir) {
+        this._dirX = dir;
+      }
+      setDirY(dir) {
+        this._dirY = dir;
+      }
+      stop() {
+        this._go = false;
+        this._dirX = 0;
+        this._dirY = 0;
+      }
+      draw() {
+        var grad = data.ctx.createRadialGradient(
+          this.getX() - this.getSize() / 2,
+          this.getY() - this.getSize() / 2,
+          this.getSize() / 10,
+          this.getX(),
+          this.getY(),
+          this.getSize()
+        );
+        grad.addColorStop(0, "white");
+        grad.addColorStop(0.3, data.ballCol);
+        grad.addColorStop(0.6, data.ballCol);
+        grad.addColorStop(1, "black");
+        data.ctx.beginPath();
+        data.ctx.ellipse(this._x, this._y, this._size, this._size, 0, 0, Math.PI * 2);
+        data.ctx.fillStyle = grad;
+        data.ctx.fill();
+        data.ctx.closePath();
+      }
+      drawTrail() {
+        const currentPoint = {
+          x: this._x,
+          y: this._y
+        };
+        this._trailPoints.unshift(currentPoint);
+        let opacity = 0;
+        for (let i = this._trailPoints.length - 1; i > 0; i--) {
+          data.ctx.beginPath();
+          data.ctx.ellipse(
+            this._trailPoints[i].x,
+            this._trailPoints[i].y,
+            this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+            this._size * (this._trailPoints.length - 1 - i) / (this._trailPoints.length - 1),
+            0,
+            0,
+            Math.PI * 2
+          );
+          data.ctx.fillStyle = `rgb(${data.ballR} ${data.ballG} ${data.ballB} / ${opacity}%`;
+          data.ctx.fill();
+          data.ctx.closePath();
+          opacity += this._trailFade;
+        }
+        this._trailPoints = this._trailPoints.slice(0, data.trailLength);
+      }
+      collision(paddle) {
+        const hitPositionX = (this._y - (paddle.getY() + data.paddleHeight / 2)) / (data.paddleHeight / 2);
+        const hitPositionY = (this._x - (paddle.getX() + data.paddleWidth / 2)) / (data.paddleWidth / 2);
+        const clampedHitX = Math.max(-0.7, Math.min(0.7, hitPositionX));
+        const clampedHitY = Math.max(-0.7, Math.min(0.7, hitPositionY));
+        const xSide = paddle.getX() + data.paddleWidth / 2 > this.getX() + this._size / 2;
+        const ySide = paddle.getY() + data.paddleHeight / 2 > this.getY() + this._size / 2;
+        var variationAngle = 0;
+        var angle = 0;
+        if (paddle.hitY(this)) {
+          variationAngle = clampedHitX * (xSide ? -(Math.PI / 4) : Math.PI / 4);
+          angle = Math.atan2(this._dirY / 2, -this._dirX);
+        } else {
+          variationAngle = clampedHitY * (ySide ? Math.PI / 4 : -(Math.PI / 4));
+          angle = Math.atan2(-this._dirY, this._dirX / 2);
+        }
+        angle += variationAngle;
+        this._dirX = Math.cos(angle) / 10;
+        this._dirY = Math.sin(angle) / 10;
+      }
+      checkWalls() {
+        if (this._x <= this._size || this._x >= data.canvas.width - this._size) {
+          this.stop();
+          if (balls.length == 1) {
+            data.go = false;
+            if (this._x <= this._size) {
+              data.p[1].score++;
+              data.scoreTB2.value = String(data.p[1].score);
+              if (pad.length) setTimeout(() => scoreText(pad[1], data.p[1].score == data.maxScore), 100);
+              data.serve = -1;
+            }
+            if (this._x >= data.canvas.width - this._size) {
+              data.p[0].score++;
+              data.scoreTB1.value = String(data.p[0].score);
+              if (pad.length) setTimeout(() => scoreText(pad[0], data.p[0].score == data.maxScore), 100);
+              data.serve = 1;
+            }
+          }
+          removeBall(this);
+        }
+        if (this._y < this._size || this._y >= data.canvas.height - this._size) this._dirY *= -1;
+      }
+      advanceBall() {
+        var stop = false;
+        for (let i = 0; i < this._ballSpeed && !stop && this.isGo(); i++) {
+          this._x += this._dirX;
+          this._y += this._dirY;
+          if (this._x < this.getSize()) stop = true;
+          if (this._x >= data.canvas.width - this.getSize()) stop = true;
+          for (let i2 = 0; i2 < pad.length && pad.length; i2++)
+            if (pad[i2].hitX(this) && pad[i2].hitY(this)) {
+              stop = true;
+              this._x -= this._dirX * 2;
+              this._y -= this._dirY * 2;
+              this.collision(pad[i2]);
+              if (data.multiball) {
+                data.hits++;
+                if (data.hits == data.maxHits) {
+                  data.hits = 0;
+                  data.maxHits = Math.floor(Math.random() * 5 + 5);
+                  spawnMultiball(this);
+                }
+              }
+            }
+        }
+      }
+      move() {
+        if (this._go) {
+          this.checkWalls();
+          this.advanceBall();
+        }
+      }
+    };
+  }
+});
 
 // src/services/gameService.ts
-var GameService = class {
-  constructor() {
-    this.baseUrl = "/api/pong";
-  }
-  async createGame(data2) {
-    try {
-      const response = await fetch(`${this.baseUrl}/games`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: data2 })
-      });
-      return response.ok;
-    } catch (error) {
-      console.error("Error finishing game:", error);
-      return false;
-    }
-  }
-  async finishGame(data2) {
-    try {
-      const response = await fetch(`${this.baseUrl}/games`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: data2 })
-      });
-      if (!response.ok) {
-        console.error("Error finishing game: Response not OK");
-        return null;
+var GameService, gameService;
+var init_gameService = __esm({
+  "src/services/gameService.ts"() {
+    "use strict";
+    GameService = class {
+      constructor() {
+        this.baseUrl = "/api/pong";
       }
-      const gameResponse = await response.json();
-      return gameResponse;
-    } catch (error) {
-      console.error("Error finishing game:", error);
-      return null;
-    }
+      async createGame(data2) {
+        try {
+          const response = await fetch(`${this.baseUrl}/games`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: data2 })
+          });
+          return response.ok;
+        } catch (error) {
+          console.error("Error finishing game:", error);
+          return false;
+        }
+      }
+      async finishGame(data2) {
+        try {
+          const response = await fetch(`${this.baseUrl}/games`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: data2 })
+          });
+          if (!response.ok) {
+            console.error("Error finishing game: Response not OK");
+            return null;
+          }
+          const gameResponse = await response.json();
+          return gameResponse;
+        } catch (error) {
+          console.error("Error finishing game:", error);
+          return null;
+        }
+      }
+    };
+    gameService = new GameService();
   }
-};
-var gameService = new GameService();
+});
 
 // src/pong.ts
-var pad = [];
-var balls = [];
+var pong_exports = {};
+__export(pong_exports, {
+  balls: () => balls,
+  countdown: () => countdown,
+  endGame: () => endGame,
+  endRound: () => endRound,
+  finito: () => finito,
+  pad: () => pad,
+  removeBall: () => removeBall,
+  startGame: () => startGame,
+  startRound: () => startRound
+});
 function removeBall(ball) {
   let shrunk = [];
   for (let i = 0; i < balls.length; i++)
@@ -2721,11 +2777,16 @@ function endRound() {
     pad[0].stop();
     pad.shift();
   }
-  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
+  if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
+    if (data.isTournament) {
+      finito();
+    } else {
+      endGame();
+    }
+    return;
+  }
+  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) {
     setTimeout(startRound, 1500);
-  else {
-    console.log("ahhhhhhhhhhhh");
-    endGame();
   }
 }
 async function finito() {
@@ -2846,7 +2907,22 @@ function showExitButton(winner) {
     });
   }
 }
-startGame();
+var pad, balls;
+var init_pong = __esm({
+  "src/pong.ts"() {
+    init_gameData();
+    init_Paddle();
+    init_Ball();
+    init_Paddle_draw();
+    init_i18n();
+    init_gameService();
+    init_tournamentGame();
+    pad = [];
+    balls = [];
+    startGame();
+  }
+});
+init_pong();
 export {
   balls,
   countdown,

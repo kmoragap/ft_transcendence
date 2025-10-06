@@ -31,9 +31,6 @@ export interface TournamentMatch {
 export class TournamentManager {
   private tournament: TournamentBracket | null = null;
 
-  /**
-   * Initialize a new tournament with bracket generation
-   */
   async initializeTournament(tournamentId: string): Promise<boolean> {
     try {
       const tournamentData = await tournamentService.getTournament(tournamentId);
@@ -59,128 +56,154 @@ export class TournamentManager {
     }
   }
 
-  /**
-   * Generate tournament bracket (single elimination)
-   */
   private generateBracket(players: string[]): TournamentRound[] {
-    console.log("=== Generating Tournament Bracket ===");
-    console.log("Players:", players);
-    
     const rounds: TournamentRound[] = [];
-    let currentPlayers = [...players];
-    let roundNumber = 1;
-
-    // Get the player ID to name mapping
     const playerIdToNameMap = (window as any).playerIdToNameMap || {};
-    console.log("Player ID to Name mapping:", playerIdToNameMap);
 
-    while (currentPlayers.length > 1) {
-      console.log(`Round ${roundNumber}: ${currentPlayers.length} players`);
+    // Calculate how many rounds we need
+    let numPlayers = players.length;
+    let roundNumber = 1;
+    
+    // Generate all rounds upfront
+    while (numPlayers > 1) {
+      const numMatches = Math.floor(numPlayers / 2);
       const matches: TournamentMatch[] = [];
-      const nextRoundPlayers: string[] = [];
-
-      // Create matches for current round
-      for (let i = 0; i < currentPlayers.length; i += 2) {
-        if (i + 1 < currentPlayers.length) {
-          const player1Id = currentPlayers[i];
-          const player2Id = currentPlayers[i + 1];
-          
-          // Get actual names from the mapping, fallback to "AI" for AI players
-          const player1Name = playerIdToNameMap[player1Id] || 
-            (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
-          const player2Name = playerIdToNameMap[player2Id] || 
-            (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
-          
-          matches.push({
-            matchNumber: Math.floor(i / 2) + 1,
-            player1Id: player1Id,
-            player1Name: player1Name,
-            player2Id: player2Id,
-            player2Name: player2Name,
-            isComplete: false
-          });
-        } else {
-          // Odd number of players - bye to next round
-          nextRoundPlayers.push(currentPlayers[i]);
-        }
+      
+      
+      // Create placeholder matches for this round
+      for (let i = 0; i < numMatches; i++) {
+        matches.push({
+          matchNumber: i + 1,
+          player1Id: `TBD_Round${roundNumber}_Match${i + 1}_Player1`,
+          player1Name: `TBD Round ${roundNumber} Match ${i + 1} Player 1`,
+          player2Id: `TBD_Round${roundNumber}_Match${i + 1}_Player2`, 
+          player2Name: `TBD Round ${roundNumber} Match ${i + 1} Player 2`,
+          isComplete: false
+        });
       }
-
+      
       rounds.push({
         roundNumber,
         matches,
         isComplete: false
       });
-
-      console.log(`Round ${roundNumber} created with ${matches.length} matches`);
-      // Prepare for next round (winners will be added when matches complete)
-      currentPlayers = nextRoundPlayers;
+      
+      // Next round will have half the players (winners)
+      numPlayers = numMatches;
       roundNumber++;
     }
 
-    console.log("Tournament bracket generated:");
-    console.log("Total rounds:", rounds.length);
-    rounds.forEach((round, index) => {
-      console.log(`Round ${index + 1}: ${round.matches.length} matches`);
-      round.matches.forEach((match, matchIndex) => {
-        console.log(`  Match ${matchIndex + 1}: ${match.player1Name} vs ${match.player2Name}`);
-      });
-    });
+    // Now populate the first round with actual players
+    if (rounds.length > 0) {
+      const firstRound = rounds[0];
+      for (let i = 0; i < firstRound.matches.length; i++) {
+        const player1Index = i * 2;
+        const player2Index = player1Index + 1;
+        
+        if (player1Index < players.length && player2Index < players.length) {
+          const player1Id = players[player1Index];
+          const player2Id = players[player2Index];
+          
+          const player1Name = playerIdToNameMap[player1Id] || 
+            (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+          const player2Name = playerIdToNameMap[player2Id] || 
+            (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+          
+          firstRound.matches[i] = {
+            matchNumber: i + 1,
+            player1Id: player1Id,
+            player1Name: player1Name,
+            player2Id: player2Id,
+            player2Name: player2Name,
+            isComplete: false
+          };
+        }
+      }
+    }
+
 
     return rounds;
   }
 
-  /**
-   * Get the next match to play
-   */
   getNextMatch(): TournamentMatch | null {
     if (!this.tournament) return null;
 
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return null;
 
-    // Find first incomplete match in current round
     const nextMatch = currentRound.matches.find(match => !match.isComplete);
     return nextMatch || null;
   }
 
-  /**
-   * Start a tournament match
-   */
+  private async resetGameState(): Promise<void> {
+    // Import the game arrays directly
+    const { balls, pad } = await import("./pong");
+    
+    // Properly clean up balls (like endRound does)
+    while (balls.length) {
+      balls[0].stop();
+      balls.shift();
+    }
+    
+    // Properly clean up paddles (like endRound does)
+    while (pad.length) {
+      pad[0].stop();
+      pad.shift();
+    }
+
+    // Clear any existing game text/overlays
+    const existingOverlay = document.getElementById("matchTransitionOverlay");
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+
+    // Reset serve direction
+    data.serve = Math.floor(Math.random() * 2) ? -1 : 1;
+  }
+
   async startTournamentMatch(match: TournamentMatch): Promise<boolean> {
     if (!this.tournament) return false;
 
-    // Set up game data for tournament match
+    
+    await this.resetGameState();
+    
     data.isTournament = true;
     data.tournamentId = this.tournament.id;
-    data.tournamentRound = match.matchNumber; // Using match number as round identifier
+    data.tournamentRound = match.matchNumber;
     data.tournamentMatch = match.matchNumber;
 
-    // Set up players
+    // Update player data
     data.p[0].id = match.player1Id;
     data.p[0].name = match.player1Name;
+    data.p[0].score = 0;
     data.p[1].id = match.player2Id;
     data.p[1].name = match.player2Name;
+    data.p[1].score = 0;
 
-    console.log(`Starting tournament match: ${match.player1Name} vs ${match.player2Name}`);
+    // Update UI elements
+    data.nameTB1.value = match.player1Name;
+    data.nameTB2.value = match.player2Name;
+    data.scoreTB1.value = "0";
+    data.scoreTB2.value = "0";
+
+    // Reset game flags
+    data.showingText = false;
+    data.go = false;
+    
+    // Start the new match with countdown
+    const { countdown } = await import("./pong");
+    setTimeout(() => countdown(3, 500), 500);
+    
     return true;
   }
 
-  /**
-   * Handle tournament match completion
-   */
   async completeMatch(winnerId: string, gameId: string): Promise<boolean> {
     if (!this.tournament) return false;
 
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return false;
 
-    console.log("Completing match:");
-    console.log("Winner ID:", winnerId);
-    console.log("Current round:", this.tournament.currentRound);
-    console.log("Current round matches:", currentRound.matches.length);
-    console.log("Player 1 ID:", data.p[0].id, "Player 2 ID:", data.p[1].id);
 
-    // Find and update the completed match
     const match = currentRound.matches.find(m => 
       (m.player1Id === data.p[0].id && m.player2Id === data.p[1].id) ||
       (m.player1Id === data.p[1].id && m.player2Id === data.p[0].id)
@@ -191,61 +214,43 @@ export class TournamentManager {
       return false;
     }
 
-    // Update match with winner and game ID
     match.winnerId = winnerId;
     match.gameId = gameId;
     match.isComplete = true;
 
-    // Check if current round is complete
     const roundComplete = currentRound.matches.every(m => m.isComplete);
-    console.log("Round complete:", roundComplete);
-    console.log("Match completion status:", currentRound.matches.map(m => ({ 
-      match: `${m.player1Name} vs ${m.player2Name}`, 
-      complete: m.isComplete 
-    })));
     
     if (roundComplete) {
       currentRound.isComplete = true;
-      console.log("Round is complete, advancing to next round");
       await this.advanceToNextRound();
     }
 
     return true;
   }
 
-  /**
-   * Advance to the next round of the tournament
-   */
+
   private async advanceToNextRound(): Promise<void> {
     if (!this.tournament) return;
 
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     const nextRound = this.tournament.rounds[this.tournament.currentRound + 1];
 
-    console.log("Advancing to next round:");
-    console.log("Current round:", this.tournament.currentRound);
-    console.log("Total rounds:", this.tournament.rounds.length);
-    console.log("Current round matches:", currentRound?.matches.length);
-    console.log("Next round exists:", !!nextRound);
-
     if (!nextRound) {
-      // Tournament is complete
-      console.log("No next round found, completing tournament");
       await this.completeTournament();
       return;
     }
 
-    // Move winners to next round
     const winners = currentRound.matches
       .filter(match => match.winnerId)
       .map(match => match.winnerId!);
 
-    // Get the player ID to name mapping
     const playerIdToNameMap = (window as any).playerIdToNameMap || {};
 
-    // Update next round matches with winners
+    // Populate the next round matches with the winners
     let winnerIndex = 0;
-    for (const match of nextRound.matches) {
+    for (let i = 0; i < nextRound.matches.length; i++) {
+      const match = nextRound.matches[i];
+      
       if (winnerIndex < winners.length) {
         const player1Id = winners[winnerIndex];
         match.player1Id = player1Id;
@@ -253,6 +258,7 @@ export class TournamentManager {
           (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
         winnerIndex++;
       }
+      
       if (winnerIndex < winners.length) {
         const player2Id = winners[winnerIndex];
         match.player2Id = player2Id;
@@ -263,12 +269,8 @@ export class TournamentManager {
     }
 
     this.tournament.currentRound++;
-    console.log(`Advanced to round ${this.tournament.currentRound + 1}`);
   }
 
-  /**
-   * Complete the tournament
-   */
   private async completeTournament(): Promise<void> {
     if (!this.tournament) return;
 
@@ -280,36 +282,29 @@ export class TournamentManager {
 
     this.tournament.status = 'FINISHED';
     
-    console.log(`Tournament "${this.tournament.name}" completed! Winner: ${winnerName}`);
-    
-    // Show tournament winner message
     this.showTournamentWinner(winnerName || "Unknown");
     
     // TODO: Update tournament status in database
-    // TODO: Notify players of tournament completion
   }
 
-  /**
-   * Show match transition window
-   */
   public showMatchTransition(nextMatch: TournamentMatch): void {
     const overlay = document.createElement("div");
     overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
     overlay.id = "matchTransitionOverlay";
 
     const modal = document.createElement("div");
-    modal.className = "bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center";
+    modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
     modal.innerHTML = `
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Next Match</h2>
+        <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">Next Match</h2>
         <div class="text-lg text-gray-600 mb-2">
-          <span class="font-semibold text-blue-600">${nextMatch.player1Name}</span>
-          <span class="mx-4 text-gray-400">vs</span>
+          <span class="font-semibold text-[#66fcf1]">${nextMatch.player1Name}</span>
+          <span class="mx-4 text-[#66fcf1]">vs</span>
           <span class="font-semibold text-red-600">${nextMatch.player2Name}</span>
         </div>
-        <p class="text-sm text-gray-500 mt-4">Get ready for the next round!</p>
+        <p class="text-sm text-[#66fcf1] mt-4">Get ready for the next round!</p>
       </div>
-      <button id="startNextMatchBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+      <button id="startNextMatchBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
         Start Match
       </button>
     `;
@@ -317,7 +312,6 @@ export class TournamentManager {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Add event listener for start button
     const startBtn = document.getElementById("startNextMatchBtn");
     if (startBtn) {
       startBtn.addEventListener("click", () => {
@@ -327,9 +321,6 @@ export class TournamentManager {
     }
   }
 
-  /**
-   * Hide match transition window
-   */
   private hideMatchTransition(): void {
     const overlay = document.getElementById("matchTransitionOverlay");
     if (overlay) {
@@ -337,11 +328,7 @@ export class TournamentManager {
     }
   }
 
-  /**
-   * Show tournament winner message
-   */
   private showTournamentWinner(winnerName: string): void {
-    // Create winner message overlay
     const overlay = document.createElement("div");
     overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
     overlay.innerHTML = `
@@ -356,11 +343,9 @@ export class TournamentManager {
     
     document.body.appendChild(overlay);
     
-    // Add exit button functionality
     const exitBtn = overlay.querySelector("#tournamentExitBtn") as HTMLButtonElement;
     exitBtn.addEventListener("click", () => {
       document.body.removeChild(overlay);
-      // Exit to parent window
       window.parent.postMessage({
         type: "EXIT_GAME",
         winner: winnerName,
@@ -369,16 +354,10 @@ export class TournamentManager {
     });
   }
 
-  /**
-   * Check if tournament is complete
-   */
   isTournamentComplete(): boolean {
     return this.tournament?.status === 'FINISHED';
   }
 
-  /**
-   * Get tournament status
-   */
   getTournamentStatus(): { name: string; currentRound: number; totalRounds: number; status: string } | null {
     if (!this.tournament) return null;
 
@@ -390,20 +369,13 @@ export class TournamentManager {
     };
   }
 
-  /**
-   * Get tournament bracket for display
-   */
   getTournamentBracket(): TournamentBracket | null {
     return this.tournament;
   }
 }
 
-// Global tournament manager instance
 export const tournamentManager = new TournamentManager();
 
-/**
- * Initialize a new tournament game
- */
 export async function newTournamentGame(tournamentId: string): Promise<boolean> {
   const initialized = await tournamentManager.initializeTournament(tournamentId);
   if (!initialized) return false;
@@ -421,30 +393,16 @@ export async function newTournamentGame(tournamentId: string): Promise<boolean> 
  * Handle tournament game completion
  */
 export async function handleTournamentGameCompletion(winnerId: string, gameId: string): Promise<boolean> {
-  console.log("=== Tournament Game Completion ===");
-  console.log("Winner ID:", winnerId);
-  console.log("Game ID:", gameId);
-  
   const success = await tournamentManager.completeMatch(winnerId, gameId);
-  console.log("Match completion success:", success);
-  
   const isComplete = tournamentManager.isTournamentComplete();
-  console.log("Tournament complete:", isComplete);
   
   if (success && !isComplete) {
     // Show match transition window instead of starting automatically
     const nextMatch = tournamentManager.getNextMatch();
-    console.log("Next match found:", !!nextMatch);
     if (nextMatch) {
-      console.log("Next match:", `${nextMatch.player1Name} vs ${nextMatch.player2Name}`);
-      console.log("Showing match transition for next match...");
       tournamentManager.showMatchTransition(nextMatch);
       return true; // Return success but don't start the match yet
-    } else {
-      console.log("No next match found");
     }
-  } else if (isComplete) {
-    console.log("Tournament is complete, not showing transition");
   }
   
   return success;

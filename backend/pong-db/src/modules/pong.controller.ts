@@ -10,6 +10,7 @@ import {
 } from "./pong.service";
 
 export interface gameInfo {
+  status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
   //player1
   player1Id: string;
   player1Name: string;
@@ -29,7 +30,32 @@ export interface gameInfo {
   tournamentMatch?: number;
   //winner
   winnerId: string;
+  finishedAt?: Date;
 }
+export const updateTournamentStatus = async (
+  request: FastifyRequest<{
+    Params: { id: string };
+    Body: { status: "IN_PROGRESS" | "FINISHED" | "CANCELLED" };
+  }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { id } = request.params;
+    const { status } = request.body;
+
+    const tournament = await prisma.tournament.update({
+      where: { id },
+      data: { status },
+    });
+
+    return reply.send(tournament);
+  } catch (error) {
+    console.error("Error updating tournament status:", error);
+    return reply
+      .status(500)
+      .send({ error: "Failed to update tournament status" });
+  }
+};
 
 export const createGame = async (
   request: FastifyRequest<{ Body: { data: gameInfo } }>,
@@ -39,7 +65,7 @@ export const createGame = async (
     const { data: game } = request.body;
     const newGame = await prisma.game.create({
       data: {
-        status: game.isTournament ? "IN_PROGRESS" : "FINISHED",
+        status: game.status,
         player1Id: game.player1Id,
         player1Name: game.player1Name,
         score1: game.score1,
@@ -54,6 +80,7 @@ export const createGame = async (
         tournamentRound: game.tournamentRound,
         tournamentMatch: game.tournamentMatch,
         winnerId: game.winnerId,
+        finishedAt: game.status === "FINISHED" ? new Date() : undefined,
       },
     });
 

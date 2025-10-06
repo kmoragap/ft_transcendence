@@ -1,4 +1,5 @@
 export interface gameInfo {
+  status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
   //player1
   player1Id: string;
   player1Name: string;

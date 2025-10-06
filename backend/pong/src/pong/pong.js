@@ -926,54 +926,11 @@ async function newGame(mode) {
   );
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);
-  const player3Container = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]"
-  });
-  const player4Container = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]"
-  });
-  const player3List = Object.assign(document.createElement("ul"), {
-    className: "list-none"
-  });
-  const player4List = Object.assign(document.createElement("ul"), {
-    className: "list-none"
-  });
-  playerSetupMenu(
-    player3List,
-    "3",
-    "Trillian Astra",
-    true,
-    "i",
-    "k",
-    "#ffffff",
-    "#808080",
-    "#ff0000"
-  );
-  playerSetupMenu(
-    player4List,
-    "4",
-    "Zaphod Beeblebrox",
-    true,
-    "PageUp",
-    "PageDown",
-    "#ffffff",
-    "#808080",
-    "#ff0000"
-  );
-  player3Container.appendChild(player3List);
-  player4Container.appendChild(player4List);
   const { form: setupForm, startButton } = gameSetupMenu(mode);
   const settingsForm = setupForm.querySelector("#settings");
   const bgColorsForm = setupForm.querySelector("#bgColors");
   if (mode === "tournament") {
-    let updatePlayerVisibility2 = function() {
-      const playersNumberInput2 = document.getElementById("playersNumber");
-      const numPlayers = playersNumberInput2 ? parseInt(playersNumberInput2.value) || 2 : 2;
-      player1Container.style.display = numPlayers >= 1 ? "block" : "none";
-      player2Container.style.display = numPlayers >= 2 ? "block" : "none";
-      player3Container.style.display = numPlayers >= 3 ? "block" : "none";
-      player4Container.style.display = numPlayers >= 4 ? "block" : "none";
-    }, showStep2 = function(step) {
+    let showStep2 = function(step) {
       document.querySelectorAll(".wizard-step").forEach((el) => {
         el.classList.add("hidden");
       });
@@ -986,7 +943,7 @@ async function newGame(mode) {
       finishButton.classList.toggle("hidden", step !== 3);
       currentStep = step;
     };
-    var updatePlayerVisibility = updatePlayerVisibility2, showStep = showStep2;
+    var showStep = showStep2;
     const tournamentWizard = Object.assign(document.createElement("div"), {
       className: "tournament-wizard"
     });
@@ -1027,14 +984,6 @@ async function newGame(mode) {
     });
     step2FlexContainer.appendChild(player1Container);
     step2FlexContainer.appendChild(player2Container);
-    step2FlexContainer.appendChild(player3Container);
-    step2FlexContainer.appendChild(player4Container);
-    updatePlayerVisibility2();
-    const playersNumberInput = document.getElementById("playersNumber");
-    if (playersNumberInput) {
-      playersNumberInput.addEventListener("input", updatePlayerVisibility2);
-      playersNumberInput.addEventListener("change", updatePlayerVisibility2);
-    }
     step2Container.appendChild(step2FlexContainer);
     const step3FlexContainer = Object.assign(document.createElement("div"), {
       className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
@@ -1115,20 +1064,20 @@ async function newGame(mode) {
       className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
     });
     if (mode === "multi") {
-      const player3Container2 = Object.assign(document.createElement("div"), {
+      const player3Container = Object.assign(document.createElement("div"), {
         className: "flex-1 min-w-[300px]"
       });
-      const player4Container2 = Object.assign(document.createElement("div"), {
+      const player4Container = Object.assign(document.createElement("div"), {
         className: "flex-1 min-w-[300px]"
       });
-      const player3List2 = Object.assign(document.createElement("ul"), {
+      const player3List = Object.assign(document.createElement("ul"), {
         className: "list-none"
       });
-      const player4List2 = Object.assign(document.createElement("ul"), {
+      const player4List = Object.assign(document.createElement("ul"), {
         className: "list-none"
       });
       playerSetupMenu(
-        player3List2,
+        player3List,
         "3",
         "Trillian Astra",
         true,
@@ -1139,7 +1088,7 @@ async function newGame(mode) {
         "#ff0000"
       );
       playerSetupMenu(
-        player4List2,
+        player4List,
         "4",
         "Zaphod Beeblebrox",
         true,
@@ -1149,12 +1098,12 @@ async function newGame(mode) {
         "#808080",
         "#ff0000"
       );
-      player3Container2.appendChild(player3List2);
-      player4Container2.appendChild(player4List2);
+      player3Container.appendChild(player3List);
+      player4Container.appendChild(player4List);
       singleStep1FlexContainer.appendChild(player1Container);
       singleStep1FlexContainer.appendChild(player2Container);
-      singleStep1FlexContainer.appendChild(player3Container2);
-      singleStep1FlexContainer.appendChild(player4Container2);
+      singleStep1FlexContainer.appendChild(player3Container);
+      singleStep1FlexContainer.appendChild(player4Container);
     } else {
       singleStep1FlexContainer.appendChild(player1Container);
       singleStep1FlexContainer.appendChild(player2Container);
@@ -1382,10 +1331,7 @@ function loadConfig(mode) {
       loadIn("p2CornerCol")
     )
   );
-  const isMultiPlayer = mode === "multi";
-  const tournamentNumPlayers = mode === "tournament" ? parseInt(loadIn("playersNumber") || "2", 10) : 2;
-  const isTournamentWith4Players = mode === "tournament" && tournamentNumPlayers === 4;
-  if (isMultiPlayer || isTournamentWith4Players) {
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p3"),
@@ -1399,6 +1345,7 @@ function loadConfig(mode) {
         loadIn("p3CornerCol")
       )
     );
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p4"),
@@ -1412,7 +1359,6 @@ function loadConfig(mode) {
         loadIn("p4CornerCol")
       )
     );
-  }
   const loadData = {
     canvas,
     fps: 50,
@@ -1454,11 +1400,7 @@ function loadConfig(mode) {
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (mode === "tournament") {
-    loadData.mode = "tournament";
-    loadData.nameTB1.value = p[0].name;
-    loadData.nameTB2.value = p[1].name;
-  } else if (mode === "multi") {
+  if (mode === "multi") {
     loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;

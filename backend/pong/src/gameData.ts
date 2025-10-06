@@ -452,30 +452,7 @@ export async function newGame(mode: string): Promise<void> {
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);
 
-  // Create player 3 and 4 containers for both multi-player and tournament modes
-  const player3Container = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]",
-  }) as HTMLDivElement;
-  const player4Container = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]",
-  }) as HTMLDivElement;
-
-  const player3List = Object.assign(document.createElement("ul"), {
-    className: "list-none",
-  }) as HTMLUListElement;
-  const player4List = Object.assign(document.createElement("ul"), {
-    className: "list-none",
-  }) as HTMLUListElement;
-
-  playerSetupMenu(
-    player3List, "3", "Trillian Astra", true, "i", "k", "#ffffff", "#808080", "#ff0000"
-  );
-  playerSetupMenu(
-    player4List, "4", "Zaphod Beeblebrox", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000"
-  );
-
-  player3Container.appendChild(player3List);
-  player4Container.appendChild(player4List);
+  // 4-player setup is now handled in the wizard logic below
 
   const { form: setupForm, startButton } = gameSetupMenu(mode);
 
@@ -531,39 +508,12 @@ export async function newGame(mode: string): Promise<void> {
     const { form: tournamentForm } = tournamentSetupMenu();
     step1Container.appendChild(tournamentForm);
 
-    // Step 2: Player Setup - dynamically create based on number of players
+    // Step 2: Player Setup
     const step2FlexContainer = Object.assign(document.createElement("div"), {
       className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
     }) as HTMLDivElement;
-    
-    // Add all 4 player containers (they'll be shown/hidden dynamically)
     step2FlexContainer.appendChild(player1Container);
     step2FlexContainer.appendChild(player2Container);
-    step2FlexContainer.appendChild(player3Container);
-    step2FlexContainer.appendChild(player4Container);
-    
-    // Function to update player visibility based on number of players
-    function updatePlayerVisibility() {
-      const playersNumberInput = document.getElementById("playersNumber") as HTMLInputElement;
-      const numPlayers = playersNumberInput ? parseInt(playersNumberInput.value) || 2 : 2;
-      
-      // Show/hide player containers based on number of players
-      player1Container.style.display = numPlayers >= 1 ? "block" : "none";
-      player2Container.style.display = numPlayers >= 2 ? "block" : "none";
-      player3Container.style.display = numPlayers >= 3 ? "block" : "none";
-      player4Container.style.display = numPlayers >= 4 ? "block" : "none";
-    }
-    
-    // Initial visibility setup
-    updatePlayerVisibility();
-    
-    // Listen for changes to number of players input
-    const playersNumberInput = document.getElementById("playersNumber") as HTMLInputElement;
-    if (playersNumberInput) {
-      playersNumberInput.addEventListener("input", updatePlayerVisibility);
-      playersNumberInput.addEventListener("change", updatePlayerVisibility);
-    }
-    
     step2Container.appendChild(step2FlexContainer);
 
     // Step 3: Game Settings
@@ -1018,12 +968,7 @@ export function loadConfig(mode: string): void {
       loadIn("p2CornerCol")
     )
   );
-  // Load players 3 and 4 for multi mode or tournament with 4 players
-  const isMultiPlayer = mode === "multi";
-  const tournamentNumPlayers = mode === "tournament" ? parseInt(loadIn("playersNumber") || "2", 10) : 2;
-  const isTournamentWith4Players = mode === "tournament" && tournamentNumPlayers === 4;
-  
-  if (isMultiPlayer || isTournamentWith4Players) {
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p3"),
@@ -1036,6 +981,7 @@ export function loadConfig(mode: string): void {
         loadIn("p3CornerCol")
       )
     );
+  if (mode === "multi")
     p.push(
       loadPlayer(
         loadIn("name_p4"),
@@ -1048,7 +994,6 @@ export function loadConfig(mode: string): void {
         loadIn("p4CornerCol")
       )
     );
-  }
 
   const loadData = {
     canvas: canvas,
@@ -1093,18 +1038,11 @@ export function loadConfig(mode: string): void {
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (mode === "tournament") {
-    // Tournament mode - use tournament-specific logic
-    loadData.mode = "tournament";
-    loadData.nameTB1.value = p[0].name;
-    loadData.nameTB2.value = p[1].name;
-    // For 4-player tournaments, we'll handle the display differently in the tournament logic
-  } else if (mode === "multi") {
+  if (mode === "multi") {
     loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;
   } else {
-    // Single player mode
     if (loadInB("doublePaddle")) loadData.mode = "doublePaddle";
     loadData.nameTB1.value = p[0].name;
     loadData.nameTB2.value = p[1].name;

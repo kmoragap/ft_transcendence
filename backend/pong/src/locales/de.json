@@ -37,5 +37,13 @@
   "numberOfPlayers": "Anzahl der Spieler",
   "matchLength": "Spiellänge",
   "back": "Zurück",
-  "next": "Weiter"
+  "next": "Weiter",
+  "next_match": "Nächstes Match",
+  "vs": "gegen",
+  "get_ready_next_round": "Bereit für die nächste Runde!",
+  "start_match": "Match starten",
+  "tournament_complete": "Turnier beendet!",
+  "winner": "Gewinner",
+  "congratulations_victory": "Herzlichen Glückwunsch zum Sieg!",
+  "exit_tournament": "Turnier verlassen"
 }

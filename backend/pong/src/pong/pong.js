@@ -735,6 +735,7 @@ var init_tournamentGame = __esm({
     "use strict";
     init_gameData();
     init_tournamentService();
+    init_i18n();
     TournamentManager = class {
       constructor() {
         this.tournament = null;
@@ -921,16 +922,16 @@ var init_tournamentGame = __esm({
         modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
         modal.innerHTML = `
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">Next Match</h2>
+        <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">${t("next_match")}</h2>
         <div class="text-lg text-gray-600 mb-2">
           <span class="font-semibold text-[#66fcf1]">${nextMatch.player1Name}</span>
-          <span class="mx-4 text-[#66fcf1]">vs</span>
+          <span class="mx-4 text-[#66fcf1]">${t("vs")}</span>
           <span class="font-semibold text-red-600">${nextMatch.player2Name}</span>
         </div>
-        <p class="text-sm text-[#66fcf1] mt-4">Get ready for the next round!</p>
+        <p class="text-sm text-[#66fcf1] mt-4">${t("get_ready_next_round")}</p>
       </div>
       <button id="startNextMatchBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
-        Start Match
+        ${t("start_match")}
       </button>
     `;
         overlay.appendChild(modal);
@@ -956,15 +957,15 @@ var init_tournamentGame = __esm({
         modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
         modal.innerHTML = `
       <div class="mb-6">
-        <h2 class="text-3xl font-bold text-[#66fcf1] mb-4">\u{1F3C6} Tournament Complete!</h2>
+        <h2 class="text-3xl font-bold text-[#66fcf1] mb-4">\u{1F3C6} ${t("tournament_complete")}</h2>
         <div class="text-xl mb-4">
-          <span class="text-[#66fcf1]">Winner:</span>
+          <span class="text-[#66fcf1]">${t("winner")}:</span>
           <span class="font-bold text-yellow-400 ml-2">${winnerName}</span>
         </div>
-        <p class="text-sm text-[#66fcf1] mt-4">Congratulations on your victory!</p>
+        <p class="text-sm text-[#66fcf1] mt-4">${t("congratulations_victory")}</p>
       </div>
       <button id="tournamentExitBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
-        Exit Tournament
+        ${t("exit_tournament")}
       </button>
     `;
         overlay.appendChild(modal);

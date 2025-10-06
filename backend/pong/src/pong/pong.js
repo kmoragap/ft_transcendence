@@ -844,9 +844,11 @@ var init_tournamentGame = __esm({
         data.p[0].id = match.player1Id;
         data.p[0].name = match.player1Name;
         data.p[0].score = 0;
+        data.p[0].isAi = match.player1Id === "AI-Roger-Federror";
         data.p[1].id = match.player2Id;
         data.p[1].name = match.player2Name;
         data.p[1].score = 0;
+        data.p[1].isAi = match.player2Id === "AI-Roger-Federror";
         data.nameTB1.value = match.player1Name;
         data.nameTB2.value = match.player2Name;
         data.scoreTB1.value = "0";

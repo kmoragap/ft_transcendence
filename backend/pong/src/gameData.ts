@@ -384,7 +384,6 @@ export async function newGame(mode: string): Promise<void> {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  console.log("Starting new game in mode:", mode);
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app",
   }) as HTMLDivElement;

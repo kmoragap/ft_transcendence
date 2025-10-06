@@ -1,8 +1,11 @@
 //import { userService } from "./services/userService";
 import { controlKeys } from "./controls";
 import { countdown, pad } from "./pong";
-import { playerSetupMenu, gameSetupMenu } from "./menus";
+import { playerSetupMenu, gameSetupMenu, tournamentSetupMenu } from "./menus";
+import { t } from "./i18n";
 import { gameService } from "./services/gameService";
+import { newTournamentGame } from "./tournamentGame";
+import { tournamentService } from "./services/tournamentService";
 
 export type playerData = {
   name: string;
@@ -49,9 +52,15 @@ export type gameData = {
   keys: Record<string, boolean>;
   showingText: boolean;
   gameID: string;
+  tournamentID: string;
   go: boolean;
   touchControl: boolean;
   mode: string;
+  //tournament fields
+  isTournament: boolean;
+  tournamentId?: string;
+  tournamentRound?: number;
+  tournamentMatch?: number;
 
   multiball: boolean;
   maxHits: number;
@@ -59,6 +68,8 @@ export type gameData = {
 };
 
 export let data: gameData;
+
+let pendingTournamentId: string | null = null;
 
 export function getSecondPlayerData(): any {
   return (window as any).gamePlayer2 || null;
@@ -247,7 +258,7 @@ function updatePaddlePositions(): void {
     pad[1].setX(data.canvas.width - data.paddleWidth);
     pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
     pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
-  } else if (data.mode === "fourPlayers") {
+  } else if (data.mode === "multi") {
     pad[0].setX(0);
     pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
     pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
@@ -331,37 +342,48 @@ function loadPlayer(
   outercol: string,
   cornerCol: string
 ): playerData {
+  // Check if player is AI by name pattern (contains "Player" and is not the first player)
+  const isAiByName = name.includes("Player") && name !== "Player 1";
+  const finalIsAi = isAi || isAiByName;
+  
+  // For human players, ensure we have a proper ID
+  let finalId = id;
+  if (!finalIsAi && !finalId) {
+    // If no ID provided, try to get it from URL params (for first player)
+    const urlParams = new URLSearchParams(window.location.search);
+    finalId = urlParams.get('userId') || name; // Use name as last resort
+  }
+  
   var p: playerData = {
     name: name,
-    id: isAi ? "AI-Roger-Federror" : id || "",
+    id: finalIsAi ? "AI-Roger-Federror" : finalId,
     score: 0,
-    isAi: isAi,
+    isAi: finalIsAi,
     up: up,
     down: down,
     innerCol: innerCol,
     outerCol: outercol,
     cornerCol: cornerCol,
   };
-  if (isAi) p.name = "Roger Federror";
+  if (finalIsAi) p.name = "Roger Federror";
   return p;
 }
 
 function loadIn(id: string): string {
   const el = document.getElementById(id) as HTMLInputElement;
-  return el.value;
+  return el ? el.value : "";
 }
 
 function loadInB(id: string): boolean {
   const el = document.getElementById(id) as HTMLInputElement;
-  return el.checked;
+  return el ? el.checked : false;
 }
 
-export async function newGame(fourPlayers: boolean): Promise<void> {
+export async function newGame(mode: string): Promise<void> {
   await new Promise<void>(resolve => {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app",
   }) as HTMLDivElement;
@@ -374,7 +396,12 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
 
   document.body.appendChild(appDiv);
   const title = document.createElement("h2");
-  title.textContent = "Game Setup";
+  if (mode === "tournament") {
+    title.textContent = t("tournamentSetup");
+  }
+  else {
+    title.textContent = t("gameSetup");
+  }
   title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
   appDiv.appendChild(title);
   const card = document.createElement("div");
@@ -388,14 +415,16 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   appDiv.appendChild(card);
 
   const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-col md:flex-row gap-4 justify-between items-stretch",
+    className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
   }) as HTMLDivElement;
-
+  const tournamentContainer = Object.assign(document.createElement("div"), {
+    className: "flex-1 min-w-[300px]",
+  }) as HTMLDivElement;
   const player1Container = Object.assign(document.createElement("div"), {
-    className: "flex-1",
+    className: "flex-1 min-w-[300px]",
   }) as HTMLDivElement;
   const player2Container = Object.assign(document.createElement("div"), {
-    className: "flex-1",
+    className: "flex-1 min-w-[300px]",
   }) as HTMLDivElement;
 
   const player1List = Object.assign(document.createElement("ul"), {
@@ -443,74 +472,385 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   player1Container.appendChild(player1List);
   player2Container.appendChild(player2List);
 
-  // Handle 4 players case
-  if (fourPlayers) {
-    // Create additional containers for players 3 and 4
-    const player3Container = Object.assign(document.createElement("div"), {
-      className: "flex-1",
-    }) as HTMLDivElement;
-    const player4Container = Object.assign(document.createElement("div"), {
-      className: "flex-1",
-    }) as HTMLDivElement;
+  // 4-player setup is now handled in the wizard logic below
 
-    const player3List = Object.assign(document.createElement("ul"), {
-      className: "list-none",
-    }) as HTMLUListElement;
-    const player4List = Object.assign(document.createElement("ul"), {
-      className: "list-none",
-    }) as HTMLUListElement;
-    playerSetupMenu(
-      player3List,
-      "3",
-      "Trillian Astra",
-      true,
-      "i",
-      "k",
-      "#ffffff",
-      "#808080",
-      "#ff0000"
-    );
-    playerSetupMenu(
-      player4List,
-      "4",
-      "Zaphod Beeblebrox",
-      true,
-      "PageUp",
-      "PageDown",
-      "#ffffff",
-      "#808080",
-      "#ff0000"
-    );
-
-    player3Container.appendChild(player3List);
-    player4Container.appendChild(player4List);
-
-    allBoxesContainer.appendChild(player3Container);
-    allBoxesContainer.appendChild(player4Container);
-  }
-
-  const { form: setupForm, startButton } = gameSetupMenu(fourPlayers);
+  const { form: setupForm, startButton } = gameSetupMenu(mode);
 
   const settingsForm = setupForm.querySelector("#settings") as HTMLFormElement;
   const bgColorsForm = setupForm.querySelector("#bgColors") as HTMLFormElement;
 
-  allBoxesContainer.appendChild(player1Container);
-  allBoxesContainer.appendChild(player2Container);
-  allBoxesContainer.appendChild(settingsForm);
-  allBoxesContainer.appendChild(bgColorsForm);
+  if (mode === "tournament") {
+    // Tournament wizard setup
+    const tournamentWizard = Object.assign(document.createElement("div"), {
+      className: "tournament-wizard",
+    }) as HTMLDivElement;
 
-  card.appendChild(allBoxesContainer);
+    // Step containers for tournament
+    const step1Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step",
+      id: "step1",
+    }) as HTMLDivElement;
+    
+    const step2Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step hidden",
+      id: "step2",
+    }) as HTMLDivElement;
+    
+    const step3Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step hidden",
+      id: "step3",
+    }) as HTMLDivElement;
 
-  const buttonContainer = Object.assign(document.createElement("div"), {
-    className: "flex justify-center mt-6",
-  }) as HTMLDivElement;
-  buttonContainer.appendChild(startButton);
-  appDiv.appendChild(buttonContainer);
+    // Navigation buttons for tournament
+    const navigationContainer = Object.assign(document.createElement("div"), {
+      className: "flex justify-between items-center mt-6",
+    }) as HTMLDivElement;
 
-  startButton.addEventListener("click", e => {
-    e.preventDefault();
-    loadConfig(fourPlayers);
-  });
+    const backButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("back") || "Back",
+      id: "backBtn",
+    }) as HTMLButtonElement;
+
+    const nextButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold",
+      textContent: t("next") || "Next",
+      id: "nextBtn",
+    }) as HTMLButtonElement;
+
+    const finishButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("start") || "Start",
+      id: "finishBtn",
+    }) as HTMLButtonElement;
+
+    // Step 1: Tournament Settings
+    const { form: tournamentForm } = tournamentSetupMenu();
+    step1Container.appendChild(tournamentForm);
+    
+    // Add event listener to update player boxes when number of players changes
+    const playersNumberInput = document.getElementById('playersNumber') as HTMLInputElement;
+    if (playersNumberInput) {
+      playersNumberInput.addEventListener('input', () => {
+        // Only update if we're currently on step 2
+        if (currentStep === 2) {
+          const numPlayers = parseInt(playersNumberInput.value) || 4;
+          createPlayerBoxes(numPlayers);
+        }
+      });
+    }
+
+    // Step 2: Player Setup (will be populated dynamically)
+    const step2FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+      id: "playerSetupContainer",
+    }) as HTMLDivElement;
+    step2Container.appendChild(step2FlexContainer);
+
+    // Step 3: Game Settings
+    const step3FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+    }) as HTMLDivElement;
+    step3FlexContainer.appendChild(settingsForm);
+    step3FlexContainer.appendChild(bgColorsForm);
+    step3Container.appendChild(step3FlexContainer);
+
+    // Add steps to wizard
+    tournamentWizard.appendChild(step1Container);
+    tournamentWizard.appendChild(step2Container);
+    tournamentWizard.appendChild(step3Container);
+
+    // Navigation setup
+    navigationContainer.appendChild(backButton);
+    navigationContainer.appendChild(nextButton);
+    navigationContainer.appendChild(finishButton);
+
+    tournamentWizard.appendChild(navigationContainer);
+    card.appendChild(tournamentWizard);
+
+    // Function to create dynamic player boxes
+    function createPlayerBoxes(numPlayers: number) {
+      const container = document.getElementById('playerSetupContainer');
+      if (!container) return;
+      
+      // Clear existing player boxes
+      container.innerHTML = '';
+      
+      // Create player boxes based on number of players
+      for (let i = 1; i <= numPlayers; i++) {
+        const playerContainer = Object.assign(document.createElement("div"), {
+          className: "flex-1"
+        }) as HTMLDivElement;
+        
+        const playerList = Object.assign(document.createElement("ul"), {
+          className: "list-none"
+        }) as HTMLUListElement;
+        
+        // Default names for players
+        const defaultNames = [
+          "Player 1", "Player 2", "Player 3", "Player 4", 
+          "Player 5", "Player 6", "Player 7", "Player 8"
+        ];
+        
+        // Default control keys for players
+        const defaultKeys = [
+          { up: "Shift", down: "Control" },
+          { up: "ArrowUp", down: "ArrowDown" },
+          { up: "w", down: "s" },
+          { up: "i", down: "k" },
+          { up: "t", down: "g" },
+          { up: "u", down: "j" },
+          { up: "o", down: "l" },
+          { up: "p", down: ";" }
+        ];
+        
+        let playerName = defaultNames[i - 1] || `Player ${i}`;
+        const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
+        
+        // Set first player to logged-in user
+        if (i === 1) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const username = urlParams.get('username') || 'Player 1';
+          playerName = username;
+        }
+        
+        // For other players, we'll let the login modal set the proper names
+        // The default names will be used until they're replaced by login
+        
+        playerSetupMenu(
+          playerList, 
+          i.toString(), 
+          playerName, 
+          i > 1, // First player is human (logged-in user), rest are AI by default
+          playerKeys.up, 
+          playerKeys.down, 
+          "#ffffff", 
+          "#808080", 
+          "#ff0000"
+        );
+        
+        playerContainer.appendChild(playerList);
+        container.appendChild(playerContainer);
+      }
+    }
+    
+    // Tournament wizard navigation logic
+    let currentStep = 1;
+    
+    function showStep(step: number) {
+      // Hide all steps
+      document.querySelectorAll('.wizard-step').forEach(el => {
+        el.classList.add('hidden');
+      });
+      
+      // Show current step
+      const stepElement = document.getElementById(`step${step}`);
+      if (stepElement) {
+        stepElement.classList.remove('hidden');
+      }
+      
+      // Update button visibility
+      backButton.classList.toggle('hidden', step === 1);
+      nextButton.classList.toggle('hidden', step === 3);
+      finishButton.classList.toggle('hidden', step !== 3);
+      
+      // Special handling for step 2 - create player boxes
+      if (step === 2) {
+        const playersNumberInput = document.getElementById('playersNumber') as HTMLInputElement;
+        if (playersNumberInput) {
+          const numPlayers = parseInt(playersNumberInput.value) || 4;
+          createPlayerBoxes(numPlayers);
+        }
+      }
+      
+      currentStep = step;
+    }
+    
+    nextButton.addEventListener("click", e => {
+      e.preventDefault();
+      if (currentStep < 3) {
+        showStep(currentStep + 1);
+      }
+    });
+    
+    backButton.addEventListener("click", e => {
+      e.preventDefault();
+      if (currentStep > 1) {
+        showStep(currentStep - 1);
+      }
+    });
+    
+    finishButton.addEventListener("click", async e => {
+      e.preventDefault();
+      
+      if (mode === "tournament") {
+        // Create tournament first, then start the game
+        await createAndStartTournament();
+      } else {
+        await loadConfig(mode);
+      }
+    });
+  } else {
+    // Single Player / Multi Player wizard setup
+    const singlePlayerWizard = Object.assign(document.createElement("div"), {
+      className: "single-player-wizard",
+    }) as HTMLDivElement;
+
+    // Step containers for single player
+    const singleStep1Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step",
+      id: "singleStep1",
+    }) as HTMLDivElement;
+    
+    const singleStep2Container = Object.assign(document.createElement("div"), {
+      className: "wizard-step hidden",
+      id: "singleStep2",
+    }) as HTMLDivElement;
+
+    // Navigation buttons for single player
+    const singleNavigationContainer = Object.assign(document.createElement("div"), {
+      className: "flex justify-between items-center mt-6",
+    }) as HTMLDivElement;
+
+    const singleBackButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("back") || "Back",
+      id: "singleBackBtn",
+    }) as HTMLButtonElement;
+
+    const singleNextButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold",
+      textContent: t("next") || "Next",
+      id: "singleNextBtn",
+    }) as HTMLButtonElement;
+
+    const singleFinishButton = Object.assign(document.createElement("button"), {
+      className: "btn py-2 px-6 text-lg font-bold hidden",
+      textContent: t("start") || "Start",
+      id: "singleFinishBtn",
+    }) as HTMLButtonElement;
+
+    // Step 1: Player Setup
+    const singleStep1FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+    }) as HTMLDivElement;
+    
+    if (mode === "multi") {
+      // For 4-player mode, show all 4 players
+      const player3Container = Object.assign(document.createElement("div"), {
+        className: "flex-1 min-w-[300px]",
+      }) as HTMLDivElement;
+      const player4Container = Object.assign(document.createElement("div"), {
+        className: "flex-1 min-w-[300px]",
+      }) as HTMLDivElement;
+
+      const player3List = Object.assign(document.createElement("ul"), {
+        className: "list-none",
+      }) as HTMLUListElement;
+      const player4List = Object.assign(document.createElement("ul"), {
+        className: "list-none",
+      }) as HTMLUListElement;
+
+      playerSetupMenu(
+        player3List,
+        "3",
+        "Trillian Astra",
+        true,
+        "i",
+        "k",
+        "#ffffff",
+        "#808080",
+        "#ff0000"
+      );
+      playerSetupMenu(
+        player4List,
+        "4",
+        "Zaphod Beeblebrox",
+        true,
+        "PageUp",
+        "PageDown",
+        "#ffffff",
+        "#808080",
+        "#ff0000"
+      );
+
+      player3Container.appendChild(player3List);
+      player4Container.appendChild(player4List);
+
+      singleStep1FlexContainer.appendChild(player1Container);
+      singleStep1FlexContainer.appendChild(player2Container);
+      singleStep1FlexContainer.appendChild(player3Container);
+      singleStep1FlexContainer.appendChild(player4Container);
+    } else {
+      // For 2-player mode, show only 2 players
+      singleStep1FlexContainer.appendChild(player1Container);
+      singleStep1FlexContainer.appendChild(player2Container);
+    }
+    
+    singleStep1Container.appendChild(singleStep1FlexContainer);
+
+    // Step 2: Game Settings & Colors
+    const singleStep2FlexContainer = Object.assign(document.createElement("div"), {
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+    }) as HTMLDivElement;
+    singleStep2FlexContainer.appendChild(settingsForm);
+    singleStep2FlexContainer.appendChild(bgColorsForm);
+    singleStep2Container.appendChild(singleStep2FlexContainer);
+
+    // Add steps to wizard
+    singlePlayerWizard.appendChild(singleStep1Container);
+    singlePlayerWizard.appendChild(singleStep2Container);
+
+    // Navigation setup
+    singleNavigationContainer.appendChild(singleBackButton);
+    singleNavigationContainer.appendChild(singleNextButton);
+    singleNavigationContainer.appendChild(singleFinishButton);
+
+    singlePlayerWizard.appendChild(singleNavigationContainer);
+    card.appendChild(singlePlayerWizard);
+
+    // Single player wizard navigation logic
+    let singleCurrentStep = 1;
+    
+    function showSingleStep(step: number) {
+      // Hide all single player steps
+      document.querySelectorAll('.single-player-wizard .wizard-step').forEach(el => {
+        el.classList.add('hidden');
+      });
+      
+      // Show current step
+      const stepElement = document.getElementById(`singleStep${step}`);
+      if (stepElement) {
+        stepElement.classList.remove('hidden');
+      }
+      
+      // Update button visibility
+      singleBackButton.classList.toggle('hidden', step === 1);
+      singleNextButton.classList.toggle('hidden', step === 2);
+      singleFinishButton.classList.toggle('hidden', step !== 2);
+      
+      singleCurrentStep = step;
+    }
+    
+    singleNextButton.addEventListener("click", e => {
+      e.preventDefault();
+      if (singleCurrentStep < 2) {
+        showSingleStep(singleCurrentStep + 1);
+      }
+    });
+    
+    singleBackButton.addEventListener("click", e => {
+      e.preventDefault();
+      if (singleCurrentStep > 1) {
+        showSingleStep(singleCurrentStep - 1);
+      }
+    });
+    
+    singleFinishButton.addEventListener("click", e => {
+      e.preventDefault();
+      loadConfig(mode);
+    });
+  }
 
   window.addEventListener("resize", () => {
     const canvas = document.getElementById("board") as HTMLCanvasElement;
@@ -555,8 +895,140 @@ export async function newGame(fourPlayers: boolean): Promise<void> {
   });
 }
 
-export function loadConfig(fourPlayers: boolean) {
+/**
+ * Create tournament and start the first match
+ */
+async function createAndStartTournament(): Promise<void> {
+  try {
+    // Get tournament settings from form
+    const playersNumber = parseInt((document.getElementById("playersNumber") as HTMLInputElement)?.value || "4");
+    
+    // Get player data from the form
+    const players: string[] = [];
+    
+    // Collect player IDs from the form (using the correct IDs: p1Id, p2Id, etc.)
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
+      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
+      const playerAiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
+      
+      // Check if player is AI
+      const isAi = playerAiInput ? playerAiInput.checked : (i > 1); // Default: first player human, rest AI
+      
+      if (isAi) {
+        // AI players get the special AI identifier
+        players.push("AI-Roger-Federror");
+      } else {
+        // Human players - try to get proper user ID
+        if (playerIdInput && playerIdInput.value) {
+          // Use the stored user ID
+          players.push(playerIdInput.value);
+        } else if (i === 1) {
+          // First player - get user ID from URL params
+          const urlParams = new URLSearchParams(window.location.search);
+          const userId = urlParams.get('userId') || playerNameInput?.value;
+          if (!userId) {
+            alert("No valid user ID or player name found for the first player. Please enter a name or log in.");
+            return;
+          }
+        } else {
+          // Other human players - use name as fallback
+          const name = playerNameInput?.value || `player${i}`;
+          players.push(name);
+        }
+      }
+    }
+    
+    console.log("Creating tournament with players:", players);
+    console.log("Player details:");
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
+      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
+      const playerAiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
+      console.log(`Player ${i}:`, {
+        id: playerIdInput?.value || 'none',
+        name: playerNameInput?.value || 'none',
+        isAi: playerAiInput?.checked || false,
+        finalId: players[i-1]
+      });
+    }
+    
+    // Debug: Check what the first player's data will look like in the game
+    console.log("First player data check:");
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log("URL userId:", urlParams.get('userId'));
+    console.log("URL username:", urlParams.get('username'));
+    
+    // Create a mapping from user IDs to usernames for tournament display
+    const playerIdToNameMap: Record<string, string> = {};
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
+      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
+      const playerAiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
+      
+      const isAi = playerAiInput ? playerAiInput.checked : (i > 1);
+      const playerId = players[i - 1];
+      const playerName = playerNameInput?.value || `Player ${i}`;
+      
+      if (!isAi) {
+        playerIdToNameMap[playerId] = playerName;
+      }
+    }
+    
+    // Store the mapping in a global variable for tournament use
+    (window as any).playerIdToNameMap = playerIdToNameMap;
+    console.log("Player ID to Name mapping:", playerIdToNameMap);
+    const defaultName = `Tournament - ${new Date().toISOString()} (${players.length} players)`;
+    const tournamentNameInput = document.getElementById('tournamentName') as HTMLInputElement;
+    const userProvidedName = tournamentNameInput?.value?.trim();
+    const tournamentData = {
+      name: userProvidedName ? userProvidedName : defaultName,
+      playersIds: players
+    };
+    
+    const tournament = await tournamentService.createTournament(tournamentData);
+    
+    if (!tournament || !tournament.id) {
+      console.error("Failed to create tournament");
+      alert("Failed to create tournament. Please try again.");
+      return;
+    }
+    
+    console.log("Tournament created successfully:", tournament.id);
+    
+    // Store tournament ID temporarily for later use (data not initialized yet)
+    pendingTournamentId = tournament.id;
+    
+    // Continue with normal game setup first (this initializes the data object)
+    await loadConfig("tournament");
+    
+    // Now that data is initialized, start the first tournament match
+    const success = await newTournamentGame(tournament.id);
+    if (!success) {
+      console.error("Failed to start tournament game");
+      alert("Failed to start tournament game. Please try again.");
+      return;
+    }
+    
+  } catch (error) {
+    console.error("Error creating tournament:", error);
+    alert("Error creating tournament. Please try again.");
+  }
+}
+
+export async function loadConfig(mode: string): Promise<void> {
   const appDiv = document.getElementById("app") as HTMLDivElement;
+  
+  // Handle tournament initialization
+  if (mode === "tournament") {
+    // Tournament should already be created by createAndStartTournament()
+    // Just verify we have a tournament ID
+    if (!pendingTournamentId) {
+      console.error("No tournament ID available");
+      return;
+    }
+    // Note: Tournament match initialization will happen after loadConfig completes
+  }
   //create scoreboard
   const scoreboard = Object.assign(document.createElement("div"), {
     className: "scoreboard w-full flex justify-between items-center",
@@ -716,56 +1188,89 @@ export function loadConfig(fourPlayers: boolean) {
     }, 100);
   }
   var p: playerData[] = [];
-  p.push(
-    loadPlayer(
-      loadIn("name_p1"),
-      loadIn("p1Id"), // get user id from hidden input
-      loadInB("p1Ai"),
-      loadIn("p1Up"),
-      loadIn("p1Down"),
-      loadIn("p1InnerCol"),
-      loadIn("p1OuterCol"),
-      loadIn("p1CornerCol")
-    )
-  );
-  p.push(
-    loadPlayer(
-      loadIn("name_p2"),
-      loadIn("p2Id"), // get user ID from hidden input
-      loadInB("p2Ai"),
-      loadIn("p2Up"),
-      loadIn("p2Down"),
-      loadIn("p2InnerCol"),
-      loadIn("p2OuterCol"),
-      loadIn("p2CornerCol")
-    )
-  );
-  if (fourPlayers)
+  
+  if (mode === "tournament") {
+    // For tournaments, dynamically load all players based on the number set
+    const playersNumberInput = document.getElementById('playersNumber') as HTMLInputElement;
+    const numPlayers = playersNumberInput ? parseInt(playersNumberInput.value) || 4 : 4;
+    
+    for (let i = 1; i <= numPlayers; i++) {
+      let playerId = loadIn(`p${i}Id`);
+      
+      // Special handling for first player - get user ID from URL if not in form
+      if (i === 1 && !playerId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        playerId = urlParams.get('userId') || '';
+      }
+      
+      p.push(
+        loadPlayer(
+          loadIn(`name_p${i}`),
+          playerId,
+          loadInB(`p${i}Ai`),
+          loadIn(`p${i}Up`),
+          loadIn(`p${i}Down`),
+          loadIn(`p${i}InnerCol`),
+          loadIn(`p${i}OuterCol`),
+          loadIn(`p${i}CornerCol`)
+        )
+      );
+    }
+  } else {
+    // Standard 2-player setup
     p.push(
       loadPlayer(
-        loadIn("name_p3"),
-        "", //player ID
-        loadInB("p3Ai"),
-        loadIn("p3Up"),
-        loadIn("p3Down"),
-        loadIn("p3InnerCol"),
-        loadIn("p3OuterCol"),
-        loadIn("p3CornerCol")
+        loadIn("name_p1"),
+        loadIn("p1Id"), // get user id from hidden input
+        loadInB("p1Ai"),
+        loadIn("p1Up"),
+        loadIn("p1Down"),
+        loadIn("p1InnerCol"),
+        loadIn("p1OuterCol"),
+        loadIn("p1CornerCol")
       )
     );
-  if (fourPlayers)
     p.push(
       loadPlayer(
-        loadIn("name_p4"),
-        "", //player ID
-        loadInB("p4Ai"),
-        loadIn("p4Up"),
-        loadIn("p4Down"),
-        loadIn("p4InnerCol"),
-        loadIn("p4OuterCol"),
-        loadIn("p4CornerCol")
+        loadIn("name_p2"),
+        loadIn("p2Id"), // get user ID from hidden input
+        loadInB("p2Ai"),
+        loadIn("p2Up"),
+        loadIn("p2Down"),
+        loadIn("p2InnerCol"),
+        loadIn("p2OuterCol"),
+        loadIn("p2CornerCol")
       )
     );
+    
+    // Add players 3 and 4 for multi mode
+    if (mode === "multi") {
+      p.push(
+        loadPlayer(
+          loadIn("name_p3"),
+          "", //player ID
+          loadInB("p3Ai"),
+          loadIn("p3Up"),
+          loadIn("p3Down"),
+          loadIn("p3InnerCol"),
+          loadIn("p3OuterCol"),
+          loadIn("p3CornerCol")
+        )
+      );
+      p.push(
+        loadPlayer(
+          loadIn("name_p4"),
+          "", //player ID
+          loadInB("p4Ai"),
+          loadIn("p4Up"),
+          loadIn("p4Down"),
+          loadIn("p4InnerCol"),
+          loadIn("p4OuterCol"),
+          loadIn("p4CornerCol")
+        )
+      );
+    }
+  }
 
   const loadData = {
     canvas: canvas,
@@ -784,7 +1289,7 @@ export function loadConfig(fourPlayers: boolean) {
     paddleSpeed: 40,
     ballSpeed: 10,
     ballSize: 80,
-    maxScore: 3, //parseInt(loadIn("maxScore") || "10", 10),
+    maxScore: mode === "tournament" ? parseInt(loadIn("matchLength") || "5", 10) : 3,
     trailLength: 20, //parseInt(loadIn("trailLength") || "20", 10),
 
     bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
@@ -800,18 +1305,26 @@ export function loadConfig(fourPlayers: boolean) {
     keys: {},
     showingText: false,
     gameID: "",
+    tournamentID: "",
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
-
+    isTournament: false,
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0,
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (fourPlayers) {
-    loadData.mode = "fourPlayers";
+  
+  if (mode === "tournament") {
+    loadData.mode = "tournament";
+    loadData.isTournament = true;
+    // For tournaments, show the first two players in the current match
+    loadData.nameTB1.value = p[0]?.name || "Player 1";
+    loadData.nameTB2.value = p[1]?.name || "Player 2";
+  } else if (mode === "multi") {
+    loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;
   } else {
@@ -885,6 +1398,13 @@ export function loadConfig(fourPlayers: boolean) {
       break;
   }
   data = loadData;
+  
+  // Set tournament ID if we have a pending one
+  if (pendingTournamentId) {
+    data.tournamentId = pendingTournamentId;
+    pendingTournamentId = null; // Clear the pending ID
+  }
+  
   // Remove all existing content from app div except what we want to keep
   const gameAppDiv = document.getElementById("app");
   if (gameAppDiv) {
@@ -903,5 +1423,8 @@ export function loadConfig(fourPlayers: boolean) {
   }
   controlKeys();
   document.getElementById("board")?.focus();
-  setTimeout(() => countdown(3, 500), 500);
+  
+  if (mode !== "tournament") {
+    setTimeout(() => countdown(3, 500), 500);
+  }
 }

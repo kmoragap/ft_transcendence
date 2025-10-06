@@ -563,3 +563,48 @@ export async function removeFriendRequest(username: string): Promise<void> {
     }
   }
 }
+
+export interface UserStats {
+  id: string;
+  username: string;
+  wins: number;
+  losses: number;
+  elo: number;
+  winRate: number;
+}
+
+export async function getUserStats(userId: string): Promise<UserStats> {
+  const token = localStorage.getItem('accessToken');
+  
+  let headers: Record<string, string>;
+  let credentials: RequestCredentials | undefined;
+
+  if (!token) {
+    headers = { 'Content-Type': 'application/json' };
+    credentials = 'include';
+  } else {
+    headers = { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  try {
+    const res = await fetch(`/api/users/${userId}/stats`, {
+      method: 'GET',
+      headers,
+      credentials
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to get user stats (${res.status})`);
+    }
+
+    const stats = await res.json();
+    return stats;
+  } catch (error) {
+    console.error('Get user stats error:', error);
+    throw error;
+  }
+}

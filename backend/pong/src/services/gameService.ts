@@ -12,14 +12,26 @@ export interface gameInfo {
   maxScore: number;
   multiBall: boolean;
   mode: string;
+  isTournament: boolean;
+  tournamentId?: string;
+  tournamentRound?: number;
+  tournamentMatch?: number;
   //winner
   winnerId: string;
+}
+
+export interface GameResponse {
+  status: string;
+  winnerId: string;
+  player1Score: number; //not sure of this
+  player2Score: number; //not sure of this
+  gameId?: string;
 }
 
 class GameService {
   private baseUrl = "/api/pong";
 
-  async finishGame(data: gameInfo): Promise<boolean> {
+  async createGame(data: gameInfo): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/games`, {
         method: "POST",
@@ -31,6 +43,26 @@ class GameService {
     } catch (error) {
       console.error("Error finishing game:", error);
       return false;
+    }
+  }
+  async finishGame(data: gameInfo): Promise<GameResponse | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/games`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data }),
+      });
+
+      if (!response.ok) {
+        console.error("Error finishing game: Response not OK");
+        return null;
+      }
+
+      const gameResponse: GameResponse = await response.json();
+      return gameResponse;
+    } catch (error) {
+      console.error("Error finishing game:", error);
+      return null;
     }
   }
 }

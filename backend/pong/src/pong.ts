@@ -142,12 +142,11 @@ export function endRound(): void {
     pad.shift();
   }
   
-  // Check if match is over (someone reached max score)
   if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
     if (data.isTournament) {
-      finito(); // Tournament match is over, handle tournament logic
+      finito();
     } else {
-      endGame(); // Single player match is over
+      endGame();
     }
     return;
   }

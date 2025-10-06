@@ -1421,7 +1421,6 @@ export async function loadConfig(mode: string): Promise<void> {
   controlKeys();
   document.getElementById("board")?.focus();
   
-  // Don't start countdown for tournament mode - tournament will handle it
   if (mode !== "tournament") {
     setTimeout(() => countdown(3, 500), 500);
   }

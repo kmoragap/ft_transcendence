@@ -106,9 +106,9 @@ export class TournamentManager {
           const player2Id = players[player2Index];
           
           const player1Name = playerIdToNameMap[player1Id] || 
-            (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+            (player1Id.startsWith("AI-") ? `AI Player ${player1Id.split('-')[2]}` : `Player ${player1Id}`);
           const player2Name = playerIdToNameMap[player2Id] || 
-            (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+            (player2Id.startsWith("AI-") ? `AI Player ${player2Id.split('-')[2]}` : `Player ${player2Id}`);
           
           firstRound.matches[i] = {
             matchNumber: i + 1,
@@ -177,12 +177,12 @@ export class TournamentManager {
     data.p[0].id = match.player1Id;
     data.p[0].name = match.player1Name;
     data.p[0].score = 0;
-    data.p[0].isAi = match.player1Id === "AI-Roger-Federror";
+    data.p[0].isAi = match.player1Id.startsWith("AI-");
     
     data.p[1].id = match.player2Id;
     data.p[1].name = match.player2Name;
     data.p[1].score = 0;
-    data.p[1].isAi = match.player2Id === "AI-Roger-Federror";
+    data.p[1].isAi = match.player2Id.startsWith("AI-");
 
     // Update UI elements
     data.nameTB1.value = match.player1Name;
@@ -259,7 +259,7 @@ export class TournamentManager {
         const player1Id = winners[winnerIndex];
         match.player1Id = player1Id;
         match.player1Name = playerIdToNameMap[player1Id] || 
-          (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+          (player1Id.startsWith("AI-") ? `AI Player ${player1Id.split('-')[2]}` : `Player ${player1Id}`);
         winnerIndex++;
       }
       
@@ -267,7 +267,7 @@ export class TournamentManager {
         const player2Id = winners[winnerIndex];
         match.player2Id = player2Id;
         match.player2Name = playerIdToNameMap[player2Id] || 
-          (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+          (player2Id.startsWith("AI-") ? `AI Player ${player2Id.split('-')[2]}` : `Player ${player2Id}`);
         winnerIndex++;
       }
     }

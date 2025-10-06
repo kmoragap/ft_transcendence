@@ -97,6 +97,7 @@
   "login_cancelled": "Вход отменен",
   "login_second_player": "Войти как второй игрок",
   "second_player_logged_in": "Второй игрок вошел",
+  "username_already_in_use": "Это имя пользователя уже используется другим игроком",
   "no_friends_or_requests": "Нет друзей или ожидающих запросов",
   "please_login_to_see_friends": "Пожалуйста, войдите в систему, чтобы увидеть друзей",
   "error_loading_friend_requests": "Ошибка загрузки запросов в друзья"

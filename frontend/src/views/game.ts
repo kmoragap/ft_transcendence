@@ -4,6 +4,7 @@ import { showLoginModal } from "./../components/login-modal";
 import { alertSuccess, alertError } from "./../utils/modal-alerts";
 
 let iframeRef: HTMLIFrameElement | null = null;
+let loggedInUsers: Set<string> = new Set();
 
 type GameMode = "menu" | "single" | "multi" | "tournament";
 
@@ -11,6 +12,11 @@ export function renderGame(): HTMLElement {
   const section = document.createElement("section");
   section.className =
     "w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10";
+
+  const currentState = store.getState();
+  if (currentState.isAuthenticated && currentState.currentUser?.username) {
+    loggedInUsers.add(currentState.currentUser.username);
+  }
 
   section.innerHTML = `
      <h1 id="game-title" class="title uppercase mobile-title">
@@ -75,6 +81,7 @@ export function renderGame(): HTMLElement {
       hideBack();
       showTitle();
       destroyIframe();
+      loggedInUsers.clear();
       root.innerHTML = renderMenuHTML();
       wireMenuHandlers();
       updateText();
@@ -204,6 +211,9 @@ export function renderGame(): HTMLElement {
           title: t("login_second_player"),
           gameOnly: true,
           onSuccess: user => {
+            if (loggedInUsers.has(user.username)) {
+              return;
+            }
             alertSuccess(t("second_player_logged_in") + ": " + user.username);
           },
           onCancel: () => {
@@ -218,6 +228,22 @@ export function renderGame(): HTMLElement {
             }
           },
         });
+
+        if (loggedInUsers.has(user.username)) {
+          alertError(t("username_already_in_use") || "This username is already being used by another player");
+          if (iframeRef?.contentWindow) {
+            iframeRef.contentWindow.postMessage(
+              {
+                type: "LOGIN_CANCELLED",
+                playerId: playerId,
+              },
+              window.location.origin
+            );
+          }
+          return;
+        }
+
+        loggedInUsers.add(user.username);
 
         if (iframeRef?.contentWindow) {
           iframeRef.contentWindow.postMessage(
@@ -246,8 +272,12 @@ export function renderGame(): HTMLElement {
     } else if (event.data.type === "EXIT_GAME") {
       const { winner } = event.data;
       console.log(`Game ended. Winner: ${winner}`);
+      loggedInUsers.clear();
       destroyGameView();
       setMode("menu");
+    } else if (event.data.type === "PLAYER_LOGOUT") {
+      const { username } = event.data;
+      loggedInUsers.delete(username);
     }
   });
 
@@ -263,6 +293,8 @@ export function renderGame(): HTMLElement {
 }
 
 export function destroyGameView() {
+  loggedInUsers.clear();
+  
   if (iframeRef) {
     try {
       iframeRef.contentWindow?.postMessage(

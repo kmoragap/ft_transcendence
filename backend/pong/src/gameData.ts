@@ -340,23 +340,21 @@ function loadPlayer(
   down: string,
   innerCol: string,
   outercol: string,
-  cornerCol: string
+  cornerCol: string,
+  playerIndex?: number
 ): playerData {
-  // Check if player is AI by name pattern (contains "Player" and is not the first player)
   const isAiByName = name.includes("Player") && name !== "Player 1";
   const finalIsAi = isAi || isAiByName;
   
-  // For human players, ensure we have a proper ID
   let finalId = id;
   if (!finalIsAi && !finalId) {
-    // If no ID provided, try to get it from URL params (for first player)
     const urlParams = new URLSearchParams(window.location.search);
     finalId = urlParams.get('userId') || name; // Use name as last resort
   }
   
   var p: playerData = {
     name: name,
-    id: finalIsAi ? "AI-Roger-Federror" : finalId,
+    id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
     score: 0,
     isAi: finalIsAi,
     up: up,
@@ -916,23 +914,19 @@ async function createAndStartTournament(): Promise<void> {
       const isAi = playerAiInput ? playerAiInput.checked : (i > 1); // Default: first player human, rest AI
       
       if (isAi) {
-        // AI players get the special AI identifier
-        players.push("AI-Roger-Federror");
+        players.push(`AI-Player-${i}`);
       } else {
-        // Human players - try to get proper user ID
         if (playerIdInput && playerIdInput.value) {
-          // Use the stored user ID
           players.push(playerIdInput.value);
         } else if (i === 1) {
-          // First player - get user ID from URL params
           const urlParams = new URLSearchParams(window.location.search);
           const userId = urlParams.get('userId') || playerNameInput?.value;
           if (!userId) {
             alert("No valid user ID or player name found for the first player. Please enter a name or log in.");
             return;
           }
+          players.push(userId);
         } else {
-          // Other human players - use name as fallback
           const name = playerNameInput?.value || `player${i}`;
           players.push(name);
         }
@@ -953,13 +947,10 @@ async function createAndStartTournament(): Promise<void> {
       });
     }
     
-    // Debug: Check what the first player's data will look like in the game
-    console.log("First player data check:");
+
     const urlParams = new URLSearchParams(window.location.search);
-    console.log("URL userId:", urlParams.get('userId'));
-    console.log("URL username:", urlParams.get('username'));
+
     
-    // Create a mapping from user IDs to usernames for tournament display
     const playerIdToNameMap: Record<string, string> = {};
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
@@ -970,9 +961,7 @@ async function createAndStartTournament(): Promise<void> {
       const playerId = players[i - 1];
       const playerName = playerNameInput?.value || `Player ${i}`;
       
-      if (!isAi) {
-        playerIdToNameMap[playerId] = playerName;
-      }
+      playerIdToNameMap[playerId] = playerName;
     }
     
     // Store the mapping in a global variable for tournament use
@@ -996,13 +985,10 @@ async function createAndStartTournament(): Promise<void> {
     
     console.log("Tournament created successfully:", tournament.id);
     
-    // Store tournament ID temporarily for later use (data not initialized yet)
     pendingTournamentId = tournament.id;
     
-    // Continue with normal game setup first (this initializes the data object)
     await loadConfig("tournament");
     
-    // Now that data is initialized, start the first tournament match
     const success = await newTournamentGame(tournament.id);
     if (!success) {
       console.error("Failed to start tournament game");
@@ -1019,22 +1005,17 @@ async function createAndStartTournament(): Promise<void> {
 export async function loadConfig(mode: string): Promise<void> {
   const appDiv = document.getElementById("app") as HTMLDivElement;
   
-  // Handle tournament initialization
   if (mode === "tournament") {
-    // Tournament should already be created by createAndStartTournament()
-    // Just verify we have a tournament ID
+
     if (!pendingTournamentId) {
       console.error("No tournament ID available");
       return;
     }
-    // Note: Tournament match initialization will happen after loadConfig completes
   }
-  //create scoreboard
   const scoreboard = Object.assign(document.createElement("div"), {
     className: "scoreboard w-full flex justify-between items-center",
   }) as HTMLDivElement;
 
-  // Left side - player 1 info
   const leftSide = Object.assign(document.createElement("div"), {
     className: "flex items-center",
   }) as HTMLDivElement;
@@ -1052,13 +1033,11 @@ export async function loadConfig(mode: string): Promise<void> {
   }) as HTMLTextAreaElement;
   leftSide.append(p1name, p1score);
 
-  // Center - score separator
   const center = Object.assign(document.createElement("span"), {
     className: "game-text",
     textContent: " : ",
   }) as HTMLSpanElement;
 
-  // Right side - player 2 info and fullscreen button
   const rightSide = Object.assign(document.createElement("div"), {
     className: "flex items-center",
   }) as HTMLDivElement;
@@ -1075,7 +1054,6 @@ export async function loadConfig(mode: string): Promise<void> {
     disabled: "true",
   }) as HTMLTextAreaElement;
 
-  // Add full screen button
   const fullscreenBtn = Object.assign(document.createElement("button"), {
     className: "fullscreen-btn game-text",
     textContent: "⛶",
@@ -1086,7 +1064,6 @@ export async function loadConfig(mode: string): Promise<void> {
 
   rightSide.append(p2score, p2name, fullscreenBtn);
   scoreboard.append(leftSide, center, rightSide);
-  //create canvas
   const canvas = Object.assign(document.createElement("canvas"), {
     id: "board",
     tabIndex: 1,
@@ -1100,9 +1077,9 @@ export async function loadConfig(mode: string): Promise<void> {
   canvas.style.height = `${availableHeight}px`;
   canvas.style.maxWidth = "100%";
   canvas.style.maxHeight = `${availableHeight}px`;
-  canvas.style.borderRadius = "0"; // Remove any border radius for full square
-  canvas.style.display = "block"; // Ensure no extra spacing
-  canvas.style.touchAction = "none"; // Prevent scrolling on touch
+  canvas.style.borderRadius = "0";
+  canvas.style.display = "block";
+  canvas.style.touchAction = "none";
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
   // Add mobile touch controls for full screen
@@ -1162,7 +1139,6 @@ export async function loadConfig(mode: string): Promise<void> {
     "touchend",
     e => {
       e.preventDefault();
-      // Release all keys on touch end
       if (data && data.p) {
         data.p.forEach(player => {
           data.keys[player.up] = false;
@@ -1212,7 +1188,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn(`p${i}Down`),
           loadIn(`p${i}InnerCol`),
           loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`)
+          loadIn(`p${i}CornerCol`),
+          i
         )
       );
     }
@@ -1227,7 +1204,8 @@ export async function loadConfig(mode: string): Promise<void> {
         loadIn("p1Down"),
         loadIn("p1InnerCol"),
         loadIn("p1OuterCol"),
-        loadIn("p1CornerCol")
+        loadIn("p1CornerCol"),
+        1
       )
     );
     p.push(
@@ -1239,7 +1217,8 @@ export async function loadConfig(mode: string): Promise<void> {
         loadIn("p2Down"),
         loadIn("p2InnerCol"),
         loadIn("p2OuterCol"),
-        loadIn("p2CornerCol")
+        loadIn("p2CornerCol"),
+        2
       )
     );
     
@@ -1254,7 +1233,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn("p3Down"),
           loadIn("p3InnerCol"),
           loadIn("p3OuterCol"),
-          loadIn("p3CornerCol")
+          loadIn("p3CornerCol"),
+          3
         )
       );
       p.push(
@@ -1266,7 +1246,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn("p4Down"),
           loadIn("p4InnerCol"),
           loadIn("p4OuterCol"),
-          loadIn("p4CornerCol")
+          loadIn("p4CornerCol"),
+          4
         )
       );
     }

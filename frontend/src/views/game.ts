@@ -13,10 +13,6 @@ export function renderGame(): HTMLElement {
   section.className =
     "w-full flex-1 relative m-0 flex flex-col items-center justify-items-center justify-center text-center z-10";
 
-  const currentState = store.getState();
-  if (currentState.isAuthenticated && currentState.currentUser?.username) {
-    loggedInUsers.add(currentState.currentUser.username);
-  }
 
   section.innerHTML = `
      <h1 id="game-title" class="title uppercase mobile-title">
@@ -89,6 +85,10 @@ export function renderGame(): HTMLElement {
     } else {
       showBack();
       hideTitle();
+      const currentState = store.getState();
+      if (currentState.isAuthenticated && currentState.currentUser?.username) {
+        loggedInUsers.add(currentState.currentUser.username);
+      }
       root.innerHTML = renderIframeHTML(mode);
       iframeRef = root.querySelector("#pong-frame") as HTMLIFrameElement;
       document.body.classList.add("game-active");

@@ -5,6 +5,7 @@ import { midline, touchControlArrows } from "./Paddle.draw";
 //import { userService, UserData } from "./services/userService";
 import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
+import { handleTournamentGameCompletion } from "./tournamentGame";
 
 export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
@@ -16,15 +17,15 @@ export function removeBall(ball: Ball): void {
   balls = shrunk;
 }
 
-export async function startGame(fourPlayers: boolean) {
+export async function startGame() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get("lang") || "en";
+    const mode = urlParams.get("mode") || "twoPlayers";
 
     await initI18n(lang);
-    await newGame(fourPlayers);
+    await newGame(mode);
     document.getElementById("board")?.focus();
-    //		collisionTest()
   } catch (error) {
     console.error("Failed to load configuration:", error);
   }
@@ -55,8 +56,8 @@ export function startRound(): void {
   initBoard();
   pad[0].go();
   pad[1].go();
-  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[2].go();
-  if (data.mode == "fourPlayers" || data.mode == "doublePaddle") pad[3].go();
+  if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
+  if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -78,7 +79,7 @@ function initBoard(): void {
       new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
     );
   }
-  if (data.mode == "fourPlayers") {
+  if (data.mode == "multi") {
     pad.push(
       new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
     );
@@ -86,6 +87,9 @@ function initBoard(): void {
       new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
     );
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
+  }
+  if (data.mode == "tournament") {
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   }
 }
 
@@ -131,11 +135,19 @@ export function endRound(): void {
     pad[0].stop();
     pad.shift();
   }
-  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore)
+  
+  if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
+    if (data.isTournament) {
+      finito();
+    } else {
+      endGame();
+    }
+    return;
+  }
+  
+  // Match continues - restart the next round
+  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) {
     setTimeout(startRound, 1500);
-  else {
-    console.log("ahhhhhhhhhhhh");
-    endGame();
   }
 }
 
@@ -163,11 +175,30 @@ export async function finito(): Promise<void> {
     tournamentMatch: data.tournamentMatch, //null in case of single game
     winnerId: winnerId,
   };
+  
   const result = await gameService.finishGame(gameData);
   if (!result) {
     console.error("Failed to finish game on server");
+    return;
   }
+  
   console.log("Game data successfully sent to server");
+  
+  // Handle tournament progression if this is a tournament game
+  if (data.isTournament && data.tournamentId) {
+    try {
+      const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
+      if (tournamentResult) {
+        console.log("Tournament game completed, showing match transition window");
+        return;
+      } else {
+        console.log("Tournament completed or failed, will auto-exit");
+      }
+    } catch (error) {
+      console.error("Error handling tournament game completion:", error);
+    }
+  }
+  
   return;
 }
 
@@ -195,9 +226,16 @@ export async function endGame() {
   if (isMobile()) {
     showExitButton(winner);
   } else {
-    setTimeout(() => {
-      exitGameMessage(winner);
-    }, 3000);
+    // For tournament mode, don't auto-exit if there are more matches
+    if (data.isTournament && data.tournamentId) {
+      // Tournament mode - let the transition window handle the flow
+      console.log("Tournament mode: not auto-exiting, waiting for transition window");
+    } else {
+      // Single player mode - auto-exit after 3 seconds
+      setTimeout(() => {
+        exitGameMessage(winner);
+      }, 3000);
+    }
   }
 }
 
@@ -222,7 +260,6 @@ function isMobile(): boolean {
 }
 
 function showExitButton(winner: string): void {
-  // Create exit button overlay
   const exitOverlay = document.createElement("div");
   exitOverlay.className =
     "fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]";
@@ -250,11 +287,7 @@ function showExitButton(winner: string): void {
       } else if ((document as any).msExitFullscreen) {
         (document as any).msExitFullscreen();
       }
-
-      // Navigate back to game page
       exitGameMessage(winner);
-
-      // Remove the overlay
       document.body.removeChild(exitOverlay);
     });
   }
@@ -359,5 +392,4 @@ function collisionTest(): void {
   window.requestAnimationFrame(loop);
 }
 
-//testCreateGame();
-startGame(false);
+startGame();

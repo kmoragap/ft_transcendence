@@ -31,5 +31,19 @@
   "small": "Маленький",
   "normal": "Обычный",
   "big": "Большой",
-  "huge": "Огромный"
+  "huge": "Огромный",
+  "gameSetup": "Настройки игры",
+  "tournamentSetup": "Настройки турнира",
+  "numberOfPlayers": "Количество игроков",
+  "matchLength": "Длина матча",
+  "back": "Назад",
+  "next": "Далее",
+  "next_match": "Следующий матч",
+  "vs": "против",
+  "get_ready_next_round": "Приготовьтесь к следующему раунду!",
+  "start_match": "Начать матч",
+  "tournament_complete": "Турнир завершен!",
+  "winner": "Победитель",
+  "congratulations_victory": "Поздравляем с победой!",
+  "exit_tournament": "Выйти из турнира"
 }

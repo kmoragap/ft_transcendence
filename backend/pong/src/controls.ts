@@ -60,7 +60,7 @@ function touchDown(ev: TouchEvent) {
 			if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
 			if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
 		}
-		if (data.mode != "fourPlayers" ) {
+		if (data.mode != "multi" ) {
 			if (x > data.canvas.width * 3 / 4) {
 				if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
 				if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
@@ -90,7 +90,7 @@ function touchUp() {
 			pad[0].setDir(0);
 			if (data.mode == "doublePaddle") pad[2].setDir(0);
 		}
-		if (data.mode != "fourPlayers" ) {
+		if (data.mode != "multi" ) {
 			if (lastX > data.canvas.width * 3 / 4) {
 				data.keys[data.p[1].up] = false;
 				data.keys[data.p[1].down] = false;

@@ -15,6 +15,12 @@ export function isPlayerReal(playerId: string): Boolean {
   if (playerId === "AI-Roger-Federror") {
     return false;
   }
+  if (playerId.startsWith("Player ") || 
+      playerId === "Arthur Dent" || 
+      playerId.startsWith("player") ||
+      playerId.includes("AI-")) {
+    return false;
+  }
 
   //TODO: this should check guess_
   if (playerId === "guess_") {

@@ -417,7 +417,7 @@ export async function newGame(mode: string): Promise<void> {
   const allBoxesContainer = Object.assign(document.createElement("div"), {
     className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
   }) as HTMLDivElement;
-  const tournamentContiner = Object.assign(document.createElement("div"), {
+  const tournamentContainer = Object.assign(document.createElement("div"), {
     className: "flex-1 min-w-[300px]",
   }) as HTMLDivElement;
   const player1Container = Object.assign(document.createElement("div"), {

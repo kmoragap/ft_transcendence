@@ -58,10 +58,6 @@ export function startRound(): void {
   pad[1].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
-  if (data.mode == "tournament") {
-    // Tournament mode only uses 2 paddles for the current match
-    // Additional paddles are not needed
-  }
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -93,8 +89,6 @@ function initBoard(): void {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
   }
   if (data.mode == "tournament") {
-    // For tournaments, we only need 2 paddles for the current match
-    // The tournament logic will handle which players are playing
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   }
 }
@@ -196,16 +190,12 @@ export async function finito(): Promise<void> {
       const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
       if (tournamentResult) {
         console.log("Tournament game completed, showing match transition window");
-        // The next match will be shown in a transition window for players to prepare
-        // Don't auto-exit - let the transition window handle the flow
-        return; // Exit early to prevent the auto-exit timeout
+        return;
       } else {
         console.log("Tournament completed or failed, will auto-exit");
-        // Tournament is complete or failed, allow normal auto-exit
       }
     } catch (error) {
       console.error("Error handling tournament game completion:", error);
-      // On error, allow normal auto-exit
     }
   }
   
@@ -297,11 +287,7 @@ function showExitButton(winner: string): void {
       } else if ((document as any).msExitFullscreen) {
         (document as any).msExitFullscreen();
       }
-
-      // Navigate back to game page
       exitGameMessage(winner);
-
-      // Remove the overlay
       document.body.removeChild(exitOverlay);
     });
   }

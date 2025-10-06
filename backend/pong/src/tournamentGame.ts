@@ -63,23 +63,40 @@ export class TournamentManager {
    * Generate tournament bracket (single elimination)
    */
   private generateBracket(players: string[]): TournamentRound[] {
+    console.log("=== Generating Tournament Bracket ===");
+    console.log("Players:", players);
+    
     const rounds: TournamentRound[] = [];
     let currentPlayers = [...players];
     let roundNumber = 1;
 
+    // Get the player ID to name mapping
+    const playerIdToNameMap = (window as any).playerIdToNameMap || {};
+    console.log("Player ID to Name mapping:", playerIdToNameMap);
+
     while (currentPlayers.length > 1) {
+      console.log(`Round ${roundNumber}: ${currentPlayers.length} players`);
       const matches: TournamentMatch[] = [];
       const nextRoundPlayers: string[] = [];
 
       // Create matches for current round
       for (let i = 0; i < currentPlayers.length; i += 2) {
         if (i + 1 < currentPlayers.length) {
+          const player1Id = currentPlayers[i];
+          const player2Id = currentPlayers[i + 1];
+          
+          // Get actual names from the mapping, fallback to "AI" for AI players
+          const player1Name = playerIdToNameMap[player1Id] || 
+            (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+          const player2Name = playerIdToNameMap[player2Id] || 
+            (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+          
           matches.push({
             matchNumber: Math.floor(i / 2) + 1,
-            player1Id: currentPlayers[i],
-            player1Name: `Player ${currentPlayers[i]}`, // TODO: Get actual names
-            player2Id: currentPlayers[i + 1],
-            player2Name: `Player ${currentPlayers[i + 1]}`, // TODO: Get actual names
+            player1Id: player1Id,
+            player1Name: player1Name,
+            player2Id: player2Id,
+            player2Name: player2Name,
             isComplete: false
           });
         } else {
@@ -94,10 +111,20 @@ export class TournamentManager {
         isComplete: false
       });
 
+      console.log(`Round ${roundNumber} created with ${matches.length} matches`);
       // Prepare for next round (winners will be added when matches complete)
       currentPlayers = nextRoundPlayers;
       roundNumber++;
     }
+
+    console.log("Tournament bracket generated:");
+    console.log("Total rounds:", rounds.length);
+    rounds.forEach((round, index) => {
+      console.log(`Round ${index + 1}: ${round.matches.length} matches`);
+      round.matches.forEach((match, matchIndex) => {
+        console.log(`  Match ${matchIndex + 1}: ${match.player1Name} vs ${match.player2Name}`);
+      });
+    });
 
     return rounds;
   }
@@ -147,6 +174,12 @@ export class TournamentManager {
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return false;
 
+    console.log("Completing match:");
+    console.log("Winner ID:", winnerId);
+    console.log("Current round:", this.tournament.currentRound);
+    console.log("Current round matches:", currentRound.matches.length);
+    console.log("Player 1 ID:", data.p[0].id, "Player 2 ID:", data.p[1].id);
+
     // Find and update the completed match
     const match = currentRound.matches.find(m => 
       (m.player1Id === data.p[0].id && m.player2Id === data.p[1].id) ||
@@ -165,8 +198,15 @@ export class TournamentManager {
 
     // Check if current round is complete
     const roundComplete = currentRound.matches.every(m => m.isComplete);
+    console.log("Round complete:", roundComplete);
+    console.log("Match completion status:", currentRound.matches.map(m => ({ 
+      match: `${m.player1Name} vs ${m.player2Name}`, 
+      complete: m.isComplete 
+    })));
+    
     if (roundComplete) {
       currentRound.isComplete = true;
+      console.log("Round is complete, advancing to next round");
       await this.advanceToNextRound();
     }
 
@@ -182,8 +222,15 @@ export class TournamentManager {
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     const nextRound = this.tournament.rounds[this.tournament.currentRound + 1];
 
+    console.log("Advancing to next round:");
+    console.log("Current round:", this.tournament.currentRound);
+    console.log("Total rounds:", this.tournament.rounds.length);
+    console.log("Current round matches:", currentRound?.matches.length);
+    console.log("Next round exists:", !!nextRound);
+
     if (!nextRound) {
       // Tournament is complete
+      console.log("No next round found, completing tournament");
       await this.completeTournament();
       return;
     }
@@ -193,17 +240,24 @@ export class TournamentManager {
       .filter(match => match.winnerId)
       .map(match => match.winnerId!);
 
+    // Get the player ID to name mapping
+    const playerIdToNameMap = (window as any).playerIdToNameMap || {};
+
     // Update next round matches with winners
     let winnerIndex = 0;
     for (const match of nextRound.matches) {
       if (winnerIndex < winners.length) {
-        match.player1Id = winners[winnerIndex];
-        match.player1Name = `Player ${winners[winnerIndex]}`; // TODO: Get actual names
+        const player1Id = winners[winnerIndex];
+        match.player1Id = player1Id;
+        match.player1Name = playerIdToNameMap[player1Id] || 
+          (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
         winnerIndex++;
       }
       if (winnerIndex < winners.length) {
-        match.player2Id = winners[winnerIndex];
-        match.player2Name = `Player ${winners[winnerIndex]}`; // TODO: Get actual names
+        const player2Id = winners[winnerIndex];
+        match.player2Id = player2Id;
+        match.player2Name = playerIdToNameMap[player2Id] || 
+          (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
         winnerIndex++;
       }
     }
@@ -233,6 +287,54 @@ export class TournamentManager {
     
     // TODO: Update tournament status in database
     // TODO: Notify players of tournament completion
+  }
+
+  /**
+   * Show match transition window
+   */
+  public showMatchTransition(nextMatch: TournamentMatch): void {
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+    overlay.id = "matchTransitionOverlay";
+
+    const modal = document.createElement("div");
+    modal.className = "bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center";
+    modal.innerHTML = `
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Next Match</h2>
+        <div class="text-lg text-gray-600 mb-2">
+          <span class="font-semibold text-blue-600">${nextMatch.player1Name}</span>
+          <span class="mx-4 text-gray-400">vs</span>
+          <span class="font-semibold text-red-600">${nextMatch.player2Name}</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-4">Get ready for the next round!</p>
+      </div>
+      <button id="startNextMatchBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+        Start Match
+      </button>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Add event listener for start button
+    const startBtn = document.getElementById("startNextMatchBtn");
+    if (startBtn) {
+      startBtn.addEventListener("click", () => {
+        this.startTournamentMatch(nextMatch);
+        this.hideMatchTransition();
+      });
+    }
+  }
+
+  /**
+   * Hide match transition window
+   */
+  private hideMatchTransition(): void {
+    const overlay = document.getElementById("matchTransitionOverlay");
+    if (overlay) {
+      overlay.remove();
+    }
   }
 
   /**
@@ -319,15 +421,30 @@ export async function newTournamentGame(tournamentId: string): Promise<boolean> 
  * Handle tournament game completion
  */
 export async function handleTournamentGameCompletion(winnerId: string, gameId: string): Promise<boolean> {
-  const success = await tournamentManager.completeMatch(winnerId, gameId);
+  console.log("=== Tournament Game Completion ===");
+  console.log("Winner ID:", winnerId);
+  console.log("Game ID:", gameId);
   
-  if (success && !tournamentManager.isTournamentComplete()) {
-    // Start next match automatically
+  const success = await tournamentManager.completeMatch(winnerId, gameId);
+  console.log("Match completion success:", success);
+  
+  const isComplete = tournamentManager.isTournamentComplete();
+  console.log("Tournament complete:", isComplete);
+  
+  if (success && !isComplete) {
+    // Show match transition window instead of starting automatically
     const nextMatch = tournamentManager.getNextMatch();
+    console.log("Next match found:", !!nextMatch);
     if (nextMatch) {
-      console.log("Starting next tournament match...");
-      return await tournamentManager.startTournamentMatch(nextMatch);
+      console.log("Next match:", `${nextMatch.player1Name} vs ${nextMatch.player2Name}`);
+      console.log("Showing match transition for next match...");
+      tournamentManager.showMatchTransition(nextMatch);
+      return true; // Return success but don't start the match yet
+    } else {
+      console.log("No next match found");
     }
+  } else if (isComplete) {
+    console.log("Tournament is complete, not showing transition");
   }
   
   return success;

@@ -279,21 +279,19 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
     checked: isAi,
     className: "ml-1"
   });
-  if (p === "2") {
-    e4.addEventListener("change", (event) => {
-      const target = event.target;
-      if (!target.checked) {
-        window.parent.postMessage(
-          {
-            type: "REQUEST_LOGIN",
-            playerId: "2",
-            playerName: `name_p${p}`
-          },
-          window.location.origin
-        );
-      }
-    });
-  }
+  e4.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!target.checked) {
+      window.parent.postMessage(
+        {
+          type: "REQUEST_LOGIN",
+          playerId: p,
+          playerName: `name_p${p}`
+        },
+        window.location.origin
+      );
+    }
+  });
   const e5 = Object.assign(document.createElement("label"), {
     className: "game-text",
     for: `p${p}Up`,
@@ -707,22 +705,29 @@ var TournamentManager = class {
    * Generate tournament bracket (single elimination)
    */
   generateBracket(players) {
+    console.log("=== Generating Tournament Bracket ===");
+    console.log("Players:", players);
     const rounds = [];
     let currentPlayers = [...players];
     let roundNumber = 1;
+    const playerIdToNameMap = window.playerIdToNameMap || {};
+    console.log("Player ID to Name mapping:", playerIdToNameMap);
     while (currentPlayers.length > 1) {
+      console.log(`Round ${roundNumber}: ${currentPlayers.length} players`);
       const matches = [];
       const nextRoundPlayers = [];
       for (let i = 0; i < currentPlayers.length; i += 2) {
         if (i + 1 < currentPlayers.length) {
+          const player1Id = currentPlayers[i];
+          const player2Id = currentPlayers[i + 1];
+          const player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+          const player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
           matches.push({
             matchNumber: Math.floor(i / 2) + 1,
-            player1Id: currentPlayers[i],
-            player1Name: `Player ${currentPlayers[i]}`,
-            // TODO: Get actual names
-            player2Id: currentPlayers[i + 1],
-            player2Name: `Player ${currentPlayers[i + 1]}`,
-            // TODO: Get actual names
+            player1Id,
+            player1Name,
+            player2Id,
+            player2Name,
             isComplete: false
           });
         } else {
@@ -734,9 +739,18 @@ var TournamentManager = class {
         matches,
         isComplete: false
       });
+      console.log(`Round ${roundNumber} created with ${matches.length} matches`);
       currentPlayers = nextRoundPlayers;
       roundNumber++;
     }
+    console.log("Tournament bracket generated:");
+    console.log("Total rounds:", rounds.length);
+    rounds.forEach((round, index) => {
+      console.log(`Round ${index + 1}: ${round.matches.length} matches`);
+      round.matches.forEach((match, matchIndex) => {
+        console.log(`  Match ${matchIndex + 1}: ${match.player1Name} vs ${match.player2Name}`);
+      });
+    });
     return rounds;
   }
   /**
@@ -772,6 +786,11 @@ var TournamentManager = class {
     if (!this.tournament) return false;
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return false;
+    console.log("Completing match:");
+    console.log("Winner ID:", winnerId);
+    console.log("Current round:", this.tournament.currentRound);
+    console.log("Current round matches:", currentRound.matches.length);
+    console.log("Player 1 ID:", data.p[0].id, "Player 2 ID:", data.p[1].id);
     const match = currentRound.matches.find(
       (m) => m.player1Id === data.p[0].id && m.player2Id === data.p[1].id || m.player1Id === data.p[1].id && m.player2Id === data.p[0].id
     );
@@ -783,8 +802,14 @@ var TournamentManager = class {
     match.gameId = gameId;
     match.isComplete = true;
     const roundComplete = currentRound.matches.every((m) => m.isComplete);
+    console.log("Round complete:", roundComplete);
+    console.log("Match completion status:", currentRound.matches.map((m) => ({
+      match: `${m.player1Name} vs ${m.player2Name}`,
+      complete: m.isComplete
+    })));
     if (roundComplete) {
       currentRound.isComplete = true;
+      console.log("Round is complete, advancing to next round");
       await this.advanceToNextRound();
     }
     return true;
@@ -796,21 +821,30 @@ var TournamentManager = class {
     if (!this.tournament) return;
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     const nextRound = this.tournament.rounds[this.tournament.currentRound + 1];
+    console.log("Advancing to next round:");
+    console.log("Current round:", this.tournament.currentRound);
+    console.log("Total rounds:", this.tournament.rounds.length);
+    console.log("Current round matches:", currentRound?.matches.length);
+    console.log("Next round exists:", !!nextRound);
     if (!nextRound) {
+      console.log("No next round found, completing tournament");
       await this.completeTournament();
       return;
     }
     const winners = currentRound.matches.filter((match) => match.winnerId).map((match) => match.winnerId);
+    const playerIdToNameMap = window.playerIdToNameMap || {};
     let winnerIndex = 0;
     for (const match of nextRound.matches) {
       if (winnerIndex < winners.length) {
-        match.player1Id = winners[winnerIndex];
-        match.player1Name = `Player ${winners[winnerIndex]}`;
+        const player1Id = winners[winnerIndex];
+        match.player1Id = player1Id;
+        match.player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
         winnerIndex++;
       }
       if (winnerIndex < winners.length) {
-        match.player2Id = winners[winnerIndex];
-        match.player2Name = `Player ${winners[winnerIndex]}`;
+        const player2Id = winners[winnerIndex];
+        match.player2Id = player2Id;
+        match.player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
         winnerIndex++;
       }
     }
@@ -828,6 +862,48 @@ var TournamentManager = class {
     this.tournament.status = "FINISHED";
     console.log(`Tournament "${this.tournament.name}" completed! Winner: ${winnerName}`);
     this.showTournamentWinner(winnerName || "Unknown");
+  }
+  /**
+   * Show match transition window
+   */
+  showMatchTransition(nextMatch) {
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+    overlay.id = "matchTransitionOverlay";
+    const modal = document.createElement("div");
+    modal.className = "bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center";
+    modal.innerHTML = `
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Next Match</h2>
+        <div class="text-lg text-gray-600 mb-2">
+          <span class="font-semibold text-blue-600">${nextMatch.player1Name}</span>
+          <span class="mx-4 text-gray-400">vs</span>
+          <span class="font-semibold text-red-600">${nextMatch.player2Name}</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-4">Get ready for the next round!</p>
+      </div>
+      <button id="startNextMatchBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+        Start Match
+      </button>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const startBtn = document.getElementById("startNextMatchBtn");
+    if (startBtn) {
+      startBtn.addEventListener("click", () => {
+        this.startTournamentMatch(nextMatch);
+        this.hideMatchTransition();
+      });
+    }
+  }
+  /**
+   * Hide match transition window
+   */
+  hideMatchTransition() {
+    const overlay = document.getElementById("matchTransitionOverlay");
+    if (overlay) {
+      overlay.remove();
+    }
   }
   /**
    * Show tournament winner message
@@ -892,13 +968,26 @@ async function newTournamentGame(tournamentId) {
   return await tournamentManager.startTournamentMatch(nextMatch);
 }
 async function handleTournamentGameCompletion(winnerId, gameId) {
+  console.log("=== Tournament Game Completion ===");
+  console.log("Winner ID:", winnerId);
+  console.log("Game ID:", gameId);
   const success = await tournamentManager.completeMatch(winnerId, gameId);
-  if (success && !tournamentManager.isTournamentComplete()) {
+  console.log("Match completion success:", success);
+  const isComplete = tournamentManager.isTournamentComplete();
+  console.log("Tournament complete:", isComplete);
+  if (success && !isComplete) {
     const nextMatch = tournamentManager.getNextMatch();
+    console.log("Next match found:", !!nextMatch);
     if (nextMatch) {
-      console.log("Starting next tournament match...");
-      return await tournamentManager.startTournamentMatch(nextMatch);
+      console.log("Next match:", `${nextMatch.player1Name} vs ${nextMatch.player2Name}`);
+      console.log("Showing match transition for next match...");
+      tournamentManager.showMatchTransition(nextMatch);
+      return true;
+    } else {
+      console.log("No next match found");
     }
+  } else if (isComplete) {
+    console.log("Tournament is complete, not showing transition");
   }
   return success;
 }
@@ -1102,18 +1191,25 @@ function handleFullscreenChange() {
   }
 }
 function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
+  const isAiByName = name.includes("Player") && name !== "Player 1";
+  const finalIsAi = isAi || isAiByName;
+  let finalId = id;
+  if (!finalIsAi && !finalId) {
+    const urlParams = new URLSearchParams(window.location.search);
+    finalId = urlParams.get("userId") || name;
+  }
   var p = {
     name,
-    id: isAi ? "AI-Roger-Federror" : id || "",
+    id: finalIsAi ? "AI-Roger-Federror" : finalId,
     score: 0,
-    isAi,
+    isAi: finalIsAi,
     up,
     down,
     innerCol,
     outerCol: outercol,
     cornerCol
   };
-  if (isAi) p.name = "Roger Federror";
+  if (finalIsAi) p.name = "Roger Federror";
   return p;
 }
 function loadIn(id) {
@@ -1211,7 +1307,60 @@ async function newGame(mode) {
   const settingsForm = setupForm.querySelector("#settings");
   const bgColorsForm = setupForm.querySelector("#bgColors");
   if (mode === "tournament") {
-    let showStep2 = function(step) {
+    let createPlayerBoxes2 = function(numPlayers) {
+      const container = document.getElementById("playerSetupContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      for (let i = 1; i <= numPlayers; i++) {
+        const playerContainer = Object.assign(document.createElement("div"), {
+          className: "flex-1"
+        });
+        const playerList = Object.assign(document.createElement("ul"), {
+          className: "list-none"
+        });
+        const defaultNames = [
+          "Player 1",
+          "Player 2",
+          "Player 3",
+          "Player 4",
+          "Player 5",
+          "Player 6",
+          "Player 7",
+          "Player 8"
+        ];
+        const defaultKeys = [
+          { up: "Shift", down: "Control" },
+          { up: "ArrowUp", down: "ArrowDown" },
+          { up: "w", down: "s" },
+          { up: "i", down: "k" },
+          { up: "t", down: "g" },
+          { up: "u", down: "j" },
+          { up: "o", down: "l" },
+          { up: "p", down: ";" }
+        ];
+        let playerName = defaultNames[i - 1] || `Player ${i}`;
+        const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
+        if (i === 1) {
+          const urlParams2 = new URLSearchParams(window.location.search);
+          const username2 = urlParams2.get("username") || "Player 1";
+          playerName = username2;
+        }
+        playerSetupMenu(
+          playerList,
+          i.toString(),
+          playerName,
+          i > 1,
+          // First player is human (logged-in user), rest are AI by default
+          playerKeys.up,
+          playerKeys.down,
+          "#ffffff",
+          "#808080",
+          "#ff0000"
+        );
+        playerContainer.appendChild(playerList);
+        container.appendChild(playerContainer);
+      }
+    }, showStep2 = function(step) {
       document.querySelectorAll(".wizard-step").forEach((el) => {
         el.classList.add("hidden");
       });
@@ -1222,9 +1371,16 @@ async function newGame(mode) {
       backButton.classList.toggle("hidden", step === 1);
       nextButton.classList.toggle("hidden", step === 3);
       finishButton.classList.toggle("hidden", step !== 3);
+      if (step === 2) {
+        const playersNumberInput2 = document.getElementById("playersNumber");
+        if (playersNumberInput2) {
+          const numPlayers = parseInt(playersNumberInput2.value) || 4;
+          createPlayerBoxes2(numPlayers);
+        }
+      }
       currentStep = step;
     };
-    var showStep = showStep2;
+    var createPlayerBoxes = createPlayerBoxes2, showStep = showStep2;
     const tournamentWizard = Object.assign(document.createElement("div"), {
       className: "tournament-wizard"
     });
@@ -1260,11 +1416,19 @@ async function newGame(mode) {
     });
     const { form: tournamentForm } = tournamentSetupMenu();
     step1Container.appendChild(tournamentForm);
+    const playersNumberInput = document.getElementById("playersNumber");
+    if (playersNumberInput) {
+      playersNumberInput.addEventListener("input", () => {
+        if (currentStep === 2) {
+          const numPlayers = parseInt(playersNumberInput.value) || 4;
+          createPlayerBoxes2(numPlayers);
+        }
+      });
+    }
     const step2FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+      id: "playerSetupContainer"
     });
-    step2FlexContainer.appendChild(player1Container);
-    step2FlexContainer.appendChild(player2Container);
     step2Container.appendChild(step2FlexContainer);
     const step3FlexContainer = Object.assign(document.createElement("div"), {
       className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
@@ -1466,15 +1630,54 @@ async function createAndStartTournament() {
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(`p${i}Id`);
       const playerNameInput = document.getElementById(`name_p${i}`);
-      if (playerIdInput && playerIdInput.value) {
-        players.push(playerIdInput.value);
-      } else if (playerNameInput && playerNameInput.value) {
-        players.push(playerNameInput.value);
+      const playerAiInput = document.getElementById(`p${i}Ai`);
+      const isAi = playerAiInput ? playerAiInput.checked : i > 1;
+      if (isAi) {
+        players.push("AI-Roger-Federror");
       } else {
-        players.push(`player${i}`);
+        if (playerIdInput && playerIdInput.value) {
+          players.push(playerIdInput.value);
+        } else if (i === 1) {
+          const urlParams2 = new URLSearchParams(window.location.search);
+          const userId = urlParams2.get("userId") || playerNameInput?.value || "dvaisman";
+          players.push(userId);
+        } else {
+          const name = playerNameInput?.value || `player${i}`;
+          players.push(name);
+        }
       }
     }
     console.log("Creating tournament with players:", players);
+    console.log("Player details:");
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`);
+      const playerNameInput = document.getElementById(`name_p${i}`);
+      const playerAiInput = document.getElementById(`p${i}Ai`);
+      console.log(`Player ${i}:`, {
+        id: playerIdInput?.value || "none",
+        name: playerNameInput?.value || "none",
+        isAi: playerAiInput?.checked || false,
+        finalId: players[i - 1]
+      });
+    }
+    console.log("First player data check:");
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log("URL userId:", urlParams.get("userId"));
+    console.log("URL username:", urlParams.get("username"));
+    const playerIdToNameMap = {};
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`);
+      const playerNameInput = document.getElementById(`name_p${i}`);
+      const playerAiInput = document.getElementById(`p${i}Ai`);
+      const isAi = playerAiInput ? playerAiInput.checked : i > 1;
+      const playerId = players[i - 1];
+      const playerName = playerNameInput?.value || `Player ${i}`;
+      if (!isAi) {
+        playerIdToNameMap[playerId] = playerName;
+      }
+    }
+    window.playerIdToNameMap = playerIdToNameMap;
+    console.log("Player ID to Name mapping:", playerIdToNameMap);
     const tournamentData = {
       name: `Tournament_${Date.now()}`,
       // Use timestamp to make it unique
@@ -1637,60 +1840,84 @@ async function loadConfig(mode) {
     }, 100);
   }
   var p = [];
-  p.push(
-    loadPlayer(
-      loadIn("name_p1"),
-      loadIn("p1Id"),
-      // get user id from hidden input
-      loadInB("p1Ai"),
-      loadIn("p1Up"),
-      loadIn("p1Down"),
-      loadIn("p1InnerCol"),
-      loadIn("p1OuterCol"),
-      loadIn("p1CornerCol")
-    )
-  );
-  p.push(
-    loadPlayer(
-      loadIn("name_p2"),
-      loadIn("p2Id"),
-      // get user ID from hidden input
-      loadInB("p2Ai"),
-      loadIn("p2Up"),
-      loadIn("p2Down"),
-      loadIn("p2InnerCol"),
-      loadIn("p2OuterCol"),
-      loadIn("p2CornerCol")
-    )
-  );
-  if (mode === "multi")
+  if (mode === "tournament") {
+    const playersNumberInput = document.getElementById("playersNumber");
+    const numPlayers = playersNumberInput ? parseInt(playersNumberInput.value) || 4 : 4;
+    for (let i = 1; i <= numPlayers; i++) {
+      let playerId = loadIn(`p${i}Id`);
+      if (i === 1 && !playerId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        playerId = urlParams.get("userId") || "";
+      }
+      p.push(
+        loadPlayer(
+          loadIn(`name_p${i}`),
+          playerId,
+          loadInB(`p${i}Ai`),
+          loadIn(`p${i}Up`),
+          loadIn(`p${i}Down`),
+          loadIn(`p${i}InnerCol`),
+          loadIn(`p${i}OuterCol`),
+          loadIn(`p${i}CornerCol`)
+        )
+      );
+    }
+  } else {
     p.push(
       loadPlayer(
-        loadIn("name_p3"),
-        "",
-        //player ID
-        loadInB("p3Ai"),
-        loadIn("p3Up"),
-        loadIn("p3Down"),
-        loadIn("p3InnerCol"),
-        loadIn("p3OuterCol"),
-        loadIn("p3CornerCol")
+        loadIn("name_p1"),
+        loadIn("p1Id"),
+        // get user id from hidden input
+        loadInB("p1Ai"),
+        loadIn("p1Up"),
+        loadIn("p1Down"),
+        loadIn("p1InnerCol"),
+        loadIn("p1OuterCol"),
+        loadIn("p1CornerCol")
       )
     );
-  if (mode === "multi")
     p.push(
       loadPlayer(
-        loadIn("name_p4"),
-        "",
-        //player ID
-        loadInB("p4Ai"),
-        loadIn("p4Up"),
-        loadIn("p4Down"),
-        loadIn("p4InnerCol"),
-        loadIn("p4OuterCol"),
-        loadIn("p4CornerCol")
+        loadIn("name_p2"),
+        loadIn("p2Id"),
+        // get user ID from hidden input
+        loadInB("p2Ai"),
+        loadIn("p2Up"),
+        loadIn("p2Down"),
+        loadIn("p2InnerCol"),
+        loadIn("p2OuterCol"),
+        loadIn("p2CornerCol")
       )
     );
+    if (mode === "multi") {
+      p.push(
+        loadPlayer(
+          loadIn("name_p3"),
+          "",
+          //player ID
+          loadInB("p3Ai"),
+          loadIn("p3Up"),
+          loadIn("p3Down"),
+          loadIn("p3InnerCol"),
+          loadIn("p3OuterCol"),
+          loadIn("p3CornerCol")
+        )
+      );
+      p.push(
+        loadPlayer(
+          loadIn("name_p4"),
+          "",
+          //player ID
+          loadInB("p4Ai"),
+          loadIn("p4Up"),
+          loadIn("p4Down"),
+          loadIn("p4InnerCol"),
+          loadIn("p4OuterCol"),
+          loadIn("p4CornerCol")
+        )
+      );
+    }
+  }
   const loadData = {
     canvas,
     fps: 50,
@@ -1733,7 +1960,12 @@ async function loadConfig(mode) {
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  if (mode === "multi") {
+  if (mode === "tournament") {
+    loadData.mode = "tournament";
+    loadData.isTournament = true;
+    loadData.nameTB1.value = p[0]?.name || "Player 1";
+    loadData.nameTB2.value = p[1]?.name || "Player 2";
+  } else if (mode === "multi") {
     loadData.mode = "multi";
     loadData.nameTB1.value = p[0].name + " / " + p[1].name;
     loadData.nameTB2.value = p[2].name + " / " + p[3].name;
@@ -2416,6 +2648,8 @@ function startRound() {
   pad[1].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
+  if (data.mode == "tournament") {
+  }
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -2444,6 +2678,9 @@ function initBoard() {
       new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
     );
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
+  }
+  if (data.mode == "tournament") {
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   }
 }
 function loop() {
@@ -2528,7 +2765,10 @@ async function finito() {
     try {
       const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
       if (tournamentResult) {
-        console.log("Tournament game completed, next match will start automatically");
+        console.log("Tournament game completed, showing match transition window");
+        return;
+      } else {
+        console.log("Tournament completed or failed, will auto-exit");
       }
     } catch (error) {
       console.error("Error handling tournament game completion:", error);
@@ -2555,9 +2795,13 @@ async function endGame() {
   if (isMobile2()) {
     showExitButton(winner);
   } else {
-    setTimeout(() => {
-      exitGameMessage(winner);
-    }, 3e3);
+    if (data.isTournament && data.tournamentId) {
+      console.log("Tournament mode: not auto-exiting, waiting for transition window");
+    } else {
+      setTimeout(() => {
+        exitGameMessage(winner);
+      }, 3e3);
+    }
   }
 }
 function exitGameMessage(winner) {

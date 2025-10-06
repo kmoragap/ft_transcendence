@@ -58,6 +58,10 @@ export function startRound(): void {
   pad[1].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
+  if (data.mode == "tournament") {
+    // Tournament mode only uses 2 paddles for the current match
+    // Additional paddles are not needed
+  }
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -87,6 +91,11 @@ function initBoard(): void {
       new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
     );
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
+  }
+  if (data.mode == "tournament") {
+    // For tournaments, we only need 2 paddles for the current match
+    // The tournament logic will handle which players are playing
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   }
 }
 
@@ -178,12 +187,17 @@ export async function finito(): Promise<void> {
     try {
       const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
       if (tournamentResult) {
-        console.log("Tournament game completed, next match will start automatically");
-        // The next match will be handled by the tournament manager
-        // For now, we'll exit and let the frontend handle the next match
+        console.log("Tournament game completed, showing match transition window");
+        // The next match will be shown in a transition window for players to prepare
+        // Don't auto-exit - let the transition window handle the flow
+        return; // Exit early to prevent the auto-exit timeout
+      } else {
+        console.log("Tournament completed or failed, will auto-exit");
+        // Tournament is complete or failed, allow normal auto-exit
       }
     } catch (error) {
       console.error("Error handling tournament game completion:", error);
+      // On error, allow normal auto-exit
     }
   }
   
@@ -214,9 +228,16 @@ export async function endGame() {
   if (isMobile()) {
     showExitButton(winner);
   } else {
-    setTimeout(() => {
-      exitGameMessage(winner);
-    }, 3000);
+    // For tournament mode, don't auto-exit if there are more matches
+    if (data.isTournament && data.tournamentId) {
+      // Tournament mode - let the transition window handle the flow
+      console.log("Tournament mode: not auto-exiting, waiting for transition window");
+    } else {
+      // Single player mode - auto-exit after 3 seconds
+      setTimeout(() => {
+        exitGameMessage(winner);
+      }, 3000);
+    }
   }
 }
 

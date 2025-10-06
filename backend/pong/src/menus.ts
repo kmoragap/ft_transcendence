@@ -161,21 +161,20 @@ export function playerSetupMenu(
     checked: isAi,
     className: "ml-1",
   }) as HTMLInputElement;
-  if (p === "2") {
-    e4.addEventListener("change", event => {
-      const target = event.target as HTMLInputElement;
-      if (!target.checked) {
-        window.parent.postMessage(
-          {
-            type: "REQUEST_LOGIN",
-            playerId: "2",
-            playerName: `name_p${p}`,
-          },
-          window.location.origin
-        );
-      }
-    });
-  }
+  // Add login modal for any player when AI is unchecked
+  e4.addEventListener("change", event => {
+    const target = event.target as HTMLInputElement;
+    if (!target.checked) {
+      window.parent.postMessage(
+        {
+          type: "REQUEST_LOGIN",
+          playerId: p,
+          playerName: `name_p${p}`,
+        },
+        window.location.origin
+      );
+    }
+  });
   //keys
   const e5 = Object.assign(document.createElement("label"), {
     className: "game-text",

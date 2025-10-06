@@ -926,7 +926,6 @@ async function createAndStartTournament(): Promise<void> {
         } else if (i === 1) {
           // First player - get user ID from URL params
           const urlParams = new URLSearchParams(window.location.search);
-          const userId = urlParams.get('userId') || playerNameInput?.value || 'dvaisman';
           const userId = urlParams.get('userId') || playerNameInput?.value;
           if (!userId) {
             alert("No valid user ID or player name found for the first player. Please enter a name or log in.");
@@ -980,10 +979,8 @@ async function createAndStartTournament(): Promise<void> {
     (window as any).playerIdToNameMap = playerIdToNameMap;
     console.log("Player ID to Name mapping:", playerIdToNameMap);
     const defaultName = `Tournament - ${new Date().toISOString()} (${players.length} players)`;
-    // Get tournament name from user input, or generate a descriptive default name
     const tournamentNameInput = document.getElementById('tournamentName') as HTMLInputElement;
     const userProvidedName = tournamentNameInput?.value?.trim();
-    const defaultName = `Tournament - ${new Date().toLocaleString()} (${players.length} players)`;
     const tournamentData = {
       name: userProvidedName ? userProvidedName : defaultName,
       playersIds: players

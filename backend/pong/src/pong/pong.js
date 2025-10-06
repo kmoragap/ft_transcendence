@@ -176,6 +176,28 @@ var init_i18n = __esm({
 });
 
 // src/menus.ts
+function savePlayerData(playerId) {
+  const nameInput = document.getElementById(`name_p${playerId}`);
+  const idInput = document.getElementById(`p${playerId}Id`);
+  const aiCheckbox = document.getElementById(`p${playerId}Ai`);
+  if (nameInput || idInput || aiCheckbox) {
+    savedPlayerData[playerId] = {
+      name: nameInput?.value || "",
+      id: idInput?.value || "",
+      isAi: aiCheckbox?.checked || false,
+      loggedInUsername: savedPlayerData[playerId]?.loggedInUsername || ""
+      // Preserve the actual logged-in username
+    };
+  }
+}
+function restorePlayerData(playerId, nameInput, idInput, aiCheckbox) {
+  const saved = savedPlayerData[playerId];
+  if (saved) {
+    nameInput.value = saved.name;
+    idInput.value = saved.id;
+    aiCheckbox.checked = saved.isAi;
+  }
+}
 function tournamentSetupMenu() {
   const settings = Object.assign(document.createElement("form"), {
     id: "tournamentSettings",
@@ -226,6 +248,15 @@ function tournamentSetupMenu() {
   return { form: container };
 }
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
+  savePlayerData(p);
+  if (!savedPlayerData[p]) {
+    savedPlayerData[p] = {
+      name,
+      id: "",
+      isAi,
+      loggedInUsername: ""
+    };
+  }
   const idInput = Object.assign(document.createElement("input"), {
     type: "hidden",
     id: `p${p}Id`,
@@ -272,6 +303,35 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
         },
         window.location.origin
       );
+    } else {
+      const nameInput = document.getElementById(`name_p${p}`);
+      const idInput2 = document.getElementById(`p${p}Id`);
+      if (nameInput) {
+        nameInput.value = `AI-${t("player")}-${p}`;
+      }
+      if (idInput2) {
+        idInput2.value = "";
+      }
+      if (p === "2") {
+        window.gamePlayer2 = null;
+      }
+      const actualLoggedInUsername = savedPlayerData[p]?.loggedInUsername || "";
+      if (savedPlayerData[p]) {
+        savedPlayerData[p].name = nameInput?.value || `AI-${t("player")}-${p}`;
+        savedPlayerData[p].id = "";
+        savedPlayerData[p].isAi = true;
+        savedPlayerData[p].loggedInUsername = "";
+      }
+      if (actualLoggedInUsername) {
+        window.parent.postMessage(
+          {
+            type: "PLAYER_LOGOUT",
+            playerId: p,
+            username: actualLoggedInUsername
+          },
+          window.location.origin
+        );
+      }
     }
   });
   const e5 = Object.assign(document.createElement("label"), {
@@ -371,6 +431,7 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   const ul = document.createElement("li");
   ul.appendChild(form);
   list.appendChild(ul);
+  restorePlayerData(p, e2, idInput, e4);
 }
 function gameSetupMenu(mode) {
   const settings = Object.assign(document.createElement("form"), {
@@ -602,10 +663,12 @@ function gameSetupMenu(mode) {
   container.appendChild(ul);
   return { form: container, startButton: e22 };
 }
+var savedPlayerData;
 var init_menus = __esm({
   "src/menus.ts"() {
     "use strict";
     init_i18n();
+    savedPlayerData = {};
     window.addEventListener("message", (event) => {
       if (event.origin !== window.location.origin) {
         return;
@@ -622,6 +685,12 @@ var init_menus = __esm({
         if (idInput && userData?.id) {
           idInput.value = userData.id;
         }
+        if (savedPlayerData[playerId]) {
+          savedPlayerData[playerId].name = username;
+          savedPlayerData[playerId].id = userData?.id || "";
+          savedPlayerData[playerId].isAi = false;
+          savedPlayerData[playerId].loggedInUsername = username;
+        }
         if (playerId === "2") {
           window.gamePlayer2 = {
             id: userData?.id,
@@ -630,9 +699,6 @@ var init_menus = __esm({
             loggedIn: true
           };
         }
-        console.log(
-          `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
-        );
       } else if (event.data.type === "LOGIN_CANCELLED") {
         const { playerId } = event.data;
         const aiCheckbox = document.getElementById(
@@ -641,10 +707,8 @@ var init_menus = __esm({
         if (aiCheckbox) {
           aiCheckbox.checked = true;
         }
-        console.log(`Login cancelled for player ${playerId}, reverting to AI`);
       } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
         window.gamePlayer2 = null;
-        console.log("Player 2 data cleared");
       }
     });
   }
@@ -796,8 +860,8 @@ var init_tournamentGame = __esm({
             if (player1Index < players.length && player2Index < players.length) {
               const player1Id = players[player1Index];
               const player2Id = players[player2Index];
-              const player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
-              const player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+              const player1Name = playerIdToNameMap[player1Id] || (player1Id.startsWith("AI-") ? `AI Player ${player1Id.split("-")[2]}` : `Player ${player1Id}`);
+              const player2Name = playerIdToNameMap[player2Id] || (player2Id.startsWith("AI-") ? `AI Player ${player2Id.split("-")[2]}` : `Player ${player2Id}`);
               firstRound.matches[i] = {
                 matchNumber: i + 1,
                 player1Id,
@@ -839,16 +903,16 @@ var init_tournamentGame = __esm({
         await this.resetGameState();
         data.isTournament = true;
         data.tournamentId = this.tournament.id;
-        data.tournamentRound = match.matchNumber;
+        data.tournamentRound = this.tournament.currentRound + 1;
         data.tournamentMatch = match.matchNumber;
         data.p[0].id = match.player1Id;
         data.p[0].name = match.player1Name;
         data.p[0].score = 0;
-        data.p[0].isAi = match.player1Id === "AI-Roger-Federror";
+        data.p[0].isAi = match.player1Id.startsWith("AI-");
         data.p[1].id = match.player2Id;
         data.p[1].name = match.player2Name;
         data.p[1].score = 0;
-        data.p[1].isAi = match.player2Id === "AI-Roger-Federror";
+        data.p[1].isAi = match.player2Id.startsWith("AI-");
         data.nameTB1.value = match.player1Name;
         data.nameTB2.value = match.player2Name;
         data.scoreTB1.value = "0";
@@ -896,13 +960,13 @@ var init_tournamentGame = __esm({
           if (winnerIndex < winners.length) {
             const player1Id = winners[winnerIndex];
             match.player1Id = player1Id;
-            match.player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+            match.player1Name = playerIdToNameMap[player1Id] || (player1Id.startsWith("AI-") ? `AI Player ${player1Id.split("-")[2]}` : `Player ${player1Id}`);
             winnerIndex++;
           }
           if (winnerIndex < winners.length) {
             const player2Id = winners[winnerIndex];
             match.player2Id = player2Id;
-            match.player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+            match.player2Name = playerIdToNameMap[player2Id] || (player2Id.startsWith("AI-") ? `AI Player ${player2Id.split("-")[2]}` : `Player ${player2Id}`);
             winnerIndex++;
           }
         }
@@ -1193,7 +1257,7 @@ function handleFullscreenChange() {
     updateCanvasForFullscreen(isCurrentlyFullscreen);
   }
 }
-function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
+function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol, playerIndex) {
   const isAiByName = name.includes("Player") && name !== "Player 1";
   const finalIsAi = isAi || isAiByName;
   let finalId = id;
@@ -1203,7 +1267,7 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   }
   var p = {
     name,
-    id: finalIsAi ? "AI-Roger-Federror" : finalId,
+    id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
     score: 0,
     isAi: finalIsAi,
     up,
@@ -1228,7 +1292,6 @@ async function newGame(mode) {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  console.log("Starting new game in mode:", mode);
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app"
   });
@@ -1258,7 +1321,7 @@ async function newGame(mode) {
   const allBoxesContainer = Object.assign(document.createElement("div"), {
     className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
   });
-  const tournamentContiner = Object.assign(document.createElement("div"), {
+  const tournamentContainer = Object.assign(document.createElement("div"), {
     className: "flex-1 min-w-[300px]"
   });
   const player1Container = Object.assign(document.createElement("div"), {
@@ -1636,13 +1699,17 @@ async function createAndStartTournament() {
       const playerAiInput = document.getElementById(`p${i}Ai`);
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       if (isAi) {
-        players.push("AI-Roger-Federror");
+        players.push(`AI-Player-${i}`);
       } else {
         if (playerIdInput && playerIdInput.value) {
           players.push(playerIdInput.value);
         } else if (i === 1) {
           const urlParams2 = new URLSearchParams(window.location.search);
-          const userId = urlParams2.get("userId") || playerNameInput?.value || "dvaisman";
+          const userId = urlParams2.get("userId") || playerNameInput?.value;
+          if (!userId) {
+            alert("No valid user ID or player name found for the first player. Please enter a name or log in.");
+            return;
+          }
           players.push(userId);
         } else {
           const name = playerNameInput?.value || `player${i}`;
@@ -1675,15 +1742,15 @@ async function createAndStartTournament() {
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       const playerId = players[i - 1];
       const playerName = playerNameInput?.value || `Player ${i}`;
-      if (!isAi) {
-        playerIdToNameMap[playerId] = playerName;
-      }
+      playerIdToNameMap[playerId] = playerName;
     }
     window.playerIdToNameMap = playerIdToNameMap;
     console.log("Player ID to Name mapping:", playerIdToNameMap);
+    const defaultName = `Tournament - ${(/* @__PURE__ */ new Date()).toISOString()} (${players.length} players)`;
+    const tournamentNameInput = document.getElementById("tournamentName");
+    const userProvidedName = tournamentNameInput?.value?.trim();
     const tournamentData = {
-      name: `Tournament_${Date.now()}`,
-      // Use timestamp to make it unique
+      name: userProvidedName ? userProvidedName : defaultName,
       playersIds: players
     };
     const tournament = await tournamentService.createTournament(tournamentData);
@@ -1861,7 +1928,8 @@ async function loadConfig(mode) {
           loadIn(`p${i}Down`),
           loadIn(`p${i}InnerCol`),
           loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`)
+          loadIn(`p${i}CornerCol`),
+          i
         )
       );
     }
@@ -1876,7 +1944,8 @@ async function loadConfig(mode) {
         loadIn("p1Down"),
         loadIn("p1InnerCol"),
         loadIn("p1OuterCol"),
-        loadIn("p1CornerCol")
+        loadIn("p1CornerCol"),
+        1
       )
     );
     p.push(
@@ -1889,7 +1958,8 @@ async function loadConfig(mode) {
         loadIn("p2Down"),
         loadIn("p2InnerCol"),
         loadIn("p2OuterCol"),
-        loadIn("p2CornerCol")
+        loadIn("p2CornerCol"),
+        2
       )
     );
     if (mode === "multi") {
@@ -1903,7 +1973,8 @@ async function loadConfig(mode) {
           loadIn("p3Down"),
           loadIn("p3InnerCol"),
           loadIn("p3OuterCol"),
-          loadIn("p3CornerCol")
+          loadIn("p3CornerCol"),
+          3
         )
       );
       p.push(
@@ -1916,7 +1987,8 @@ async function loadConfig(mode) {
           loadIn("p4Down"),
           loadIn("p4InnerCol"),
           loadIn("p4OuterCol"),
-          loadIn("p4CornerCol")
+          loadIn("p4CornerCol"),
+          4
         )
       );
     }
@@ -2714,8 +2786,6 @@ function startRound() {
   pad[1].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
-  if (data.mode == "tournament") {
-  }
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);

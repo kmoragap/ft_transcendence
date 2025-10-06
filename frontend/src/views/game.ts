@@ -154,7 +154,6 @@ export function renderGame(): HTMLElement {
       src += `&username=${encodeURIComponent(currentUser.username)}`;
       src += `&userId=${encodeURIComponent(currentUser.id)}`;
     }
-    console.log("Loading game iframe with src:", src);
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>

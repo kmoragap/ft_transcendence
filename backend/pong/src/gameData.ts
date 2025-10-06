@@ -54,7 +54,12 @@ export type gameData = {
   go: boolean;
   touchControl: boolean;
   mode: string;
+  //tournament fields
   isTournament: boolean;
+  tournamentId?: string;
+  tournamentRound?: number;
+  tournamentMatch?: number;
+
   multiball: boolean;
   maxHits: number;
   hits: number;
@@ -1031,7 +1036,7 @@ export function loadConfig(mode: string): void {
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
-    isTournament: mode === "tournament",
+    isTournament: false,
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0,

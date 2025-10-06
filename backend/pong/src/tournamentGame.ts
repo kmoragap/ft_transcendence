@@ -170,7 +170,7 @@ export class TournamentManager {
     
     data.isTournament = true;
     data.tournamentId = this.tournament.id;
-    data.tournamentRound = match.matchNumber;
+    data.tournamentRound = this.tournament.currentRound + 1;
     data.tournamentMatch = match.matchNumber;
 
     // Update player data

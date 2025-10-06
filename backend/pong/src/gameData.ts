@@ -69,7 +69,6 @@ export type gameData = {
 
 export let data: gameData;
 
-// Store tournament ID temporarily before data is initialized
 let pendingTournamentId: string | null = null;
 
 export function getSecondPlayerData(): any {

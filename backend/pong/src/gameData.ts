@@ -976,9 +976,12 @@ async function createAndStartTournament(): Promise<void> {
     (window as any).playerIdToNameMap = playerIdToNameMap;
     console.log("Player ID to Name mapping:", playerIdToNameMap);
     
-    // Create tournament with a default name
+    // Get tournament name from user input, or generate a descriptive default name
+    const tournamentNameInput = document.getElementById('tournamentName') as HTMLInputElement;
+    const userProvidedName = tournamentNameInput?.value?.trim();
+    const defaultName = `Tournament - ${new Date().toLocaleString()} (${players.length} players)`;
     const tournamentData = {
-      name: `Tournament_${Date.now()}`, // Use timestamp to make it unique
+      name: userProvidedName ? userProvidedName : defaultName,
       playersIds: players
     };
     

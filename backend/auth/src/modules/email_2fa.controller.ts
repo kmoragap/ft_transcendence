@@ -9,10 +9,25 @@ const makeRandomCode = (): string => {
 	return code.toString().padStart(6, '0');
 }
 
-export const sendTwoFaCode = async (email: string): Promise<string> => {
+export const send2faCode = async (email: string): Promise<string> => {
 	const code = makeRandomCode();
 	const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 	codes.set(email, { code, expiresAt });
+	
+// === MOCK EMAIL SENDING ===
+// This section uses nodemailer with a temporary test account (Ethereal email).
+// It does NOT send real emails to actual inboxes.
+// Instead, it generates a test URL you can open in your browser to see the email content.
+// This allows you to test 2FA flows locally without a real SMTP server.
+//
+// Example console output after sending:
+//   Message sent: <unique message id>
+//   Preview URL: https://ethereal.email/message/xxxxx
+//
+// To use 2FA codes in testing:
+// 1. Check the console for the 'Preview URL'.
+// 2. Open the URL to see the 6-digit code.
+// 3. Use this code to call POST /verify-2fa.
 	
 	const testAccount = await nodemailer.createTestAccount();
 	
@@ -36,8 +51,15 @@ export const sendTwoFaCode = async (email: string): Promise<string> => {
 	console.log("Message sent: %s", info.messageId);
 	console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 	return code; // return for testing
-	
-	// code for real emails (needs info from .env file):
+
+// === PRODUCTION EMAILS ===
+// To enable real emails, uncomment the SMTP transporter block below and set:
+// - SMTP_HOST
+// - SMTP_PORT
+// - SMTP_USER
+// - SMTP_PASSWORD
+// in your .env file.
+// This will send real emails to your users' inboxes.
 	
 	/*const transporter = nodemailer.createTransport({
 	  host: process.env.SMTP_HOST,
@@ -57,7 +79,7 @@ export const sendTwoFaCode = async (email: string): Promise<string> => {
 	  });*/
 };
 
-export const verifyTwoFaCode = (email: string, code: string): boolean => {
+export const verify2faCode = (email: string, code: string): boolean => {
 	const item = codes.get(email);
 	if (!item) return false;
 	if (item.code !== code) return false;

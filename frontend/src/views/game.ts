@@ -150,8 +150,7 @@ export function renderGame(): HTMLElement {
     else if (mode === "tournament") {
       src = `/pong/?mode=tournament&lang=${currentLang}`;
     }
-    if ((mode === "single" || mode === "tournament" || mode === "multi")  
-    && currentUser?.username) {
+    if (["single", "tournament", "multi"].includes(mode) && currentUser?.username) {
       src += `&username=${encodeURIComponent(currentUser.username)}`;
       src += `&userId=${encodeURIComponent(currentUser.id)}`;
     }

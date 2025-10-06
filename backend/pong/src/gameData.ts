@@ -979,7 +979,7 @@ async function createAndStartTournament(): Promise<void> {
     // Store the mapping in a global variable for tournament use
     (window as any).playerIdToNameMap = playerIdToNameMap;
     console.log("Player ID to Name mapping:", playerIdToNameMap);
-    
+    const defaultName = `Tournament - ${new Date().toISOString()} (${players.length} players)`;
     // Get tournament name from user input, or generate a descriptive default name
     const tournamentNameInput = document.getElementById('tournamentName') as HTMLInputElement;
     const userProvidedName = tournamentNameInput?.value?.trim();

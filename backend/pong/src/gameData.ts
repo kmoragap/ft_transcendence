@@ -927,7 +927,11 @@ async function createAndStartTournament(): Promise<void> {
           // First player - get user ID from URL params
           const urlParams = new URLSearchParams(window.location.search);
           const userId = urlParams.get('userId') || playerNameInput?.value || 'dvaisman';
-          players.push(userId);
+          const userId = urlParams.get('userId') || playerNameInput?.value;
+          if (!userId) {
+            alert("No valid user ID or player name found for the first player. Please enter a name or log in.");
+            return;
+          }
         } else {
           // Other human players - use name as fallback
           const name = playerNameInput?.value || `player${i}`;

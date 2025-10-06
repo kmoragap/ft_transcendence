@@ -4,6 +4,8 @@ import { countdown, pad } from "./pong";
 import { playerSetupMenu, gameSetupMenu, tournamentSetupMenu } from "./menus";
 import { t } from "./i18n";
 import { gameService } from "./services/gameService";
+import { newTournamentGame } from "./tournamentGame";
+import { tournamentService } from "./services/tournamentService";
 
 export type playerData = {
   name: string;
@@ -66,6 +68,9 @@ export type gameData = {
 };
 
 export let data: gameData;
+
+// Store tournament ID temporarily before data is initialized
+let pendingTournamentId: string | null = null;
 
 export function getSecondPlayerData(): any {
   return (window as any).gamePlayer2 || null;
@@ -579,9 +584,15 @@ export async function newGame(mode: string): Promise<void> {
       }
     });
     
-    finishButton.addEventListener("click", e => {
+    finishButton.addEventListener("click", async e => {
       e.preventDefault();
-      loadConfig(mode);
+      
+      if (mode === "tournament") {
+        // Create tournament first, then start the game
+        await createAndStartTournament();
+      } else {
+        await loadConfig(mode);
+      }
     });
   } else {
     // Single Player / Multi Player wizard setup
@@ -788,8 +799,84 @@ export async function newGame(mode: string): Promise<void> {
   });
 }
 
-export function loadConfig(mode: string): void {
+/**
+ * Create tournament and start the first match
+ */
+async function createAndStartTournament(): Promise<void> {
+  try {
+    // Get tournament settings from form
+    const playersNumber = parseInt((document.getElementById("playersNumber") as HTMLInputElement)?.value || "4");
+    
+    // Get player data from the form
+    const players: string[] = [];
+    
+    // Collect player IDs from the form (using the correct IDs: p1Id, p2Id, etc.)
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
+      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
+      
+      if (playerIdInput && playerIdInput.value) {
+        players.push(playerIdInput.value);
+      } else if (playerNameInput && playerNameInput.value) {
+        // Use name as fallback ID
+        players.push(playerNameInput.value);
+      } else {
+        // Generate fallback player data
+        players.push(`player${i}`);
+      }
+    }
+    
+    console.log("Creating tournament with players:", players);
+    
+    // Create tournament with a default name
+    const tournamentData = {
+      name: `Tournament_${Date.now()}`, // Use timestamp to make it unique
+      playersIds: players
+    };
+    
+    const tournament = await tournamentService.createTournament(tournamentData);
+    
+    if (!tournament || !tournament.id) {
+      console.error("Failed to create tournament");
+      alert("Failed to create tournament. Please try again.");
+      return;
+    }
+    
+    console.log("Tournament created successfully:", tournament.id);
+    
+    // Store tournament ID temporarily for later use (data not initialized yet)
+    pendingTournamentId = tournament.id;
+    
+    // Continue with normal game setup first (this initializes the data object)
+    await loadConfig("tournament");
+    
+    // Now that data is initialized, start the first tournament match
+    const success = await newTournamentGame(tournament.id);
+    if (!success) {
+      console.error("Failed to start tournament game");
+      alert("Failed to start tournament game. Please try again.");
+      return;
+    }
+    
+  } catch (error) {
+    console.error("Error creating tournament:", error);
+    alert("Error creating tournament. Please try again.");
+  }
+}
+
+export async function loadConfig(mode: string): Promise<void> {
   const appDiv = document.getElementById("app") as HTMLDivElement;
+  
+  // Handle tournament initialization
+  if (mode === "tournament") {
+    // Tournament should already be created by createAndStartTournament()
+    // Just verify we have a tournament ID
+    if (!pendingTournamentId) {
+      console.error("No tournament ID available");
+      return;
+    }
+    // Note: Tournament match initialization will happen after loadConfig completes
+  }
   //create scoreboard
   const scoreboard = Object.assign(document.createElement("div"), {
     className: "scoreboard w-full flex justify-between items-center",
@@ -1033,6 +1120,7 @@ export function loadConfig(mode: string): void {
     keys: {},
     showingText: false,
     gameID: "",
+    tournamentID: "",
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
@@ -1118,6 +1206,13 @@ export function loadConfig(mode: string): void {
       break;
   }
   data = loadData;
+  
+  // Set tournament ID if we have a pending one
+  if (pendingTournamentId) {
+    data.tournamentId = pendingTournamentId;
+    pendingTournamentId = null; // Clear the pending ID
+  }
+  
   // Remove all existing content from app div except what we want to keep
   const gameAppDiv = document.getElementById("app");
   if (gameAppDiv) {

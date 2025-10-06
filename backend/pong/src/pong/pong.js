@@ -623,8 +623,289 @@ function gameSetupMenu(mode) {
   return { form: container, startButton: e22 };
 }
 
+// src/services/tournamentService.ts
+var TournamentService = class {
+  constructor() {
+    this.baseUrl = "/api/pong";
+  }
+  async createTournament(data2) {
+    try {
+      const response = await fetch(`${this.baseUrl}/tournaments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: data2 })
+      });
+      if (!response.ok) return null;
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating tournament:", error);
+      return null;
+    }
+  }
+  async addGameToTournament(tournamentId, gameId) {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/tournaments/${tournamentId}/games`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gameId })
+        }
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Error adding game to tournament:", error);
+      return false;
+    }
+  }
+  async getTournament(tournamentId) {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/tournaments/${tournamentId}`
+      );
+      if (!response.ok) return null;
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching tournament:", error);
+      return null;
+    }
+  }
+};
+var tournamentService = new TournamentService();
+
+// src/tournamentGame.ts
+var TournamentManager = class {
+  constructor() {
+    this.tournament = null;
+  }
+  /**
+   * Initialize a new tournament with bracket generation
+   */
+  async initializeTournament(tournamentId) {
+    try {
+      const tournamentData = await tournamentService.getTournament(tournamentId);
+      if (!tournamentData) {
+        console.error("Tournament not found:", tournamentId);
+        return false;
+      }
+      this.tournament = {
+        id: tournamentData.id,
+        name: tournamentData.name,
+        players: tournamentData.playersIds,
+        rounds: this.generateBracket(tournamentData.playersIds),
+        currentRound: 0,
+        status: "IN_PROGRESS"
+      };
+      console.log("Tournament initialized:", this.tournament);
+      return true;
+    } catch (error) {
+      console.error("Error initializing tournament:", error);
+      return false;
+    }
+  }
+  /**
+   * Generate tournament bracket (single elimination)
+   */
+  generateBracket(players) {
+    const rounds = [];
+    let currentPlayers = [...players];
+    let roundNumber = 1;
+    while (currentPlayers.length > 1) {
+      const matches = [];
+      const nextRoundPlayers = [];
+      for (let i = 0; i < currentPlayers.length; i += 2) {
+        if (i + 1 < currentPlayers.length) {
+          matches.push({
+            matchNumber: Math.floor(i / 2) + 1,
+            player1Id: currentPlayers[i],
+            player1Name: `Player ${currentPlayers[i]}`,
+            // TODO: Get actual names
+            player2Id: currentPlayers[i + 1],
+            player2Name: `Player ${currentPlayers[i + 1]}`,
+            // TODO: Get actual names
+            isComplete: false
+          });
+        } else {
+          nextRoundPlayers.push(currentPlayers[i]);
+        }
+      }
+      rounds.push({
+        roundNumber,
+        matches,
+        isComplete: false
+      });
+      currentPlayers = nextRoundPlayers;
+      roundNumber++;
+    }
+    return rounds;
+  }
+  /**
+   * Get the next match to play
+   */
+  getNextMatch() {
+    if (!this.tournament) return null;
+    const currentRound = this.tournament.rounds[this.tournament.currentRound];
+    if (!currentRound) return null;
+    const nextMatch = currentRound.matches.find((match) => !match.isComplete);
+    return nextMatch || null;
+  }
+  /**
+   * Start a tournament match
+   */
+  async startTournamentMatch(match) {
+    if (!this.tournament) return false;
+    data.isTournament = true;
+    data.tournamentId = this.tournament.id;
+    data.tournamentRound = match.matchNumber;
+    data.tournamentMatch = match.matchNumber;
+    data.p[0].id = match.player1Id;
+    data.p[0].name = match.player1Name;
+    data.p[1].id = match.player2Id;
+    data.p[1].name = match.player2Name;
+    console.log(`Starting tournament match: ${match.player1Name} vs ${match.player2Name}`);
+    return true;
+  }
+  /**
+   * Handle tournament match completion
+   */
+  async completeMatch(winnerId, gameId) {
+    if (!this.tournament) return false;
+    const currentRound = this.tournament.rounds[this.tournament.currentRound];
+    if (!currentRound) return false;
+    const match = currentRound.matches.find(
+      (m) => m.player1Id === data.p[0].id && m.player2Id === data.p[1].id || m.player1Id === data.p[1].id && m.player2Id === data.p[0].id
+    );
+    if (!match) {
+      console.error("Match not found in tournament bracket");
+      return false;
+    }
+    match.winnerId = winnerId;
+    match.gameId = gameId;
+    match.isComplete = true;
+    const roundComplete = currentRound.matches.every((m) => m.isComplete);
+    if (roundComplete) {
+      currentRound.isComplete = true;
+      await this.advanceToNextRound();
+    }
+    return true;
+  }
+  /**
+   * Advance to the next round of the tournament
+   */
+  async advanceToNextRound() {
+    if (!this.tournament) return;
+    const currentRound = this.tournament.rounds[this.tournament.currentRound];
+    const nextRound = this.tournament.rounds[this.tournament.currentRound + 1];
+    if (!nextRound) {
+      await this.completeTournament();
+      return;
+    }
+    const winners = currentRound.matches.filter((match) => match.winnerId).map((match) => match.winnerId);
+    let winnerIndex = 0;
+    for (const match of nextRound.matches) {
+      if (winnerIndex < winners.length) {
+        match.player1Id = winners[winnerIndex];
+        match.player1Name = `Player ${winners[winnerIndex]}`;
+        winnerIndex++;
+      }
+      if (winnerIndex < winners.length) {
+        match.player2Id = winners[winnerIndex];
+        match.player2Name = `Player ${winners[winnerIndex]}`;
+        winnerIndex++;
+      }
+    }
+    this.tournament.currentRound++;
+    console.log(`Advanced to round ${this.tournament.currentRound + 1}`);
+  }
+  /**
+   * Complete the tournament
+   */
+  async completeTournament() {
+    if (!this.tournament) return;
+    const finalRound = this.tournament.rounds[this.tournament.currentRound];
+    const winner = finalRound.matches[0]?.winnerId;
+    const winnerName = finalRound.matches[0]?.player1Id === winner ? finalRound.matches[0]?.player1Name : finalRound.matches[0]?.player2Name;
+    this.tournament.status = "FINISHED";
+    console.log(`Tournament "${this.tournament.name}" completed! Winner: ${winnerName}`);
+    this.showTournamentWinner(winnerName || "Unknown");
+  }
+  /**
+   * Show tournament winner message
+   */
+  showTournamentWinner(winnerName) {
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+    overlay.innerHTML = `
+      <div class="bg-white p-8 rounded-lg text-center max-w-md mx-4">
+        <h2 class="text-3xl font-bold text-green-600 mb-4">\u{1F3C6} Tournament Complete!</h2>
+        <p class="text-xl mb-6">Winner: <span class="font-bold">${winnerName}</span></p>
+        <button id="tournamentExitBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Exit Tournament
+        </button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const exitBtn = overlay.querySelector("#tournamentExitBtn");
+    exitBtn.addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      window.parent.postMessage({
+        type: "EXIT_GAME",
+        winner: winnerName,
+        isTournament: true
+      }, window.location.origin);
+    });
+  }
+  /**
+   * Check if tournament is complete
+   */
+  isTournamentComplete() {
+    return this.tournament?.status === "FINISHED";
+  }
+  /**
+   * Get tournament status
+   */
+  getTournamentStatus() {
+    if (!this.tournament) return null;
+    return {
+      name: this.tournament.name,
+      currentRound: this.tournament.currentRound + 1,
+      totalRounds: this.tournament.rounds.length,
+      status: this.tournament.status
+    };
+  }
+  /**
+   * Get tournament bracket for display
+   */
+  getTournamentBracket() {
+    return this.tournament;
+  }
+};
+var tournamentManager = new TournamentManager();
+async function newTournamentGame(tournamentId) {
+  const initialized = await tournamentManager.initializeTournament(tournamentId);
+  if (!initialized) return false;
+  const nextMatch = tournamentManager.getNextMatch();
+  if (!nextMatch) {
+    console.log("No more matches in tournament");
+    return false;
+  }
+  return await tournamentManager.startTournamentMatch(nextMatch);
+}
+async function handleTournamentGameCompletion(winnerId, gameId) {
+  const success = await tournamentManager.completeMatch(winnerId, gameId);
+  if (success && !tournamentManager.isTournamentComplete()) {
+    const nextMatch = tournamentManager.getNextMatch();
+    if (nextMatch) {
+      console.log("Starting next tournament match...");
+      return await tournamentManager.startTournamentMatch(nextMatch);
+    }
+  }
+  return success;
+}
+
 // src/gameData.ts
 var data;
+var pendingTournamentId = null;
 var isFullscreen = false;
 function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -1012,9 +1293,13 @@ async function newGame(mode) {
         showStep2(currentStep - 1);
       }
     });
-    finishButton.addEventListener("click", (e) => {
+    finishButton.addEventListener("click", async (e) => {
       e.preventDefault();
-      loadConfig(mode);
+      if (mode === "tournament") {
+        await createAndStartTournament();
+      } else {
+        await loadConfig(mode);
+      }
     });
   } else {
     let showSingleStep2 = function(step) {
@@ -1174,8 +1459,55 @@ async function newGame(mode) {
     }
   });
 }
-function loadConfig(mode) {
+async function createAndStartTournament() {
+  try {
+    const playersNumber = parseInt(document.getElementById("playersNumber")?.value || "4");
+    const players = [];
+    for (let i = 1; i <= playersNumber; i++) {
+      const playerIdInput = document.getElementById(`p${i}Id`);
+      const playerNameInput = document.getElementById(`name_p${i}`);
+      if (playerIdInput && playerIdInput.value) {
+        players.push(playerIdInput.value);
+      } else if (playerNameInput && playerNameInput.value) {
+        players.push(playerNameInput.value);
+      } else {
+        players.push(`player${i}`);
+      }
+    }
+    console.log("Creating tournament with players:", players);
+    const tournamentData = {
+      name: `Tournament_${Date.now()}`,
+      // Use timestamp to make it unique
+      playersIds: players
+    };
+    const tournament = await tournamentService.createTournament(tournamentData);
+    if (!tournament || !tournament.id) {
+      console.error("Failed to create tournament");
+      alert("Failed to create tournament. Please try again.");
+      return;
+    }
+    console.log("Tournament created successfully:", tournament.id);
+    pendingTournamentId = tournament.id;
+    await loadConfig("tournament");
+    const success = await newTournamentGame(tournament.id);
+    if (!success) {
+      console.error("Failed to start tournament game");
+      alert("Failed to start tournament game. Please try again.");
+      return;
+    }
+  } catch (error) {
+    console.error("Error creating tournament:", error);
+    alert("Error creating tournament. Please try again.");
+  }
+}
+async function loadConfig(mode) {
   const appDiv = document.getElementById("app");
+  if (mode === "tournament") {
+    if (!pendingTournamentId) {
+      console.error("No tournament ID available");
+      return;
+    }
+  }
   const scoreboard = Object.assign(document.createElement("div"), {
     className: "scoreboard w-full flex justify-between items-center"
   });
@@ -1390,10 +1722,11 @@ function loadConfig(mode) {
     keys: {},
     showingText: false,
     gameID: "",
+    tournamentID: "",
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
-    isTournament: mode === "tournament",
+    isTournament: false,
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
     hits: 0
@@ -1474,6 +1807,10 @@ function loadConfig(mode) {
       break;
   }
   data = loadData;
+  if (pendingTournamentId) {
+    data.tournamentId = pendingTournamentId;
+    pendingTournamentId = null;
+  }
   const gameAppDiv = document.getElementById("app");
   if (gameAppDiv) {
     gameAppDiv.innerHTML = "";
@@ -1659,6 +1996,12 @@ var Paddle = class {
   }
   getY2() {
     return this._y + data.paddleHeight;
+  }
+  setX(x) {
+    this._x = x;
+  }
+  setY(y) {
+    this._y = y;
   }
   getPl() {
     return this._p;
@@ -1992,7 +2335,7 @@ var GameService = class {
   constructor() {
     this.baseUrl = "/api/pong";
   }
-  async finishGame(data2) {
+  async createGame(data2) {
     try {
       const response = await fetch(`${this.baseUrl}/games`, {
         method: "POST",
@@ -2003,6 +2346,24 @@ var GameService = class {
     } catch (error) {
       console.error("Error finishing game:", error);
       return false;
+    }
+  }
+  async finishGame(data2) {
+    try {
+      const response = await fetch(`${this.baseUrl}/games`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: data2 })
+      });
+      if (!response.ok) {
+        console.error("Error finishing game: Response not OK");
+        return null;
+      }
+      const gameResponse = await response.json();
+      return gameResponse;
+    } catch (error) {
+      console.error("Error finishing game:", error);
+      return null;
     }
   }
 };
@@ -2148,13 +2509,31 @@ async function finito() {
     multiBall: data.multiball,
     mode: data.mode,
     isTournament: data.isTournament,
+    //false in single mode
+    tournamentId: data.tournamentId,
+    // null in case of single game
+    tournamentRound: data.tournamentRound,
+    //null in case of single game
+    tournamentMatch: data.tournamentMatch,
+    //null in case of single game
     winnerId
   };
   const result = await gameService.finishGame(gameData);
   if (!result) {
     console.error("Failed to finish game on server");
+    return;
   }
   console.log("Game data successfully sent to server");
+  if (data.isTournament && data.tournamentId) {
+    try {
+      const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
+      if (tournamentResult) {
+        console.log("Tournament game completed, next match will start automatically");
+      }
+    } catch (error) {
+      console.error("Error handling tournament game completion:", error);
+    }
+  }
   return;
 }
 async function endGame() {

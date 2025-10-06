@@ -5,6 +5,7 @@ import { midline, touchControlArrows } from "./Paddle.draw";
 //import { userService, UserData } from "./services/userService";
 import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
+import { handleTournamentGameCompletion } from "./tournamentGame";
 
 export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
@@ -163,11 +164,29 @@ export async function finito(): Promise<void> {
     tournamentMatch: data.tournamentMatch, //null in case of single game
     winnerId: winnerId,
   };
+  
   const result = await gameService.finishGame(gameData);
   if (!result) {
     console.error("Failed to finish game on server");
+    return;
   }
+  
   console.log("Game data successfully sent to server");
+  
+  // Handle tournament progression if this is a tournament game
+  if (data.isTournament && data.tournamentId) {
+    try {
+      const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
+      if (tournamentResult) {
+        console.log("Tournament game completed, next match will start automatically");
+        // The next match will be handled by the tournament manager
+        // For now, we'll exit and let the frontend handle the next match
+      }
+    } catch (error) {
+      console.error("Error handling tournament game completion:", error);
+    }
+  }
+  
   return;
 }
 

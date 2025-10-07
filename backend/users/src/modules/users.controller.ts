@@ -375,6 +375,9 @@ export async function toggle2faHandler(
     is2faEnabled: boolean;
   };
 
+  if (typeof is2faEnabled !== "boolean") {
+    return reply.code(400).send({ error: "is2faEnabled must be a boolean" });
+  }
   const userId = request.user?.id;
   if (!userId) return reply.code(401).send({ error: "Unauthorized" });
 

@@ -399,7 +399,7 @@ export async function toggle2faHandler(
       message: `Two-factor authentication ${is2faEnabled ? 'enabled' : 'disabled'} successfully`,
       user: updatedUser,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error toggling 2FA:", error);
     return reply.code(500).send({ error: "Failed to toggle 2FA" });
   }

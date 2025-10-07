@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
-import { randomBytes } from "crypto";
 import {
   LoginRequest,
   RegisterRequest,
@@ -16,6 +15,54 @@ import {
   ConflictError,
   handleAuthError,
 } from "../utils/errorHandler";
+import {
+  send2faCode,
+  verify2faCode,
+} from "./email_2fa.controller";
+
+async function authenticateUser(identifier: string, password: string): Promise<User>
+{
+    const user = identifier.includes("@")
+      ? await getUserByEmail(identifier)
+      : await getUserByUsername(identifier);
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedError("Invalid credentials");
+    }
+    
+    return user;	
+}
+
+async function completeLogin(
+  request: FastifyRequest,
+  user: User
+) {
+	const token = request.server.jwt.sign(
+      { userId: user.id, email: user.email },
+      { expiresIn: "24h" }
+    );
+
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        token,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await updateUserOnlineStatus(user.id, true);
+
+    return {
+      message: "Login successful",
+      token,
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl || "/assets/img/avatar.jpg",
+      is2faEnabled: !!user.is2faEnabled,
+    };
+}
 
 export async function getMeHandler(
   request: FastifyRequest,
@@ -203,42 +250,49 @@ export async function loginHandler(
         .code(400)
         .send({ message: "Must provide email or username" });
     }
-    const user = identifier.includes("@")
-      ? await getUserByEmail(identifier)
-      : await getUserByUsername(identifier);
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return reply.code(401).send({ message: "Invalid credentials" });
+    
+    const user = await authenticateUser(identifier, password);
+    
+    // 2FA flow:
+    if (user?.is2faEnabled) {
+      await send2faCode(user.email);
+      return reply.code(200).send({
+      	message: "Two-factor authentication code sent to your email",
+      	email: user.email,
+      	is2faEnabled: true,
+      })
     }
-
-    const token = request.server.jwt.sign(
-      { userId: user.id, email: user.email },
-      { expiresIn: "24h" }
-    );
-
-    await prisma.session.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    });
-
-    await updateUserOnlineStatus(user.id, true);
-
-    return {
-      message: "Login successful",
-      token,
-      id: user.id,
-      username: user.username,
-      firstname: user.firstname,
-      email: user.email,
-      avatarUrl: user.avatarUrl || "/assets/img/avatar.jpg",
-    };
+    
+    // if no 2FA required - just login:
+	return await completeLogin(request, user);
   } catch (error) {
     console.error("Error during login:", error);
     return reply.code(500).send({ message: "Login failed" });
   }
+}
+
+export async function verify2faHandler(
+  request: FastifyRequest<{ Body: { email: string; code: string } }>,
+  reply: FastifyReply
+) {
+	try {
+		const {email, code} = request.body;
+		
+		const user = await getUserByEmail(email);
+		if (!user) {
+			return reply.code(404).send({ message: "User not found" });
+		}
+
+		const valid = verify2faCode(email, code);
+		if (!valid) {
+			return reply
+				.code(401)
+				.send({ message: "Invalid two-factor authentication code" });
+		}
+		return await completeLogin(request, user);
+	} catch (error) {
+  		return handleAuthError(error, reply);
+  	}
 }
 
 export async function logoutHandler(

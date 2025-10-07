@@ -10,6 +10,7 @@ import {
   uploadAvatarHandler,
   updateMyProfileHandler,
   getUsersByIds,
+  toggle2faHandler,
 } from "../modules/users.controller";
 import {
   sendFriendRequestHandler,
@@ -45,6 +46,11 @@ export default async function userRoutes(fastify: FastifyInstance) {
     "/me/online-status",
     { preHandler: [authenticateToken] },
     updateOnlineStatusHandler
+  );
+  fastify.put(
+    "/me/2fa",
+    { preHandler: [authenticateToken] },
+    toggle2faHandler
   );
 
   // internal service route for auth service

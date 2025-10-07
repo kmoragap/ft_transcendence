@@ -366,3 +366,38 @@ export async function uploadAvatarHandler(
 
   return reply.send({ avatarUrl: publicUrl });
 }
+
+export async function toggle2faHandler(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const { is2faEnabled } = request.body as {
+    is2faEnabled: boolean;
+  };
+
+  const userId = request.user?.id;
+  if (!userId) return reply.code(401).send({ error: "Unauthorized" });
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { is2faEnabled },
+      select: {
+        id: true,
+        username: true,
+        firstname: true,
+        email: true,
+        avatarUrl: true,
+        is2faEnabled: true,
+      },
+    });
+
+    return reply.send({
+      message: `Two-factor authentication ${is2faEnabled ? 'enabled' : 'disabled'} successfully`,
+      user: updatedUser,
+    });
+  } catch (error: any) {
+    console.error("Error toggling 2FA:", error);
+    return reply.code(500).send({ error: "Failed to toggle 2FA" });
+  }
+}

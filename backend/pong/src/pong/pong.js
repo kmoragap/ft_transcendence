@@ -176,6 +176,28 @@ var init_i18n = __esm({
 });
 
 // src/menus.ts
+function savePlayerData(playerId) {
+  const nameInput = document.getElementById(`name_p${playerId}`);
+  const idInput = document.getElementById(`p${playerId}Id`);
+  const aiCheckbox = document.getElementById(`p${playerId}Ai`);
+  if (nameInput || idInput || aiCheckbox) {
+    savedPlayerData[playerId] = {
+      name: nameInput?.value || "",
+      id: idInput?.value || "",
+      isAi: aiCheckbox?.checked || false,
+      loggedInUsername: savedPlayerData[playerId]?.loggedInUsername || ""
+      // Preserve the actual logged-in username
+    };
+  }
+}
+function restorePlayerData(playerId, nameInput, idInput, aiCheckbox) {
+  const saved = savedPlayerData[playerId];
+  if (saved) {
+    nameInput.value = saved.name;
+    idInput.value = saved.id;
+    aiCheckbox.checked = saved.isAi;
+  }
+}
 function tournamentSetupMenu() {
   const settings = Object.assign(document.createElement("form"), {
     id: "tournamentSettings",
@@ -226,6 +248,15 @@ function tournamentSetupMenu() {
   return { form: container };
 }
 function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
+  savePlayerData(p);
+  if (!savedPlayerData[p]) {
+    savedPlayerData[p] = {
+      name,
+      id: "",
+      isAi,
+      loggedInUsername: ""
+    };
+  }
   const idInput = Object.assign(document.createElement("input"), {
     type: "hidden",
     id: `p${p}Id`,
@@ -272,6 +303,35 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
         },
         window.location.origin
       );
+    } else {
+      const nameInput = document.getElementById(`name_p${p}`);
+      const idInput2 = document.getElementById(`p${p}Id`);
+      if (nameInput) {
+        nameInput.value = `AI-${t("player")}-${p}`;
+      }
+      if (idInput2) {
+        idInput2.value = "";
+      }
+      if (p === "2") {
+        window.gamePlayer2 = null;
+      }
+      const actualLoggedInUsername = savedPlayerData[p]?.loggedInUsername || "";
+      if (savedPlayerData[p]) {
+        savedPlayerData[p].name = nameInput?.value || `AI-${t("player")}-${p}`;
+        savedPlayerData[p].id = "";
+        savedPlayerData[p].isAi = true;
+        savedPlayerData[p].loggedInUsername = "";
+      }
+      if (actualLoggedInUsername) {
+        window.parent.postMessage(
+          {
+            type: "PLAYER_LOGOUT",
+            playerId: p,
+            username: actualLoggedInUsername
+          },
+          window.location.origin
+        );
+      }
     }
   });
   const e5 = Object.assign(document.createElement("label"), {
@@ -371,6 +431,7 @@ function playerSetupMenu(list, p, name, isAi, up, down, c1, c2, c3) {
   const ul = document.createElement("li");
   ul.appendChild(form);
   list.appendChild(ul);
+  restorePlayerData(p, e2, idInput, e4);
 }
 function gameSetupMenu(mode) {
   const settings = Object.assign(document.createElement("form"), {
@@ -602,10 +663,12 @@ function gameSetupMenu(mode) {
   container.appendChild(ul);
   return { form: container, startButton: e22 };
 }
+var savedPlayerData;
 var init_menus = __esm({
   "src/menus.ts"() {
     "use strict";
     init_i18n();
+    savedPlayerData = {};
     window.addEventListener("message", (event) => {
       if (event.origin !== window.location.origin) {
         return;
@@ -622,6 +685,12 @@ var init_menus = __esm({
         if (idInput && userData?.id) {
           idInput.value = userData.id;
         }
+        if (savedPlayerData[playerId]) {
+          savedPlayerData[playerId].name = username;
+          savedPlayerData[playerId].id = userData?.id || "";
+          savedPlayerData[playerId].isAi = false;
+          savedPlayerData[playerId].loggedInUsername = username;
+        }
         if (playerId === "2") {
           window.gamePlayer2 = {
             id: userData?.id,
@@ -630,9 +699,6 @@ var init_menus = __esm({
             loggedIn: true
           };
         }
-        console.log(
-          `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
-        );
       } else if (event.data.type === "LOGIN_CANCELLED") {
         const { playerId } = event.data;
         const aiCheckbox = document.getElementById(
@@ -641,10 +707,8 @@ var init_menus = __esm({
         if (aiCheckbox) {
           aiCheckbox.checked = true;
         }
-        console.log(`Login cancelled for player ${playerId}, reverting to AI`);
       } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
         window.gamePlayer2 = null;
-        console.log("Player 2 data cleared");
       }
     });
   }
@@ -658,6 +722,22 @@ var init_tournamentService = __esm({
     TournamentService = class {
       constructor() {
         this.baseUrl = "/api/pong";
+      }
+      async updateTournamentStatus(tournamentId, status) {
+        try {
+          const response = await fetch(
+            `${this.baseUrl}/tournaments/${tournamentId}/status`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status })
+            }
+          );
+          return response.ok;
+        } catch (error) {
+          console.error("Error updating tournament status:", error);
+          return false;
+        }
       }
       async createTournament(data2) {
         try {
@@ -708,7 +788,9 @@ var init_tournamentService = __esm({
 
 // src/tournamentGame.ts
 async function newTournamentGame(tournamentId) {
-  const initialized = await tournamentManager.initializeTournament(tournamentId);
+  const initialized = await tournamentManager.initializeTournament(
+    tournamentId
+  );
   if (!initialized) return false;
   const nextMatch = tournamentManager.getNextMatch();
   if (!nextMatch) {
@@ -742,7 +824,9 @@ var init_tournamentGame = __esm({
       }
       async initializeTournament(tournamentId) {
         try {
-          const tournamentData = await tournamentService.getTournament(tournamentId);
+          const tournamentData = await tournamentService.getTournament(
+            tournamentId
+          );
           if (!tournamentData) {
             console.error("Tournament not found:", tournamentId);
             return false;
@@ -796,8 +880,8 @@ var init_tournamentGame = __esm({
             if (player1Index < players.length && player2Index < players.length) {
               const player1Id = players[player1Index];
               const player2Id = players[player2Index];
-              const player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
-              const player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+              const player1Name = playerIdToNameMap[player1Id] || (player1Id.startsWith("AI-") ? `AI Player ${player1Id.split("-")[2]}` : `Player ${player1Id}`);
+              const player2Name = playerIdToNameMap[player2Id] || (player2Id.startsWith("AI-") ? `AI Player ${player2Id.split("-")[2]}` : `Player ${player2Id}`);
               firstRound.matches[i] = {
                 matchNumber: i + 1,
                 player1Id,
@@ -839,16 +923,16 @@ var init_tournamentGame = __esm({
         await this.resetGameState();
         data.isTournament = true;
         data.tournamentId = this.tournament.id;
-        data.tournamentRound = match.matchNumber;
+        data.tournamentRound = this.tournament.currentRound + 1;
         data.tournamentMatch = match.matchNumber;
         data.p[0].id = match.player1Id;
         data.p[0].name = match.player1Name;
         data.p[0].score = 0;
-        data.p[0].isAi = match.player1Id === "AI-Roger-Federror";
+        data.p[0].isAi = match.player1Id.startsWith("AI-");
         data.p[1].id = match.player2Id;
         data.p[1].name = match.player2Name;
         data.p[1].score = 0;
-        data.p[1].isAi = match.player2Id === "AI-Roger-Federror";
+        data.p[1].isAi = match.player2Id.startsWith("AI-");
         data.nameTB1.value = match.player1Name;
         data.nameTB2.value = match.player2Name;
         data.scoreTB1.value = "0";
@@ -896,13 +980,13 @@ var init_tournamentGame = __esm({
           if (winnerIndex < winners.length) {
             const player1Id = winners[winnerIndex];
             match.player1Id = player1Id;
-            match.player1Name = playerIdToNameMap[player1Id] || (player1Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player1Id}`);
+            match.player1Name = playerIdToNameMap[player1Id] || (player1Id.startsWith("AI-") ? `AI Player ${player1Id.split("-")[2]}` : `Player ${player1Id}`);
             winnerIndex++;
           }
           if (winnerIndex < winners.length) {
             const player2Id = winners[winnerIndex];
             match.player2Id = player2Id;
-            match.player2Name = playerIdToNameMap[player2Id] || (player2Id === "AI-Roger-Federror" ? "Roger Federror" : `Player ${player2Id}`);
+            match.player2Name = playerIdToNameMap[player2Id] || (player2Id.startsWith("AI-") ? `AI Player ${player2Id.split("-")[2]}` : `Player ${player2Id}`);
             winnerIndex++;
           }
         }
@@ -915,6 +999,10 @@ var init_tournamentGame = __esm({
         const winnerName = finalRound.matches[0]?.player1Id === winner ? finalRound.matches[0]?.player1Name : finalRound.matches[0]?.player2Name;
         this.tournament.status = "FINISHED";
         this.showTournamentWinner(winnerName || "Unknown");
+        await tournamentService.updateTournamentStatus(
+          this.tournament.id,
+          "FINISHED"
+        );
       }
       showMatchTransition(nextMatch) {
         const overlay = document.createElement("div");
@@ -924,7 +1012,9 @@ var init_tournamentGame = __esm({
         modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
         modal.innerHTML = `
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">${t("next_match")}</h2>
+        <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">${t(
+          "next_match"
+        )}</h2>
         <div class="text-lg text-gray-600 mb-2">
           <span class="font-semibold text-[#66fcf1]">${nextMatch.player1Name}</span>
           <span class="mx-4 text-[#66fcf1]">${t("vs")}</span>
@@ -959,12 +1049,16 @@ var init_tournamentGame = __esm({
         modal.className = "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
         modal.innerHTML = `
       <div class="mb-6">
-        <h2 class="text-3xl font-bold text-[#66fcf1] mb-4">\u{1F3C6} ${t("tournament_complete")}</h2>
+        <h2 class="text-3xl font-bold text-[#66fcf1] mb-4">\u{1F3C6} ${t(
+          "tournament_complete"
+        )}</h2>
         <div class="text-xl mb-4">
           <span class="text-[#66fcf1]">${t("winner")}:</span>
           <span class="font-bold text-yellow-400 ml-2">${winnerName}</span>
         </div>
-        <p class="text-sm text-[#66fcf1] mt-4">${t("congratulations_victory")}</p>
+        <p class="text-sm text-[#66fcf1] mt-4">${t(
+          "congratulations_victory"
+        )}</p>
       </div>
       <button id="tournamentExitBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
         ${t("exit_tournament")}
@@ -972,14 +1066,19 @@ var init_tournamentGame = __esm({
     `;
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
-        const exitBtn = overlay.querySelector("#tournamentExitBtn");
+        const exitBtn = overlay.querySelector(
+          "#tournamentExitBtn"
+        );
         exitBtn.addEventListener("click", () => {
           document.body.removeChild(overlay);
-          window.parent.postMessage({
-            type: "EXIT_GAME",
-            winner: winnerName,
-            isTournament: true
-          }, window.location.origin);
+          window.parent.postMessage(
+            {
+              type: "EXIT_GAME",
+              winner: winnerName,
+              isTournament: true
+            },
+            window.location.origin
+          );
         });
       }
       isTournamentComplete() {
@@ -1193,7 +1292,7 @@ function handleFullscreenChange() {
     updateCanvasForFullscreen(isCurrentlyFullscreen);
   }
 }
-function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
+function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol, playerIndex) {
   const isAiByName = name.includes("Player") && name !== "Player 1";
   const finalIsAi = isAi || isAiByName;
   let finalId = id;
@@ -1203,7 +1302,7 @@ function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol) {
   }
   var p = {
     name,
-    id: finalIsAi ? "AI-Roger-Federror" : finalId,
+    id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
     score: 0,
     isAi: finalIsAi,
     up,
@@ -1228,7 +1327,6 @@ async function newGame(mode) {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
-  console.log("Starting new game in mode:", mode);
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app"
   });
@@ -1258,7 +1356,7 @@ async function newGame(mode) {
   const allBoxesContainer = Object.assign(document.createElement("div"), {
     className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
   });
-  const tournamentContiner = Object.assign(document.createElement("div"), {
+  const tournamentContainer = Object.assign(document.createElement("div"), {
     className: "flex-1 min-w-[300px]"
   });
   const player1Container = Object.assign(document.createElement("div"), {
@@ -1375,7 +1473,9 @@ async function newGame(mode) {
       nextButton.classList.toggle("hidden", step === 3);
       finishButton.classList.toggle("hidden", step !== 3);
       if (step === 2) {
-        const playersNumberInput2 = document.getElementById("playersNumber");
+        const playersNumberInput2 = document.getElementById(
+          "playersNumber"
+        );
         if (playersNumberInput2) {
           const numPlayers = parseInt(playersNumberInput2.value) || 4;
           createPlayerBoxes2(numPlayers);
@@ -1419,7 +1519,9 @@ async function newGame(mode) {
     });
     const { form: tournamentForm } = tournamentSetupMenu();
     step1Container.appendChild(tournamentForm);
-    const playersNumberInput = document.getElementById("playersNumber");
+    const playersNumberInput = document.getElementById(
+      "playersNumber"
+    );
     if (playersNumberInput) {
       playersNumberInput.addEventListener("input", () => {
         if (currentStep === 2) {
@@ -1494,9 +1596,12 @@ async function newGame(mode) {
       className: "wizard-step hidden",
       id: "singleStep2"
     });
-    const singleNavigationContainer = Object.assign(document.createElement("div"), {
-      className: "flex justify-between items-center mt-6"
-    });
+    const singleNavigationContainer = Object.assign(
+      document.createElement("div"),
+      {
+        className: "flex justify-between items-center mt-6"
+      }
+    );
     const singleBackButton = Object.assign(document.createElement("button"), {
       className: "btn py-2 px-6 text-lg font-bold hidden",
       textContent: t("back") || "Back",
@@ -1512,9 +1617,12 @@ async function newGame(mode) {
       textContent: t("start") || "Start",
       id: "singleFinishBtn"
     });
-    const singleStep1FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
-    });
+    const singleStep1FlexContainer = Object.assign(
+      document.createElement("div"),
+      {
+        className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+      }
+    );
     if (mode === "multi") {
       const player3Container = Object.assign(document.createElement("div"), {
         className: "flex-1 min-w-[300px]"
@@ -1561,9 +1669,12 @@ async function newGame(mode) {
       singleStep1FlexContainer.appendChild(player2Container);
     }
     singleStep1Container.appendChild(singleStep1FlexContainer);
-    const singleStep2FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
-    });
+    const singleStep2FlexContainer = Object.assign(
+      document.createElement("div"),
+      {
+        className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+      }
+    );
     singleStep2FlexContainer.appendChild(settingsForm);
     singleStep2FlexContainer.appendChild(bgColorsForm);
     singleStep2Container.appendChild(singleStep2FlexContainer);
@@ -1628,21 +1739,35 @@ async function newGame(mode) {
 }
 async function createAndStartTournament() {
   try {
-    const playersNumber = parseInt(document.getElementById("playersNumber")?.value || "4");
+    const playersNumber = parseInt(
+      document.getElementById("playersNumber")?.value || "4"
+    );
     const players = [];
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(`p${i}Id`);
-      const playerNameInput = document.getElementById(`name_p${i}`);
-      const playerAiInput = document.getElementById(`p${i}Ai`);
+      const playerIdInput = document.getElementById(
+        `p${i}Id`
+      );
+      const playerNameInput = document.getElementById(
+        `name_p${i}`
+      );
+      const playerAiInput = document.getElementById(
+        `p${i}Ai`
+      );
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       if (isAi) {
-        players.push("AI-Roger-Federror");
+        players.push(`AI-Player-${i}`);
       } else {
         if (playerIdInput && playerIdInput.value) {
           players.push(playerIdInput.value);
         } else if (i === 1) {
           const urlParams2 = new URLSearchParams(window.location.search);
-          const userId = urlParams2.get("userId") || playerNameInput?.value || "dvaisman";
+          const userId = urlParams2.get("userId") || playerNameInput?.value;
+          if (!userId) {
+            alert(
+              "No valid user ID or player name found for the first player. Please enter a name or log in."
+            );
+            return;
+          }
           players.push(userId);
         } else {
           const name = playerNameInput?.value || `player${i}`;
@@ -1653,9 +1778,15 @@ async function createAndStartTournament() {
     console.log("Creating tournament with players:", players);
     console.log("Player details:");
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(`p${i}Id`);
-      const playerNameInput = document.getElementById(`name_p${i}`);
-      const playerAiInput = document.getElementById(`p${i}Ai`);
+      const playerIdInput = document.getElementById(
+        `p${i}Id`
+      );
+      const playerNameInput = document.getElementById(
+        `name_p${i}`
+      );
+      const playerAiInput = document.getElementById(
+        `p${i}Ai`
+      );
       console.log(`Player ${i}:`, {
         id: playerIdInput?.value || "none",
         name: playerNameInput?.value || "none",
@@ -1663,27 +1794,32 @@ async function createAndStartTournament() {
         finalId: players[i - 1]
       });
     }
-    console.log("First player data check:");
     const urlParams = new URLSearchParams(window.location.search);
-    console.log("URL userId:", urlParams.get("userId"));
-    console.log("URL username:", urlParams.get("username"));
     const playerIdToNameMap = {};
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(`p${i}Id`);
-      const playerNameInput = document.getElementById(`name_p${i}`);
-      const playerAiInput = document.getElementById(`p${i}Ai`);
+      const playerIdInput = document.getElementById(
+        `p${i}Id`
+      );
+      const playerNameInput = document.getElementById(
+        `name_p${i}`
+      );
+      const playerAiInput = document.getElementById(
+        `p${i}Ai`
+      );
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       const playerId = players[i - 1];
       const playerName = playerNameInput?.value || `Player ${i}`;
-      if (!isAi) {
-        playerIdToNameMap[playerId] = playerName;
-      }
+      playerIdToNameMap[playerId] = playerName;
     }
     window.playerIdToNameMap = playerIdToNameMap;
     console.log("Player ID to Name mapping:", playerIdToNameMap);
+    const defaultName = `Tournament - ${(/* @__PURE__ */ new Date()).toISOString()} (${players.length} players)`;
+    const tournamentNameInput = document.getElementById(
+      "tournamentName"
+    );
+    const userProvidedName = tournamentNameInput?.value?.trim();
     const tournamentData = {
-      name: `Tournament_${Date.now()}`,
-      // Use timestamp to make it unique
+      name: userProvidedName ? userProvidedName : defaultName,
       playersIds: players
     };
     const tournament = await tournamentService.createTournament(tournamentData);
@@ -1844,7 +1980,9 @@ async function loadConfig(mode) {
   }
   var p = [];
   if (mode === "tournament") {
-    const playersNumberInput = document.getElementById("playersNumber");
+    const playersNumberInput = document.getElementById(
+      "playersNumber"
+    );
     const numPlayers = playersNumberInput ? parseInt(playersNumberInput.value) || 4 : 4;
     for (let i = 1; i <= numPlayers; i++) {
       let playerId = loadIn(`p${i}Id`);
@@ -1861,7 +1999,8 @@ async function loadConfig(mode) {
           loadIn(`p${i}Down`),
           loadIn(`p${i}InnerCol`),
           loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`)
+          loadIn(`p${i}CornerCol`),
+          i
         )
       );
     }
@@ -1876,7 +2015,8 @@ async function loadConfig(mode) {
         loadIn("p1Down"),
         loadIn("p1InnerCol"),
         loadIn("p1OuterCol"),
-        loadIn("p1CornerCol")
+        loadIn("p1CornerCol"),
+        1
       )
     );
     p.push(
@@ -1889,7 +2029,8 @@ async function loadConfig(mode) {
         loadIn("p2Down"),
         loadIn("p2InnerCol"),
         loadIn("p2OuterCol"),
-        loadIn("p2CornerCol")
+        loadIn("p2CornerCol"),
+        2
       )
     );
     if (mode === "multi") {
@@ -1903,7 +2044,8 @@ async function loadConfig(mode) {
           loadIn("p3Down"),
           loadIn("p3InnerCol"),
           loadIn("p3OuterCol"),
-          loadIn("p3CornerCol")
+          loadIn("p3CornerCol"),
+          3
         )
       );
       p.push(
@@ -1916,7 +2058,8 @@ async function loadConfig(mode) {
           loadIn("p4Down"),
           loadIn("p4InnerCol"),
           loadIn("p4OuterCol"),
-          loadIn("p4CornerCol")
+          loadIn("p4CornerCol"),
+          4
         )
       );
     }
@@ -1956,6 +2099,7 @@ async function loadConfig(mode) {
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
+    status: "IN_PROGRESS",
     isTournament: false,
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
@@ -2714,8 +2858,6 @@ function startRound() {
   pad[1].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[2].go();
   if (data.mode == "multi" || data.mode == "doublePaddle") pad[3].go();
-  if (data.mode == "tournament") {
-  }
   balls[0].go();
   data.go = true;
   window.requestAnimationFrame(loop);
@@ -2807,6 +2949,7 @@ async function finito() {
     winnerId = data.p[1].id;
   }
   const gameData = {
+    status: "FINISHED",
     player1Id: data.p[0].id,
     player1Name: data.p[0].name,
     score1: data.p[0].score,
@@ -2826,6 +2969,7 @@ async function finito() {
     //null in case of single game
     winnerId
   };
+  console.log("Final game data to send:", gameData);
   const result = await gameService.finishGame(gameData);
   if (!result) {
     console.error("Failed to finish game on server");
@@ -2834,9 +2978,14 @@ async function finito() {
   console.log("Game data successfully sent to server");
   if (data.isTournament && data.tournamentId) {
     try {
-      const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
+      const tournamentResult = await handleTournamentGameCompletion(
+        winnerId,
+        result.gameId || ""
+      );
       if (tournamentResult) {
-        console.log("Tournament game completed, showing match transition window");
+        console.log(
+          "Tournament game completed, showing match transition window"
+        );
         return;
       } else {
         console.log("Tournament completed or failed, will auto-exit");
@@ -2867,7 +3016,9 @@ async function endGame() {
     showExitButton(winner);
   } else {
     if (data.isTournament && data.tournamentId) {
-      console.log("Tournament mode: not auto-exiting, waiting for transition window");
+      console.log(
+        "Tournament mode: not auto-exiting, waiting for transition window"
+      );
     } else {
       setTimeout(() => {
         exitGameMessage(winner);

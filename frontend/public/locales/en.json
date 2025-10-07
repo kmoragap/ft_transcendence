@@ -97,6 +97,7 @@
 	"login_cancelled": "Login cancelled",
 	"login_second_player": "Login Second Player",
 	"second_player_logged_in": "Second player logged in",
+	"username_already_in_use": "This username is already being used by another player",
 	"no_friends_or_requests": "No friends or pending requests",
 	"please_login_to_see_friends": "Please log in to see friends",
 	"error_loading_friend_requests": "Error loading friend requests"

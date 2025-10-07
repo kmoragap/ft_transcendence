@@ -1,5 +1,31 @@
 import { t } from "./i18n";
 
+let savedPlayerData: Record<string, any> = {};
+
+function savePlayerData(playerId: string): void {
+  const nameInput = document.getElementById(`name_p${playerId}`) as HTMLInputElement;
+  const idInput = document.getElementById(`p${playerId}Id`) as HTMLInputElement;
+  const aiCheckbox = document.getElementById(`p${playerId}Ai`) as HTMLInputElement;
+  
+  if (nameInput || idInput || aiCheckbox) {
+    savedPlayerData[playerId] = {
+      name: nameInput?.value || "",
+      id: idInput?.value || "",
+      isAi: aiCheckbox?.checked || false,
+      loggedInUsername: savedPlayerData[playerId]?.loggedInUsername || "", // Preserve the actual logged-in username
+    };
+  }
+}
+
+function restorePlayerData(playerId: string, nameInput: HTMLInputElement, idInput: HTMLInputElement, aiCheckbox: HTMLInputElement): void {
+  const saved = savedPlayerData[playerId];
+  if (saved) {
+    nameInput.value = saved.name;
+    idInput.value = saved.id;
+    aiCheckbox.checked = saved.isAi;
+  }
+}
+
 window.addEventListener("message", event => {
   if (event.origin !== window.location.origin) {
     return;
@@ -19,6 +45,13 @@ window.addEventListener("message", event => {
       idInput.value = userData.id;
     }
 
+    if (savedPlayerData[playerId]) {
+      savedPlayerData[playerId].name = username;
+      savedPlayerData[playerId].id = userData?.id || "";
+      savedPlayerData[playerId].isAi = false;
+      savedPlayerData[playerId].loggedInUsername = username; // Store the actual logged-in username
+    }
+
     if (playerId === "2") {
       (window as any).gamePlayer2 = {
         id: userData?.id,
@@ -27,10 +60,6 @@ window.addEventListener("message", event => {
         loggedIn: true,
       };
     }
-
-    console.log(
-      `Player ${playerId} logged in as: ${username} (ID: ${userData?.id})`
-    );
   } else if (event.data.type === "LOGIN_CANCELLED") {
     const { playerId } = event.data;
     const aiCheckbox = document.getElementById(
@@ -39,10 +68,8 @@ window.addEventListener("message", event => {
     if (aiCheckbox) {
       aiCheckbox.checked = true;
     }
-    console.log(`Login cancelled for player ${playerId}, reverting to AI`);
   } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
     (window as any).gamePlayer2 = null;
-    console.log("Player 2 data cleared");
   }
 });
 
@@ -126,6 +153,17 @@ export function playerSetupMenu(
   c2: string,
   c3: string
 ) {
+  savePlayerData(p);
+  
+  if (!savedPlayerData[p]) {
+    savedPlayerData[p] = {
+      name: name,
+      id: "",
+      isAi: isAi,
+      loggedInUsername: "",
+    };
+  }
+  
   const idInput = Object.assign(document.createElement("input"), {
     type: "hidden",
     id: `p${p}Id`,
@@ -161,10 +199,11 @@ export function playerSetupMenu(
     checked: isAi,
     className: "ml-1",
   }) as HTMLInputElement;
-  // Add login modal for any player when AI is unchecked
+  // Add login modal for any player when AI is unchecked, logout when checked
   e4.addEventListener("change", event => {
     const target = event.target as HTMLInputElement;
     if (!target.checked) {
+      // Request login when AI is unchecked
       window.parent.postMessage(
         {
           type: "REQUEST_LOGIN",
@@ -173,6 +212,41 @@ export function playerSetupMenu(
         },
         window.location.origin
       );
+    } else {
+      const nameInput = document.getElementById(`name_p${p}`) as HTMLInputElement;
+      const idInput = document.getElementById(`p${p}Id`) as HTMLInputElement;
+      
+      if (nameInput) {
+        nameInput.value = `AI-${t("player")}-${p}`;
+      }
+      
+      if (idInput) {
+        idInput.value = "";
+      }
+      
+      if (p === "2") {
+        (window as any).gamePlayer2 = null;
+      }
+      
+      const actualLoggedInUsername = savedPlayerData[p]?.loggedInUsername || "";
+      
+      if (savedPlayerData[p]) {
+        savedPlayerData[p].name = nameInput?.value || `AI-${t("player")}-${p}`;
+        savedPlayerData[p].id = "";
+        savedPlayerData[p].isAi = true;
+        savedPlayerData[p].loggedInUsername = ""; // Clear the logged-in username
+      }
+      
+      if (actualLoggedInUsername) {
+        window.parent.postMessage(
+          {
+            type: "PLAYER_LOGOUT",
+            playerId: p,
+            username: actualLoggedInUsername,
+          },
+          window.location.origin
+        );
+      }
     }
   });
   //keys
@@ -285,6 +359,8 @@ export function playerSetupMenu(
   const ul = document.createElement("li");
   ul.appendChild(form);
   list.appendChild(ul);
+  
+  restorePlayerData(p, e2, idInput, e4);
 }
 
 export function gameSetupMenu(mode: string): {

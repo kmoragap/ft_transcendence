@@ -135,7 +135,7 @@ export function endRound(): void {
     pad[0].stop();
     pad.shift();
   }
-  
+
   if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
     if (data.isTournament) {
       finito();
@@ -144,7 +144,7 @@ export function endRound(): void {
     }
     return;
   }
-  
+
   // Match continues - restart the next round
   if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) {
     setTimeout(startRound, 1500);
@@ -160,6 +160,7 @@ export async function finito(): Promise<void> {
   }
 
   const gameData: gameInfo = {
+    status: "FINISHED",
     player1Id: data.p[0].id,
     player1Name: data.p[0].name,
     score1: data.p[0].score,
@@ -175,21 +176,25 @@ export async function finito(): Promise<void> {
     tournamentMatch: data.tournamentMatch, //null in case of single game
     winnerId: winnerId,
   };
-  
   const result = await gameService.finishGame(gameData);
   if (!result) {
     console.error("Failed to finish game on server");
     return;
   }
-  
+
   console.log("Game data successfully sent to server");
-  
+
   // Handle tournament progression if this is a tournament game
   if (data.isTournament && data.tournamentId) {
     try {
-      const tournamentResult = await handleTournamentGameCompletion(winnerId, result.gameId || "");
+      const tournamentResult = await handleTournamentGameCompletion(
+        winnerId,
+        result.gameId || ""
+      );
       if (tournamentResult) {
-        console.log("Tournament game completed, showing match transition window");
+        console.log(
+          "Tournament game completed, showing match transition window"
+        );
         return;
       } else {
         console.log("Tournament completed or failed, will auto-exit");
@@ -198,7 +203,7 @@ export async function finito(): Promise<void> {
       console.error("Error handling tournament game completion:", error);
     }
   }
-  
+
   return;
 }
 
@@ -229,7 +234,9 @@ export async function endGame() {
     // For tournament mode, don't auto-exit if there are more matches
     if (data.isTournament && data.tournamentId) {
       // Tournament mode - let the transition window handle the flow
-      console.log("Tournament mode: not auto-exiting, waiting for transition window");
+      console.log(
+        "Tournament mode: not auto-exiting, waiting for transition window"
+      );
     } else {
       // Single player mode - auto-exit after 3 seconds
       setTimeout(() => {

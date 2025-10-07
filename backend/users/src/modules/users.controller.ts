@@ -12,7 +12,7 @@ export function isValidCuid(id: string): boolean {
 
 export async function createUserHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { username, email, firstname, password, avatarUrl } = request.body as {
     username: string;
@@ -60,7 +60,7 @@ export async function createUserHandler(
 
 export async function deleteUserHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { id, email } = request.body as { id?: string; email?: string };
 
@@ -101,7 +101,7 @@ export async function deleteUserHandler(
 
 export async function getUsersHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const users = await prisma.user.findMany({
     select: {
@@ -121,7 +121,7 @@ export async function getUsersHandler(
 
 export async function searchUsersHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { q } = request.query as { q: string };
 
@@ -155,7 +155,7 @@ export async function searchUsersHandler(
 
 export async function getUserByEmailHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { email } = request.params as { email: string };
 
@@ -184,7 +184,7 @@ export async function getUserByEmailHandler(
 
 export async function getUserByUsernameHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { username } = request.params as { username: string };
 
@@ -212,13 +212,13 @@ export async function getUserByUsernameHandler(
 
 export const getUsersByIds = async (
   request: FastifyRequest<{ Body: { userIds: string[] } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   try {
     const { userIds } = request.body;
 
     // Validate all IDs
-    const invalidIds = userIds.filter(id => !isValidCuid(id));
+    const invalidIds = userIds.filter((id) => !isValidCuid(id));
     if (invalidIds.length > 0) {
       return reply
         .status(400)
@@ -244,7 +244,7 @@ export const getUsersByIds = async (
 
 export async function updateMyProfileHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { username, firstname, email } = request.body as {
     username?: string;
@@ -311,7 +311,7 @@ export async function updateMyProfileHandler(
 
 export async function uploadAvatarHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   // file comes from @fastify/multipart (make sure it's registered before routes)
   const file = await request.file({ limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
@@ -352,7 +352,7 @@ export async function uploadAvatarHandler(
   if (current?.avatarUrl?.startsWith("/uploads/avatars/")) {
     const oldPath = path.resolve(
       process.cwd(),
-      current.avatarUrl.replace("/uploads/", "uploads/")
+      current.avatarUrl.replace("/uploads/", "uploads/"),
     );
     fs.unlink(oldPath).catch(() => {});
   }
@@ -369,7 +369,7 @@ export async function uploadAvatarHandler(
 
 export async function toggle2faHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { is2faEnabled } = request.body as {
     is2faEnabled: boolean;
@@ -386,17 +386,12 @@ export async function toggle2faHandler(
       where: { id: userId },
       data: { is2faEnabled },
       select: {
-        id: true,
-        username: true,
-        firstname: true,
-        email: true,
-        avatarUrl: true,
         is2faEnabled: true,
       },
     });
 
     return reply.send({
-      message: `Two-factor authentication ${is2faEnabled ? 'enabled' : 'disabled'} successfully`,
+      message: `Two-factor authentication ${is2faEnabled ? "enabled" : "disabled"} successfully`,
       user: updatedUser,
     });
   } catch (error: unknown) {

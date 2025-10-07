@@ -8,7 +8,7 @@ services:
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./backend/users/uploads:/app/uploads:ro
-      - ./backend/pong/src:/app/pong-static:ro
+      - pong-static:/app/pong-static:ro
     depends_on:
       - frontend
       - auth
@@ -29,7 +29,7 @@ services:
     depends_on:
       - users
     networks:
-      - app-network  
+      - app-network
 
   pong-db:
     build: ./backend/pong-db
@@ -40,6 +40,8 @@ services:
 
   pong:
     build: ./backend/pong
+    volumes:
+      - pong-static:/app/src:ro #share the built files with the container
     #ports:
     #  - "3002:3000"
     depends_on:
@@ -58,7 +60,7 @@ services:
     #  - "3004:3000"
     environment:
       - NODE_ENV=development
-      - USERS_URL=http://users:3000 
+      - USERS_URL=http://users:3000
     networks:
       - app-network
   frontend:
@@ -80,3 +82,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  pong-static:

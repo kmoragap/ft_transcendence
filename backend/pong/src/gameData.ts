@@ -86,7 +86,7 @@ let isFullscreen = false;
 function isMobile(): boolean {
   return (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     ) ||
     (window.innerWidth <= 768 && window.innerHeight <= 1024)
   );
@@ -342,7 +342,7 @@ function loadPlayer(
   innerCol: string,
   outercol: string,
   cornerCol: string,
-  playerIndex?: number
+  playerIndex?: number,
 ): playerData {
   const isAiByName = name.includes("Player") && name !== "Player 1";
   const finalIsAi = isAi || isAiByName;
@@ -379,7 +379,7 @@ function loadInB(id: string): boolean {
 }
 
 export async function newGame(mode: string): Promise<void> {
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve) => {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
@@ -446,7 +446,7 @@ export async function newGame(mode: string): Promise<void> {
     "Control",
     "#ffffff",
     "#808080",
-    "#ff0000"
+    "#ff0000",
   );
   // Set the user ID in the hidden input for Player 1 (for both 2-player and 4-player modes)
   // This needs to happen AFTER playerSetupMenu creates the hidden input
@@ -465,7 +465,7 @@ export async function newGame(mode: string): Promise<void> {
     "ArrowDown",
     "#ffffff",
     "#808080",
-    "#ff0000"
+    "#ff0000",
   );
 
   player1Container.appendChild(player1List);
@@ -529,7 +529,7 @@ export async function newGame(mode: string): Promise<void> {
 
     // Add event listener to update player boxes when number of players changes
     const playersNumberInput = document.getElementById(
-      "playersNumber"
+      "playersNumber",
     ) as HTMLInputElement;
     if (playersNumberInput) {
       playersNumberInput.addEventListener("input", () => {
@@ -635,7 +635,7 @@ export async function newGame(mode: string): Promise<void> {
           playerKeys.down,
           "#ffffff",
           "#808080",
-          "#ff0000"
+          "#ff0000",
         );
 
         playerContainer.appendChild(playerList);
@@ -648,7 +648,7 @@ export async function newGame(mode: string): Promise<void> {
 
     function showStep(step: number) {
       // Hide all steps
-      document.querySelectorAll(".wizard-step").forEach(el => {
+      document.querySelectorAll(".wizard-step").forEach((el) => {
         el.classList.add("hidden");
       });
 
@@ -666,7 +666,7 @@ export async function newGame(mode: string): Promise<void> {
       // Special handling for step 2 - create player boxes
       if (step === 2) {
         const playersNumberInput = document.getElementById(
-          "playersNumber"
+          "playersNumber",
         ) as HTMLInputElement;
         if (playersNumberInput) {
           const numPlayers = parseInt(playersNumberInput.value) || 4;
@@ -677,21 +677,21 @@ export async function newGame(mode: string): Promise<void> {
       currentStep = step;
     }
 
-    nextButton.addEventListener("click", e => {
+    nextButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (currentStep < 3) {
         showStep(currentStep + 1);
       }
     });
 
-    backButton.addEventListener("click", e => {
+    backButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (currentStep > 1) {
         showStep(currentStep - 1);
       }
     });
 
-    finishButton.addEventListener("click", async e => {
+    finishButton.addEventListener("click", async (e) => {
       e.preventDefault();
 
       if (mode === "tournament") {
@@ -723,7 +723,7 @@ export async function newGame(mode: string): Promise<void> {
       document.createElement("div"),
       {
         className: "flex justify-between items-center mt-6",
-      }
+      },
     ) as HTMLDivElement;
 
     const singleBackButton = Object.assign(document.createElement("button"), {
@@ -750,7 +750,7 @@ export async function newGame(mode: string): Promise<void> {
       {
         className:
           "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
-      }
+      },
     ) as HTMLDivElement;
 
     if (mode === "multi") {
@@ -778,7 +778,7 @@ export async function newGame(mode: string): Promise<void> {
         "k",
         "#ffffff",
         "#808080",
-        "#ff0000"
+        "#ff0000",
       );
       playerSetupMenu(
         player4List,
@@ -789,7 +789,7 @@ export async function newGame(mode: string): Promise<void> {
         "PageDown",
         "#ffffff",
         "#808080",
-        "#ff0000"
+        "#ff0000",
       );
 
       player3Container.appendChild(player3List);
@@ -813,7 +813,7 @@ export async function newGame(mode: string): Promise<void> {
       {
         className:
           "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
-      }
+      },
     ) as HTMLDivElement;
     singleStep2FlexContainer.appendChild(settingsForm);
     singleStep2FlexContainer.appendChild(bgColorsForm);
@@ -838,7 +838,7 @@ export async function newGame(mode: string): Promise<void> {
       // Hide all single player steps
       document
         .querySelectorAll(".single-player-wizard .wizard-step")
-        .forEach(el => {
+        .forEach((el) => {
           el.classList.add("hidden");
         });
 
@@ -856,21 +856,21 @@ export async function newGame(mode: string): Promise<void> {
       singleCurrentStep = step;
     }
 
-    singleNextButton.addEventListener("click", e => {
+    singleNextButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (singleCurrentStep < 2) {
         showSingleStep(singleCurrentStep + 1);
       }
     });
 
-    singleBackButton.addEventListener("click", e => {
+    singleBackButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (singleCurrentStep > 1) {
         showSingleStep(singleCurrentStep - 1);
       }
     });
 
-    singleFinishButton.addEventListener("click", e => {
+    singleFinishButton.addEventListener("click", (e) => {
       e.preventDefault();
       loadConfig(mode);
     });
@@ -927,7 +927,7 @@ async function createAndStartTournament(): Promise<void> {
     // Get tournament settings from form
     const playersNumber = parseInt(
       (document.getElementById("playersNumber") as HTMLInputElement)?.value ||
-        "4"
+        "4",
     );
 
     // Get player data from the form
@@ -936,13 +936,13 @@ async function createAndStartTournament(): Promise<void> {
     // Collect player IDs from the form (using the correct IDs: p1Id, p2Id, etc.)
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(
-        `p${i}Id`
+        `p${i}Id`,
       ) as HTMLInputElement;
       const playerNameInput = document.getElementById(
-        `name_p${i}`
+        `name_p${i}`,
       ) as HTMLInputElement;
       const playerAiInput = document.getElementById(
-        `p${i}Ai`
+        `p${i}Ai`,
       ) as HTMLInputElement;
 
       // Check if player is AI
@@ -958,7 +958,7 @@ async function createAndStartTournament(): Promise<void> {
           const userId = urlParams.get("userId") || playerNameInput?.value;
           if (!userId) {
             alert(
-              "No valid user ID or player name found for the first player. Please enter a name or log in."
+              "No valid user ID or player name found for the first player. Please enter a name or log in.",
             );
             return;
           }
@@ -974,13 +974,13 @@ async function createAndStartTournament(): Promise<void> {
     console.log("Player details:");
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(
-        `p${i}Id`
+        `p${i}Id`,
       ) as HTMLInputElement;
       const playerNameInput = document.getElementById(
-        `name_p${i}`
+        `name_p${i}`,
       ) as HTMLInputElement;
       const playerAiInput = document.getElementById(
-        `p${i}Ai`
+        `p${i}Ai`,
       ) as HTMLInputElement;
       console.log(`Player ${i}:`, {
         id: playerIdInput?.value || "none",
@@ -995,13 +995,13 @@ async function createAndStartTournament(): Promise<void> {
     const playerIdToNameMap: Record<string, string> = {};
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(
-        `p${i}Id`
+        `p${i}Id`,
       ) as HTMLInputElement;
       const playerNameInput = document.getElementById(
-        `name_p${i}`
+        `name_p${i}`,
       ) as HTMLInputElement;
       const playerAiInput = document.getElementById(
-        `p${i}Ai`
+        `p${i}Ai`,
       ) as HTMLInputElement;
 
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
@@ -1018,7 +1018,7 @@ async function createAndStartTournament(): Promise<void> {
       players.length
     } players)`;
     const tournamentNameInput = document.getElementById(
-      "tournamentName"
+      "tournamentName",
     ) as HTMLInputElement;
     const userProvidedName = tournamentNameInput?.value?.trim();
     const tournamentData = {
@@ -1137,18 +1137,18 @@ export async function loadConfig(mode: string): Promise<void> {
 
   canvas.addEventListener(
     "touchstart",
-    e => {
+    (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       touchStartY = touch.clientY;
       touchStartX = touch.clientX;
     },
-    { passive: false }
+    { passive: false },
   );
 
   canvas.addEventListener(
     "touchmove",
-    e => {
+    (e) => {
       e.preventDefault();
       if (!data || !data.p) return;
 
@@ -1181,21 +1181,21 @@ export async function loadConfig(mode: string): Promise<void> {
         }
       }
     },
-    { passive: false }
+    { passive: false },
   );
 
   canvas.addEventListener(
     "touchend",
-    e => {
+    (e) => {
       e.preventDefault();
       if (data && data.p) {
-        data.p.forEach(player => {
+        data.p.forEach((player) => {
           data.keys[player.up] = false;
           data.keys[player.down] = false;
         });
       }
     },
-    { passive: false }
+    { passive: false },
   );
 
   // Auto-enter fullscreen on mobile devices
@@ -1217,7 +1217,7 @@ export async function loadConfig(mode: string): Promise<void> {
   if (mode === "tournament") {
     // For tournaments, dynamically load all players based on the number set
     const playersNumberInput = document.getElementById(
-      "playersNumber"
+      "playersNumber",
     ) as HTMLInputElement;
     const numPlayers = playersNumberInput
       ? parseInt(playersNumberInput.value) || 4
@@ -1242,8 +1242,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn(`p${i}InnerCol`),
           loadIn(`p${i}OuterCol`),
           loadIn(`p${i}CornerCol`),
-          i
-        )
+          i,
+        ),
       );
     }
   } else {
@@ -1258,8 +1258,8 @@ export async function loadConfig(mode: string): Promise<void> {
         loadIn("p1InnerCol"),
         loadIn("p1OuterCol"),
         loadIn("p1CornerCol"),
-        1
-      )
+        1,
+      ),
     );
     p.push(
       loadPlayer(
@@ -1271,8 +1271,8 @@ export async function loadConfig(mode: string): Promise<void> {
         loadIn("p2InnerCol"),
         loadIn("p2OuterCol"),
         loadIn("p2CornerCol"),
-        2
-      )
+        2,
+      ),
     );
 
     // Add players 3 and 4 for multi mode
@@ -1287,8 +1287,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn("p3InnerCol"),
           loadIn("p3OuterCol"),
           loadIn("p3CornerCol"),
-          3
-        )
+          3,
+        ),
       );
       p.push(
         loadPlayer(
@@ -1300,13 +1300,13 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn("p4InnerCol"),
           loadIn("p4OuterCol"),
           loadIn("p4CornerCol"),
-          4
-        )
+          4,
+        ),
       );
     }
   }
 
-  const loadData = {
+  const loadData: gameData = {
     canvas: canvas,
     fps: 50,
     nameTB1: p1name,

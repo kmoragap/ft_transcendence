@@ -20,7 +20,7 @@ class TournamentService {
   private baseUrl = "/api/pong";
   async updateTournamentStatus(
     tournamentId: string,
-    status: "IN_PROGRESS" | "FINISHED" | "CANCELLED"
+    status: "IN_PROGRESS" | "FINISHED" | "CANCELLED",
   ): Promise<boolean> {
     try {
       const response = await fetch(
@@ -29,7 +29,7 @@ class TournamentService {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status }),
-        }
+        },
       );
       return response.ok;
     } catch (error) {
@@ -55,7 +55,7 @@ class TournamentService {
 
   async addGameToTournament(
     tournamentId: string,
-    gameId: string
+    gameId: string,
   ): Promise<boolean> {
     try {
       const response = await fetch(
@@ -64,7 +64,7 @@ class TournamentService {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ gameId }),
-        }
+        },
       );
 
       return response.ok;
@@ -77,7 +77,7 @@ class TournamentService {
   async getTournament(tournamentId: string): Promise<any> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/tournaments/${tournamentId}`
+        `${this.baseUrl}/tournaments/${tournamentId}`,
       );
       if (!response.ok) return null;
       return await response.json();

@@ -37,6 +37,7 @@ export async function createUserHandler(
       id: user.id,
       username: user.username,
       firstname: user.firstname,
+      email: user.email,
       avatarUrl: user.avatarUrl,
     };
   } catch (error: any) {

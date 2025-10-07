@@ -608,3 +608,24 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     throw error;
   }
 }
+
+export async function toggle2fa(is2faEnabled: boolean): Promise<void> {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const res = await fetch("/api/users/me/2fa", {
+    method: "PUT",
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ is2faEnabled }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `2FA toggle failed (${res.status})`);
+  }
+}

@@ -648,7 +648,7 @@ export function renderMyProfile(): HTMLElement {
         email: data.get("email") as string,
       };
 
-      const is2faEnabled = data.get("is2faEnabled") === "on";
+      const is2faEnabled = data.get("is2faEnabled") === CHECKBOX_ON_VALUE;
 
       try {
         await updateMyProfile(profileData);

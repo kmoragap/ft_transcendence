@@ -10,4 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify branch is up to date
-        run: echo "✅ Branch is up to date with dev"
+        run: |
+          git fetch origin dev
+          # Check if the current branch is behind dev
+          if ! git merge-base --is-ancestor origin/dev HEAD; then
+            echo "❌ Branch is NOT up to date with dev. Please rebase or merge dev into your branch."
+            exit 1
+          else
+            echo "✅ Branch is up to date with dev"
+          fi

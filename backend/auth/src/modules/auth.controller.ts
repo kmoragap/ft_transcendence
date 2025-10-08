@@ -187,7 +187,7 @@ export async function registerHandler(
       !password?.trim()
     )
       throw new ValidationError("All fields are required");
-    //check if email exists
+    // Check if email exists.
     const existingUser = await getUserByEmail(email);
     if (existingUser)
       throw new ConflictError("User with this email already exists");

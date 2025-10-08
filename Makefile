@@ -1,4 +1,4 @@
-SSL_SCRIPT := tools/ssl_generator.sh #TODO: I'm working on this @kmoraga
+SSL_SCRIPT := tools/ssl_generator.sh
 DC := docker-compose
 SSL := backend/nginx
 

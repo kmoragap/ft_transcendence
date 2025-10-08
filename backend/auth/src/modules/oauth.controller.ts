@@ -92,7 +92,7 @@ export async function oauth42CallbackHandler(
       // Check if username already exists
       const existingUsername = await getUserByUsername(user42.login);
       if (existingUsername) {
-        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost"}/#/login?error=username_exists`;
+        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login?error=username_exists`;
         return reply.redirect(errorUrl);
       }
 
@@ -138,11 +138,11 @@ export async function oauth42CallbackHandler(
       path: "/",
     });
 
-    const frontendUrl = `${process.env.FRONTEND_URL || "http://localhost"}/#/login/callback?success=true`;
+    const frontendUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login/callback?success=true`;
     return reply.redirect(frontendUrl);
   } catch (error) {
     console.error("42 OAuth error:", error);
-    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost"}/#/login?error=oauth_failed`;
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login?error=oauth_failed`;
     return reply.redirect(errorUrl);
   }
 }

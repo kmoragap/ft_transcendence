@@ -92,7 +92,7 @@ export async function oauth42CallbackHandler(
       // Check if username already exists
       const existingUsername = await getUserByUsername(user42.login);
       if (existingUsername) {
-        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login?error=username_exists`;
+        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080/"}/#/login?error=username_exists`;
         return reply.redirect(errorUrl);
       }
 

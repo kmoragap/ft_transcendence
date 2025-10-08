@@ -9,8 +9,8 @@ all: up show-url
 
 show-url:
 	@echo "🌐 Access the website at:"
-	@echo "http://$$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $$2}')"
-	@echo "or http://localhost"
+	@echo "https://$$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $$2}')"
+	@echo "or https://localhost"
 ssl:
 	@echo "🔐 Generating SSL certificates..."
 	@bash $(SSL_SCRIPT)

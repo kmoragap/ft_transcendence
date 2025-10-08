@@ -14,12 +14,13 @@ export async function createUserHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const { username, email, firstname, password, avatarUrl } = request.body as {
+  const { username, email, firstname, password, avatarUrl, isOAuthUser } = request.body as {
     username: string;
     email: string;
     firstname: string;
     password: string;
     avatarUrl?: string;
+    isOAuthUser?: boolean;
   };
 
   try {
@@ -31,6 +32,7 @@ export async function createUserHandler(
         firstname,
         password: hashedPassword,
         avatarUrl: avatarUrl || "/assets/img/avatar.jpg",
+        isOAuthUser: isOAuthUser || false,
       },
     });
     return {
@@ -176,6 +178,8 @@ export async function getUserByEmailHandler(
       email: user.email,
       avatarUrl: user.avatarUrl,
       password: user.password,
+      is2faEnabled: user.is2faEnabled,
+      isOAuthUser: user.isOAuthUser,
     };
   } catch (error) {
     console.error("Error fetching user by email:", error);
@@ -204,6 +208,8 @@ export async function getUserByUsernameHandler(
       email: user.email,
       avatarUrl: user.avatarUrl,
       password: user.password,
+      is2faEnabled: user.is2faEnabled,
+      isOAuthUser: user.isOAuthUser,
     };
   } catch (error) {
     console.error("Error fetching user by username:", error);

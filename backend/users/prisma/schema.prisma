@@ -15,7 +15,8 @@ model User {
     password        String
     avatarUrl       String   @default("/assets/img/avatar.jpg")
     isOnline        Boolean  @default(false)
-    is2faEnabled    Boolean           @default(false)
+    is2faEnabled    Boolean  @default(false)
+    isOAuthUser     Boolean  @default(false)
     createdAt       DateTime @default(now())
     // pong stats
     gamesPlayed     Int      @default(0)

@@ -34,6 +34,8 @@ rebuild: down ssl show-url
 clean: down
 	@echo "🧹 Removing SSL certificates..."
 	@rm -rf $(SSL)/ssl
+	@echo "🧹 Removing Docker images..."
+	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
 	@$(DC) down -v > /dev/null 2>&1
 	@echo "✅ Cleanup complete."

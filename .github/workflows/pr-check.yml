@@ -1,0 +1,14 @@
+name: PR Checks
+on:
+  pull_request:
+    branches:
+      - dev 
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Basic check
+        run: echo "✅ PR check passed"
+

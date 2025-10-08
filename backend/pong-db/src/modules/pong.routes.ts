@@ -4,6 +4,7 @@ import {
   getGame,
   getGames,
   getLeaderboard,
+  updateTournamentStatus,
 } from "./pong.controller";
 import { getTournament, createTournament } from "./tournament.controller";
 
@@ -20,4 +21,5 @@ export default async function pongRoutes(fastify: FastifyInstance) {
   //tournament routes
   fastify.post("/tournaments", createTournament);
   fastify.get("/tournaments/:id", getTournament);
+  fastify.patch("/tournaments/:id/status", updateTournamentStatus);
 }

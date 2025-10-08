@@ -8,19 +8,20 @@ datasource db {
 }
 
 model User {
-    id          String   @id @default(cuid())
-    username    String   @unique
-    email       String   @unique
-    firstname   String
-    password    String
-    avatarUrl   String   @default("/assets/img/avatar.jpg")
-    isOnline    Boolean  @default(false)
-    createdAt   DateTime @default(now())
+    id              String   @id @default(cuid())
+    username        String   @unique
+    email           String   @unique
+    firstname       String
+    password        String
+    avatarUrl       String   @default("/assets/img/avatar.jpg")
+    isOnline        Boolean  @default(false)
+    is2faEnabled    Boolean           @default(false)
+    createdAt       DateTime @default(now())
     // pong stats
-    gamesPlayed Int      @default(0)
-    wins        Int      @default(0)
-    losses      Int      @default(0)
-    elo         Int      @default(1200) //initial elo
+    gamesPlayed     Int      @default(0)
+    wins            Int      @default(0)
+    losses          Int      @default(0)
+    elo             Int      @default(1200) //initial elo
 
     // relations
     sentFriendRequests     Friendship[]      @relation("sent_requests")

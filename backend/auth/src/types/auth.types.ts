@@ -29,6 +29,7 @@ export interface User {
   firstname: string;
   password: string;
   avatarUrl?: string;
+  is2faEnabled?: boolean;
 }
 
 export interface JWTPayload {
@@ -40,4 +41,9 @@ export interface SessionData {
   token: string;
   userId: string;
   expiresAt: Date;
+}
+
+export interface TwoFaCode{
+	code: string;
+	expiresAt: Date;
 }

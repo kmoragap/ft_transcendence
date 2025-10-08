@@ -8,6 +8,7 @@ import {
   removeFriendRequest,
   getUserStats,
   UserStats,
+  toggle2fa,
 } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from "../utils/session";
@@ -27,6 +28,7 @@ export interface UserProfile {
   totalGames: number;
   winRate: number;
   elo?: number;
+  is2faEnabled?: boolean;
 }
 
 function getDefaultStats(): {
@@ -49,14 +51,13 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
   const state = store.getState();
   const currentUser = state.currentUser;
 
-  console.log('getCurrentUserWithStats - currentUser:', currentUser);
-
   if (!sessionManager.isSessionRestored()) {
     return {
       username: "Loading...",
       email: "Loading...",
       name: "Loading",
       avatarUrl: "/assets/img/avatar.jpg",
+      is2faEnabled: false,
       ...getDefaultStats(),
     };
   }
@@ -67,6 +68,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       email: "guest@example.com",
       name: "Guest User",
       avatarUrl: "/assets/img/avatar.jpg",
+      is2faEnabled: false,
       ...getDefaultStats(),
     };
   }
@@ -78,6 +80,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       email: currentUser.email,
       name: currentUser.firstname || currentUser.username,
       avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
+      is2faEnabled: currentUser.is2faEnabled || false,
       ...getDefaultStats(),
     };
   }
@@ -94,6 +97,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       totalGames: stats.wins + stats.losses,
       winRate: stats.winRate,
       elo: stats.elo,
+      is2faEnabled: currentUser.is2faEnabled || false,
     };
   } catch (error) {
     console.error('Failed to fetch user stats:', error);
@@ -102,6 +106,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       email: currentUser.email,
       name: currentUser.firstname || currentUser.username,
       avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
+      is2faEnabled: currentUser.is2faEnabled || false,
       ...getDefaultStats(),
     };
   }
@@ -112,6 +117,7 @@ let user: UserProfile = {
   email: "Loading...",
   name: "Loading",
   avatarUrl: "/assets/img/avatar.jpg",
+  is2faEnabled: false,
   ...getDefaultStats(),
 };
 
@@ -241,6 +247,14 @@ export function renderMyProfile(): HTMLElement {
           <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="email">Email</label>
           <input name="email" type="email" value="${user.email}"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
+        </div>
+        
+        <div class="space-y-2">
+          <label class="flex items-center space-x-3">
+            <input name="is2faEnabled" type="checkbox" ${user.is2faEnabled ? 'checked' : ''}
+                   class="w-4 h-4 text-[#66fcf1] bg-[rgba(102,252,241,0.1)] border-[#66fcf1] rounded focus:ring-[#66fcf1] focus:ring-2" />
+            <span class="text-sm font-medium text-[#66fcf1]" data-i18n="enable_2fa">Enable Two-Factor Authentication</span>
+          </label>
         </div>
         
         <div class="flex flex-col gap-3 pt-4">
@@ -634,9 +648,16 @@ export function renderMyProfile(): HTMLElement {
         email: data.get("email") as string,
       };
 
+      const is2faEnabled = data.get("is2faEnabled") === "on";
+
       try {
         await updateMyProfile(profileData);
         updateCurrentUserProfile(profileData);
+
+        if (is2faEnabled !== user.is2faEnabled) {
+          await toggle2fa(is2faEnabled);
+          updateCurrentUserProfile({ is2faEnabled });
+        }
 
         const updated: UserProfile = {
           name: profileData.firstname,
@@ -647,6 +668,7 @@ export function renderMyProfile(): HTMLElement {
           losses: user.losses,
           totalGames: user.totalGames,
           winRate: user.winRate,
+          is2faEnabled: is2faEnabled,
         };
 
         user = updated;

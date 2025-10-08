@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
-import { randomBytes } from "crypto";
 import {
   LoginRequest,
   RegisterRequest,
@@ -16,10 +15,54 @@ import {
   ConflictError,
   handleAuthError,
 } from "../utils/errorHandler";
+import { send2faCode, verify2faCode } from "./email_2fa.controller";
+
+async function authenticateUser(
+  identifier: string,
+  password: string,
+): Promise<User> {
+  const user = identifier.includes("@")
+    ? await getUserByEmail(identifier)
+    : await getUserByUsername(identifier);
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    throw new UnauthorizedError("Invalid credentials");
+  }
+
+  return user;
+}
+
+async function completeLogin(request: FastifyRequest, user: User) {
+  const token = request.server.jwt.sign(
+    { userId: user.id, email: user.email },
+    { expiresIn: "24h" },
+  );
+
+  await prisma.session.create({
+    data: {
+      userId: user.id,
+      token,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await updateUserOnlineStatus(user.id, true);
+
+  return {
+    message: "Login successful",
+    token,
+    id: user.id,
+    username: user.username,
+    firstname: user.firstname,
+    email: user.email,
+    avatarUrl: user.avatarUrl || "/assets/img/avatar.jpg",
+    is2faEnabled: !!user.is2faEnabled,
+  };
+}
 
 export async function getMeHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const user = (request as any).user;
@@ -52,7 +95,7 @@ export async function getMeHandler(
 export async function getUserByEmail(email: string): Promise<User | null> {
   try {
     const res = await fetch(
-      `http://users:3000/api/users/by-email/${encodeURIComponent(email)}`
+      `http://users:3000/api/users/by-email/${encodeURIComponent(email)}`,
     );
     if (!res.ok) return null;
     return await res.json();
@@ -65,7 +108,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 export async function getUserByUsername(username: string) {
   try {
     const res = await fetch(
-      `http://users:3000/api/users/by-username/${encodeURIComponent(username)}`
+      `http://users:3000/api/users/by-username/${encodeURIComponent(username)}`,
     );
     if (!res.ok) return null;
     return await res.json();
@@ -81,7 +124,7 @@ export async function createUser(
   email: string,
   firstname: string,
   password: string,
-  avatarUrl?: string
+  avatarUrl?: string,
 ) {
   try {
     console.log("Creating user with avatarUrl:", avatarUrl);
@@ -104,7 +147,7 @@ export async function createUser(
 // Update user's online status by calling users service directly
 export async function updateUserOnlineStatus(
   userId: string,
-  isOnline: boolean
+  isOnline: boolean,
 ) {
   try {
     const res = await fetch(
@@ -115,7 +158,7 @@ export async function updateUserOnlineStatus(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ isOnline }),
-      }
+      },
     );
     if (!res.ok) {
       console.error("Failed to update online status:", await res.text());
@@ -127,7 +170,7 @@ export async function updateUserOnlineStatus(
 //register handler
 export async function registerHandler(
   request: FastifyRequest<{ Body: RegisterRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const { username, email, firstname, password } = request.body;
@@ -153,7 +196,7 @@ export async function registerHandler(
         userId: user.id, // now string instead of number
         email: email,
       },
-      { expiresIn: "24h" }
+      { expiresIn: "24h" },
     );
 
     // 3.save the session
@@ -184,7 +227,7 @@ export async function registerHandler(
 
 export async function loginHandler(
   request: FastifyRequest<{ Body: LoginRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const body = request.body as Record<string, any>;
@@ -193,57 +236,64 @@ export async function loginHandler(
       typeof body.username === "string"
         ? body.username
         : typeof body.email === "string"
-        ? body.email
-        : typeof body.identifier === "string"
-        ? body.identifier
-        : undefined;
+          ? body.email
+          : typeof body.identifier === "string"
+            ? body.identifier
+            : undefined;
 
     if (!identifier) {
       return reply
         .code(400)
         .send({ message: "Must provide email or username" });
     }
-    const user = identifier.includes("@")
-      ? await getUserByEmail(identifier)
-      : await getUserByUsername(identifier);
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return reply.code(401).send({ message: "Invalid credentials" });
+    const user = await authenticateUser(identifier, password);
+
+    // 2FA flow:
+    if (user?.is2faEnabled) {
+      await send2faCode(user.email);
+      return reply.code(200).send({
+        message: "Two-factor authentication code sent to your email",
+        email: user.email,
+        is2faEnabled: true,
+      });
     }
 
-    const token = request.server.jwt.sign(
-      { userId: user.id, email: user.email },
-      { expiresIn: "24h" }
-    );
-
-    await prisma.session.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    });
-
-    await updateUserOnlineStatus(user.id, true);
-
-    return {
-      message: "Login successful",
-      token,
-      id: user.id,
-      username: user.username,
-      firstname: user.firstname,
-      email: user.email,
-      avatarUrl: user.avatarUrl || "/assets/img/avatar.jpg",
-    };
+    // if no 2FA required - just login:
+    return await completeLogin(request, user);
   } catch (error) {
     console.error("Error during login:", error);
     return reply.code(500).send({ message: "Login failed" });
   }
 }
 
+export async function verify2faHandler(
+  request: FastifyRequest<{ Body: { email: string; code: string } }>,
+  reply: FastifyReply,
+) {
+  try {
+    const { email, code } = request.body;
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return reply.code(404).send({ message: "User not found" });
+    }
+
+    const valid = verify2faCode(email, code);
+    if (!valid) {
+      return reply
+        .code(401)
+        .send({ message: "Invalid two-factor authentication code" });
+    }
+    return await completeLogin(request, user);
+  } catch (error) {
+    return handleAuthError(error, reply);
+  }
+}
+
 export async function logoutHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     let decoded: { userId: string } | null = null;
@@ -309,7 +359,7 @@ export async function logoutHandler(
 
 export async function verifyTokenHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const decoded = (await request.jwtVerify()) as JWTPayload;

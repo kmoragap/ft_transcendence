@@ -56,6 +56,7 @@ export type gameData = {
   go: boolean;
   touchControl: boolean;
   mode: string;
+  status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
   //tournament fields
   isTournament: boolean;
   tournamentId?: string;
@@ -85,7 +86,7 @@ let isFullscreen = false;
 function isMobile(): boolean {
   return (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     ) ||
     (window.innerWidth <= 768 && window.innerHeight <= 1024)
   );
@@ -341,17 +342,17 @@ function loadPlayer(
   innerCol: string,
   outercol: string,
   cornerCol: string,
-  playerIndex?: number
+  playerIndex?: number,
 ): playerData {
   const isAiByName = name.includes("Player") && name !== "Player 1";
   const finalIsAi = isAi || isAiByName;
-  
+
   let finalId = id;
   if (!finalIsAi && !finalId) {
     const urlParams = new URLSearchParams(window.location.search);
-    finalId = urlParams.get('userId') || name; // Use name as last resort
+    finalId = urlParams.get("userId") || name; // Use name as last resort
   }
-  
+
   var p: playerData = {
     name: name,
     id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
@@ -378,7 +379,7 @@ function loadInB(id: string): boolean {
 }
 
 export async function newGame(mode: string): Promise<void> {
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve) => {
     if (document.readyState === "complete") resolve();
     else document.addEventListener("DOMContentLoaded", () => resolve());
   });
@@ -396,8 +397,7 @@ export async function newGame(mode: string): Promise<void> {
   const title = document.createElement("h2");
   if (mode === "tournament") {
     title.textContent = t("tournamentSetup");
-  }
-  else {
+  } else {
     title.textContent = t("gameSetup");
   }
   title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
@@ -413,7 +413,8 @@ export async function newGame(mode: string): Promise<void> {
   appDiv.appendChild(card);
 
   const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+    className:
+      "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
   }) as HTMLDivElement;
   const tournamentContainer = Object.assign(document.createElement("div"), {
     className: "flex-1 min-w-[300px]",
@@ -445,7 +446,7 @@ export async function newGame(mode: string): Promise<void> {
     "Control",
     "#ffffff",
     "#808080",
-    "#ff0000"
+    "#ff0000",
   );
   // Set the user ID in the hidden input for Player 1 (for both 2-player and 4-player modes)
   // This needs to happen AFTER playerSetupMenu creates the hidden input
@@ -464,7 +465,7 @@ export async function newGame(mode: string): Promise<void> {
     "ArrowDown",
     "#ffffff",
     "#808080",
-    "#ff0000"
+    "#ff0000",
   );
 
   player1Container.appendChild(player1List);
@@ -488,12 +489,12 @@ export async function newGame(mode: string): Promise<void> {
       className: "wizard-step",
       id: "step1",
     }) as HTMLDivElement;
-    
+
     const step2Container = Object.assign(document.createElement("div"), {
       className: "wizard-step hidden",
       id: "step2",
     }) as HTMLDivElement;
-    
+
     const step3Container = Object.assign(document.createElement("div"), {
       className: "wizard-step hidden",
       id: "step3",
@@ -525,11 +526,13 @@ export async function newGame(mode: string): Promise<void> {
     // Step 1: Tournament Settings
     const { form: tournamentForm } = tournamentSetupMenu();
     step1Container.appendChild(tournamentForm);
-    
+
     // Add event listener to update player boxes when number of players changes
-    const playersNumberInput = document.getElementById('playersNumber') as HTMLInputElement;
+    const playersNumberInput = document.getElementById(
+      "playersNumber",
+    ) as HTMLInputElement;
     if (playersNumberInput) {
-      playersNumberInput.addEventListener('input', () => {
+      playersNumberInput.addEventListener("input", () => {
         // Only update if we're currently on step 2
         if (currentStep === 2) {
           const numPlayers = parseInt(playersNumberInput.value) || 4;
@@ -540,14 +543,16 @@ export async function newGame(mode: string): Promise<void> {
 
     // Step 2: Player Setup (will be populated dynamically)
     const step2FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+      className:
+        "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
       id: "playerSetupContainer",
     }) as HTMLDivElement;
     step2Container.appendChild(step2FlexContainer);
 
     // Step 3: Game Settings
     const step3FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+      className:
+        "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
     }) as HTMLDivElement;
     step3FlexContainer.appendChild(settingsForm);
     step3FlexContainer.appendChild(bgColorsForm);
@@ -568,28 +573,34 @@ export async function newGame(mode: string): Promise<void> {
 
     // Function to create dynamic player boxes
     function createPlayerBoxes(numPlayers: number) {
-      const container = document.getElementById('playerSetupContainer');
+      const container = document.getElementById("playerSetupContainer");
       if (!container) return;
-      
+
       // Clear existing player boxes
-      container.innerHTML = '';
-      
+      container.innerHTML = "";
+
       // Create player boxes based on number of players
       for (let i = 1; i <= numPlayers; i++) {
         const playerContainer = Object.assign(document.createElement("div"), {
-          className: "flex-1"
+          className: "flex-1",
         }) as HTMLDivElement;
-        
+
         const playerList = Object.assign(document.createElement("ul"), {
-          className: "list-none"
+          className: "list-none",
         }) as HTMLUListElement;
-        
+
         // Default names for players
         const defaultNames = [
-          "Player 1", "Player 2", "Player 3", "Player 4", 
-          "Player 5", "Player 6", "Player 7", "Player 8"
+          "Player 1",
+          "Player 2",
+          "Player 3",
+          "Player 4",
+          "Player 5",
+          "Player 6",
+          "Player 7",
+          "Player 8",
         ];
-        
+
         // Default control keys for players
         const defaultKeys = [
           { up: "Shift", down: "Control" },
@@ -599,88 +610,90 @@ export async function newGame(mode: string): Promise<void> {
           { up: "t", down: "g" },
           { up: "u", down: "j" },
           { up: "o", down: "l" },
-          { up: "p", down: ";" }
+          { up: "p", down: ";" },
         ];
-        
+
         let playerName = defaultNames[i - 1] || `Player ${i}`;
         const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
-        
+
         // Set first player to logged-in user
         if (i === 1) {
           const urlParams = new URLSearchParams(window.location.search);
-          const username = urlParams.get('username') || 'Player 1';
+          const username = urlParams.get("username") || "Player 1";
           playerName = username;
         }
-        
+
         // For other players, we'll let the login modal set the proper names
         // The default names will be used until they're replaced by login
-        
+
         playerSetupMenu(
-          playerList, 
-          i.toString(), 
-          playerName, 
+          playerList,
+          i.toString(),
+          playerName,
           i > 1, // First player is human (logged-in user), rest are AI by default
-          playerKeys.up, 
-          playerKeys.down, 
-          "#ffffff", 
-          "#808080", 
-          "#ff0000"
+          playerKeys.up,
+          playerKeys.down,
+          "#ffffff",
+          "#808080",
+          "#ff0000",
         );
-        
+
         playerContainer.appendChild(playerList);
         container.appendChild(playerContainer);
       }
     }
-    
+
     // Tournament wizard navigation logic
     let currentStep = 1;
-    
+
     function showStep(step: number) {
       // Hide all steps
-      document.querySelectorAll('.wizard-step').forEach(el => {
-        el.classList.add('hidden');
+      document.querySelectorAll(".wizard-step").forEach((el) => {
+        el.classList.add("hidden");
       });
-      
+
       // Show current step
       const stepElement = document.getElementById(`step${step}`);
       if (stepElement) {
-        stepElement.classList.remove('hidden');
+        stepElement.classList.remove("hidden");
       }
-      
+
       // Update button visibility
-      backButton.classList.toggle('hidden', step === 1);
-      nextButton.classList.toggle('hidden', step === 3);
-      finishButton.classList.toggle('hidden', step !== 3);
-      
+      backButton.classList.toggle("hidden", step === 1);
+      nextButton.classList.toggle("hidden", step === 3);
+      finishButton.classList.toggle("hidden", step !== 3);
+
       // Special handling for step 2 - create player boxes
       if (step === 2) {
-        const playersNumberInput = document.getElementById('playersNumber') as HTMLInputElement;
+        const playersNumberInput = document.getElementById(
+          "playersNumber",
+        ) as HTMLInputElement;
         if (playersNumberInput) {
           const numPlayers = parseInt(playersNumberInput.value) || 4;
           createPlayerBoxes(numPlayers);
         }
       }
-      
+
       currentStep = step;
     }
-    
-    nextButton.addEventListener("click", e => {
+
+    nextButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (currentStep < 3) {
         showStep(currentStep + 1);
       }
     });
-    
-    backButton.addEventListener("click", e => {
+
+    backButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (currentStep > 1) {
         showStep(currentStep - 1);
       }
     });
-    
-    finishButton.addEventListener("click", async e => {
+
+    finishButton.addEventListener("click", async (e) => {
       e.preventDefault();
-      
+
       if (mode === "tournament") {
         // Create tournament first, then start the game
         await createAndStartTournament();
@@ -699,16 +712,19 @@ export async function newGame(mode: string): Promise<void> {
       className: "wizard-step",
       id: "singleStep1",
     }) as HTMLDivElement;
-    
+
     const singleStep2Container = Object.assign(document.createElement("div"), {
       className: "wizard-step hidden",
       id: "singleStep2",
     }) as HTMLDivElement;
 
     // Navigation buttons for single player
-    const singleNavigationContainer = Object.assign(document.createElement("div"), {
-      className: "flex justify-between items-center mt-6",
-    }) as HTMLDivElement;
+    const singleNavigationContainer = Object.assign(
+      document.createElement("div"),
+      {
+        className: "flex justify-between items-center mt-6",
+      },
+    ) as HTMLDivElement;
 
     const singleBackButton = Object.assign(document.createElement("button"), {
       className: "btn py-2 px-6 text-lg font-bold hidden",
@@ -729,10 +745,14 @@ export async function newGame(mode: string): Promise<void> {
     }) as HTMLButtonElement;
 
     // Step 1: Player Setup
-    const singleStep1FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
-    }) as HTMLDivElement;
-    
+    const singleStep1FlexContainer = Object.assign(
+      document.createElement("div"),
+      {
+        className:
+          "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+      },
+    ) as HTMLDivElement;
+
     if (mode === "multi") {
       // For 4-player mode, show all 4 players
       const player3Container = Object.assign(document.createElement("div"), {
@@ -758,7 +778,7 @@ export async function newGame(mode: string): Promise<void> {
         "k",
         "#ffffff",
         "#808080",
-        "#ff0000"
+        "#ff0000",
       );
       playerSetupMenu(
         player4List,
@@ -769,7 +789,7 @@ export async function newGame(mode: string): Promise<void> {
         "PageDown",
         "#ffffff",
         "#808080",
-        "#ff0000"
+        "#ff0000",
       );
 
       player3Container.appendChild(player3List);
@@ -784,13 +804,17 @@ export async function newGame(mode: string): Promise<void> {
       singleStep1FlexContainer.appendChild(player1Container);
       singleStep1FlexContainer.appendChild(player2Container);
     }
-    
+
     singleStep1Container.appendChild(singleStep1FlexContainer);
 
     // Step 2: Game Settings & Colors
-    const singleStep2FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
-    }) as HTMLDivElement;
+    const singleStep2FlexContainer = Object.assign(
+      document.createElement("div"),
+      {
+        className:
+          "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
+      },
+    ) as HTMLDivElement;
     singleStep2FlexContainer.appendChild(settingsForm);
     singleStep2FlexContainer.appendChild(bgColorsForm);
     singleStep2Container.appendChild(singleStep2FlexContainer);
@@ -809,42 +833,44 @@ export async function newGame(mode: string): Promise<void> {
 
     // Single player wizard navigation logic
     let singleCurrentStep = 1;
-    
+
     function showSingleStep(step: number) {
       // Hide all single player steps
-      document.querySelectorAll('.single-player-wizard .wizard-step').forEach(el => {
-        el.classList.add('hidden');
-      });
-      
+      document
+        .querySelectorAll(".single-player-wizard .wizard-step")
+        .forEach((el) => {
+          el.classList.add("hidden");
+        });
+
       // Show current step
       const stepElement = document.getElementById(`singleStep${step}`);
       if (stepElement) {
-        stepElement.classList.remove('hidden');
+        stepElement.classList.remove("hidden");
       }
-      
+
       // Update button visibility
-      singleBackButton.classList.toggle('hidden', step === 1);
-      singleNextButton.classList.toggle('hidden', step === 2);
-      singleFinishButton.classList.toggle('hidden', step !== 2);
-      
+      singleBackButton.classList.toggle("hidden", step === 1);
+      singleNextButton.classList.toggle("hidden", step === 2);
+      singleFinishButton.classList.toggle("hidden", step !== 2);
+
       singleCurrentStep = step;
     }
-    
-    singleNextButton.addEventListener("click", e => {
+
+    singleNextButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (singleCurrentStep < 2) {
         showSingleStep(singleCurrentStep + 1);
       }
     });
-    
-    singleBackButton.addEventListener("click", e => {
+
+    singleBackButton.addEventListener("click", (e) => {
       e.preventDefault();
       if (singleCurrentStep > 1) {
         showSingleStep(singleCurrentStep - 1);
       }
     });
-    
-    singleFinishButton.addEventListener("click", e => {
+
+    singleFinishButton.addEventListener("click", (e) => {
       e.preventDefault();
       loadConfig(mode);
     });
@@ -899,20 +925,29 @@ export async function newGame(mode: string): Promise<void> {
 async function createAndStartTournament(): Promise<void> {
   try {
     // Get tournament settings from form
-    const playersNumber = parseInt((document.getElementById("playersNumber") as HTMLInputElement)?.value || "4");
-    
+    const playersNumber = parseInt(
+      (document.getElementById("playersNumber") as HTMLInputElement)?.value ||
+        "4",
+    );
+
     // Get player data from the form
     const players: string[] = [];
-    
+
     // Collect player IDs from the form (using the correct IDs: p1Id, p2Id, etc.)
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
-      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
-      const playerAiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
-      
+      const playerIdInput = document.getElementById(
+        `p${i}Id`,
+      ) as HTMLInputElement;
+      const playerNameInput = document.getElementById(
+        `name_p${i}`,
+      ) as HTMLInputElement;
+      const playerAiInput = document.getElementById(
+        `p${i}Ai`,
+      ) as HTMLInputElement;
+
       // Check if player is AI
-      const isAi = playerAiInput ? playerAiInput.checked : (i > 1); // Default: first player human, rest AI
-      
+      const isAi = playerAiInput ? playerAiInput.checked : i > 1; // Default: first player human, rest AI
+
       if (isAi) {
         players.push(`AI-Player-${i}`);
       } else {
@@ -920,9 +955,11 @@ async function createAndStartTournament(): Promise<void> {
           players.push(playerIdInput.value);
         } else if (i === 1) {
           const urlParams = new URLSearchParams(window.location.search);
-          const userId = urlParams.get('userId') || playerNameInput?.value;
+          const userId = urlParams.get("userId") || playerNameInput?.value;
           if (!userId) {
-            alert("No valid user ID or player name found for the first player. Please enter a name or log in.");
+            alert(
+              "No valid user ID or player name found for the first player. Please enter a name or log in.",
+            );
             return;
           }
           players.push(userId);
@@ -932,70 +969,83 @@ async function createAndStartTournament(): Promise<void> {
         }
       }
     }
-    
+
     console.log("Creating tournament with players:", players);
     console.log("Player details:");
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
-      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
-      const playerAiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
+      const playerIdInput = document.getElementById(
+        `p${i}Id`,
+      ) as HTMLInputElement;
+      const playerNameInput = document.getElementById(
+        `name_p${i}`,
+      ) as HTMLInputElement;
+      const playerAiInput = document.getElementById(
+        `p${i}Ai`,
+      ) as HTMLInputElement;
       console.log(`Player ${i}:`, {
-        id: playerIdInput?.value || 'none',
-        name: playerNameInput?.value || 'none',
+        id: playerIdInput?.value || "none",
+        name: playerNameInput?.value || "none",
         isAi: playerAiInput?.checked || false,
-        finalId: players[i-1]
+        finalId: players[i - 1],
       });
     }
-    
 
     const urlParams = new URLSearchParams(window.location.search);
 
-    
     const playerIdToNameMap: Record<string, string> = {};
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
-      const playerNameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
-      const playerAiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
-      
-      const isAi = playerAiInput ? playerAiInput.checked : (i > 1);
+      const playerIdInput = document.getElementById(
+        `p${i}Id`,
+      ) as HTMLInputElement;
+      const playerNameInput = document.getElementById(
+        `name_p${i}`,
+      ) as HTMLInputElement;
+      const playerAiInput = document.getElementById(
+        `p${i}Ai`,
+      ) as HTMLInputElement;
+
+      const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       const playerId = players[i - 1];
       const playerName = playerNameInput?.value || `Player ${i}`;
-      
+
       playerIdToNameMap[playerId] = playerName;
     }
-    
+
     // Store the mapping in a global variable for tournament use
     (window as any).playerIdToNameMap = playerIdToNameMap;
     console.log("Player ID to Name mapping:", playerIdToNameMap);
-    const defaultName = `Tournament - ${new Date().toISOString()} (${players.length} players)`;
-    const tournamentNameInput = document.getElementById('tournamentName') as HTMLInputElement;
+    const defaultName = `Tournament - ${new Date().toISOString()} (${
+      players.length
+    } players)`;
+    const tournamentNameInput = document.getElementById(
+      "tournamentName",
+    ) as HTMLInputElement;
     const userProvidedName = tournamentNameInput?.value?.trim();
     const tournamentData = {
       name: userProvidedName ? userProvidedName : defaultName,
-      playersIds: players
+      playersIds: players,
     };
-    
+
     const tournament = await tournamentService.createTournament(tournamentData);
-    
+
     if (!tournament || !tournament.id) {
       console.error("Failed to create tournament");
       alert("Failed to create tournament. Please try again.");
       return;
     }
-    
+
     console.log("Tournament created successfully:", tournament.id);
-    
+
     pendingTournamentId = tournament.id;
-    
+
     await loadConfig("tournament");
-    
+
     const success = await newTournamentGame(tournament.id);
     if (!success) {
       console.error("Failed to start tournament game");
       alert("Failed to start tournament game. Please try again.");
       return;
     }
-    
   } catch (error) {
     console.error("Error creating tournament:", error);
     alert("Error creating tournament. Please try again.");
@@ -1004,9 +1054,8 @@ async function createAndStartTournament(): Promise<void> {
 
 export async function loadConfig(mode: string): Promise<void> {
   const appDiv = document.getElementById("app") as HTMLDivElement;
-  
-  if (mode === "tournament") {
 
+  if (mode === "tournament") {
     if (!pendingTournamentId) {
       console.error("No tournament ID available");
       return;
@@ -1088,18 +1137,18 @@ export async function loadConfig(mode: string): Promise<void> {
 
   canvas.addEventListener(
     "touchstart",
-    e => {
+    (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       touchStartY = touch.clientY;
       touchStartX = touch.clientX;
     },
-    { passive: false }
+    { passive: false },
   );
 
   canvas.addEventListener(
     "touchmove",
-    e => {
+    (e) => {
       e.preventDefault();
       if (!data || !data.p) return;
 
@@ -1132,21 +1181,21 @@ export async function loadConfig(mode: string): Promise<void> {
         }
       }
     },
-    { passive: false }
+    { passive: false },
   );
 
   canvas.addEventListener(
     "touchend",
-    e => {
+    (e) => {
       e.preventDefault();
       if (data && data.p) {
-        data.p.forEach(player => {
+        data.p.forEach((player) => {
           data.keys[player.up] = false;
           data.keys[player.down] = false;
         });
       }
     },
-    { passive: false }
+    { passive: false },
   );
 
   // Auto-enter fullscreen on mobile devices
@@ -1164,21 +1213,25 @@ export async function loadConfig(mode: string): Promise<void> {
     }, 100);
   }
   var p: playerData[] = [];
-  
+
   if (mode === "tournament") {
     // For tournaments, dynamically load all players based on the number set
-    const playersNumberInput = document.getElementById('playersNumber') as HTMLInputElement;
-    const numPlayers = playersNumberInput ? parseInt(playersNumberInput.value) || 4 : 4;
-    
+    const playersNumberInput = document.getElementById(
+      "playersNumber",
+    ) as HTMLInputElement;
+    const numPlayers = playersNumberInput
+      ? parseInt(playersNumberInput.value) || 4
+      : 4;
+
     for (let i = 1; i <= numPlayers; i++) {
       let playerId = loadIn(`p${i}Id`);
-      
+
       // Special handling for first player - get user ID from URL if not in form
       if (i === 1 && !playerId) {
         const urlParams = new URLSearchParams(window.location.search);
-        playerId = urlParams.get('userId') || '';
+        playerId = urlParams.get("userId") || "";
       }
-      
+
       p.push(
         loadPlayer(
           loadIn(`name_p${i}`),
@@ -1189,8 +1242,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn(`p${i}InnerCol`),
           loadIn(`p${i}OuterCol`),
           loadIn(`p${i}CornerCol`),
-          i
-        )
+          i,
+        ),
       );
     }
   } else {
@@ -1205,8 +1258,8 @@ export async function loadConfig(mode: string): Promise<void> {
         loadIn("p1InnerCol"),
         loadIn("p1OuterCol"),
         loadIn("p1CornerCol"),
-        1
-      )
+        1,
+      ),
     );
     p.push(
       loadPlayer(
@@ -1218,10 +1271,10 @@ export async function loadConfig(mode: string): Promise<void> {
         loadIn("p2InnerCol"),
         loadIn("p2OuterCol"),
         loadIn("p2CornerCol"),
-        2
-      )
+        2,
+      ),
     );
-    
+
     // Add players 3 and 4 for multi mode
     if (mode === "multi") {
       p.push(
@@ -1234,8 +1287,8 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn("p3InnerCol"),
           loadIn("p3OuterCol"),
           loadIn("p3CornerCol"),
-          3
-        )
+          3,
+        ),
       );
       p.push(
         loadPlayer(
@@ -1247,13 +1300,13 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn("p4InnerCol"),
           loadIn("p4OuterCol"),
           loadIn("p4CornerCol"),
-          4
-        )
+          4,
+        ),
       );
     }
   }
 
-  const loadData = {
+  const loadData: gameData = {
     canvas: canvas,
     fps: 50,
     nameTB1: p1name,
@@ -1270,7 +1323,8 @@ export async function loadConfig(mode: string): Promise<void> {
     paddleSpeed: 40,
     ballSpeed: 10,
     ballSize: 80,
-    maxScore: mode === "tournament" ? parseInt(loadIn("matchLength") || "5", 10) : 3,
+    maxScore:
+      mode === "tournament" ? parseInt(loadIn("matchLength") || "5", 10) : 3,
     trailLength: 20, //parseInt(loadIn("trailLength") || "20", 10),
 
     bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
@@ -1290,6 +1344,7 @@ export async function loadConfig(mode: string): Promise<void> {
     go: false,
     touchControl: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     mode: "twoPlayers",
+    status: "IN_PROGRESS",
     isTournament: false,
     multiball: loadInB("multiball"),
     maxHits: Math.floor(Math.random() * 5 + 5),
@@ -1297,7 +1352,7 @@ export async function loadConfig(mode: string): Promise<void> {
   };
   loadData.scoreTB1.value = "0";
   loadData.scoreTB2.value = "0";
-  
+
   if (mode === "tournament") {
     loadData.mode = "tournament";
     loadData.isTournament = true;
@@ -1379,13 +1434,13 @@ export async function loadConfig(mode: string): Promise<void> {
       break;
   }
   data = loadData;
-  
+
   // Set tournament ID if we have a pending one
   if (pendingTournamentId) {
     data.tournamentId = pendingTournamentId;
     pendingTournamentId = null; // Clear the pending ID
   }
-  
+
   // Remove all existing content from app div except what we want to keep
   const gameAppDiv = document.getElementById("app");
   if (gameAppDiv) {
@@ -1404,7 +1459,7 @@ export async function loadConfig(mode: string): Promise<void> {
   }
   controlKeys();
   document.getElementById("board")?.focus();
-  
+
   if (mode !== "tournament") {
     setTimeout(() => countdown(3, 500), 500);
   }

@@ -319,21 +319,13 @@ export async function resend2faHandler(
       return reply.code(400).send({ message: "Email is required" });
     }
 
+    // Always respond with a generic message to prevent user enumeration
     const user = await getUserByEmail(email);
-    if (!user) {
-      return reply.code(404).send({ message: "User not found" });
+    if (user && user.is2faEnabled) {
+      await send2faCode(user.email);
     }
-
-    if (!user.is2faEnabled) {
-      return reply.code(400).send({
-        message: "Two-factor authentication is not enabled for this user",
-      });
-    }
-
-    await send2faCode(user.email);
     return reply.code(200).send({
-      message: "Two-factor authentication code resent to your email",
-      email: user.email,
+      message: "If your account supports two-factor authentication, a code has been sent to your email.",
     });
   } catch (error) {
     console.error("Error resending 2FA code:", error);

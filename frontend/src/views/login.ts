@@ -145,14 +145,11 @@ export function renderLogin(): HTMLElement {
 
       const data = await res.json();
 
-      // Check if 2FA is required
       if (data.is2faEnabled && data.email) {
-        // Show 2FA input form
         show2FAForm(section, data.email);
         return;
       }
 
-      // Regular login without 2FA
       const { token, refresh, id, username, firstname, email, avatarUrl, is2faEnabled, isOAuthUser } = data;
       localStorage.setItem("accessToken", token);
       if (refresh) localStorage.setItem("refreshToken", refresh);

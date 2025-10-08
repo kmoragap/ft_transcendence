@@ -28,19 +28,19 @@ jobs:
       - name: Verify Docker Compose file
         run: |
           echo "📋 Validating docker-compose.yml..."
-          docker-compose config
+          docker compose config
 
       - name: Build Docker images
         run: |
           echo "🔨 Building all Docker images..."
-          docker-compose build --progress=plain
+          docker compose build --progress=plain
         env:
           DOCKER_BUILDKIT: 1
 
       - name: Start containers
         run: |
           echo "🚀 Starting all containers..."
-          docker-compose up -d
+          docker compose up -d
         env:
           JWT_SECRET: test-secret-for-ci
           NODE_ENV: development
@@ -51,7 +51,7 @@ jobs:
           sleep 20
 
           echo "📊 Checking container status..."
-          docker-compose ps
+          docker compose ps
 
       - name: Check if all containers are running
         run: |
@@ -62,11 +62,11 @@ jobs:
 
           for service in $EXPECTED_SERVICES; do
             echo "Checking $service..."
-            STATUS=$(docker-compose ps -q $service | xargs docker inspect -f '{{.State.Status}}' 2>/dev/null || echo "not found")
+            STATUS=$(docker compose ps -q $service | xargs docker inspect -f '{{.State.Status}}' 2>/dev/null || echo "not found")
 
             if [ "$STATUS" != "running" ]; then
               echo "❌ Service $service is not running (status: $STATUS)"
-              docker-compose logs $service
+              docker compose logs $service
               exit 1
             else
               echo "✅ Service $service is running"
@@ -84,10 +84,10 @@ jobs:
 
           for service in $SERVICES; do
             echo "--- Logs for $service ---"
-            docker-compose logs --tail=50 $service
+            docker compose logs --tail=50 $service
 
             # Check for common error patterns (non-fatal check)
-            ERROR_COUNT=$(docker-compose logs $service | grep -iE "error|exception|fatal" | grep -viE "errorHandler|errorBoundary|errorLog|error.js|error.ts" | wc -l || echo "0")
+            ERROR_COUNT=$(docker compose logs $service | grep -iE "error|exception|fatal" | grep -viE "errorHandler|errorBoundary|errorLog|error.js|error.ts" | wc -l || echo "0")
 
             if [ "$ERROR_COUNT" -gt "10" ]; then
               echo "⚠️  Warning: Found $ERROR_COUNT potential errors in $service logs"
@@ -122,7 +122,7 @@ jobs:
         if: always()
         run: |
           echo "🔍 Detailed container status:"
-          docker-compose ps -a
+          docker compose ps -a
 
           echo ""
           echo "🐳 Docker images:"
@@ -132,11 +132,11 @@ jobs:
         if: failure()
         run: |
           echo "❌ Build or tests failed. Showing all logs..."
-          docker-compose logs
+          docker compose logs
 
       - name: Stop containers
         if: always()
         run: |
           echo "🛑 Stopping all containers..."
-          docker-compose down -v
+          docker compose down -v
           echo "✅ Cleanup completed"

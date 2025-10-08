@@ -117,9 +117,11 @@ services:
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: "/usr/share/logstash/certs/ca/ca.crt"
       ELASTICSEARCH_HOSTS: "https://es01:9200"
     volumes:
+      - ./devops/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
       - es_certs:/usr/share/logstash/certs:ro
     ports:
       - "5044:5044"
+      - "12201:12201/udp" # GELF input
     restart: unless-stopped
     networks:
       app-network: {}

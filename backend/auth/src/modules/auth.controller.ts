@@ -128,14 +128,21 @@ export async function createUser(
   firstname: string,
   password: string,
   avatarUrl?: string,
-  isOAuthUser?: boolean
+  isOAuthUser?: boolean,
 ) {
   try {
     console.log("Creating user with avatarUrl:", avatarUrl);
     const res = await fetch(`http://users:3000/api/users/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, firstname, password, avatarUrl, isOAuthUser }),
+      body: JSON.stringify({
+        username,
+        email,
+        firstname,
+        password,
+        avatarUrl,
+        isOAuthUser,
+      }),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -191,12 +198,12 @@ export async function registerHandler(
     const existingUser = await getUserByEmail(email);
     if (existingUser)
       throw new ConflictError("User with this email already exists");
-    
+
     // Check if username exists
     const existingUsername = await getUserByUsername(username);
     if (existingUsername)
       throw new ConflictError("User with this username already exists");
-    
+
     // 1.create the users in the users services
     const user = await createUser(username, email, firstname, password);
 
@@ -298,6 +305,39 @@ export async function verify2faHandler(
     return await completeLogin(request, user);
   } catch (error) {
     return handleAuthError(error, reply);
+  }
+}
+
+export async function resend2faHandler(
+  request: FastifyRequest<{ Body: { email: string } }>,
+  reply: FastifyReply,
+) {
+  try {
+    const { email } = request.body;
+
+    if (!email?.trim()) {
+      return reply.code(400).send({ message: "Email is required" });
+    }
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return reply.code(404).send({ message: "User not found" });
+    }
+
+    if (!user.is2faEnabled) {
+      return reply.code(400).send({
+        message: "Two-factor authentication is not enabled for this user",
+      });
+    }
+
+    await send2faCode(user.email);
+    return reply.code(200).send({
+      message: "Two-factor authentication code resent to your email",
+      email: user.email,
+    });
+  } catch (error) {
+    console.error("Error resending 2FA code:", error);
+    return reply.code(500).send({ message: "Failed to resend code" });
   }
 }
 

@@ -152,7 +152,7 @@ export function renderLogin(): HTMLElement {
 
       const { token, refresh, id, username, firstname, email, avatarUrl, is2faEnabled, isOAuthUser } = data;
       localStorage.setItem("accessToken", token);
-      if (refresh) localStorage.setItem("refreshToken", refresh);
+      if (refresh != null) localStorage.setItem("refreshToken", refresh);
 
       const user = { id, username, firstname, email, avatarUrl, is2faEnabled, isOAuthUser };
       store.dispatch({ type: "LOGIN", payload: user });

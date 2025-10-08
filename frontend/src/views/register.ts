@@ -134,8 +134,12 @@ export function renderRegistration(): HTMLElement {
       });
 
       if (!res.ok) {
-        const { message } = await res.json();
-        alertError(`Registration failed: ${message}`);
+        let msg = res.statusText;
+        try {
+          const err = await res.json();
+          msg = err.error || err.message || msg;
+        } catch {}
+        alertError(`Registration failed: ${msg}`);
         return;
       }
 

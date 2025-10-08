@@ -57,6 +57,7 @@ async function completeLogin(request: FastifyRequest, user: User) {
     email: user.email,
     avatarUrl: user.avatarUrl || "/assets/img/avatar.jpg",
     is2faEnabled: !!user.is2faEnabled,
+    isOAuthUser: !!user.isOAuthUser,
   };
 }
 
@@ -83,6 +84,8 @@ export async function getMeHandler(
       firstname: userDetails.firstname,
       email: userDetails.email,
       avatarUrl: userDetails.avatarUrl || "/assets/img/avatar.jpg",
+      is2faEnabled: userDetails.is2faEnabled,
+      isOAuthUser: userDetails.isOAuthUser,
     };
   } catch (error) {
     console.error("Error in getMeHandler:", error);
@@ -125,13 +128,14 @@ export async function createUser(
   firstname: string,
   password: string,
   avatarUrl?: string,
+  isOAuthUser?: boolean
 ) {
   try {
     console.log("Creating user with avatarUrl:", avatarUrl);
     const res = await fetch(`http://users:3000/api/users/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, firstname, password, avatarUrl }),
+      body: JSON.stringify({ username, email, firstname, password, avatarUrl, isOAuthUser }),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -183,10 +187,16 @@ export async function registerHandler(
       !password?.trim()
     )
       throw new ValidationError("All fields are required");
-    //check if user exist
+    //check if email exists
     const existingUser = await getUserByEmail(email);
     if (existingUser)
       throw new ConflictError("User with this email already exists");
+    
+    // Check if username exists
+    const existingUsername = await getUserByUsername(username);
+    if (existingUsername)
+      throw new ConflictError("User with this username already exists");
+    
     // 1.create the users in the users services
     const user = await createUser(username, email, firstname, password);
 
@@ -387,6 +397,8 @@ export async function verifyTokenHandler(
         firstname: user.firstname,
         email: user.email,
         avatarUrl: user.avatarUrl || "/assets/img/avatar.jpg",
+        is2faEnabled: user.is2faEnabled,
+        isOAuthUser: user.isOAuthUser,
       };
     }
 

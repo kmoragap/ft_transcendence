@@ -6,6 +6,7 @@ type User = {
   avatarUrl?: string;
   language?: string;
   is2faEnabled?: boolean;
+  isOAuthUser?: boolean;
 };
 
 type State = {

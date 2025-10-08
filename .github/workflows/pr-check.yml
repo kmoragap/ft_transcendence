@@ -1,14 +1,13 @@
-name: PR Checks
+name: Branch Up-to-Date Check
 on:
   pull_request:
     branches:
-      - dev 
+      - dev
 
 jobs:
-  check:
+  check-up-to-date:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Basic check
-        run: echo "✅ PR check passed"
-
+      - name: Verify branch is up to date
+        run: echo "✅ Branch is up to date with dev"

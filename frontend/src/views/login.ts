@@ -11,7 +11,7 @@ export function renderLogin(): HTMLElement {
     "flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]";
 
   // Check for OAuth error in URL
-  const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+  const urlParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : "");
   const oauthError = urlParams.get('error');
   
   if (oauthError) {

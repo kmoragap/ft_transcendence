@@ -19,7 +19,7 @@ ssl:
 
 up:
 	@echo "🚀 Starting containers..."
-	@$(DC) up -d > /dev/null 2>&1
+	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
 	@echo "✅ Containers are up and running."
 
 up-all: show-url
@@ -33,13 +33,13 @@ down-all:
 	@docker system prune -f	
 down:
 	@echo "🛑 Stopping containers..."
-	@$(DC) down
+	@$(COMPOSE_ALL) down
 	@docker system prune -f
 	@echo "✅ Containers have been stopped."
 
 rebuild: down ssl show-url
 	@echo "🔄 Rebuilding images and starting containers..."
-	@$(DC) up --build -d > /dev/null 2>&1
+	@$(COMPOSE_ALL) up --build -d > /dev/null 2>&1
 	@echo "✅ Containers are up and running."
 
 clean: down
@@ -48,7 +48,7 @@ clean: down
 	@echo "🧹 Removing Docker images..."
 	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
-	@$(DC) down -v > /dev/null 2>&1
+	@$(COMPOSE_ALL) down -v > /dev/null 2>&1
 	@echo "✅ Cleanup complete."
 
 clean-all: down-all
@@ -57,5 +57,5 @@ clean-all: down-all
 	@echo "🧹 Removing Docker images..."
 	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
-#	@$(DC) down -v > /dev/null 2>&1
+	@$(COMPOSE_ALL) down -v > /dev/null 2>&1
 	@echo "✅ Cleanup complete."

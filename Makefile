@@ -4,7 +4,7 @@ PROJECT := backend/nginx
 COMPOSE_ALL := docker-compose -f docker-compose.yml -f devops/elk/compose.elk.yml
 SSL := backend/nginx
 
-.PHONY: all up down rebuild clean show-url up-all
+.PHONY: all up down rebuild clean show-url up-all down-all clean-all
 
 
 all: up show-url
@@ -27,7 +27,7 @@ up-all: show-url
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
 	@echo "✅ All containers are up and running."
 
-down: 
+down-all: 
 	@echo "🛑 Stopping containers..."
 	@$(COMPOSE_ALL) down
 	@docker system prune -f	
@@ -49,4 +49,13 @@ clean: down
 	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
 	@$(DC) down -v > /dev/null 2>&1
+	@echo "✅ Cleanup complete."
+
+clean-all: down-all
+	@echo "🧹 Removing SSL certificates..."
+	@rm -rf $(SSL)/ssl
+	@echo "🧹 Removing Docker images..."
+	@docker image rm $(shell docker images -q)
+	@echo "🧹 Removing Docker volumes..."
+#	@$(DC) down -v > /dev/null 2>&1
 	@echo "✅ Cleanup complete."

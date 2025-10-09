@@ -3,7 +3,7 @@
 # directory for SSL certificates
 mkdir -p backend/nginx/ssl
 
-# get the local IP
+# get the local IP that can access from others machines in the local network
 LOCAL_IP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $2}')
 
 echo "Generating SSL certificates for IP: $LOCAL_IP"
@@ -16,14 +16,14 @@ req_extensions = v3_req
 prompt = no
 
 [req_distinguished_name]
-C = US
-ST = State
-L = City
-O = Organization
+C = AT
+ST = Vienna
+L = Vienna
+O = ft_transcendence
 CN = $LOCAL_IP
 
 [v3_req]
-keyUsage = keyEncipherment, dataEncipherment
+keyUsage = digitalSignature, keyEncipherment, dataEncipherment
 extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 

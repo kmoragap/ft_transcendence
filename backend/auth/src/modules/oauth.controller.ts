@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import {
   createUser,
   getUserByEmail,
+  getUserByUsername,
   updateUserOnlineStatus,
 } from "./auth.controller";
 import prisma from "../utils/prisma";
@@ -88,6 +89,13 @@ export async function oauth42CallbackHandler(
         image: user42.image,
       });
 
+      // Check if username already exists
+      const existingUsername = await getUserByUsername(user42.login);
+      if (existingUsername) {
+        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080/"}/#/login?error=username_exists`;
+        return reply.redirect(errorUrl);
+      }
+
       // extract the avatar URL from the 42 API response
       const avatarUrl =
         user42.image?.versions?.medium || user42.image?.link || null;
@@ -98,6 +106,7 @@ export async function oauth42CallbackHandler(
         user42.displayname, //this the full intra name
         randomBytes(32).toString("hex"), // random password since they'll use 42 auth
         avatarUrl, // pic from 42
+        true // isOAuthUser
       );
     }
 
@@ -129,11 +138,11 @@ export async function oauth42CallbackHandler(
       path: "/",
     });
 
-    const frontendUrl = `${process.env.FRONTEND_URL || "http://localhost"}/#/login/callback?success=true`;
+    const frontendUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login/callback?success=true`;
     return reply.redirect(frontendUrl);
   } catch (error) {
     console.error("42 OAuth error:", error);
-    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost"}/#/login?error=oauth_failed`;
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login?error=oauth_failed`;
     return reply.redirect(errorUrl);
   }
 }

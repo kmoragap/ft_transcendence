@@ -29,6 +29,7 @@ export interface UserProfile {
   winRate: number;
   elo?: number;
   is2faEnabled?: boolean;
+  isOAuthUser?: boolean;
 }
 
 function getDefaultStats(): {
@@ -58,6 +59,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       name: "Loading",
       avatarUrl: "/assets/img/avatar.jpg",
       is2faEnabled: false,
+      isOAuthUser: false,
       ...getDefaultStats(),
     };
   }
@@ -69,6 +71,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       name: "Guest User",
       avatarUrl: "/assets/img/avatar.jpg",
       is2faEnabled: false,
+      isOAuthUser: false,
       ...getDefaultStats(),
     };
   }
@@ -81,6 +84,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       name: currentUser.firstname || currentUser.username,
       avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
       is2faEnabled: currentUser.is2faEnabled || false,
+      isOAuthUser: currentUser.isOAuthUser || false,
       ...getDefaultStats(),
     };
   }
@@ -98,6 +102,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       winRate: stats.winRate,
       elo: stats.elo,
       is2faEnabled: currentUser.is2faEnabled || false,
+      isOAuthUser: currentUser.isOAuthUser || false,
     };
   } catch (error) {
     console.error('Failed to fetch user stats:', error);
@@ -107,6 +112,7 @@ async function getCurrentUserWithStats(): Promise<UserProfile> {
       name: currentUser.firstname || currentUser.username,
       avatarUrl: currentUser.avatarUrl || "/assets/img/avatar.jpg",
       is2faEnabled: currentUser.is2faEnabled || false,
+      isOAuthUser: currentUser.isOAuthUser || false,
       ...getDefaultStats(),
     };
   }
@@ -118,6 +124,7 @@ let user: UserProfile = {
   name: "Loading",
   avatarUrl: "/assets/img/avatar.jpg",
   is2faEnabled: false,
+  isOAuthUser: false,
   ...getDefaultStats(),
 };
 
@@ -177,12 +184,12 @@ export function renderMyProfile(): HTMLElement {
               <p class="text-sm text-gray-400">${user.email}</p>
             </div>
             <div class="flex flex-col gap-2 md:gap-3">
-              <button id="edit-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+              ${!user.isOAuthUser ? `<button id="edit-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                       transition-shadow duration-300" data-i18n="edit_profile">
                 Edit Profile
-              </button>
+              </button>` : ''}
               <button id="refresh-stats-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45fcf1] font-[jura] hover:shadow-lg
@@ -600,7 +607,9 @@ export function renderMyProfile(): HTMLElement {
       });
     }
 
-    editBtn?.addEventListener("click", enterEditMode);
+    if (editBtn) {
+      editBtn.addEventListener("click", enterEditMode);
+    }
 
     refreshStatsBtn?.addEventListener("click", async () => {
       try {

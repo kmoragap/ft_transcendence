@@ -30,6 +30,7 @@ export interface User {
   password: string;
   avatarUrl?: string;
   is2faEnabled?: boolean;
+  isOAuthUser?: boolean;
 }
 
 export interface JWTPayload {

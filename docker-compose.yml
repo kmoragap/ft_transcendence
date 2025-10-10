@@ -123,7 +123,7 @@ networks:
 
 volumes:
   es_data: 
-    name: ft_es_data # how does this work? 
+    name: ft_es_data
   es_certs: 
-    name: ft_es_certs # TLS certs for ES nodes 
+    name: ft_es_certs
   pong-static:

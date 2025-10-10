@@ -52,7 +52,6 @@ export async function logout(): Promise<void> {
       });
       
       if (response.ok) {
-        console.log('Backend logout successful');
       } else {
         console.warn('Backend logout failed, but continuing with frontend logout');
       }
@@ -68,7 +67,6 @@ export async function logout(): Promise<void> {
     // Force clear any remaining auth-related data
     sessionStorage.clear(); // Clear any session storage
     
-    console.log('Frontend logout completed');
     
   } catch (error) {
     console.error('Error during logout:', error);

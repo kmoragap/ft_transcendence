@@ -629,3 +629,39 @@ export async function toggle2fa(is2faEnabled: boolean): Promise<void> {
     throw new Error(err.error || `2FA toggle failed (${res.status})`);
   }
 }
+
+export interface GameHistoryEntry {
+  id: string;
+  gameId: string;
+  isWinner: boolean;
+  eloChange: number;
+  playedAt: string;
+  opponentUsername: string;
+  myScore: number;
+  opponentScore: number;
+}
+
+export async function getUserGameHistory(userId: string): Promise<GameHistoryEntry[]> {
+  const token = localStorage.getItem('accessToken');
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const res = await fetch(`/api/users/${userId}/matches`, {
+    method: "GET",
+    headers,
+    credentials: token ? undefined : 'include', // Use cookies if no token
+  });
+  
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Failed to fetch game history (${res.status})`);
+  }
+  
+  return res.json();
+}

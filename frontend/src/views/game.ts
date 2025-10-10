@@ -271,7 +271,6 @@ export function renderGame(): HTMLElement {
       }
     } else if (event.data.type === "EXIT_GAME") {
       const { winner } = event.data;
-      console.log(`Game ended. Winner: ${winner}`);
       loggedInUsers.clear();
       destroyGameView();
       setMode("menu");

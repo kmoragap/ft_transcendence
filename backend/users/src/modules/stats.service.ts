@@ -58,16 +58,22 @@ export async function updateUserHistory(
   });
 }
 
-// obtain the match history of an user
 export async function getMatchHistory(userId: string) {
-  return prisma.userGameHistory.findMany({
+  const userHistory = await prisma.userGameHistory.findMany({
     where: { userId },
     orderBy: { playedAt: "desc" },
-    take: 20, // limit to 20
+    take: 20,
   });
+
+  // TODO: When users.db is updated to store scores and opponent names, use that data
+  return userHistory.map(history => ({
+    ...history,
+    opponentUsername: "Opponent", // Will be replaced with actual data later
+    myScore: 0, // Will be replaced with actual data later
+    opponentScore: 0, // Will be replaced with actual data later
+  }));
 }
 
-//get a users core stats and calculates their win rate
 export async function getUserStats(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

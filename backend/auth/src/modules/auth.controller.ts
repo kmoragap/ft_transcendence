@@ -131,7 +131,6 @@ export async function createUser(
   isOAuthUser?: boolean,
 ) {
   try {
-    console.log("Creating user with avatarUrl:", avatarUrl);
     const res = await fetch(`http://users:3000/api/users/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

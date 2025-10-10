@@ -170,10 +170,10 @@ export async function finito(): Promise<void> {
     maxScore: data.maxScore,
     multiBall: data.multiball,
     mode: data.mode,
-    isTournament: data.isTournament, //false in single mode
-    tournamentId: data.tournamentId, // null in case of single game
-    tournamentRound: data.tournamentRound, //null in case of single game
-    tournamentMatch: data.tournamentMatch, //null in case of single game
+    isTournament: data.isTournament,
+    tournamentId: data.tournamentId,
+    tournamentRound: data.tournamentRound,
+    tournamentMatch: data.tournamentMatch,
     winnerId: winnerId,
   };
   const result = await gameService.finishGame(gameData);
@@ -227,18 +227,14 @@ export async function endGame() {
     console.error("Failed to finish game:", error);
   }
 
-  // Add exit button for mobile users
   if (isMobile()) {
     showExitButton(winner);
   } else {
-    // For tournament mode, don't auto-exit if there are more matches
     if (data.isTournament && data.tournamentId) {
-      // Tournament mode - let the transition window handle the flow
       console.log(
         "Tournament mode: not auto-exiting, waiting for transition window"
       );
     } else {
-      // Single player mode - auto-exit after 3 seconds
       setTimeout(() => {
         exitGameMessage(winner);
       }, 3000);

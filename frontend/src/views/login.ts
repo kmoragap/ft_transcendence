@@ -111,13 +111,15 @@ export function renderLogin(): HTMLElement {
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
+    
     const identifier = identifierInput.value.trim();
     const password = passwordInput.value;
+    
+    // Basic validation
+    if (!identifier || !password) {
+      alertError("Please fill in all fields");
+      return;
+    }
 
     const payload: Record<string, string> = { password };
     if (identifier.includes("@")) {
@@ -234,12 +236,14 @@ function show2FAForm(section: HTMLElement, email: string) {
   // Handle 2FA verification
   twoFAForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!twoFAForm.checkValidity()) {
-      twoFAForm.reportValidity();
+    
+    const code = codeInput.value.trim();
+    
+    // Validate 2FA code (6 digits)
+    if (!code || code.length !== 6 || !/^[0-9]{6}$/.test(code)) {
+      alertError("Please enter a valid 6-digit code");
       return;
     }
-
-    const code = codeInput.value.trim();
 
     try {
       const res = await fetch("/api/auth/verify-2fa", {

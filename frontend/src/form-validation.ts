@@ -25,7 +25,22 @@ function validateField(input: HTMLInputElement): string {
       return input.value ? '' : 'First name is required.';
     case 'password':
       if (!input.value) return 'Password is required.';
-      if (input.value.length < 6) return 'At least 6 characters.';
+      if (input.value.length < 8) return 'At least 8 characters.';
+      if (!/[A-Z]/.test(input.value)) return 'Include at least one uppercase letter.';
+      if (!/[a-z]/.test(input.value)) return 'Include at least one lowercase letter.';
+      if (!/[0-9]/.test(input.value)) return 'Include at least one number.';
+      if (!/[^A-Za-z0-9]/.test(input.value)) return 'Include at least one special character.';
+      if (input.form) {
+        const username = (input.form.elements.namedItem('username') as HTMLInputElement)?.value;
+        const email = (input.form.elements.namedItem('email') as HTMLInputElement)?.value;
+        if (username && input.value.toLowerCase().includes(username.toLowerCase()))
+          return 'Password should not contain your username.';
+        if (email) {
+          const emailName = email.split('@')[0];
+          if (emailName && input.value.toLowerCase().includes(emailName.toLowerCase()))
+            return 'Password should not contain your email.';
+        }
+      }
       return '';
     default:
       return '';
@@ -61,8 +76,8 @@ export function attachValidation(form: HTMLFormElement) {
     });
   });
 
+  // Validate all fields and return whether form is valid
   form.addEventListener('submit', e => {
-    e.preventDefault();
     let hasError = false;
     inputs.forEach(input => {
       const msg = validateField(input);
@@ -71,7 +86,11 @@ export function attachValidation(form: HTMLFormElement) {
         hasError = true;
       }
     });
-    if (!hasError) {
+    
+    // If there are validation errors, prevent form submission
+    if (hasError) {
+      e.preventDefault();
+      e.stopImmediatePropagation(); // Prevent other submit handlers from running
     }
   });
 }

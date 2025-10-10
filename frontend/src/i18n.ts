@@ -3,6 +3,7 @@ let translations: Translations = {};
 let currentLang = 'en';
 
 export async function loadLanguage(lang: string) {
+  
   currentLang = lang;
 
   document.documentElement.setAttribute('lang', lang);

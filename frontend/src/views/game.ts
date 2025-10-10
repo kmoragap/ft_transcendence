@@ -115,9 +115,8 @@ export function renderGame(): HTMLElement {
                   bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-xl
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
-            data-i18n="single_play"
           >
-            Single play
+            1 vs 1
           </button>
           <button
             id="btn-multi"
@@ -125,9 +124,8 @@ export function renderGame(): HTMLElement {
                   bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-lg
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
-            data-i18n="multiplayer"
           >
-            Multiplayer
+            2 vs 2
           </button>
         </div>
       </div>

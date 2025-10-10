@@ -190,7 +190,7 @@ export function playerSetupMenu(
   const e3 = Object.assign(document.createElement("label"), {
     className: "game-text",
     for: `p${p}Ai`,
-    textContent: `${t("ai")} `,
+    textContent: "AI",
   }) as HTMLLabelElement;
   const e4 = Object.assign(document.createElement("input"), {
     type: "checkbox",

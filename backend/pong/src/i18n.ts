@@ -18,12 +18,10 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
   currentLanguage = lang;
   
   try {
-    // Load translations based on language
     const response = await fetch(`/pong/locales/${lang}.json`);
     if (response.ok) {
       translations = await response.json();
     } else {
-      // Fallback to English if language not found
       if (lang !== 'en') {
         const fallbackResponse = await fetch('/pong/locales/en.json');
         if (fallbackResponse.ok) {
@@ -32,7 +30,6 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
       }
     }
   } catch (error) {
-    // Fallback translations
     translations = {
       'scores': 'Scores',
       'wins': 'Wins',
@@ -45,12 +42,10 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
     };
   }
   
-  // Update HTML content with translations
   updateHTMLTranslations();
 }
 
 export function updateHTMLTranslations(): void {
-  // Update elements with data-i18n attributes
   document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (key && translations[key]) {

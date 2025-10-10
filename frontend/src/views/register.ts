@@ -114,10 +114,6 @@ export function renderRegistration(): HTMLElement {
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
     const username = (form.querySelector("#username") as HTMLInputElement)
       .value;
     const email = (form.querySelector("#email") as HTMLInputElement).value;

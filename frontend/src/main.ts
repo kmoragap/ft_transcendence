@@ -38,42 +38,36 @@ function buildShell() {
 async function restoreSession() {
   const token = localStorage.getItem('accessToken');
   
+  const currentPath = location.hash.slice(1) || '/';
+  const publicRoutes = ['/', '/login', '/register', '/login/callback'];
+  const isPublicRoute = publicRoutes.includes(currentPath);
+  
   if (token) {
-    try {
-      const meRes = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (meRes.ok) {
-        const user = await meRes.json();
-        store.dispatch({ type: 'LOGIN', payload: user });
-        sessionManager.setSessionRestored();
-        return;
-      } else {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-      }
-    } catch (err) {
-      console.error('Failed to restore session with token:', err);
+    const meRes = await fetch('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    
+    if (meRes && meRes.ok) {
+      const user = await meRes.json();
+      store.dispatch({ type: 'LOGIN', payload: user });
+      sessionManager.setSessionRestored();
+      return;
+    } else {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     }
-  }
-
-  try {
+  } else if (!isPublicRoute) {
     const meRes = await fetch('/api/auth/me', {
       credentials: 'include'
-    });
+    }).catch(() => null);
     
-    if (meRes.ok) {
+    if (meRes && meRes.ok) {
       const user = await meRes.json();
       store.dispatch({ type: 'LOGIN', payload: user });
     }
-  } catch (err) {
-    console.error('Failed to restore session with cookie:', err);
-  } finally {
-    sessionManager.setSessionRestored();
   }
+  
+  sessionManager.setSessionRestored();
 }
 
 window.addEventListener('DOMContentLoaded', async () => {

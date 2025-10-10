@@ -13,7 +13,6 @@ export function renderHeader(): HTMLElement {
   let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
   let abortController: AbortController | null = null;
   
-  // Search functionality - persistent across header updates
   let searchTimeout: number | null = null;
   let searchResults: UserSearchResult[] = [];
   let searchDropdown: HTMLDivElement | null = null;
@@ -62,7 +61,6 @@ export function renderHeader(): HTMLElement {
         </div>
       `).join('');
       
-      // Add click handlers for search results
       searchDropdown.querySelectorAll('[data-username]').forEach(element => {
         element.addEventListener('click', () => {
           const username = element.getAttribute('data-username');
@@ -134,11 +132,11 @@ export function renderHeader(): HTMLElement {
     const languages = [
       { code: 'en', label: 'EN' },
       { code: 'de', label: 'DE' },
-      { code: 'ru', label: 'RU' },
+      { code: 'ua', label: 'UA' },
     ];
 
     const bar = document.createElement('div');
-    bar.className = 'flex items-center justify-between';
+    bar.className = 'flex items-center justify-end';
 
     const searchWrap = document.createElement('div');
     searchWrap.className = 'flex items-center gap-2 flex-1 md:flex-none relative search-wrap';
@@ -155,7 +153,6 @@ export function renderHeader(): HTMLElement {
       'outline-none font-[jura]'
     ].join(' ');
 
-    // Add search event listeners
     searchInput.addEventListener('input', (e) => {
       const query = (e.target as HTMLInputElement).value.trim();
       
@@ -191,7 +188,6 @@ export function renderHeader(): HTMLElement {
       }
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
       if (searchDropdown && !searchWrap.contains(e.target as Node)) {
         searchDropdown.remove();
@@ -201,7 +197,7 @@ export function renderHeader(): HTMLElement {
 
     searchWrap.appendChild(searchInput);
 
-    // Mobile hamburger menu (right side)
+    // Mobile hamburger menu
     const hamburgerBtn = document.createElement('button');
     hamburgerBtn.type = 'button';
     hamburgerBtn.className = 'md:hidden inline-flex items-center justify-center w-10 h-10 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1] rounded';
@@ -214,17 +210,19 @@ export function renderHeader(): HTMLElement {
       </svg>
     `;
 
-    // Desktop navigation (hidden on mobile)
     const desktopNav = document.createElement('ul');
     desktopNav.className = 'hidden md:flex justify-end items-center list-none';
 
-    const links = ['home', 'game', 'dashboard'];
     const { isAuthenticated, currentUser } = store.getState();
-
+    
+    let links = ['home'];
     if (!isAuthenticated) {
       links.push('login');
     }
-
+    else {
+      links.push('game', 'dashboard');
+    }
+    
     links.forEach(key => {
       const li = document.createElement('li');
       li.classList.add(
@@ -316,7 +314,6 @@ export function renderHeader(): HTMLElement {
     mobileNav.setAttribute('role', 'navigation');
     mobileNav.setAttribute('aria-label', 'Mobile navigation');
     
-    // Create mobile navigation items
     const mobileLinks = [...links];
     if (isAuthenticated && currentUser) {
       mobileLinks.push('myprofile', 'logout');
@@ -512,7 +509,11 @@ export function renderHeader(): HTMLElement {
     mobileA11y.className = mobileA11y.className.replace('ml-5', 'mb-4');
     mobileNav.appendChild(mobileA11y);
     
-    bar.appendChild(searchWrap);
+    if (isAuthenticated) {
+      bar.appendChild(searchWrap);
+      bar.classList.remove('justify-end');
+      bar.classList.add('justify-between');
+    }
     bar.appendChild(hamburgerBtn);
     bar.appendChild(desktopNav);
     header.appendChild(bar);

@@ -9,6 +9,8 @@ import {
   getUserStats,
   UserStats,
   toggle2fa,
+  getUserGameHistory,
+  GameHistoryEntry,
 } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from "../utils/session";
@@ -225,6 +227,13 @@ export function renderMyProfile(): HTMLElement {
               <div class="text-xs md:text-sm text-gray-300" data-i18n="elo_rating">ELO Rating</div>
             </div>
           </div>
+          
+          <div class="border-t border-[rgba(102,252,241,0.15)] pt-4">
+            <h3 class="text-base md:text-lg font-bold text-[#66fcf1] mb-3" data-i18n="recent_games">Recent Games</h3>
+            <div id="game-history-list" class="bg-[rgba(30,41,40,0.7)] border border-[rgba(102,252,241,0.15)] rounded p-3 max-h-48 overflow-y-auto">
+              <div class="text-center text-gray-400 text-sm" data-i18n="loading_games">Loading games...</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -306,6 +315,11 @@ export function renderMyProfile(): HTMLElement {
     } catch (err) {
       console.error("Failed to populate friend requests:", err);
     }
+    try {
+      await populateGameHistory();
+    } catch (err) {
+      console.error("Failed to populate game history:", err);
+    }
     updateText();
   };
 
@@ -317,13 +331,13 @@ export function renderMyProfile(): HTMLElement {
     const credentials = token ? undefined : "include";
 
     const [friendsRes, requestsRes] = await Promise.all([
-      fetch("/api/users/friends", { headers, credentials }),
-      fetch("/api/users/friends/requests/pending", { headers, credentials }),
+      fetch("/api/users/friends", { headers, credentials }).catch(() => null),
+      fetch("/api/users/friends/requests/pending", { headers, credentials }).catch(() => null),
     ]);
 
     let allFriends: any[] = [];
 
-    if (friendsRes.ok) {
+    if (friendsRes && friendsRes.ok) {
       const friends = await friendsRes.json();
       allFriends = friends.map((friend: any) => ({
         id: friend.id,
@@ -335,7 +349,7 @@ export function renderMyProfile(): HTMLElement {
       }));
     }
 
-    if (requestsRes.ok) {
+    if (requestsRes && requestsRes.ok) {
       const requests = await requestsRes.json();
       const pendingFriends = requests.map((request: any) => ({
         id: request.id,
@@ -479,6 +493,14 @@ export function renderMyProfile(): HTMLElement {
     if (!friendRequestsList) return;
 
     const token = localStorage.getItem("accessToken");
+    const state = store.getState();
+    
+    if (!token && !state.isAuthenticated) {
+      friendRequestsList.innerHTML = `<p class="text-gray-400 text-sm">${t(
+        "please_login_to_see_friends"
+      )}</p>`;
+      return;
+    }
 
     try {
       const allFriends = await fetchFriendsAndRequests(token);
@@ -495,6 +517,68 @@ export function renderMyProfile(): HTMLElement {
           "error_loading_friend_requests"
         )}</p>`;
       }
+    }
+  };
+
+  const formatDate = (isoString: string): string => {
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return isoString;
+    }
+  };
+
+  const populateGameHistory = async () => {
+    const gameHistoryList = section.querySelector("#game-history-list") as HTMLElement;
+    if (!gameHistoryList) return;
+
+    const state = store.getState();
+    const currentUser = state.currentUser;
+    
+    if (!currentUser || !currentUser.id) {
+      gameHistoryList.innerHTML = `<p class="text-gray-400 text-sm">${t("please_login_to_see_games")}</p>`;
+      return;
+    }
+
+    try {
+      const gameHistory = await getUserGameHistory(currentUser.id);
+      
+      if (gameHistory.length === 0) {
+        gameHistoryList.innerHTML = `<p class="text-gray-400 text-sm">${t("no_games_played")}</p>`;
+        return;
+      }
+
+      gameHistoryList.innerHTML = gameHistory
+        .map((game: GameHistoryEntry) => {
+          const resultClass = game.isWinner ? "text-green-400" : "text-red-400";
+          const resultIcon = game.isWinner ? "✓" : "✗";
+          const eloChange = game.eloChange > 0 ? `+${game.eloChange}` : `${game.eloChange}`;
+          const eloClass = game.eloChange > 0 ? "text-green-400" : "text-red-400";
+          
+          return `
+            <div class="p-2 border-b border-[rgba(102,252,241,0.1)] last:border-b-0">
+              <div class="flex items-center justify-between">
+                <div class="flex w-full items-center justify-between gap-2">
+                  <span class="${resultClass} font-bold">${resultIcon}</span>
+                  <span class="text-white text-sm">${user.username} - ${game.isWinner ? 'Won' : 'Lost'}</span>
+                  <span class="text-xs ${eloClass}">${eloChange} ELO</span>
+                </div>
+              </div>
+              <div class="text-xs text-gray-400 mt-1 text-center">${formatDate(game.playedAt)}</div>
+            </div>
+          `;
+        })
+        .join("");
+    } catch (error) {
+      console.error("Error loading game history:", error);
+      gameHistoryList.innerHTML = `<p class="text-red-400 text-sm">${t("error_loading_game_history")}</p>`;
     }
   };
 

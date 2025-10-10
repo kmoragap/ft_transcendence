@@ -123,7 +123,6 @@ networks:
     driver: bridge
 
 volumes:
-  #esdata: {}
   es_data: 
     name: ft_es_data # how does this work? 
   es_certs: 

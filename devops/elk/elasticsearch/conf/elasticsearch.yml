@@ -3,7 +3,6 @@ cluster.name: ft-transcendence-logs
 node.name: es01
 discovery.type: single-node
 
-# 👇 Allow other containers to connect to 9200
 network.host: 0.0.0.0
 http.port: 9200
 

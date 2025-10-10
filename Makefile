@@ -1,10 +1,9 @@
 SSL_SCRIPT := tools/ssl_generator.sh
-DC := docker-compose
 PROJECT := backend/nginx
 COMPOSE_ALL := docker-compose -f docker-compose.yml -f devops/elk/compose.elk.yml
 SSL := backend/nginx
 
-.PHONY: all up down rebuild clean show-url up-all down-all clean-all
+.PHONY: all up down rebuild clean show-url
 
 
 all: up show-url
@@ -22,15 +21,6 @@ up:
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
 	@echo "✅ Containers are up and running."
 
-up-all: show-url
-	@echo "🚀 Starting all containers including ELK stack..."
-	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
-	@echo "✅ All containers are up and running."
-
-down-all: 
-	@echo "🛑 Stopping containers..."
-	@$(COMPOSE_ALL) down
-	@docker system prune -f	
 down:
 	@echo "🛑 Stopping containers..."
 	@$(COMPOSE_ALL) down
@@ -43,15 +33,6 @@ rebuild: down ssl show-url
 	@echo "✅ Containers are up and running."
 
 clean: down
-	@echo "🧹 Removing SSL certificates..."
-	@rm -rf $(SSL)/ssl
-	@echo "🧹 Removing Docker images..."
-	@docker image rm $(shell docker images -q)
-	@echo "🧹 Removing Docker volumes..."
-	@$(COMPOSE_ALL) down -v > /dev/null 2>&1
-	@echo "✅ Cleanup complete."
-
-clean-all: down-all
 	@echo "🧹 Removing SSL certificates..."
 	@rm -rf $(SSL)/ssl
 	@echo "🧹 Removing Docker images..."

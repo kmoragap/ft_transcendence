@@ -1,7 +1,7 @@
 services:
   es-setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    container_name: es-setup #throwaway-certs
+    container_name: es-setup
     user: "0"
     command: ["/bin/sh", "/bootstrap/gen-certs.sh"]
     volumes:
@@ -21,7 +21,7 @@ services:
   es01:
     build: 
       context: ./devops/elk/elasticsearch
-      args: #[STACK_VERSION=${STACK_VERSION}]
+      args:
         - STACK_VERSION=${STACK_VERSION}
     image: ft/elasticsearch:${STACK_VERSION}
     container_name: es01
@@ -39,7 +39,7 @@ services:
       - "9200:9200"
     networks:
       app-network:
-        aliases: [es01, elasticsearch] # for other services to reach es01
+        aliases: [es01, elasticsearch]
     command: ["/bin/sh","-lc","/usr/local/bin/wait-for-certs && exec /usr/local/bin/docker-entrypoint.sh eswrapper"]
     healthcheck:
       test: ["CMD-SHELL","curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'"]
@@ -71,7 +71,7 @@ services:
   kibana:
     build:
       context: ./devops/elk/kibana
-      args: #[STACK_VERSION=${STACK_VERSION}]
+      args:
         - STACK_VERSION=${STACK_VERSION}
     image: ft/kibana:${STACK_VERSION}
     container_name: kibana
@@ -80,18 +80,17 @@ services:
         condition: service_completed_successfully
       es01:
         condition: service_started
-        #condition: service_completed_successfully
     environment:
       SERVER_SSL_ENABLED: "true"
       SERVER_SSL_CERTIFICATE: "/usr/share/kibana/config/certs/kibana/kibana.crt"
       SERVER_SSL_KEY: "/usr/share/kibana/config/certs/kibana/kibana.key"
       ELASTICSEARCH_HOSTS: "https://es01:9200"
-      ELASTICSEARCH_USERNAME: "kibana_system" # set in .env file
-      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD} # set in .env file
+      ELASTICSEARCH_USERNAME: "kibana_system"
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: "/usr/share/kibana/config/certs/ca/ca.crt"
-      XPACK_SECURITY_ENCRYPTIONKEY: ${ENCRYPTION_KEY} # set in .env file
-      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${ENCRYPTION_KEY} # set in .env file
-      XPACK_REPORTING_ENCRYPTIONKEY: ${ENCRYPTION_KEY} # set in .env file
+      XPACK_SECURITY_ENCRYPTIONKEY: ${ENCRYPTION_KEY}
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${ENCRYPTION_KEY}
+      XPACK_REPORTING_ENCRYPTIONKEY: ${ENCRYPTION_KEY}
     volumes:
       - es_certs:/usr/share/kibana/config/certs:ro
     ports:
@@ -101,7 +100,7 @@ services:
   logstash:
     build:
       context: ./devops/elk/logstash
-      args: #[STACK_VERSION=${STACK_VERSION}]
+      args:
         - STACK_VERSION=${STACK_VERSION}
     image: ft/logstash:${STACK_VERSION}
     container_name: logstash
@@ -112,8 +111,8 @@ services:
         condition: service_started
     environment:
       LS_JAVA_OPTS: ${LOGSTASH_JAVA_HEAP}
-      ELASTICSEARCH_USERNAME: ${LOGSTASH_WRITER_USER} # set in .env file
-      ELASTICSEARCH_PASSWORD: ${LOGSTASH_WRITER_PASSWORD} # set in .env file
+      ELASTICSEARCH_USERNAME: ${LOGSTASH_WRITER_USER}
+      ELASTICSEARCH_PASSWORD: ${LOGSTASH_WRITER_PASSWORD}
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: "/usr/share/logstash/certs/ca/ca.crt"
       ELASTICSEARCH_HOSTS: "https://es01:9200"
     volumes:
@@ -121,7 +120,7 @@ services:
       - es_certs:/usr/share/logstash/certs:ro
     ports:
       - "5044:5044"
-      - "12201:12201/udp" # GELF input
+      - "12201:12201/udp"
     restart: unless-stopped
     networks:
       app-network: {}
@@ -131,8 +130,7 @@ networks:
     driver: bridge
 
 volumes:
-  #esdata: {}
   es_data: 
-    name: ft_es_data # how does this work? 
+    name: ft_es_data
   es_certs: 
-    name: ft_es_certs # TLS certs for ES nodes 
+    name: ft_es_certs

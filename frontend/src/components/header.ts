@@ -511,7 +511,6 @@ export function renderHeader(): HTMLElement {
     
     if (isAuthenticated) {
       bar.appendChild(searchWrap);
-      //
       bar.classList.remove('justify-end');
       bar.classList.add('justify-between');
     }

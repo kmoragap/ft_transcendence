@@ -15,7 +15,6 @@ export function getCurrentLanguage(): string {
 }
 
 export async function initI18n(lang: string = 'en'): Promise<void> {
-
   currentLanguage = lang;
   
   try {

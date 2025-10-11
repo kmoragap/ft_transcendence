@@ -7,6 +7,8 @@ import cookie from "@fastify/cookie";
 import path from "node:path";
 import userRoutes from "../modules/users.routes";
 
+import securityPlugin from './securityPlugin';
+
 export async function buildServer(): Promise<FastifyInstance> {
   const server = fastify({
     logger: {
@@ -26,6 +28,16 @@ export async function buildServer(): Promise<FastifyInstance> {
       },
     },
   }).withTypeProvider<TypeBoxTypeProvider>();
+
+  server.register(securityPlugin).ready(err => {
+  if (err) {
+    console.error('Plugin registration failed:', err);
+  } else {
+    console.log('Plugin registered successfully!');
+  }
+});
+
+   
   // Cookie support
   server.register(cookie, {
     secret: process.env.COOKIE_SECRET || "change-this-in-prod",

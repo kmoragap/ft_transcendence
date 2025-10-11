@@ -1,8 +1,16 @@
 import 'fastify';
-import { User } from '@prisma/client';
 
 declare module 'fastify' {
-  export interface FastifyRequest {
-    user?: User;
+  interface FastifyInstance {
+  	sayBlah(): string;
+  }
+
+  interface FastifyRequest {
+	user?: {
+		id: string;
+		email: string;
+		username: string;
+	};
   }
 }
+

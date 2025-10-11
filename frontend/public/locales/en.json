@@ -21,6 +21,7 @@
 	"2fa_code_sent": "A verification code has been sent to your email",
 	"enter_2fa_code": "Enter 6-digit code",
 	"verify": "Verify",
+	"resend_code": "Resend Code",
 	"back_to_login": "Back to Login",
 	"exit": "Exit",
 	"accessibility": "Accessibility",

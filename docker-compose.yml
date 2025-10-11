@@ -122,8 +122,8 @@ networks:
     driver: bridge
 
 volumes:
-  es_data: 
+  es_data:
     name: ft_es_data
-  es_certs: 
+  es_certs:
     name: ft_es_certs
   pong-static:

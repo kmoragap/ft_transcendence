@@ -258,7 +258,7 @@ function show2FAForm(section: HTMLElement, email: string) {
         } catch {}
         alertError(`Failed to resend code: ${msg}`);
       } else {
-        alertSuccess("A new verification code has been sent to your email");
+        alertSuccess(t("A new verification code has been sent to your email"));
       }
     } catch (err) {
       console.error(err);

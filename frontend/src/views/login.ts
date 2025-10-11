@@ -262,7 +262,7 @@ function show2FAForm(section: HTMLElement, email: string) {
       }
     } catch (err) {
       console.error(err);
-      alertError("Failed to resend code. Please try again.");
+      alertError(t("Failed to resend code. Please try again."));
     } finally {
       resendButton.disabled = false;
       resendButton.textContent = t("resend_code");

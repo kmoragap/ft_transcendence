@@ -241,7 +241,7 @@ function show2FAForm(section: HTMLElement, email: string) {
 
   resendButton.addEventListener("click", async () => {
     resendButton.disabled = true;
-    resendButton.textContent = "Sending...";
+    resendButton.textContent = t("sending");
 
     try {
       const res = await fetch("/api/auth/resend-2fa", {

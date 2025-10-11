@@ -49,6 +49,62 @@ function controlKeys() {
       }
     }
   });
+  let touchStartY = 0;
+  let touchStartX = 0;
+  data.canvas.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      touchStartY = touch.clientY;
+      touchStartX = touch.clientX;
+    },
+    { passive: false }
+  );
+  data.canvas.addEventListener(
+    "touchmove",
+    (e) => {
+      e.preventDefault();
+      if (!data || !data.p) return;
+      const touch = e.touches[0];
+      const deltaY = touch.clientY - touchStartY;
+      const deltaX = touch.clientX - touchStartX;
+      const canvasRect = data.canvas.getBoundingClientRect();
+      const touchX = touch.clientX - canvasRect.left;
+      const isLeftSide = touchX < data.canvas.width / 2;
+      if (isLeftSide && data.p[0]) {
+        if (deltaY < -10) {
+          data.keys[data.p[0].up] = true;
+          data.keys[data.p[0].down] = false;
+        } else if (deltaY > 10) {
+          data.keys[data.p[0].down] = true;
+          data.keys[data.p[0].up] = false;
+        }
+      } else if (!isLeftSide && data.p[1]) {
+        if (deltaY < -10) {
+          data.keys[data.p[1].up] = true;
+          data.keys[data.p[1].down] = false;
+        } else if (deltaY > 10) {
+          data.keys[data.p[1].down] = true;
+          data.keys[data.p[1].up] = false;
+        }
+      }
+    },
+    { passive: false }
+  );
+  data.canvas.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      if (data && data.p) {
+        data.p.forEach((player) => {
+          data.keys[player.up] = false;
+          data.keys[player.down] = false;
+        });
+      }
+    },
+    { passive: false }
+  );
   data.canvas.addEventListener("touchstart", touchDown);
   data.canvas.addEventListener("touchend", touchUp);
 }
@@ -116,6 +172,71 @@ function touchUp() {
       }
     }
   }
+}
+function enterFullscreen() {
+  const canvas = document.getElementById("board");
+  if (!canvas) {
+    return Promise.reject(new Error("Canvas not found"));
+  }
+  return new Promise((resolve, reject) => {
+    if (canvas.requestFullscreen) canvas.requestFullscreen();
+    else if (canvas.webkitRequestFullscreen)
+      canvas.webkitRequestFullscreen();
+    else if (canvas.mozRequestFullScreen)
+      canvas.mozRequestFullScreen();
+    else if (canvas.msRequestFullscreen)
+      canvas.msRequestFullscreen();
+    else reject(new Error("Fullscreen not supported"));
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("landscape").catch((err) => {
+        console.log("Orientation lock failed:", err);
+      });
+    }
+    console.log("Fullscreen entered successfulllllly");
+    resolve();
+  });
+}
+function exitFullscreen() {
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen)
+    document.webkitExitFullscreen();
+  else if (document.mozCancelFullScreen)
+    document.mozCancelFullScreen();
+  else if (document.msExitFullscreen)
+    document.msExitFullscreen();
+}
+function showFullscreenPrompt() {
+  const prompt = document.createElement("div");
+  prompt.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-50";
+  prompt.id = "fullscreen-prompt";
+  prompt.innerHTML = `
+		<div class="bg-[rgba(3,27,27,0.95)] rounded-xl p-6 max-w-sm mx-4 border border-[rgba(102,252,241,0.25)] shadow-2xl text-center">
+			<div class="text-4xl mb-4">\u{1F4F1}</div>
+			<h2 class="text-xl font-bold text-[#66fcf1] mb-3 font-[jura]">
+				Enter Fullscreen
+			</h2>
+			<p class="text-[#66fcf1] mb-4 text-sm font-[jura]">
+				For the best gaming experience, tap the button below to enter fullscreen mode.
+			</p>
+			<button
+				id="fullscreen-btn"
+				class="btn py-2.5 px-6 text-lg font-bold w-full"
+			>
+				Enter Fullscreen
+			</button>
+		</div>
+	`;
+  document.body.appendChild(prompt);
+  const fullscreenBtn = prompt.querySelector("#fullscreen-btn");
+  fullscreenBtn?.addEventListener("click", async () => {
+    try {
+      await enterFullscreen();
+      prompt.remove();
+    } catch (err) {
+      console.log("Manual fullscreen failed:", err);
+      prompt.remove();
+    }
+  });
 }
 var lastX;
 var init_controls = __esm({
@@ -1101,642 +1222,7 @@ var init_tournamentGame = __esm({
   }
 });
 
-// src/gameData.ts
-function isMobile() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  ) || window.innerWidth <= 768 && window.innerHeight <= 1024;
-}
-function toggleFullscreen() {
-  if (!isFullscreen) {
-    enterFullscreen();
-  } else {
-    exitFullscreen();
-  }
-}
-function enterFullscreen() {
-  const canvas = document.getElementById("board");
-  if (!canvas) {
-    return Promise.reject(new Error("Canvas not found"));
-  }
-  return new Promise((resolve, reject) => {
-    if (canvas.requestFullscreen) {
-      canvas.requestFullscreen().then(() => {
-        console.log("Fullscreen entered successfully");
-        updateCanvasForFullscreen(true);
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch((err) => {
-            console.log("Orientation lock failed:", err);
-          });
-        }
-        resolve();
-      }).catch((err) => {
-        console.log("Fullscreen failed:", err);
-        updateCanvasForFullscreen(true);
-        reject(err);
-      });
-    } else if (canvas.webkitRequestFullscreen) {
-      canvas.webkitRequestFullscreen().then(() => {
-        console.log("Fullscreen entered successfully");
-        updateCanvasForFullscreen(true);
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch((err) => {
-            console.log("Orientation lock failed:", err);
-          });
-        }
-        resolve();
-      }).catch((err) => {
-        console.log("Fullscreen failed:", err);
-        updateCanvasForFullscreen(true);
-        reject(err);
-      });
-    } else if (canvas.mozRequestFullScreen) {
-      canvas.mozRequestFullScreen().then(() => {
-        console.log("Fullscreen entered successfully");
-        updateCanvasForFullscreen(true);
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch((err) => {
-            console.log("Orientation lock failed:", err);
-          });
-        }
-        resolve();
-      }).catch((err) => {
-        console.log("Fullscreen failed:", err);
-        updateCanvasForFullscreen(true);
-        reject(err);
-      });
-    } else if (canvas.msRequestFullscreen) {
-      canvas.msRequestFullscreen().then(() => {
-        console.log("Fullscreen entered successfully");
-        updateCanvasForFullscreen(true);
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch((err) => {
-            console.log("Orientation lock failed:", err);
-          });
-        }
-        resolve();
-      }).catch((err) => {
-        console.log("Fullscreen failed:", err);
-        updateCanvasForFullscreen(true);
-        reject(err);
-      });
-    } else {
-      reject(new Error("Fullscreen not supported"));
-    }
-  });
-}
-function exitFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.webkitExitFullscreen) {
-    document.webkitExitFullscreen();
-  } else if (document.mozCancelFullScreen) {
-    document.mozCancelFullScreen();
-  } else if (document.msExitFullscreen) {
-    document.msExitFullscreen();
-  }
-  updateCanvasForFullscreen(false);
-}
-function showFullscreenPrompt() {
-  const prompt = document.createElement("div");
-  prompt.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-50";
-  prompt.id = "fullscreen-prompt";
-  prompt.innerHTML = `
-		<div class="bg-[rgba(3,27,27,0.95)] rounded-xl p-6 max-w-sm mx-4 border border-[rgba(102,252,241,0.25)] shadow-2xl text-center">
-			<div class="text-4xl mb-4">\u{1F4F1}</div>
-			<h2 class="text-xl font-bold text-[#66fcf1] mb-3 font-[jura]">
-				Enter Fullscreen
-			</h2>
-			<p class="text-[#66fcf1] mb-4 text-sm font-[jura]">
-				For the best gaming experience, tap the button below to enter fullscreen mode.
-			</p>
-			<button
-				id="fullscreen-btn"
-				class="btn py-2.5 px-6 text-lg font-bold w-full"
-			>
-				Enter Fullscreen
-			</button>
-		</div>
-	`;
-  document.body.appendChild(prompt);
-  const fullscreenBtn = prompt.querySelector("#fullscreen-btn");
-  fullscreenBtn?.addEventListener("click", async () => {
-    try {
-      await enterFullscreen();
-      prompt.remove();
-    } catch (err) {
-      console.log("Manual fullscreen failed:", err);
-      prompt.remove();
-    }
-  });
-}
-function updatePaddlePositions() {
-  if (!pad || pad.length === 0) return;
-  if (data.mode === "twoPlayers") {
-    pad[0].setX(0);
-    pad[1].setX(data.canvas.width - data.paddleWidth);
-  } else if (data.mode === "doublePaddle") {
-    pad[0].setX(0);
-    pad[1].setX(data.canvas.width - data.paddleWidth);
-    pad[2].setX(data.canvas.width * 0.25 - data.paddleWidth);
-    pad[3].setX(data.canvas.width * 0.75 - data.paddleWidth);
-  } else if (data.mode === "multi") {
-    pad[0].setX(0);
-    pad[1].setX(data.canvas.width * 0.25 - data.paddleWidth);
-    pad[2].setX(data.canvas.width * 0.75 - data.paddleWidth);
-    pad[3].setX(data.canvas.width - data.paddleWidth);
-  }
-}
-function updateCanvasForFullscreen(fullscreen) {
-  const canvas = document.getElementById("board");
-  if (!canvas) return;
-  isFullscreen = fullscreen;
-  if (fullscreen) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.width = "100vw";
-    canvas.style.height = "100vh";
-    canvas.style.position = "fixed";
-    canvas.style.top = "0";
-    canvas.style.left = "0";
-    canvas.style.zIndex = "9999";
-    canvas.style.backgroundColor = "#000";
-  } else {
-    const margin = 47;
-    const availableHeight = window.innerHeight - margin;
-    canvas.width = window.innerWidth;
-    canvas.height = availableHeight;
-    canvas.style.width = "100%";
-    canvas.style.height = `${availableHeight}px`;
-    canvas.style.position = "static";
-    canvas.style.top = "auto";
-    canvas.style.left = "auto";
-    canvas.style.zIndex = "auto";
-    canvas.style.backgroundColor = "transparent";
-  }
-  if (data && data.canvas) {
-    data.canvas = canvas;
-    data.ctx = canvas.getContext("2d");
-    data.paddleWidth = canvas.width / 60;
-    data.paddleHeight = canvas.height / 5;
-    data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
-    data.bg.addColorStop(0, data.outerBg);
-    data.bg.addColorStop(0.5, data.innerBg);
-    data.bg.addColorStop(1, data.outerBg);
-    updatePaddlePositions();
-  }
-}
-function handleFullscreenChange() {
-  const isCurrentlyFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-  if (isCurrentlyFullscreen !== isFullscreen) {
-    updateCanvasForFullscreen(isCurrentlyFullscreen);
-  }
-}
-function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol, playerIndex) {
-  const isAiByName = name.includes("Player") && name !== "Player 1";
-  const finalIsAi = isAi || isAiByName;
-  let finalId = id;
-  if (!finalIsAi && !finalId) {
-    const urlParams = new URLSearchParams(window.location.search);
-    finalId = urlParams.get("userId") || name;
-  }
-  var p = {
-    name,
-    id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
-    score: 0,
-    isAi: finalIsAi,
-    up,
-    down,
-    innerCol,
-    outerCol: outercol,
-    cornerCol
-  };
-  if (finalIsAi) p.name = "Roger Federror";
-  return p;
-}
-function loadIn(id) {
-  const el = document.getElementById(id);
-  return el ? el.value : "";
-}
-function loadInB(id) {
-  const el = document.getElementById(id);
-  return el ? el.checked : false;
-}
-async function newGame(mode) {
-  await new Promise((resolve) => {
-    if (document.readyState === "complete") resolve();
-    else document.addEventListener("DOMContentLoaded", () => resolve());
-  });
-  const appDiv = Object.assign(document.createElement("div"), {
-    id: "app"
-  });
-  appDiv.className = [
-    "fixed inset-0 flex flex-col items-center justify-center",
-    "bg-black/60",
-    "z-50 pb-2 md:pb-0"
-  ].join(" ");
-  document.body.appendChild(appDiv);
-  const title = document.createElement("h2");
-  if (mode === "tournament") {
-    title.textContent = t("tournamentSetup");
-  } else {
-    title.textContent = t("gameSetup");
-  }
-  title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
-  appDiv.appendChild(title);
-  const card = document.createElement("div");
-  card.className = [
-    "w-[min(900px,92vw)] overflow-y-auto",
-    "rounded-2xl flex flex-row flex-wrap",
-    "bg-[rgba(3,27,27,0.9)]",
-    "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
-    "p-6 md:p-8 space-y-6 gap-4"
-  ].join(" ");
-  appDiv.appendChild(card);
-  const allBoxesContainer = Object.assign(document.createElement("div"), {
-    className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
-  });
-  const tournamentContainer = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]"
-  });
-  const player1Container = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]"
-  });
-  const player2Container = Object.assign(document.createElement("div"), {
-    className: "flex-1 min-w-[300px]"
-  });
-  const player1List = Object.assign(document.createElement("ul"), {
-    className: "list-none"
-  });
-  const player2List = Object.assign(document.createElement("ul"), {
-    className: "list-none"
-  });
-  const urlParams = new URLSearchParams(window.location.search);
-  const username = urlParams.get("username") || "Player 1";
-  const userId = urlParams.get("userId") || "";
-  playerSetupMenu(
-    player1List,
-    "1",
-    username,
-    false,
-    "Shift",
-    "Control",
-    "#ffffff",
-    "#808080",
-    "#ff0000"
-  );
-  setTimeout(() => {
-    const p1IdInput = document.getElementById("p1Id");
-    if (p1IdInput && userId) {
-      p1IdInput.value = userId;
-    }
-  }, 0);
-  playerSetupMenu(
-    player2List,
-    "2",
-    "Arthur Dent",
-    true,
-    "ArrowUp",
-    "ArrowDown",
-    "#ffffff",
-    "#808080",
-    "#ff0000"
-  );
-  player1Container.appendChild(player1List);
-  player2Container.appendChild(player2List);
-  const { form: setupForm, startButton } = gameSetupMenu(mode);
-  const settingsForm = setupForm.querySelector("#settings");
-  const bgColorsForm = setupForm.querySelector("#bgColors");
-  if (mode === "tournament") {
-    let createPlayerBoxes2 = function(numPlayers) {
-      const container = document.getElementById("playerSetupContainer");
-      if (!container) return;
-      container.innerHTML = "";
-      for (let i = 1; i <= numPlayers; i++) {
-        const playerContainer = Object.assign(document.createElement("div"), {
-          className: "flex-1"
-        });
-        const playerList = Object.assign(document.createElement("ul"), {
-          className: "list-none"
-        });
-        const defaultNames = [
-          "Player 1",
-          "Player 2",
-          "Player 3",
-          "Player 4",
-          "Player 5",
-          "Player 6",
-          "Player 7",
-          "Player 8"
-        ];
-        const defaultKeys = [
-          { up: "Shift", down: "Control" },
-          { up: "ArrowUp", down: "ArrowDown" },
-          { up: "w", down: "s" },
-          { up: "i", down: "k" },
-          { up: "t", down: "g" },
-          { up: "u", down: "j" },
-          { up: "o", down: "l" },
-          { up: "p", down: ";" }
-        ];
-        let playerName = defaultNames[i - 1] || `Player ${i}`;
-        const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
-        if (i === 1) {
-          const urlParams2 = new URLSearchParams(window.location.search);
-          const username2 = urlParams2.get("username") || "Player 1";
-          playerName = username2;
-        }
-        playerSetupMenu(
-          playerList,
-          i.toString(),
-          playerName,
-          i > 1,
-          // First player is human (logged-in user), rest are AI by default
-          playerKeys.up,
-          playerKeys.down,
-          "#ffffff",
-          "#808080",
-          "#ff0000"
-        );
-        playerContainer.appendChild(playerList);
-        container.appendChild(playerContainer);
-      }
-    }, showStep2 = function(step) {
-      document.querySelectorAll(".wizard-step").forEach((el) => {
-        el.classList.add("hidden");
-      });
-      const stepElement = document.getElementById(`step${step}`);
-      if (stepElement) {
-        stepElement.classList.remove("hidden");
-      }
-      backButton.classList.toggle("hidden", step === 1);
-      nextButton.classList.toggle("hidden", step === 3);
-      finishButton.classList.toggle("hidden", step !== 3);
-      if (step === 2) {
-        const playersNumberInput2 = document.getElementById(
-          "playersNumber"
-        );
-        if (playersNumberInput2) {
-          const numPlayers = parseInt(playersNumberInput2.value) || 4;
-          createPlayerBoxes2(numPlayers);
-        }
-      }
-      currentStep = step;
-    };
-    var createPlayerBoxes = createPlayerBoxes2, showStep = showStep2;
-    const tournamentWizard = Object.assign(document.createElement("div"), {
-      className: "tournament-wizard"
-    });
-    const step1Container = Object.assign(document.createElement("div"), {
-      className: "wizard-step",
-      id: "step1"
-    });
-    const step2Container = Object.assign(document.createElement("div"), {
-      className: "wizard-step hidden",
-      id: "step2"
-    });
-    const step3Container = Object.assign(document.createElement("div"), {
-      className: "wizard-step hidden",
-      id: "step3"
-    });
-    const navigationContainer = Object.assign(document.createElement("div"), {
-      className: "flex justify-between items-center mt-6"
-    });
-    const backButton = Object.assign(document.createElement("button"), {
-      className: "btn py-2 px-6 text-lg font-bold hidden",
-      textContent: t("back") || "Back",
-      id: "backBtn"
-    });
-    const nextButton = Object.assign(document.createElement("button"), {
-      className: "btn py-2 px-6 text-lg font-bold",
-      textContent: t("next") || "Next",
-      id: "nextBtn"
-    });
-    const finishButton = Object.assign(document.createElement("button"), {
-      className: "btn py-2 px-6 text-lg font-bold hidden",
-      textContent: t("start") || "Start",
-      id: "finishBtn"
-    });
-    const { form: tournamentForm } = tournamentSetupMenu();
-    step1Container.appendChild(tournamentForm);
-    const playersNumberInput = document.getElementById(
-      "playersNumber"
-    );
-    if (playersNumberInput) {
-      playersNumberInput.addEventListener("input", () => {
-        if (currentStep === 2) {
-          const numPlayers = parseInt(playersNumberInput.value) || 4;
-          createPlayerBoxes2(numPlayers);
-        }
-      });
-    }
-    const step2FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap",
-      id: "playerSetupContainer"
-    });
-    step2Container.appendChild(step2FlexContainer);
-    const step3FlexContainer = Object.assign(document.createElement("div"), {
-      className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
-    });
-    step3FlexContainer.appendChild(settingsForm);
-    step3FlexContainer.appendChild(bgColorsForm);
-    step3Container.appendChild(step3FlexContainer);
-    tournamentWizard.appendChild(step1Container);
-    tournamentWizard.appendChild(step2Container);
-    tournamentWizard.appendChild(step3Container);
-    navigationContainer.appendChild(backButton);
-    navigationContainer.appendChild(nextButton);
-    navigationContainer.appendChild(finishButton);
-    tournamentWizard.appendChild(navigationContainer);
-    card.appendChild(tournamentWizard);
-    let currentStep = 1;
-    nextButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (currentStep < 3) {
-        showStep2(currentStep + 1);
-      }
-    });
-    backButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (currentStep > 1) {
-        showStep2(currentStep - 1);
-      }
-    });
-    finishButton.addEventListener("click", async (e) => {
-      e.preventDefault();
-      if (mode === "tournament") {
-        await createAndStartTournament();
-      } else {
-        await loadConfig(mode);
-      }
-    });
-  } else {
-    let showSingleStep2 = function(step) {
-      document.querySelectorAll(".single-player-wizard .wizard-step").forEach((el) => {
-        el.classList.add("hidden");
-      });
-      const stepElement = document.getElementById(`singleStep${step}`);
-      if (stepElement) {
-        stepElement.classList.remove("hidden");
-      }
-      singleBackButton.classList.toggle("hidden", step === 1);
-      singleNextButton.classList.toggle("hidden", step === 2);
-      singleFinishButton.classList.toggle("hidden", step !== 2);
-      singleCurrentStep = step;
-    };
-    var showSingleStep = showSingleStep2;
-    const singlePlayerWizard = Object.assign(document.createElement("div"), {
-      className: "single-player-wizard"
-    });
-    const singleStep1Container = Object.assign(document.createElement("div"), {
-      className: "wizard-step",
-      id: "singleStep1"
-    });
-    const singleStep2Container = Object.assign(document.createElement("div"), {
-      className: "wizard-step hidden",
-      id: "singleStep2"
-    });
-    const singleNavigationContainer = Object.assign(
-      document.createElement("div"),
-      {
-        className: "flex justify-between items-center mt-6"
-      }
-    );
-    const singleBackButton = Object.assign(document.createElement("button"), {
-      className: "btn py-2 px-6 text-lg font-bold hidden",
-      textContent: t("back") || "Back",
-      id: "singleBackBtn"
-    });
-    const singleNextButton = Object.assign(document.createElement("button"), {
-      className: "btn py-2 px-6 text-lg font-bold",
-      textContent: t("next") || "Next",
-      id: "singleNextBtn"
-    });
-    const singleFinishButton = Object.assign(document.createElement("button"), {
-      className: "btn py-2 px-6 text-lg font-bold hidden",
-      textContent: t("start") || "Start",
-      id: "singleFinishBtn"
-    });
-    const singleStep1FlexContainer = Object.assign(
-      document.createElement("div"),
-      {
-        className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
-      }
-    );
-    if (mode === "multi") {
-      const player3Container = Object.assign(document.createElement("div"), {
-        className: "flex-1 min-w-[300px]"
-      });
-      const player4Container = Object.assign(document.createElement("div"), {
-        className: "flex-1 min-w-[300px]"
-      });
-      const player3List = Object.assign(document.createElement("ul"), {
-        className: "list-none"
-      });
-      const player4List = Object.assign(document.createElement("ul"), {
-        className: "list-none"
-      });
-      playerSetupMenu(
-        player3List,
-        "3",
-        "Trillian Astra",
-        true,
-        "i",
-        "k",
-        "#ffffff",
-        "#808080",
-        "#ff0000"
-      );
-      playerSetupMenu(
-        player4List,
-        "4",
-        "Zaphod Beeblebrox",
-        true,
-        "PageUp",
-        "PageDown",
-        "#ffffff",
-        "#808080",
-        "#ff0000"
-      );
-      player3Container.appendChild(player3List);
-      player4Container.appendChild(player4List);
-      singleStep1FlexContainer.appendChild(player1Container);
-      singleStep1FlexContainer.appendChild(player2Container);
-      singleStep1FlexContainer.appendChild(player3Container);
-      singleStep1FlexContainer.appendChild(player4Container);
-    } else {
-      singleStep1FlexContainer.appendChild(player1Container);
-      singleStep1FlexContainer.appendChild(player2Container);
-    }
-    singleStep1Container.appendChild(singleStep1FlexContainer);
-    const singleStep2FlexContainer = Object.assign(
-      document.createElement("div"),
-      {
-        className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
-      }
-    );
-    singleStep2FlexContainer.appendChild(settingsForm);
-    singleStep2FlexContainer.appendChild(bgColorsForm);
-    singleStep2Container.appendChild(singleStep2FlexContainer);
-    singlePlayerWizard.appendChild(singleStep1Container);
-    singlePlayerWizard.appendChild(singleStep2Container);
-    singleNavigationContainer.appendChild(singleBackButton);
-    singleNavigationContainer.appendChild(singleNextButton);
-    singleNavigationContainer.appendChild(singleFinishButton);
-    singlePlayerWizard.appendChild(singleNavigationContainer);
-    card.appendChild(singlePlayerWizard);
-    let singleCurrentStep = 1;
-    singleNextButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (singleCurrentStep < 2) {
-        showSingleStep2(singleCurrentStep + 1);
-      }
-    });
-    singleBackButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (singleCurrentStep > 1) {
-        showSingleStep2(singleCurrentStep - 1);
-      }
-    });
-    singleFinishButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      loadConfig(mode);
-    });
-  }
-  window.addEventListener("resize", () => {
-    const canvas = document.getElementById("board");
-    if (canvas) {
-      if (isFullscreen) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        canvas.style.width = "100vw";
-        canvas.style.height = "100vh";
-      } else {
-        const margin = 50;
-        const availableHeight = window.innerHeight - margin;
-        canvas.width = window.innerWidth;
-        canvas.height = availableHeight;
-        canvas.style.width = "100%";
-        canvas.style.height = `${availableHeight}px`;
-        canvas.style.maxWidth = "100%";
-        canvas.style.maxHeight = `${availableHeight}px`;
-        canvas.style.borderRadius = "0";
-        canvas.style.display = "block";
-      }
-      if (data && data.canvas) {
-        data.canvas = canvas;
-        data.ctx = canvas.getContext("2d");
-        data.paddleWidth = canvas.width / 60;
-        data.paddleHeight = canvas.height / 5;
-        data.bg = data.ctx.createLinearGradient(0, 0, canvas.width, 0);
-        data.bg.addColorStop(0, data.outerBg);
-        data.bg.addColorStop(0.5, data.innerBg);
-        data.bg.addColorStop(1, data.outerBg);
-        updatePaddlePositions();
-      }
-    }
-  });
-}
+// src/tournamentData.ts
 async function createAndStartTournament() {
   try {
     const playersNumber = parseInt(
@@ -1829,7 +1315,7 @@ async function createAndStartTournament() {
       return;
     }
     console.log("Tournament created successfully:", tournament.id);
-    pendingTournamentId = tournament.id;
+    setPendingTournamentId(tournament.id);
     await loadConfig("tournament");
     const success = await newTournamentGame(tournament.id);
     if (!success) {
@@ -1841,6 +1327,304 @@ async function createAndStartTournament() {
     console.error("Error creating tournament:", error);
     alert("Error creating tournament. Please try again.");
   }
+}
+var init_tournamentData = __esm({
+  "src/tournamentData.ts"() {
+    "use strict";
+    init_gameData();
+    init_tournamentService();
+    init_tournamentGame();
+  }
+});
+
+// src/wizard.ts
+function theHorrorTheHorror(mode) {
+  const card = document.getElementById("card");
+  const player1Container = createPlayerContainer(1);
+  const player2Container = createPlayerContainer(2);
+  const player1List = createPlayerList();
+  const player2List = createPlayerList();
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get("username") || "Player 1";
+  const userId = urlParams.get("userId") || "";
+  const wizardContainer = createStepContainer("tournament-wizard", "");
+  const step1Container = createStepContainer("wizard-step", "step1");
+  const playerSetupContainer = createStepContainer("wizard-step hidden", "step2");
+  const gameSettingsContainer = createStepContainer("wizard-step hidden", "step3");
+  const navigationContainer = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mt-6"
+  });
+  navigationContainer.appendChild(backButton);
+  navigationContainer.appendChild(nextButton);
+  navigationContainer.appendChild(finishButton);
+  playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
+  const p1IdInput = document.getElementById("p1Id");
+  if (p1IdInput && userId) p1IdInput.value = userId;
+  playerSetupMenu(player2List, "2", "Roger Federror", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
+  player1Container.appendChild(player1List);
+  player2Container.appendChild(player2List);
+  const { form: setupForm } = gameSetupMenu(mode);
+  const settingsForm = setupForm.querySelector("#settings");
+  const bgColorsForm = setupForm.querySelector("#bgColors");
+  const playerSetupFlexContainer = createFlexContainer();
+  playerSetupFlexContainer.id = "playerSetupContainer";
+  playerSetupContainer.appendChild(playerSetupFlexContainer);
+  const gameSettingsFlexContainer = createFlexContainer();
+  gameSettingsFlexContainer.appendChild(settingsForm);
+  gameSettingsFlexContainer.appendChild(bgColorsForm);
+  gameSettingsContainer.appendChild(gameSettingsFlexContainer);
+  if (mode === "tournament") {
+    const { form: tournamentForm } = tournamentSetupMenu();
+    step1Container.appendChild(tournamentForm);
+    const playersNumberInput = document.getElementById("playersNumber");
+    if (playersNumberInput) {
+      playersNumberInput.addEventListener("input", () => {
+        if (currentStep === 2) {
+          const numPlayers = parseInt(playersNumberInput.value) || 4;
+          createPlayerBoxes(numPlayers);
+        }
+      });
+    }
+    nextButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentStep < 3) showStep(currentStep + 1, false);
+    });
+    backButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentStep > 1) showStep(currentStep - 1, false);
+    });
+    finishButton.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (mode === "tournament") {
+        await createAndStartTournament();
+      } else {
+        await loadConfig(mode);
+      }
+    });
+  } else {
+    if (mode === "multi") {
+      const player3Container = createPlayerContainer(3);
+      const player4Container = createPlayerContainer(4);
+      const player3List = createPlayerList();
+      const player4List = createPlayerList();
+      playerSetupMenu(player3List, "3", "Boolena Williams", true, "i", "k", "#ffffff", "#808080", "#ff0000");
+      playerSetupMenu(player4List, "4", "Boris Backend", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
+      player3Container.appendChild(player3List);
+      player4Container.appendChild(player4List);
+      playerSetupFlexContainer.appendChild(player1Container);
+      playerSetupFlexContainer.appendChild(player2Container);
+      playerSetupFlexContainer.appendChild(player3Container);
+      playerSetupFlexContainer.appendChild(player4Container);
+    } else {
+      playerSetupFlexContainer.appendChild(player1Container);
+      playerSetupFlexContainer.appendChild(player2Container);
+    }
+    step1Container.appendChild(playerSetupFlexContainer);
+    const singleStep2FlexContainer = createFlexContainer();
+    singleStep2FlexContainer.appendChild(settingsForm);
+    singleStep2FlexContainer.appendChild(bgColorsForm);
+    playerSetupContainer.appendChild(singleStep2FlexContainer);
+    nextButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentStep < 2) showStep(currentStep + 1, true);
+    });
+    backButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentStep > 1) showStep(currentStep - 1, true);
+    });
+    finishButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      loadConfig(mode);
+    });
+  }
+  wizardContainer.appendChild(step1Container);
+  wizardContainer.appendChild(playerSetupContainer);
+  wizardContainer.appendChild(gameSettingsContainer);
+  wizardContainer.appendChild(navigationContainer);
+  card.appendChild(wizardContainer);
+}
+function createPlayerBoxes(numPlayers) {
+  const container = document.getElementById("playerSetupContainer");
+  if (!container) return;
+  container.innerHTML = "";
+  for (let i = 1; i <= numPlayers; i++) {
+    const playerContainer = createPlayerContainer(i);
+    const playerList = createPlayerList();
+    const defaultNames = [
+      "Player 1",
+      "Roger Federror",
+      "Boolena Williams",
+      "Boris Backend",
+      "Steffi Graph",
+      "Array Agassi",
+      "Maria Charapova",
+      "Novak Breakovi\u0107"
+    ];
+    const defaultKeys = [
+      { up: "Shift", down: "Control" },
+      { up: "ArrowUp", down: "ArrowDown" },
+      { up: "Shift", down: "Control" },
+      { up: "ArrowUp", down: "ArrowDown" },
+      { up: "Shift", down: "Control" },
+      { up: "ArrowUp", down: "ArrowDown" },
+      { up: "Shift", down: "Control" },
+      { up: "ArrowUp", down: "ArrowDown" }
+    ];
+    let playerName = defaultNames[i - 1] || `Player ${i}`;
+    const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
+    if (i === 1) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const username = urlParams.get("username") || "Player 1";
+      playerName = username;
+    }
+    playerSetupMenu(
+      playerList,
+      i.toString(),
+      playerName,
+      i > 1,
+      playerKeys.up,
+      playerKeys.down,
+      "#ffffff",
+      "#808080",
+      "#ff0000"
+    );
+    playerContainer.appendChild(playerList);
+    container.appendChild(playerContainer);
+  }
+}
+function showStep(step, singleMatch) {
+  document.querySelectorAll(".wizard-step").forEach((el) => {
+    el.classList.add("hidden");
+  });
+  const stepElement = document.getElementById(`step${step}`);
+  if (stepElement) stepElement.classList.remove("hidden");
+  if (singleMatch) {
+    backButton.classList.toggle("hidden", step === 1);
+    nextButton.classList.toggle("hidden", step === 2);
+    finishButton.classList.toggle("hidden", step !== 2);
+  } else {
+    backButton.classList.toggle("hidden", step === 1);
+    nextButton.classList.toggle("hidden", step === 3);
+    finishButton.classList.toggle("hidden", step !== 3);
+    if (step === 2) {
+      const playersNumberInput = document.getElementById("playersNumber");
+      if (playersNumberInput) {
+        const numPlayers = parseInt(playersNumberInput.value) || 4;
+        createPlayerBoxes(numPlayers);
+      }
+    }
+  }
+  currentStep = step;
+}
+function btn(ts, alt, id) {
+  const button = Object.assign(document.createElement("button"), {
+    className: "",
+    textContent: t(ts) || alt,
+    id
+  });
+  button.classList.add("btn", "py-2", "px-6", "text-lg", "font-bold");
+  return button;
+}
+function createPlayerContainer(p) {
+  return Object.assign(document.createElement("div"), {
+    className: "flex-1 min-w-[300px]",
+    id: `player${p}Container`
+  });
+}
+function createPlayerList() {
+  return Object.assign(document.createElement("ul"), { className: "list-none" });
+}
+function createFlexContainer() {
+  return Object.assign(document.createElement("div"), {
+    className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+  });
+}
+function createStepContainer(className, id) {
+  return Object.assign(document.createElement("div"), { className, id });
+}
+var currentStep, backButton, nextButton, finishButton;
+var init_wizard = __esm({
+  "src/wizard.ts"() {
+    "use strict";
+    init_gameData();
+    init_i18n();
+    init_menus();
+    init_tournamentData();
+    currentStep = 1;
+    backButton = btn("back", "Back", "backBtn");
+    nextButton = btn("next", "Next", "nextBtn");
+    finishButton = btn("start", "Start", "finishBtn");
+    backButton.classList.add("hidden");
+    finishButton.classList.add("hidden");
+  }
+});
+
+// src/gameData.ts
+function setPendingTournamentId(id) {
+  pendingTournamentId = id;
+}
+function loadPlayer(name, id, isAi, up, down, innerCol, outercol, cornerCol, playerIndex) {
+  const isAiByName = name.includes("Player") && name !== "Player 1";
+  const finalIsAi = isAi || isAiByName;
+  let finalId = id;
+  if (!finalIsAi && !finalId) {
+    const urlParams = new URLSearchParams(window.location.search);
+    finalId = urlParams.get("userId") || name;
+  }
+  var p = {
+    name,
+    id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
+    score: 0,
+    isAi: finalIsAi,
+    up,
+    down,
+    innerCol,
+    outerCol: outercol,
+    cornerCol
+  };
+  return p;
+}
+function loadIn(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : "";
+}
+function loadInB(id) {
+  const el = document.getElementById(id);
+  return el ? el.checked : false;
+}
+async function newGame(mode) {
+  await new Promise((resolve) => {
+    if (document.readyState === "complete") resolve();
+    else document.addEventListener("DOMContentLoaded", () => resolve());
+  });
+  const appDiv = Object.assign(document.createElement("div"), {
+    id: "app"
+  });
+  appDiv.className = [
+    "fixed inset-0 flex flex-col items-center justify-center",
+    "bg-black/60",
+    "z-50 pb-2 md:pb-0"
+  ].join(" ");
+  document.body.appendChild(appDiv);
+  const title = document.createElement("h2");
+  if (mode === "tournament") {
+    title.textContent = t("tournamentSetup");
+  } else {
+    title.textContent = t("gameSetup");
+  }
+  title.className = "text-2xl md:text-3xl font-bold text-[#66fcf1] text-center";
+  appDiv.appendChild(title);
+  const card = document.createElement("div");
+  card.className = [
+    "w-[min(900px,92vw)] overflow-y-auto",
+    "rounded-2xl flex flex-row flex-wrap",
+    "bg-[rgba(3,27,27,0.9)]",
+    "shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
+    "p-6 md:p-8 space-y-6 gap-4"
+  ].join(" ");
+  card.id = "card";
+  appDiv.appendChild(card);
+  theHorrorTheHorror(mode);
 }
 async function loadConfig(mode) {
   const appDiv = document.getElementById("app");
@@ -1888,96 +1672,16 @@ async function loadConfig(mode) {
     cols: "30",
     disabled: "true"
   });
-  const fullscreenBtn = Object.assign(document.createElement("button"), {
-    className: "fullscreen-btn game-text",
-    textContent: "\u26F6",
-    title: "Toggle Full Screen"
-  });
-  fullscreenBtn.addEventListener("click", toggleFullscreen);
-  rightSide.append(p2score, p2name, fullscreenBtn);
+  rightSide.append(p2score, p2name);
   scoreboard.append(leftSide, center, rightSide);
   const canvas = Object.assign(document.createElement("canvas"), {
     id: "board",
     tabIndex: 1
   });
-  const margin = 47;
-  const availableHeight = window.innerHeight - margin;
-  canvas.width = window.innerWidth;
-  canvas.height = availableHeight;
-  canvas.style.width = "100%";
-  canvas.style.height = `${availableHeight}px`;
-  canvas.style.maxWidth = "100%";
-  canvas.style.maxHeight = `${availableHeight}px`;
   canvas.style.borderRadius = "0";
   canvas.style.display = "block";
   canvas.style.touchAction = "none";
   const ctx = canvas.getContext("2d");
-  let touchStartY = 0;
-  let touchStartX = 0;
-  canvas.addEventListener(
-    "touchstart",
-    (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      touchStartY = touch.clientY;
-      touchStartX = touch.clientX;
-    },
-    { passive: false }
-  );
-  canvas.addEventListener(
-    "touchmove",
-    (e) => {
-      e.preventDefault();
-      if (!data || !data.p) return;
-      const touch = e.touches[0];
-      const deltaY = touch.clientY - touchStartY;
-      const deltaX = touch.clientX - touchStartX;
-      const canvasRect = canvas.getBoundingClientRect();
-      const touchX = touch.clientX - canvasRect.left;
-      const isLeftSide = touchX < canvas.width / 2;
-      if (isLeftSide && data.p[0]) {
-        if (deltaY < -10) {
-          data.keys[data.p[0].up] = true;
-          data.keys[data.p[0].down] = false;
-        } else if (deltaY > 10) {
-          data.keys[data.p[0].down] = true;
-          data.keys[data.p[0].up] = false;
-        }
-      } else if (!isLeftSide && data.p[1]) {
-        if (deltaY < -10) {
-          data.keys[data.p[1].up] = true;
-          data.keys[data.p[1].down] = false;
-        } else if (deltaY > 10) {
-          data.keys[data.p[1].down] = true;
-          data.keys[data.p[1].up] = false;
-        }
-      }
-    },
-    { passive: false }
-  );
-  canvas.addEventListener(
-    "touchend",
-    (e) => {
-      e.preventDefault();
-      if (data && data.p) {
-        data.p.forEach((player) => {
-          data.keys[player.up] = false;
-          data.keys[player.down] = false;
-        });
-      }
-    },
-    { passive: false }
-  );
-  if (isMobile()) {
-    setTimeout(async () => {
-      try {
-        await enterFullscreen();
-      } catch (error) {
-        console.log("Auto fullscreen failed, showing manual prompt:", error);
-        showFullscreenPrompt();
-      }
-    }, 100);
-  }
   var p = [];
   if (mode === "tournament") {
     const playersNumberInput = document.getElementById(
@@ -2064,6 +1768,17 @@ async function loadConfig(mode) {
       );
     }
   }
+  canvas.height = screen.height;
+  canvas.width = screen.width;
+  setTimeout(async () => {
+    try {
+      await enterFullscreen();
+    } catch (error) {
+      console.log("Auto fullscreen failed, showing manual prompt:", error);
+      showFullscreenPrompt();
+    }
+  }, 100);
+  console.log("PUIT");
   const loadData = {
     canvas,
     fps: 50,
@@ -2207,22 +1922,15 @@ async function loadConfig(mode) {
     setTimeout(() => countdown(3, 500), 500);
   }
 }
-var data, pendingTournamentId, isFullscreen;
+var data, pendingTournamentId;
 var init_gameData = __esm({
   "src/gameData.ts"() {
     "use strict";
     init_controls();
     init_pong();
-    init_menus();
     init_i18n();
-    init_tournamentGame();
-    init_tournamentService();
+    init_wizard();
     pendingTournamentId = null;
-    isFullscreen = false;
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
   }
 });
 
@@ -2809,6 +2517,7 @@ __export(pong_exports, {
   endGame: () => endGame,
   endRound: () => endRound,
   finito: () => finito,
+  isMobile: () => isMobile,
   pad: () => pad,
   removeBall: () => removeBall,
   startGame: () => startGame,
@@ -3007,7 +2716,7 @@ async function endGame() {
   } catch (error) {
     console.error("Failed to finish game:", error);
   }
-  if (isMobile2()) {
+  if (isMobile()) {
     showExitButton(winner);
   } else {
     if (data.isTournament && data.tournamentId) {
@@ -3030,7 +2739,7 @@ function exitGameMessage(winner) {
     window.location.origin
   );
 }
-function isMobile2() {
+function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   ) || window.innerWidth <= 768 && window.innerHeight <= 1024;
@@ -3049,19 +2758,8 @@ function showExitButton(winner) {
 	`;
   document.body.appendChild(exitOverlay);
   const exitBtn = document.getElementById("exit-game-btn");
-  if (exitBtn) {
-    exitBtn.addEventListener("click", () => {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-      exitGameMessage(winner);
-      document.body.removeChild(exitOverlay);
-    });
-  }
+  if (exitBtn)
+    exitBtn.addEventListener("click", exitFullscreen);
 }
 var pad, balls;
 var init_pong = __esm({
@@ -3073,6 +2771,7 @@ var init_pong = __esm({
     init_i18n();
     init_gameService();
     init_tournamentGame();
+    init_controls();
     pad = [];
     balls = [];
     startGame();
@@ -3085,6 +2784,7 @@ export {
   endGame,
   endRound,
   finito,
+  isMobile,
   pad,
   removeBall,
   startGame,

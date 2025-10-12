@@ -2,7 +2,6 @@ import { data, newGame, getSecondPlayerData } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
-//import { userService, UserData } from "./services/userService";
 import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
 import { handleTournamentGameCompletion } from "./tournamentGame";
@@ -37,9 +36,9 @@ export function countdown(nr: number, ms: number) {
   data.ctx.fillStyle = data.bg;
   data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
   data.ctx.fill();
-  data.ctx.font = `bold ${data.canvas.height * 0.75}px system-ui`;
-  data.ctx.fillStyle = "yellow";
-  data.ctx.strokeStyle = "red";
+  data.ctx.font = `bold ${data.canvas.height * 0.75}px jura, sans-serif`;
+  data.ctx.fillStyle = "#66fcf1";
+  data.ctx.strokeStyle = "#0b4f47";
   data.ctx.lineWidth = data.canvas.height / 60;
   data.ctx.textAlign = "center";
   data.ctx.textBaseline = "middle";
@@ -136,22 +135,21 @@ export function endRound(): void {
     pad[0].stop();
     pad.shift();
   }
+  var player2: number = 1;
 
-  if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
-    if (data.isTournament) {
-      finito();
-    } else {
-      endGame();
-    }
+  if (data.mode == "multi") player2 = 2;
+  if (data.p[0].score >= data.maxScore || data.p[player2].score >= data.maxScore) {
+    if (data.isTournament) finito();
+    else endGame();
     return;
   }
-
-  // Match continues - restart the next round
-  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) {
+  // Match continues - start the next round
+  if (data.p[0].score < data.maxScore && data.p[player2].score < data.maxScore) {
     setTimeout(startRound, 1500);
   }
 }
 
+//TODO: adapt for 2vs2 mode
 export async function finito(): Promise<void> {
   let winnerId: string;
   if (data.p[0].score > data.p[1].score) {
@@ -210,19 +208,20 @@ export async function finito(): Promise<void> {
 
 export async function endGame() {
   var winner: string;
-
-  if (data.p[0].score > data.p[1].score) {
-    winner = data.p[0].name;
-  } else {
-    winner = data.p[1].name;
-  }
-
+  var player2: number = 1;
+  if (data.mode == "multi") player2 = 2;
+  if (data.p[0].score > data.p[player2].score) winner = data.p[0].name;
+  else winner = data.p[player2].name;
   data.showingText = false;
 
   try {
     console.log("Sending game data:", data);
     console.log("player1ID: ", data.p[0].id);
     console.log("player2ID: ", data.p[1].id);
+    if (data.mode == "multi") {
+    console.log("player3ID: ", data.p[2].id);
+    console.log("player4ID: ", data.p[3].id);
+    }
     finito();
   } catch (error) {
     console.error("Failed to finish game:", error);

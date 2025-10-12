@@ -1,5 +1,187 @@
 import { t } from "./i18n";
 
+let currentGameMode: string = "single"; // Track current game mode for key conflict checks
+
+const AI_NAMES = [
+  "Roger Federror",
+  "Boolena Williams", 
+  "Boris Backend",
+  "Steffi Graph",
+  "Array Agassi",
+  "Maria Charapova",
+  "Novak Breaković",
+  "Rafael Nodal",
+  "Serena Williams",
+  "Andy Murray",
+  "Venus Williams",
+  "Pete Sampras",
+  "Steffi Graf",
+  "Bjorn Borg",
+  "Martina Navratilova",
+  "John McEnroe"
+];
+
+function getAvailableAIName(excludePlayerId?: string): string {
+  const usedNames = new Set<string>();
+  
+  const allNameInputs = document.querySelectorAll('input[id*="name_p"]') as NodeListOf<HTMLInputElement>;
+  for (const input of allNameInputs) {
+    const playerId = input.id.match(/name_p(\d+)/)?.[1];
+    if (playerId && playerId !== excludePlayerId) {
+      usedNames.add(input.value);
+    }
+  }
+  
+  for (const aiName of AI_NAMES) {
+    if (!usedNames.has(aiName)) {
+      return aiName;
+    }
+  }
+  
+  return `AI Player ${Date.now().toString().slice(-3)}`;
+}
+
+function createKeyCaptureInput(id: string, initialValue: string): HTMLInputElement {
+  const input = Object.assign(document.createElement("input"), {
+    className: "custom-input px-1 py-1 ml-1 key-capture-input",
+    type: "text",
+    size: "9",
+    id: id,
+    value: initialValue,
+    readonly: true,
+    placeholder: "Press any key..."
+  }) as HTMLInputElement;
+
+  input.addEventListener("focus", () => {
+    input.value = "Press any key...";
+    input.style.backgroundColor = "rgba(102,252,241,0.2)";
+  });
+
+  input.addEventListener("blur", () => {
+    input.style.backgroundColor = "";
+  });
+
+  input.addEventListener("keydown", (event) => {
+    event.preventDefault();
+    
+    let keyName = event.key;
+    
+    if (event.key === " ") {
+      keyName = "Space";
+    } else if (event.key === "Control") {
+      keyName = "Ctrl";
+    } else if (event.key === "Meta") {
+      keyName = "Cmd";
+    }
+    
+    if (checkKeyConflict(id, keyName)) {
+      input.style.backgroundColor = "rgba(255,0,0,0.2)";
+      setTimeout(() => {
+        input.style.backgroundColor = "";
+      }, 500);
+      return;
+    }
+    
+    input.value = keyName;
+    input.style.backgroundColor = "rgba(0,255,0,0.2)";
+    
+    setTimeout(() => {
+      input.style.backgroundColor = "";
+    }, 300);
+    
+    input.blur();
+  });
+
+  return input;
+}
+
+function checkKeyConflict(currentInputId: string, newKeyName: string): boolean {
+  const isTournament = currentGameMode === "tournament";
+  
+  if (isTournament) {
+    if (currentInputId.includes("tournament")) {
+      return false;
+    }
+    console.warn("Individual player key conflict check in tournament mode - this shouldn't happen");
+  }
+  
+  const allKeyInputs = document.querySelectorAll('input[id*="Up"], input[id*="Down"]') as NodeListOf<HTMLInputElement>;
+  
+  for (const input of allKeyInputs) {
+    if (input.id === currentInputId) continue;
+    
+    if (input.value === newKeyName) {
+      showKeyConflictWarning(input.id, newKeyName);
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+function showKeyConflictWarning(conflictingInputId: string, keyName: string): void {
+  const warning = document.createElement("div");
+  warning.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-family: 'jura', sans-serif;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  `;
+  warning.textContent = `Key "${keyName}" is already used by ${getPlayerNameFromInputId(conflictingInputId)}`;
+  
+  document.body.appendChild(warning);
+  
+  setTimeout(() => {
+    if (warning.parentNode) {
+      warning.parentNode.removeChild(warning);
+    }
+  }, 2000);
+}
+
+function showAINameWarning(aiName: string): void {
+  const warning = document.createElement("div");
+  warning.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-family: 'jura', sans-serif;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  `;
+  warning.textContent = `Name "${aiName}" is reserved for AI players`;
+  
+  document.body.appendChild(warning);
+  
+  setTimeout(() => {
+    if (warning.parentNode) {
+      warning.parentNode.removeChild(warning);
+    }
+  }, 2000);
+}
+
+function getPlayerNameFromInputId(inputId: string): string {
+  const match = inputId.match(/p(\d+)/);
+  if (match) {
+    const playerNum = match[1];
+    return `Player ${playerNum}`;
+  }
+  return "another player";
+}
+
 let savedPlayerData: Record<string, any> = {};
 
 function savePlayerData(playerId: string): void {
@@ -81,7 +263,6 @@ export function tournamentSetupMenu(): {
     className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   
-  // Create row containers for proper layout
   const row1 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
@@ -95,39 +276,118 @@ export function tournamentSetupMenu(): {
     htmlFor: "matchLength",
     textContent: `${t("matchLength")}: `,
   }) as HTMLLabelElement;
-  const matchLengthInput = Object.assign(document.createElement("input"), {
+  const matchLengthInput = Object.assign(document.createElement("select"), {
     className: "custom-input px-1 py-1 text-sm md:text-base",
-    type: "number",
     id: "matchLength",
     name: "matchLength",
-    min: "1",
-    value: "5",
-  }) as HTMLInputElement;
-  
+  }) as HTMLSelectElement;
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(length => {
+    const option = document.createElement("option");
+    option.value = length.toString();
+    option.textContent = length.toString();
+    if (length === 3) {
+      option.selected = true;
+    }
+    matchLengthInput.appendChild(option);
+  });
+
   // Number of players
   const playersNumberLabel = Object.assign(document.createElement("label"), {
     className: "game-text text-sm md:text-base",
     htmlFor: "playersNumber",
     textContent: `${t("numberOfPlayers")}: `,
   }) as HTMLLabelElement;
-  const playersNumberInput = Object.assign(document.createElement("input"), {
+
+  const playersNumberInput = Object.assign(document.createElement("select"), {
     className: "custom-input px-1 py-1 text-sm md:text-base",
-    type: "number",
     id: "playersNumber",
     name: "playersNumber",
-    min: "2",
-    value: "4",
-  }) as HTMLInputElement;
+  }) as HTMLSelectElement;
+  [4, 6, 8].forEach(num => {
+    const option = document.createElement("option");
+    option.value = num.toString();
+    option.textContent = num.toString();
+    if (num === 4) {
+      option.selected = true;
+    }
+    playersNumberInput.appendChild(option);
+  });
+  
+  const controlsTitle = Object.assign(document.createElement("h3"), {
+    className: "game-text font-bold mt-4 mb-2 text-center",
+    textContent: "Match Controls",
+  }) as HTMLHeadingElement;
+  
+  const row3 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  
+  const leftUpLabel = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentLeftUp",
+    textContent: `Left Player ${t("up")}: `,
+  }) as HTMLLabelElement;
+  
+  const leftUpInput = createKeyCaptureInput("tournamentLeftUp", "Shift");
+  
+  const row4 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  
+  const leftDownLabel = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentLeftDown",
+    textContent: `Left Player ${t("down")}: `,
+  }) as HTMLLabelElement;
+  
+  const leftDownInput = createKeyCaptureInput("tournamentLeftDown", "Control");
+  
+  const row5 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  
+  const rightUpLabel = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentRightUp",
+    textContent: `Right Player ${t("up")}: `,
+  }) as HTMLLabelElement;
+  
+  const rightUpInput = createKeyCaptureInput("tournamentRightUp", "ArrowUp");
+  
+  const row6 = Object.assign(document.createElement("div"), {
+    className: "flex justify-between items-center mb-2",
+  }) as HTMLDivElement;
+  
+  const rightDownLabel = Object.assign(document.createElement("label"), {
+    className: "game-text text-sm md:text-base",
+    htmlFor: "tournamentRightDown",
+    textContent: `Right Player ${t("down")}: `,
+  }) as HTMLLabelElement;
+  
+  const rightDownInput = createKeyCaptureInput("tournamentRightDown", "ArrowDown");
   
   // Add elements to rows
   row1.appendChild(playersNumberLabel);
   row1.appendChild(playersNumberInput);
   row2.appendChild(matchLengthLabel);
   row2.appendChild(matchLengthInput);
+  row3.appendChild(leftUpLabel);
+  row3.appendChild(leftUpInput);
+  row4.appendChild(leftDownLabel);
+  row4.appendChild(leftDownInput);
+  row5.appendChild(rightUpLabel);
+  row5.appendChild(rightUpInput);
+  row6.appendChild(rightDownLabel);
+  row6.appendChild(rightDownInput);
   
   // Add rows to settings form
   settings.appendChild(row1);
   settings.appendChild(row2);
+  settings.appendChild(controlsTitle);
+  settings.appendChild(row3);
+  settings.appendChild(row4);
+  settings.appendChild(row5);
+  settings.appendChild(row6);
   
   // Create container
   const container = Object.assign(document.createElement("div"), {
@@ -136,6 +396,10 @@ export function tournamentSetupMenu(): {
   container.appendChild(settings);
   
   return { form: container };
+}
+
+export function setGameMode(mode: string): void {
+  currentGameMode = mode;
 }
 
 export function playerSetupMenu(
@@ -169,7 +433,7 @@ export function playerSetupMenu(
   list.appendChild(idInput);
   const form = Object.assign(document.createElement("form"), {
     id: `player${p}Menu`,
-    className: `editBox`,
+    className: `editBox h-full flex flex-col`,
   }) as HTMLFormElement;
   const e1 = Object.assign(document.createElement("label"), {
     className: "game-text",
@@ -183,6 +447,15 @@ export function playerSetupMenu(
     name: `name_p${p}`,
     value: name,
   }) as HTMLInputElement;
+  
+  e2.addEventListener("blur", () => {
+    const aiCheckbox = document.getElementById(`p${p}Ai`) as HTMLInputElement;
+    if (!aiCheckbox?.checked && AI_NAMES.includes(e2.value)) {
+      showAINameWarning(e2.value);
+      e2.value = savedPlayerData[p]?.name || `Player ${p}`;
+    }
+  });
+  
   const e3 = Object.assign(document.createElement("label"), {
     className: "game-text",
     for: `p${p}Ai`,
@@ -213,7 +486,8 @@ export function playerSetupMenu(
       const idInput = document.getElementById(`p${p}Id`) as HTMLInputElement;
       
       if (nameInput) {
-        nameInput.value = `AI-${t("player")}-${p}`;
+        const aiName = getAvailableAIName(p);
+        nameInput.value = aiName;
       }
       
       if (idInput) {
@@ -247,29 +521,23 @@ export function playerSetupMenu(
   });
   //keys
   const e5 = Object.assign(document.createElement("label"), {
-    className: "game-text",
+    className: currentGameMode === "tournament" ? "game-text hidden" : "game-text",
     for: `p${p}Up`,
     textContent: `${t("up")}: `,
   }) as HTMLLabelElement;
-  const e6 = Object.assign(document.createElement("input"), {
-    className: "custom-input px-1 py-1 ml-1",
-    type: "text",
-    size: "9",
-    id: `p${p}Up`,
-    value: up,
-  }) as HTMLInputElement;
+  const e6 = createKeyCaptureInput(`p${p}Up`, up);
+  if (currentGameMode === "tournament") {
+    e6.classList.add("hidden");
+  }
   const e7 = Object.assign(document.createElement("label"), {
-    className: "game-text",
+    className: currentGameMode === "tournament" ? "game-text hidden" : "game-text",
     for: `p${p}Down`,
     textContent: `${t("down")}: `,
   }) as HTMLLabelElement;
-  const e8 = Object.assign(document.createElement("input"), {
-    className: "custom-input px-1 py-1 ml-1",
-    type: "text",
-    size: "9",
-    id: `p${p}Down`,
-    value: down,
-  }) as HTMLInputElement;
+  const e8 = createKeyCaptureInput(`p${p}Down`, down);
+  if (currentGameMode === "tournament") {
+    e8.classList.add("hidden");
+  }
   //colors
   const e9 = Object.assign(document.createElement("input"), {
     className: "game-text",
@@ -313,7 +581,7 @@ export function playerSetupMenu(
     className: "flex w-full justify-between items-center mb-2",
   }) as HTMLDivElement;
   const keysRow = Object.assign(document.createElement("div"), {
-    className: "flex w-full justify-between items-center mb-2",
+    className: currentGameMode === "tournament" ? "flex w-full justify-between items-center mb-2 hidden" : "flex w-full justify-between items-center mb-2",
   }) as HTMLDivElement;
   const innerColRow = Object.assign(document.createElement("div"), {
     className: "flex w-full justify-between items-center mb-2",
@@ -365,11 +633,11 @@ export function gameSetupMenu(mode: string): {
 } {
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
-    className: "editBox flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4 flex-1",
   }) as HTMLFormElement;
   const bgColors = Object.assign(document.createElement("form"), {
     id: "bgColors",
-    className: "editBox flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col h-full p-2 md:p-4 flex-1",
   }) as HTMLFormElement;
   //paddle speed
   const e3 = Object.assign(document.createElement("label"), {
@@ -504,7 +772,7 @@ export function gameSetupMenu(mode: string): {
     type: "color",
     id: "innerBg",
     name: "innerBg",
-    value: "#008000",
+    value: "#031b1b",
   }) as HTMLInputElement;
   const e19 = Object.assign(document.createElement("label"), {
     className: "game-text",
@@ -516,7 +784,7 @@ export function gameSetupMenu(mode: string): {
     type: "color",
     id: "outerBg",
     name: "outerBg",
-    value: "#000000",
+    value: "#000808",
   }) as HTMLInputElement;
   const e21 = Object.assign(document.createElement("label"), {
     className: "game-text",
@@ -567,9 +835,13 @@ export function gameSetupMenu(mode: string): {
   row2.appendChild(e4);
   row3.appendChild(e9);
   row3.appendChild(e7);
-  row4.appendChild(e11);
-  row4.appendChild(e10);
-  if (mode === "multi") {
+  
+  if (mode !== "tournament") {
+    row4.appendChild(e11);
+    row4.appendChild(e10);
+  }
+  
+  if (mode === "single" || mode === "multi") {
     row5.appendChild(e13);
     row5.appendChild(e12);
   }
@@ -586,8 +858,12 @@ export function gameSetupMenu(mode: string): {
   settings.appendChild(row1);
   settings.appendChild(row2);
   settings.appendChild(row3);
-  settings.appendChild(row4);
-  if (mode === "multi") {
+  
+  if (mode !== "tournament") {
+    settings.appendChild(row4);
+  }
+  
+  if (mode === "single" || mode === "multi") {
     settings.appendChild(row5);
   }
 

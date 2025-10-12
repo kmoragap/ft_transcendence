@@ -55,6 +55,7 @@ export type gameData = {
   mode: string;
   status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 
+
   //tournament fields
   isTournament: boolean;
   tournamentId?: string;
@@ -101,7 +102,7 @@ function loadPlayer(
 
   var p: playerData = {
     name: name,
-    id: finalIsAi ? `AI-Player-${playerIndex || 1}` : finalId,
+    id: finalIsAi ? `AI-${name.replace(/\s+/g, '-')}` : finalId,
     score: 0,
     isAi: finalIsAi,
     up: up,
@@ -110,7 +111,6 @@ function loadPlayer(
     outerCol: outercol,
     cornerCol: cornerCol,
   };
-//  if (finalIsAi) p.name = "Roger Federror";
   return p;
 }
 
@@ -126,9 +126,18 @@ function loadInB(id: string): boolean {
 
 export async function newGame(mode: string): Promise<void> {
   await new Promise<void>((resolve) => {
-    if (document.readyState === "complete") resolve();
-    else document.addEventListener("DOMContentLoaded", () => resolve());
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      setTimeout(resolve, 0);
+    } else {
+      document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+    }
   });
+  
+  const existingAppDiv = document.getElementById("app");
+  if (existingAppDiv) {
+    existingAppDiv.remove();
+  }
+  
   const appDiv = Object.assign(document.createElement("div"), {
     id: "app",
   }) as HTMLDivElement;
@@ -159,9 +168,7 @@ export async function newGame(mode: string): Promise<void> {
   card.id = "card";
   appDiv.appendChild(card);
 
-
-
-	wizard(mode);
+  wizard(mode);
 }
 
 export async function loadConfig(mode: string): Promise<void> {
@@ -238,7 +245,6 @@ export async function loadConfig(mode: string): Promise<void> {
   var p: playerData[] = [];
 
   if (mode === "tournament") {
-    // For tournaments, dynamically load all players based on the number set
     const playersNumberInput = document.getElementById(
       "playersNumber",
     ) as HTMLInputElement;
@@ -246,22 +252,29 @@ export async function loadConfig(mode: string): Promise<void> {
       ? parseInt(playersNumberInput.value) || 4
       : 4;
 
+    const leftUpKey = loadIn("tournamentLeftUp") || "Shift";
+    const leftDownKey = loadIn("tournamentLeftDown") || "Control";
+    const rightUpKey = loadIn("tournamentRightUp") || "ArrowUp";
+    const rightDownKey = loadIn("tournamentRightDown") || "ArrowDown";
+
     for (let i = 1; i <= numPlayers; i++) {
       let playerId = loadIn(`p${i}Id`);
 
-      // Special handling for first player - get user ID from URL if not in form
       if (i === 1 && !playerId) {
         const urlParams = new URLSearchParams(window.location.search);
         playerId = urlParams.get("userId") || "";
       }
+
+      const upKey = (i % 2 === 1) ? leftUpKey : rightUpKey;
+      const downKey = (i % 2 === 1) ? leftDownKey : rightDownKey;
 
       p.push(
         loadPlayer(
           loadIn(`name_p${i}`),
           playerId,
           loadInB(`p${i}Ai`),
-          loadIn(`p${i}Up`),
-          loadIn(`p${i}Down`),
+          upKey,
+          downKey,
           loadIn(`p${i}InnerCol`),
           loadIn(`p${i}OuterCol`),
           loadIn(`p${i}CornerCol`),
@@ -367,8 +380,8 @@ export async function loadConfig(mode: string): Promise<void> {
 		ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
 		ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
 		ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
-		outerBg: loadIn("outerBg") || "#000000",
-		innerBg: loadIn("innerBg") || "#008000",
+		outerBg: loadIn("outerBg") || "#000808",
+		innerBg: loadIn("innerBg") || "#031b1b",
 
 		serve: Math.floor(Math.random() * 2) ? -1 : 1,
 		keys: {},

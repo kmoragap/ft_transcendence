@@ -2,7 +2,7 @@ SSL_SCRIPT := tools/ssl_generator.sh
 DC := docker-compose
 SSL := backend/nginx
 
-.PHONY: all up down rebuild clean show-url
+.PHONY: all up down rebuild clean show-url rebuild_game
 
 
 all: up show-url
@@ -39,3 +39,9 @@ clean: down
 	@echo "🧹 Removing Docker volumes..."
 	@$(DC) down -v > /dev/null 2>&1
 	@echo "✅ Cleanup complete."
+
+rebuild_game: down
+	@docker image rm ft_transcendence-pong:latest
+	@docker volume rm ft_transcendence_pong-static
+	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
+

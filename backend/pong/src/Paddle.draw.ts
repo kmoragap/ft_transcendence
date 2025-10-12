@@ -78,20 +78,16 @@ export function midline(): void {
 	data.ctx.closePath();
 }
 
-export function scoreText(p: Paddle, wins: boolean): void {
+export function scoreText(p: Paddle, playerName: string, wins: boolean): void {
 	data.showingText = true;
-	data.ctx.font = `bold ${data.canvas.height/6}px system-ui`;
-	var fillGrad = data.ctx.createLinearGradient(0, data.canvas.height * 2 / 5, 0, data.canvas.height * 3 / 5);
-	fillGrad.addColorStop(0, p.getPl().outerCol);
-	fillGrad.addColorStop(0.5, p.getPl().innerCol);
-	fillGrad.addColorStop(1, p.getPl().outerCol);
-	data.ctx.fillStyle = fillGrad;
-	data.ctx.strokeStyle = p.getPl().cornerCol;
+	data.ctx.font = `bold ${data.canvas.height/6}px jura, sans-serif`;
+	data.ctx.fillStyle = "#66fcf1";
+	data.ctx.strokeStyle = "#0b4f47";
 	data.ctx.lineWidth = data.canvas.height/60;
 	data.ctx.textAlign = "center";
 	data.ctx.textBaseline = "bottom";
-	data.ctx.strokeText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
-	data.ctx.fillText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.strokeText(playerName, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.fillText(playerName, data.canvas.width / 2, data.canvas.height / 2);
 	data.ctx.textBaseline = "top";
 	var line2: string;
 	if (wins) line2 = t('wins') + "!";
@@ -105,7 +101,7 @@ export function touchControlArrows(): void {
 	const arrowSize = data.canvas.height / 6;
 	data.ctx.globalAlpha = 0.5;
 	data.ctx.fillStyle = "rgb(50 50 50 / 50%)";
-	data.ctx.font = `bold ${data.canvas.height / 4}px system-ui`;
+	data.ctx.font = `bold ${data.canvas.height / 4}px jura, sans-serif`;
 	for (let i: number = 0; i < pad.length; i++) {
 		if (i == 0 && !pad[i].isAi()) {
 			data.ctx.textBaseline = "top";
@@ -147,3 +143,4 @@ export function touchControlArrows(): void {
 		}
 	}
 }
+

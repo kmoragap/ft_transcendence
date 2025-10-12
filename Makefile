@@ -3,7 +3,7 @@ PROJECT := backend/nginx
 COMPOSE_ALL := docker-compose -f docker-compose.yml -f devops/elk/compose.elk.yml
 SSL := backend/nginx
 
-.PHONY: all up down rebuild clean show-url rebuild_game ssl
+.PHONY: all up down rebuild clean show-url rebuild_game
 
 
 all: ssl up show-url
@@ -46,3 +46,4 @@ rebuild_game: down
 	@docker image rm ft_transcendence-pong:latest
 	@docker volume rm ft_transcendence_pong-static
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
+

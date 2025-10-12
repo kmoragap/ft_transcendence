@@ -1,6 +1,7 @@
 import { data } from "./gameData";
 import { tournamentService } from "./services/tournamentService";
 import { t } from "./i18n";
+import { enterFullscreen, exitFullscreen } from "./controls";
 
 export interface TournamentBracket {
   id: string;
@@ -199,6 +200,8 @@ export class TournamentManager {
     data.go = false;
 
     // Start the new match with countdown
+
+    enterFullscreen();
     const { countdown } = await import("./pong");
     setTimeout(() => countdown(3, 500), 500);
 
@@ -207,7 +210,7 @@ export class TournamentManager {
 
   async completeMatch(winnerId: string, gameId: string): Promise<boolean> {
     if (!this.tournament) return false;
-
+    exitFullscreen();
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return false;
 

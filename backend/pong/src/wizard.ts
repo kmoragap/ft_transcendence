@@ -1,6 +1,6 @@
 import { loadConfig } from "./gameData";
 import { t } from "./i18n";
-import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu } from "./menus";
+import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
 
 let currentStep = 1;
@@ -12,6 +12,7 @@ backButton.classList.add("hidden");
 finishButton.classList.add("hidden");
 
 export function wizard(mode: string) {
+	setGameMode(mode);
 	const card = document.getElementById("card") as HTMLDivElement;
 	const player1Container = createPlayerContainer(1);
 	const player2Container = createPlayerContainer(2);
@@ -166,7 +167,7 @@ function createPlayerBoxes(numPlayers: number) {
 		}
 		playerSetupMenu(playerList, i.toString(), playerName, i > 1,
 			playerKeys.up, playerKeys.down,
-			"#ffffff", "#808080", "#ff0000");
+			"#ffffff", "#808080", "#ff0000",);
 		playerContainer.appendChild(playerList);
 		container.appendChild(playerContainer);
 	}
@@ -208,7 +209,7 @@ function btn(ts: string, alt: string, id: string): HTMLButtonElement {
 
 function createPlayerContainer(p: number): HTMLDivElement {
 	return Object.assign(document.createElement("div"), {
-		className: "flex-1 min-w-[300px]",
+		className: "flex-1 min-w-[300px] flex flex-col",
 		id: `player${p}Container`,
 	}) as HTMLDivElement;
 }

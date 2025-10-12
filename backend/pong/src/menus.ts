@@ -73,10 +73,6 @@ window.addEventListener("message", event => {
   }
 });
 
-function br(): HTMLBRElement {
-  return Object.assign(document.createElement("br")) as HTMLBRElement;
-}
-
 export function tournamentSetupMenu(): {
   form: HTMLDivElement;
 } {

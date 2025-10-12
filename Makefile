@@ -10,7 +10,7 @@ all: ssl up show-url
 show-url:
 	@echo "Access the website at:"
 	@echo "https://$$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $$2}')"
-	@echo "or https://localhost"
+	@echo "or https://localhost:8080"
 ssl:
 	@echo "Generating SSL certificates..."
 	@bash $(SSL_SCRIPT)

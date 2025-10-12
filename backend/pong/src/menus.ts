@@ -81,7 +81,6 @@ export function tournamentSetupMenu(): {
     className: "editBox flex flex-col h-full p-2 md:p-4",
   }) as HTMLFormElement;
   
-  // Create row containers for proper layout
   const row1 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;

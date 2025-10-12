@@ -510,6 +510,7 @@
   .editBox {
     display: flex;
     flex-direction: column;
+    min-width: 300px;
     gap: 10px;
     padding: 8px;
     background-color: rgba(102,252,241,0.1);

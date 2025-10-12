@@ -340,7 +340,6 @@ export async function loadConfig(mode: string): Promise<void> {
 			showFullscreenPrompt();
 		}
 	}, 100);
-	console.log("PUIT");
 	const loadData: gameData = {
 		canvas: canvas,
 		fps: 50,

@@ -238,7 +238,6 @@ export async function loadConfig(mode: string): Promise<void> {
   var p: playerData[] = [];
 
   if (mode === "tournament") {
-    // For tournaments, dynamically load all players based on the number set
     const playersNumberInput = document.getElementById(
       "playersNumber",
     ) as HTMLInputElement;
@@ -249,7 +248,6 @@ export async function loadConfig(mode: string): Promise<void> {
     for (let i = 1; i <= numPlayers; i++) {
       let playerId = loadIn(`p${i}Id`);
 
-      // Special handling for first player - get user ID from URL if not in form
       if (i === 1 && !playerId) {
         const urlParams = new URLSearchParams(window.location.search);
         playerId = urlParams.get("userId") || "";

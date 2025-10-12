@@ -11,7 +11,7 @@ import { renderOAuthCallback } from './views/oauth.ts';
 import { store } from './store.ts';
 import { shouldRedirectFromAuth, shouldRedirectFromProtected } from './utils/auth.ts';
 
-const protectedRoutes = new Set<string>(['/myprofile']);
+const protectedRoutes = new Set<string>(['/myprofile', '/dashboard', '/game']);
 const authRoutes = new Set<string>(['/login', '/register']);
 
 const routes: Record<string, () => HTMLElement> = {
@@ -42,6 +42,7 @@ const titles: Record<string, string> = {
 
 ensureA11yScaffold();
 
+// Navigate to a given path, handling auth redirects and rendering
 export function navigate(path: string) {
   if (protectedRoutes.has(path) && shouldRedirectFromProtected()) {
     if (location.hash !== '#/home') {

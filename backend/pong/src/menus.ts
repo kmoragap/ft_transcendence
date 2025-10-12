@@ -95,29 +95,42 @@ export function tournamentSetupMenu(): {
     htmlFor: "matchLength",
     textContent: `${t("matchLength")}: `,
   }) as HTMLLabelElement;
-  const matchLengthInput = Object.assign(document.createElement("input"), {
+  const matchLengthInput = Object.assign(document.createElement("select"), {
     className: "custom-input px-1 py-1 text-sm md:text-base",
-    type: "number",
     id: "matchLength",
     name: "matchLength",
-    min: "1",
-    value: "5",
-  }) as HTMLInputElement;
-  
+  }) as HTMLSelectElement;
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(length => {
+    const option = document.createElement("option");
+    option.value = length.toString();
+    option.textContent = length.toString();
+    if (length === 3) {
+      option.selected = true;
+    }
+    matchLengthInput.appendChild(option);
+  });
+
   // Number of players
   const playersNumberLabel = Object.assign(document.createElement("label"), {
     className: "game-text text-sm md:text-base",
     htmlFor: "playersNumber",
     textContent: `${t("numberOfPlayers")}: `,
   }) as HTMLLabelElement;
-  const playersNumberInput = Object.assign(document.createElement("input"), {
+
+  const playersNumberInput = Object.assign(document.createElement("select"), {
     className: "custom-input px-1 py-1 text-sm md:text-base",
-    type: "number",
     id: "playersNumber",
     name: "playersNumber",
-    min: "2",
-    value: "4",
-  }) as HTMLInputElement;
+  }) as HTMLSelectElement;
+  [4, 6, 8].forEach(num => {
+    const option = document.createElement("option");
+    option.value = num.toString();
+    option.textContent = num.toString();
+    if (num === 4) {
+      option.selected = true;
+    }
+    playersNumberInput.appendChild(option);
+  });
   
   // Add elements to rows
   row1.appendChild(playersNumberLabel);

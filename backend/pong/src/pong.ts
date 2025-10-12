@@ -6,6 +6,7 @@ import { midline, touchControlArrows } from "./Paddle.draw";
 import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
 import { handleTournamentGameCompletion } from "./tournamentGame";
+import { exitFullscreen } from "./controls";
 
 export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
@@ -253,7 +254,7 @@ function exitGameMessage(winner: string): void {
 }
 
 // Mobile exit functionality
-function isMobile(): boolean {
+export function isMobile(): boolean {
   return (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
@@ -280,20 +281,8 @@ function showExitButton(winner: string): void {
 
   // Add exit functionality
   const exitBtn = document.getElementById("exit-game-btn");
-  if (exitBtn) {
-    exitBtn.addEventListener("click", () => {
-      // Exit fullscreen first
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
-      } else if ((document as any).msExitFullscreen) {
-        (document as any).msExitFullscreen();
-      }
-      exitGameMessage(winner);
-      document.body.removeChild(exitOverlay);
-    });
-  }
+  if (exitBtn) 
+    exitBtn.addEventListener("click", exitFullscreen);
 }
 
 function collisionTest(): void {

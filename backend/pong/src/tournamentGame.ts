@@ -1,5 +1,4 @@
 import { data } from "./gameData";
-import { gameService } from "./services/gameService";
 import { tournamentService } from "./services/tournamentService";
 import { t } from "./i18n";
 

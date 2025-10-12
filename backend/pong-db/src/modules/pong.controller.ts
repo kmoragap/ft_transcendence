@@ -265,7 +265,10 @@ export const getUserGames = async (
 ) => {
   try {
     const { userId } = request.query;
-    const limit = request.query.limit ? parseInt(request.query.limit) : 100;
+    let limit = request.query.limit ? parseInt(request.query.limit) : 100;
+    if (isNaN(limit) || limit <= 0) {
+      limit = 100;
+    }
 
     if (!userId) {
       return reply.status(400).send({ error: "userId is required" });

@@ -96,20 +96,21 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
 }
 
 function checkKeyConflict(currentInputId: string, newKeyName: string): boolean {
-  const allKeyInputs = document.querySelectorAll('input[id*="Up"], input[id*="Down"]') as NodeListOf<HTMLInputElement>;
-  
   const isTournament = currentGameMode === "tournament";
+  
+  if (isTournament) {
+    if (currentInputId.includes("tournament")) {
+      return false;
+    }
+    console.warn("Individual player key conflict check in tournament mode - this shouldn't happen");
+  }
+  
+  const allKeyInputs = document.querySelectorAll('input[id*="Up"], input[id*="Down"]') as NodeListOf<HTMLInputElement>;
   
   for (const input of allKeyInputs) {
     if (input.id === currentInputId) continue;
     
     if (input.value === newKeyName) {
-      if (isTournament) {
-        const currentPlayerNum = parseInt(currentInputId.match(/p(\d+)/)?.[1] || "0");
-        const conflictPlayerNum = parseInt(input.id.match(/p(\d+)/)?.[1] || "0");
-        continue;
-      }
-      
       showKeyConflictWarning(input.id, newKeyName);
       return true;
     }

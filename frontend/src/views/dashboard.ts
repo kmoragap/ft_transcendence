@@ -1,4 +1,5 @@
 import { t } from "../i18n.js";
+import { store } from "../store.js";
 const API_BASE = "/api/pong";
 
 type GameRow = {
@@ -87,8 +88,10 @@ export function renderDashboard(): HTMLElement {
 
   const tabLast = makeTab(t("last_5_games"), "last_5_games");
   const tabTop = makeTab(t("top_5_players"), "top_5_players");
+  const tabMy = makeTab(t("my_games"), "my_games");
   tabs.appendChild(tabLast);
   tabs.appendChild(tabTop);
+  tabs.appendChild(tabMy);
 
   header.appendChild(tabs);
 
@@ -190,6 +193,7 @@ export function renderDashboard(): HTMLElement {
       renderGames(data);
       tabLast.classList.add("bg-[rgba(102,252,241,0.12)]");
       tabTop.classList.remove("bg-[rgba(102,252,241,0.12)]");
+      tabMy.classList.remove("bg-[rgba(102,252,241,0.12)]");
     } catch (e) {
       table.innerHTML = `<div class="p-4 text-red-300" data-i18n="failed_to_load_games">Failed to load games</div>`;
       console.error(e);
@@ -204,20 +208,45 @@ export function renderDashboard(): HTMLElement {
       renderLeaders(data);
       tabTop.classList.add("bg-[rgba(102,252,241,0.12)]");
       tabLast.classList.remove("bg-[rgba(102,252,241,0.12)]");
+      tabMy.classList.remove("bg-[rgba(102,252,241,0.12)]");
     } catch (e) {
       table.innerHTML = `<div class="p-4 text-red-300">Failed to load leaderboard</div>`;
       console.error(e);
     }
   }
 
+  async function loadMyGames() {
+    try {
+      const currentUser = store.getState().currentUser;
+      if (!currentUser) {
+        table.innerHTML = `<div class="p-4 text-[rgba(255,255,255,0.75)]" data-i18n="please_login_to_see_games">Please login to see your games</div>`;
+        return;
+      }
+
+      const data = await fetchJSON<GameRow[]>(
+        `${API_BASE}/user-games?userId=${currentUser.id}`
+      );
+      renderGames(data);
+      tabMy.classList.add("bg-[rgba(102,252,241,0.12)]");
+      tabLast.classList.remove("bg-[rgba(102,252,241,0.12)]");
+      tabTop.classList.remove("bg-[rgba(102,252,241,0.12)]");
+    } catch (e) {
+      table.innerHTML = `<div class="p-4 text-red-300">Failed to load your games</div>`;
+      console.error(e);
+    }
+  }
+
   tabLast.addEventListener("click", loadLast5);
   tabTop.addEventListener("click", loadTop5);
+  tabMy.addEventListener("click", loadMyGames);
 
   window.addEventListener("languageChanged", () => {
     if (tabLast.classList.contains("bg-[rgba(102,252,241,0.12)]")) {
       loadLast5();
     } else if (tabTop.classList.contains("bg-[rgba(102,252,241,0.12)]")) {
       loadTop5();
+    } else if (tabMy.classList.contains("bg-[rgba(102,252,241,0.12)]")) {
+      loadMyGames();
     }
   });
 

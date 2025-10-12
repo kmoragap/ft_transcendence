@@ -257,3 +257,48 @@ export const getLeaderboard = async (
     return reply.status(500).send({ error: "Failed to fetch leaderboard" });
   }
 };
+
+// Get games for a specific user
+export const getUserGames = async (
+  request: FastifyRequest<{ Querystring: { userId: string; limit?: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { userId } = request.query;
+    const limit = request.query.limit ? parseInt(request.query.limit) : 100;
+
+    if (!userId) {
+      return reply.status(400).send({ error: "userId is required" });
+    }
+
+    const games = await prisma.game.findMany({
+      where: {
+        status: "FINISHED",
+        OR: [
+          { player1Id: userId },
+          { player2Id: userId }
+        ]
+      },
+      orderBy: { finishedAt: "desc" },
+      take: Math.min(limit, 100),
+    });
+
+    // Transform database fields to dashboard format
+    const transformedGames = games.map(game => ({
+      id: game.id,
+      player1Name: game.player1Name,
+      player2Name: game.player2Name,
+      score1: game.score1,
+      score2: game.score2,
+      maxScore: game.maxScore,
+      winnerId: game.winnerId,
+      isTournament: game.isTournament,
+      createdAt: game.finishedAt.toISOString(),
+    }));
+
+    return reply.send(transformedGames);
+  } catch (error) {
+    console.error("Error fetching user games:", error);
+    return reply.status(500).send({ error: "Failed to fetch user games" });
+  }
+};

@@ -114,15 +114,21 @@ export default class Ball {
 			if (balls.length == 1) {
 				data.go = false;
 				if (this._x <= this._size) {
-					data.p[1].score++;
-					data.scoreTB2.value = String(data.p[1].score);
-					if (pad.length) setTimeout(() => scoreText(pad[1], data.p[1].score == data.maxScore), 100);
+					var pl: number = 1;
+					if (data.mode == "multi") pl = 2;
+					data.p[pl].score++;
+					data.scoreTB2.value = String(data.p[pl].score);
+					if (data.mode == "multi") {
+						if (pad.length) setTimeout(() => scoreText(pad[pl], "Team 2", data.p[pl].score == data.maxScore), 100);
+					} else if (pad.length) setTimeout(() => scoreText(pad[pl], data.nameTB2.value, data.p[pl].score == data.maxScore), 100);
 					data.serve = -1;
 				}
 				if (this._x >= data.canvas.width - this._size) {
 					data.p[0].score++;
 					data.scoreTB1.value = String(data.p[0].score);
-					if (pad.length) setTimeout(() => scoreText(pad[0], data.p[0].score == data.maxScore), 100);
+					if (data.mode == "multi") {
+						if (pad.length) setTimeout(() => scoreText(pad[0], "Team 1", data.p[0].score == data.maxScore), 100);
+					 } else if (pad.length) setTimeout(() => scoreText(pad[0], data.nameTB1.value, data.p[0].score == data.maxScore), 100);
 					data.serve = 1;
 				}
 			}

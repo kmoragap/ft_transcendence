@@ -78,7 +78,7 @@ export function midline(): void {
 	data.ctx.closePath();
 }
 
-export function scoreText(p: Paddle, wins: boolean): void {
+export function scoreText(p: Paddle, playerName: string, wins: boolean): void {
 	data.showingText = true;
 	data.ctx.font = `bold ${data.canvas.height/6}px system-ui`;
 	var fillGrad = data.ctx.createLinearGradient(0, data.canvas.height * 2 / 5, 0, data.canvas.height * 3 / 5);
@@ -90,8 +90,8 @@ export function scoreText(p: Paddle, wins: boolean): void {
 	data.ctx.lineWidth = data.canvas.height/60;
 	data.ctx.textAlign = "center";
 	data.ctx.textBaseline = "bottom";
-	data.ctx.strokeText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
-	data.ctx.fillText(p.getPlr().name, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.strokeText(playerName, data.canvas.width / 2, data.canvas.height / 2);
+	data.ctx.fillText(playerName, data.canvas.width / 2, data.canvas.height / 2);
 	data.ctx.textBaseline = "top";
 	var line2: string;
 	if (wins) line2 = t('wins') + "!";
@@ -147,3 +147,4 @@ export function touchControlArrows(): void {
 		}
 	}
 }
+

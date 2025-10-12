@@ -209,9 +209,9 @@ export async function finito(): Promise<void> {
 export async function endGame() {
   var winner: string;
   var player2: number = 1;
-if (data.mode == "multi") player2 = 2;
-    if (data.p[0].score > data.p[player2].score) winner = data.p[0].name;
-      else winner = data.p[player2].name;
+  if (data.mode == "multi") player2 = 2;
+  if (data.p[0].score > data.p[player2].score) winner = data.p[0].name;
+  else winner = data.p[player2].name;
   data.showingText = false;
 
   try {

@@ -199,7 +199,7 @@ export function enterFullscreen(): Promise<void> {
 				console.log("Orientation lock failed:", err);
 			});
 		}
-		console.log("Fullscreen entered successfulllllly");
+		console.log("Fullscreen entered successfully");
 		resolve();
 	});
 }

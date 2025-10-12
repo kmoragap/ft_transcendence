@@ -128,7 +128,7 @@ export default class Ball {
 					data.scoreTB1.value = String(data.p[0].score);
 					if (data.mode == "multi") {
 						if (pad.length) setTimeout(() => scoreText(pad[0], "Team 1", data.p[0].score == data.maxScore), 100);
-					 } else if (pad.length) setTimeout(() => scoreText(pad[0], data.nameTB1.value, data.p[0].score == data.maxScore), 100);
+					} else if (pad.length) setTimeout(() => scoreText(pad[0], data.nameTB1.value, data.p[0].score == data.maxScore), 100);
 					data.serve = 1;
 				}
 			}

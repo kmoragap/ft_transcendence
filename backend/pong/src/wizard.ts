@@ -167,7 +167,7 @@ function createPlayerBoxes(numPlayers: number) {
 		}
 		playerSetupMenu(playerList, i.toString(), playerName, i > 1,
 			playerKeys.up, playerKeys.down,
-			"#ffffff", "#808080", "#ff0000",);
+			"#ffffff", "#808080", "#ff0000");
 		playerContainer.appendChild(playerList);
 		container.appendChild(playerContainer);
 	}

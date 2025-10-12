@@ -55,4 +55,5 @@ coverage/
 **/.env
 backend/users/uploads/avatars/
 frontend/public/assets/css/output.css
+frontend/dist/assets/css/output.cssfrontend/public/assets/css/output.css
 frontend/dist/assets/css/output.css

@@ -10,6 +10,7 @@ services:
       - ./backend/users/uploads:/app/uploads:ro
       - pong-static:/app/pong-static:ro
     depends_on:
+      - logstash
       - frontend
       - auth
       - users
@@ -17,6 +18,11 @@ services:
       - pong-db
     networks:
       - app-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "nginx"
   auth:
     build: ./backend/auth
     volumes:
@@ -28,15 +34,28 @@ services:
       - NODE_ENV=development
     depends_on:
       - users
+      - logstash
     networks:
       - app-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "auth"
 
   pong-db:
     build: ./backend/pong-db
     #ports:
     # - "3003:3000"
+    depends_on:
+      - logstash
     networks:
       - app-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "pong-db"
 
   pong:
     build: ./backend/pong
@@ -48,8 +67,14 @@ services:
       - auth
       - users
       - pong-db
+      - logstash
     networks:
       - app-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "pong"
 
   users:
     build: ./backend/users
@@ -58,11 +83,18 @@ services:
       - ./backend/users/uploads:/app/uploads
     #ports:
     #  - "3004:3000"
+    depends_on:
+      - logstash
     environment:
       - NODE_ENV=development
       - USERS_URL=http://users:3000
     networks:
       - app-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "users"
   frontend:
     build:
       context: ./frontend
@@ -75,13 +107,23 @@ services:
       - /app/node_modules
     command: bash -lc "npm run dev"
     depends_on:
+      - logstash
       - auth
     networks:
       - app-network
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "frontend"
 
 networks:
   app-network:
     driver: bridge
 
 volumes:
+  es_data:
+    name: ft_es_data
+  es_certs:
+    name: ft_es_certs
   pong-static:

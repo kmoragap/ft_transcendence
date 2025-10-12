@@ -219,7 +219,7 @@ export function renderDashboard(): HTMLElement {
     try {
       const currentUser = store.getState().currentUser;
       if (!currentUser) {
-        table.innerHTML = `<div class="p-4 text-[rgba(255,255,255,0.75)]" data-i18n="please_login_to_see_games">Please login to see your games</div>`;
+        table.innerHTML = `<div class="p-4 text-[rgba(255,255,255,0.75)]">${t("please_login_to_see_games")}</div>`;
         return;
       }
 

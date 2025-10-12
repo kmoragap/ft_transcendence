@@ -214,6 +214,15 @@ function show2FAForm(section: HTMLElement, email: string) {
 
       <button
         type="button"
+        id="resend-code"
+        class="btn py-2 text-lg font-bold !w-full"
+        data-i18n="resend_code"
+      >
+        Resend Code
+      </button>
+
+      <button
+        type="button"
         id="back-to-login"
         class="btn py-2 text-lg font-bold !w-full"
         data-i18n="back_to_login"
@@ -225,9 +234,40 @@ function show2FAForm(section: HTMLElement, email: string) {
 
   const twoFAForm = section.querySelector<HTMLFormElement>("#twofa-form")!;
   const codeInput = section.querySelector<HTMLInputElement>("#twofa-code")!;
+  const resendButton = section.querySelector<HTMLButtonElement>("#resend-code")!;
   const backButton = section.querySelector<HTMLButtonElement>("#back-to-login")!;
 
   codeInput.focus();
+
+  resendButton.addEventListener("click", async () => {
+    resendButton.disabled = true;
+    resendButton.textContent = t("sending");
+
+    try {
+      const res = await fetch("/api/auth/resend-2fa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        let msg = res.statusText;
+        try {
+          const err = await res.json();
+          msg = err.message || err.error || msg;
+        } catch {}
+        alertError(`Failed to resend code: ${msg}`);
+      } else {
+        alertSuccess(t("A new verification code has been sent to your email"));
+      }
+    } catch (err) {
+      console.error(err);
+      alertError(t("Failed to resend code. Please try again."));
+    } finally {
+      resendButton.disabled = false;
+      resendButton.textContent = t("resend_code");
+    }
+  });
 
   backButton.addEventListener("click", () => {
     window.location.reload();

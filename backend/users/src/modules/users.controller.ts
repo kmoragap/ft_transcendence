@@ -177,7 +177,7 @@ export async function getUserByEmailHandler(
       firstname: user.firstname,
       email: user.email,
       avatarUrl: user.avatarUrl,
-      password: user.password,
+      //password: user.password,
       is2faEnabled: user.is2faEnabled,
       isOAuthUser: user.isOAuthUser,
     };
@@ -207,7 +207,7 @@ export async function getUserByUsernameHandler(
       firstname: user.firstname,
       email: user.email,
       avatarUrl: user.avatarUrl,
-      password: user.password,
+      //password: user.password,
       is2faEnabled: user.is2faEnabled,
       isOAuthUser: user.isOAuthUser,
     };

@@ -1,4 +1,4 @@
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyRequest, FastifyReply, RouteGenericInterface } from "fastify";
 import prisma from "../utils/prisma";
 import {
   notifyGameResult,
@@ -8,6 +8,12 @@ import {
   notifyUser,
   calculateElo,
 } from "./pong.service";
+
+interface CreateGameRoute extends RouteGenericInterface {
+  Body: {
+    data: gameInfo;
+  };
+}
 
 export interface gameInfo {
   status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
@@ -58,7 +64,7 @@ export const updateTournamentStatus = async (
 };
 
 export const createGame = async (
-  request: FastifyRequest<{ Body: { data: gameInfo } }>,
+  request: FastifyRequest<CreateGameRoute>,
   reply: FastifyReply
 ) => {
   try {

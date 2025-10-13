@@ -45,8 +45,8 @@ services:
 
   pong-db:
     build: ./backend/pong-db
-    #ports:
-    # - "3003:3000"
+    environment:
+      - API_KEY=hola
     depends_on:
       - logstash
     networks:
@@ -61,6 +61,8 @@ services:
     build: ./backend/pong
     volumes:
       - pong-static:/app/src:ro #share the built files with the container
+    environment:
+      - API_KEY=hola
     #ports:
     #  - "3002:3000"
     depends_on:

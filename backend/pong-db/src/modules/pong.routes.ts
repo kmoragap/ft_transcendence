@@ -7,7 +7,7 @@ import {
   getUserGames,
   updateTournamentStatus,
 } from "./pong.controller";
-import { validateBody, validateParams, validateQuery } from "./pong.middleware";
+import { validateBody, validateParams, validateQuery, requireApiKey } from "./pong.middleware";
 import { gameSchemas } from "./pong.schemas";
 import { getTournament, createTournament } from "./tournament.controller";
 
@@ -15,7 +15,10 @@ export default async function pongRoutes(fastify: FastifyInstance) {
   // create a new game
   fastify.post(
     "/games",
-    { preHandler: validateBody(gameSchemas.create) },
+    { 
+      //onRequest: requireApiKey,
+      preHandler: validateBody(gameSchemas.create) 
+    },
     createGame,
   );
   // obtain game by id

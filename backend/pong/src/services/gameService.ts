@@ -36,7 +36,9 @@ class GameService {
     try {
       const response = await fetch(`${this.baseUrl}/games`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 
+          /*"x-API-key": "hola"*/
+        },
         body: JSON.stringify({ data }),
       });
 
@@ -50,7 +52,9 @@ class GameService {
     try {
       const response = await fetch(`${this.baseUrl}/games`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 
+          /*"x-API-key": "hola"*/
+        },
         body: JSON.stringify({ data }),
       });
 

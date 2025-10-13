@@ -9,18 +9,32 @@ import {
   verify2faHandler,
   resend2faHandler,
 } from "./auth.controller";
+import { validateBody } from "./auth.middleware";
+import { authSchemas } from "./auth.schema";
 
 export default async function authRoutes(fastify: FastifyInstance) {
   // auth routes
-  fastify.post("/register", registerHandler);
-  fastify.post("/login", loginHandler);
-
+  fastify.post(
+    "/register",
+    { preHandler: validateBody(authSchemas.register) },
+    registerHandler,
+  );
+  fastify.post(
+    "/login",
+    { preHandler: validateBody(authSchemas.login) },
+    loginHandler,
+  );
   // 2FA verification route
-  fastify.post("/verify-2fa", verify2faHandler);
-  // 2FA resend route
-  fastify.post("/resend-2fa", resend2faHandler);
-  // TODO: Frontend should POST { email, code } here after login
-  // TODO: Replace temporary code handling with proper DB-backed code verification
+  fastify.post(
+    "/verify-2fa",
+    { preHandler: validateBody(authSchemas.verify2fa) },
+    verify2faHandler,
+  ); // 2FA resend route
+  fastify.post(
+    "/resend-2fa",
+    { preHandler: validateBody(authSchemas.resend2fa) },
+    resend2faHandler,
+  );
 
   // protected routes
   fastify.post(

@@ -1,9 +1,42 @@
 import { loadConfig } from "./gameData";
 import { t } from "./i18n";
-import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu } from "./menus";
+import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
 
 let currentStep = 1;
+let currentPlayerPage = 0;
+let totalPlayerPages = 0;
+let allPlayerData: any[] = [];
+let currentGameSettingsPage = 0;
+
+function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
+	settingsForm.style.display = "block";
+	bgColorsForm.style.display = "none";
+	// Remove pagination navigation - use main wizard buttons instead
+}
+
+function updateButtonText() {
+	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	
+	if (currentStep === 2 || (currentStep === 1 && totalPlayerPages > 1)) {
+		// Player setup step (tournament step 2 or 2vs2 step 1)
+		if (totalPlayerPages > 1) {
+			nextButton.textContent = currentPlayerPage < totalPlayerPages - 1 ? `Next (${currentPlayerPage + 1}/${totalPlayerPages})` : "Next";
+			backButton.textContent = currentPlayerPage > 0 ? `Back (${currentPlayerPage + 1}/${totalPlayerPages})` : "Back";
+		} else {
+			nextButton.textContent = "Next";
+			backButton.textContent = "Back";
+		}
+	} else if (currentStep === 3 && isMobile) {
+		// Game settings step on mobile
+		nextButton.textContent = currentGameSettingsPage === 0 ? "Next (1/2)" : "Next";
+		backButton.textContent = currentGameSettingsPage === 1 ? "Back (2/2)" : "Back";
+	} else {
+		nextButton.textContent = "Next";
+		backButton.textContent = "Back";
+	}
+}
+
 //navigation
 const backButton = btn("back", "Back", "backBtn");
 const nextButton = btn("next", "Next", "nextBtn");
@@ -12,6 +45,7 @@ backButton.classList.add("hidden");
 finishButton.classList.add("hidden");
 
 export function wizard(mode: string) {
+	setGameMode(mode);
 	const card = document.getElementById("card") as HTMLDivElement;
 	const player1Container = createPlayerContainer(1);
 	const player2Container = createPlayerContainer(2);
@@ -48,10 +82,18 @@ export function wizard(mode: string) {
 	playerSetupFlexContainer.id = "playerSetupContainer";
 	playerSetupContainer.appendChild(playerSetupFlexContainer);
 
+	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	const gameSettingsFlexContainer = createFlexContainer();
-	gameSettingsFlexContainer.appendChild(settingsForm);
-	gameSettingsFlexContainer.appendChild(bgColorsForm);
-	gameSettingsContainer.appendChild(gameSettingsFlexContainer);
+	if (isMobile) {
+		gameSettingsFlexContainer.style.display = "none";
+		gameSettingsContainer.appendChild(settingsForm);
+		gameSettingsContainer.appendChild(bgColorsForm);
+		createGameSettingsNavigation(settingsForm, bgColorsForm, gameSettingsContainer);
+	} else {
+		gameSettingsFlexContainer.appendChild(settingsForm);
+		gameSettingsFlexContainer.appendChild(bgColorsForm);
+		gameSettingsContainer.appendChild(gameSettingsFlexContainer);
+	}
 	
 	if (mode === "tournament") {
 		const { form: tournamentForm } = tournamentSetupMenu();
@@ -67,10 +109,56 @@ export function wizard(mode: string) {
 		}
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
+			if (currentStep === 2) {
+				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+				const playersPerPage = isMobile ? 1 : 2;
+				if (currentPlayerPage < totalPlayerPages - 1) {
+					currentPlayerPage++;
+					renderPlayerPage(currentPlayerPage, playersPerPage);
+					updateButtonText();
+					return;
+				}
+			}
+			if (currentStep === 3 && isMobile) {
+				if (currentGameSettingsPage === 0) {
+					currentGameSettingsPage = 1;
+					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
+					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
+					if (settingsForm && bgColorsForm) {
+						settingsForm.style.display = "none";
+						bgColorsForm.style.display = "block";
+						updateButtonText();
+					}
+					return;
+				}
+			}
 			if (currentStep < 3) showStep(currentStep + 1, false);
 		});
 		backButton.addEventListener("click", (e) => {
 			e.preventDefault();
+			if (currentStep === 2) {
+				if (currentPlayerPage > 0) {
+					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+					const playersPerPage = isMobile ? 1 : 2;
+					currentPlayerPage--;
+					renderPlayerPage(currentPlayerPage, playersPerPage);
+					updateButtonText();
+					return;
+				}
+			}
+			if (currentStep === 3 && isMobile) {
+				if (currentGameSettingsPage === 1) {
+					currentGameSettingsPage = 0;
+					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
+					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
+					if (settingsForm && bgColorsForm) {
+						settingsForm.style.display = "block";
+						bgColorsForm.style.display = "none";
+						updateButtonText();
+					}
+					return;
+				}
+			}
 			if (currentStep > 1) showStep(currentStep - 1, false);
 		});
 		finishButton.addEventListener("click", async (e) => {
@@ -83,27 +171,28 @@ export function wizard(mode: string) {
 		});
 	} else {
 		if (mode === "multi") {
-			const player3Container = createPlayerContainer(3);
-			const player4Container = createPlayerContainer(4);
-
-			const player3List = createPlayerList();
-			const player4List = createPlayerList();
-
-			playerSetupMenu(player3List, "3", "Boolena Williams", true, "i", "k", "#ffffff", "#808080", "#ff0000");
-			playerSetupMenu(player4List, "4", "Boris Backend", true, "PageUp", "PageDown", "#ffffff", "#808080", "#ff0000");
-
-			player3Container.appendChild(player3List);
-			player4Container.appendChild(player4List);
-
-			playerSetupFlexContainer.appendChild(player1Container);
-			playerSetupFlexContainer.appendChild(player2Container);
-			playerSetupFlexContainer.appendChild(player3Container);
-			playerSetupFlexContainer.appendChild(player4Container);
+			// Use pagination for 4 players in 2vs2 mode
+			allPlayerData = [
+				{ index: 1, name: username, isAi: false, keys: { up: "Shift", down: "Control" } },
+				{ index: 2, name: "Roger Federror", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } },
+				{ index: 3, name: "Boolena Williams", isAi: true, keys: { up: "i", down: "k" } },
+				{ index: 4, name: "Boris Backend", isAi: true, keys: { up: "PageUp", down: "PageDown" } }
+			];
+			
+			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			const playersPerPage = isMobile ? 1 : 2;
+			totalPlayerPages = Math.ceil(4 / playersPerPage);
+			currentPlayerPage = 0;
+			
+			playerSetupFlexContainer.id = "playerSetupContainer";
+			step1Container.appendChild(playerSetupFlexContainer);
+			
+			renderPlayerPage(currentPlayerPage, playersPerPage, playerSetupFlexContainer);
 		} else {
 			playerSetupFlexContainer.appendChild(player1Container);
 			playerSetupFlexContainer.appendChild(player2Container);
+			step1Container.appendChild(playerSetupFlexContainer);
 		}
-		step1Container.appendChild(playerSetupFlexContainer);
 		const singleStep2FlexContainer = createFlexContainer();
 		singleStep2FlexContainer.appendChild(settingsForm);
 		singleStep2FlexContainer.appendChild(bgColorsForm);
@@ -111,10 +200,30 @@ export function wizard(mode: string) {
 
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
+			if (mode === "multi" && currentStep === 1) {
+				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+				const playersPerPage = isMobile ? 1 : 2;
+				if (currentPlayerPage < totalPlayerPages - 1) {
+					currentPlayerPage++;
+					renderPlayerPage(currentPlayerPage, playersPerPage);
+					updateButtonText();
+					return;
+				}
+			}
 			if (currentStep < 2) showStep(currentStep + 1, true);
 		});
 		backButton.addEventListener("click", (e) => {
 			e.preventDefault();
+			if (mode === "multi" && currentStep === 1) {
+				if (currentPlayerPage > 0) {
+					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+					const playersPerPage = isMobile ? 1 : 2;
+					currentPlayerPage--;
+					renderPlayerPage(currentPlayerPage, playersPerPage);
+					updateButtonText();
+					return;
+				}
+			}
 			if (currentStep > 1) showStep(currentStep - 1, true);
 		});
 		finishButton.addEventListener("click", (e) => {
@@ -127,36 +236,39 @@ export function wizard(mode: string) {
 	wizardContainer.appendChild(gameSettingsContainer);
 	wizardContainer.appendChild(navigationContainer);
 	card.appendChild(wizardContainer);
+	
+	updateButtonText();
 }
 
 function createPlayerBoxes(numPlayers: number) {
-	const container = document.getElementById("playerSetupContainer");
-	if (!container) return;
-	container.innerHTML = "";
+	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	const playersPerPage = isMobile ? 1 : 2;
+	totalPlayerPages = Math.ceil(numPlayers / playersPerPage);
+	currentPlayerPage = 0;
+	
+	allPlayerData = [];
+	const defaultNames = [
+		"Player 1",
+		"Roger Federror",
+		"Boolena Williams",
+		"Boris Backend",
+		"Steffi Graph",
+		"Array Agassi",
+		"Maria Charapova",
+		"Novak Breaković",
+	];
+	const defaultKeys = [
+		{ up: "Shift", down: "Control" },
+		{ up: "ArrowUp", down: "ArrowDown" },
+		{ up: "Shift", down: "Control" },
+		{ up: "ArrowUp", down: "ArrowDown" },
+		{ up: "Shift", down: "Control" },
+		{ up: "ArrowUp", down: "ArrowDown" },
+		{ up: "Shift", down: "Control" },
+		{ up: "ArrowUp", down: "ArrowDown" },
+	];
+	
 	for (let i = 1; i <= numPlayers; i++) {
-		const playerContainer = createPlayerContainer(i);
-		const playerList = createPlayerList();
-		const defaultNames = [
-			"Player 1",
-			"Roger Federror",
-			"Boolena Williams",
-			"Boris Backend",
-			"Steffi Graph",
-			"Array Agassi",
-			"Maria Charapova",
-			"Novak Breaković",
-		];
-		const defaultKeys = [
-			{ up: "Shift", down: "Control" },
-			{ up: "ArrowUp", down: "ArrowDown" },
-			{ up: "Shift", down: "Control" },
-			{ up: "ArrowUp", down: "ArrowDown" },
-			{ up: "Shift", down: "Control" },
-			{ up: "ArrowUp", down: "ArrowDown" },
-			{ up: "Shift", down: "Control" },
-			{ up: "ArrowUp", down: "ArrowDown" },
-		];
-
 		let playerName = defaultNames[i - 1] || `Player ${i}`;
 		const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
 		if (i === 1) {
@@ -164,11 +276,52 @@ function createPlayerBoxes(numPlayers: number) {
 			const username = urlParams.get("username") || "Player 1";
 			playerName = username;
 		}
-		playerSetupMenu(playerList, i.toString(), playerName, i > 1,
-			playerKeys.up, playerKeys.down,
+		allPlayerData.push({
+			index: i,
+			name: playerName,
+			isAi: i > 1,
+			keys: playerKeys
+		});
+	}
+	
+	renderPlayerPage(currentPlayerPage, playersPerPage);
+	updateButtonText();
+}
+
+function renderPlayerPage(pageIndex: number, playersPerPage: number, container?: HTMLElement) {
+	if (!container) {
+		const foundContainer = document.getElementById("playerSetupContainer");
+		container = foundContainer || undefined;
+	}
+	if (!container) {
+		return;
+	}
+	
+	const existingPlayers = container.querySelectorAll('[id^="player"][id$="Container"]');
+	existingPlayers.forEach(player => player.remove());
+	
+	const start = pageIndex * playersPerPage;
+	const end = Math.min(start + playersPerPage, allPlayerData.length);
+	
+	for (let i = start; i < end; i++) {
+		const playerData = allPlayerData[i];
+		const playerContainer = createPlayerContainer(playerData.index);
+		const playerList = createPlayerList();
+		
+		playerSetupMenu(playerList, playerData.index.toString(), playerData.name, playerData.isAi,
+			playerData.keys.up, playerData.keys.down,
 			"#ffffff", "#808080", "#ff0000");
 		playerContainer.appendChild(playerList);
 		container.appendChild(playerContainer);
+	}
+	
+	updatePlayerNavigation();
+}
+
+function updatePlayerNavigation() {
+	const navContainer = document.getElementById("playerNavigation");
+	if (navContainer) {
+		navContainer.remove();
 	}
 }
 
@@ -195,6 +348,7 @@ function showStep(step: number, singleMatch: boolean) {
 		}
 	}
 	currentStep = step;
+	updateButtonText();
 }
 
 function btn(ts: string, alt: string, id: string): HTMLButtonElement {
@@ -203,12 +357,15 @@ function btn(ts: string, alt: string, id: string): HTMLButtonElement {
 		id: id,
 	}) as HTMLButtonElement;
 	button.classList.add("btn", "py-2", "px-6", "text-lg", "font-bold");
+	if (id === "finishBtn") {
+		button.textContent = button.textContent?.toUpperCase() || "START";
+	}
 	return button;
 }
 
 function createPlayerContainer(p: number): HTMLDivElement {
 	return Object.assign(document.createElement("div"), {
-		className: "flex-1 min-w-[300px]",
+		className: "flex-1 min-w-[300px] flex flex-col",
 		id: `player${p}Container`,
 	}) as HTMLDivElement;
 }

@@ -2,7 +2,6 @@ import { data, newGame, getSecondPlayerData } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
-//import { userService, UserData } from "./services/userService";
 import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
 import { handleTournamentGameCompletion } from "./tournamentGame";
@@ -37,9 +36,9 @@ export function countdown(nr: number, ms: number) {
   data.ctx.fillStyle = data.bg;
   data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
   data.ctx.fill();
-  data.ctx.font = `bold ${data.canvas.height * 0.75}px system-ui`;
-  data.ctx.fillStyle = "yellow";
-  data.ctx.strokeStyle = "red";
+  data.ctx.font = `bold ${data.canvas.height * 0.75}px jura, sans-serif`;
+  data.ctx.fillStyle = "#66fcf1";
+  data.ctx.strokeStyle = "#0b4f47";
   data.ctx.lineWidth = data.canvas.height / 60;
   data.ctx.textAlign = "center";
   data.ctx.textBaseline = "middle";
@@ -69,28 +68,17 @@ function initBoard(): void {
   data.keys = {};
   balls.push(new Ball());
   pad = new Array(new Paddle(0, data.p[0]));
-  if (data.mode == "twoPlayers")
+  if (data.mode == "twoPlayers" || data.mode == "tournament")
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   if (data.mode == "doublePaddle") {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
-    pad.push(
-      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0])
-    );
-    pad.push(
-      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
-    );
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
   }
   if (data.mode == "multi") {
-    pad.push(
-      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
-    );
-    pad.push(
-      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
-    );
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
-  }
-  if (data.mode == "tournament") {
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   }
 }
 
@@ -115,19 +103,35 @@ function update(): void {
 }
 
 function render(): void {
-  data.ctx.fillStyle = data.bg;
-  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-  data.ctx.fill();
-  midline();
-  for (let i: number = 0; i < pad.length; i++) pad[i].draw();
-  if (data.trailLength)
-    for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
-  for (let i: number = 0; i < balls.length; i++) balls[i].draw();
-  if (data.touchControl) touchControlArrows();
+	data.ctx.fillStyle = data.bg;
+	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+	data.ctx.fill();
+	var p1NameAndScore: string;
+	var p2NameAndScore: string;
+	var margin: string = "   ";
+	if (data.mode != "multi") {
+		p1NameAndScore = data.p[0].name + " - " + data.p[0].score + margin;
+		p2NameAndScore = margin + data.p[1].score + " - " + data.p[1].name;
+	} else {
+		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
+		p2NameAndScore = margin + data.p[1].score + " - Team 2";
+	}
+	data.ctx.font = `bold ${data.canvas.height / 12}px jura, sans-serif`;
+	data.ctx.fillStyle = "#66fcf1";
+	data.ctx.textBaseline = "top";
+	data.ctx.textAlign = "right";
+	data.ctx.fillText(p1NameAndScore, data.canvas.width / 2, 20);
+	data.ctx.textAlign = "left";
+	data.ctx.fillText(p2NameAndScore, data.canvas.width / 2, 20);
+	midline();
+	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
+	if (data.trailLength)
+		for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
+	for (let i: number = 0; i < balls.length; i++) balls[i].draw();
+	if (data.touchControl) touchControlArrows();
 }
 
 export function endRound(): void {
-  //gameService.updateScore(data.[0].id, data.gameID, data.p[0].score, data.p[1].score);
   while (balls.length) {
     balls[0].stop();
     balls.shift();
@@ -136,22 +140,21 @@ export function endRound(): void {
     pad[0].stop();
     pad.shift();
   }
+  var player2: number = 1;
 
-  if (data.p[0].score >= data.maxScore || data.p[1].score >= data.maxScore) {
-    if (data.isTournament) {
-      finito();
-    } else {
-      endGame();
-    }
+  if (data.mode == "multi") player2 = 2;
+  if (data.p[0].score >= data.maxScore || data.p[player2].score >= data.maxScore) {
+    if (data.isTournament) finito();
+    else endGame();
     return;
   }
-
-  // Match continues - restart the next round
-  if (data.p[0].score < data.maxScore && data.p[1].score < data.maxScore) {
+  // Match continues - start the next round
+  if (data.p[0].score < data.maxScore && data.p[player2].score < data.maxScore) {
     setTimeout(startRound, 1500);
   }
 }
 
+//TODO: adapt for 2vs2 mode
 export async function finito(): Promise<void> {
   let winnerId: string;
   if (data.p[0].score > data.p[1].score) {
@@ -210,26 +213,30 @@ export async function finito(): Promise<void> {
 
 export async function endGame() {
   var winner: string;
-
-  if (data.p[0].score > data.p[1].score) {
-    winner = data.p[0].name;
-  } else {
-    winner = data.p[1].name;
-  }
-
+  var player2: number = 1;
+  if (data.mode == "multi") player2 = 2;
+  if (data.p[0].score > data.p[player2].score) winner = data.p[0].name;
+  else winner = data.p[player2].name;
   data.showingText = false;
 
   try {
     console.log("Sending game data:", data);
     console.log("player1ID: ", data.p[0].id);
     console.log("player2ID: ", data.p[1].id);
+    if (data.mode == "multi") {
+    console.log("player3ID: ", data.p[2].id);
+    console.log("player4ID: ", data.p[3].id);
+    }
     finito();
   } catch (error) {
     console.error("Failed to finish game:", error);
   }
 
   if (isMobile()) {
-    showExitButton(winner);
+    setTimeout(() => {
+      exitFullscreen();
+      exitGameMessage(winner);
+    }, 3000);
   } else {
     if (data.isTournament && data.tournamentId) {
       console.log(
@@ -261,28 +268,6 @@ export function isMobile(): boolean {
     ) ||
     (window.innerWidth <= 768 && window.innerHeight <= 1024)
   );
-}
-
-function showExitButton(winner: string): void {
-  const exitOverlay = document.createElement("div");
-  exitOverlay.className =
-    "fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]";
-  exitOverlay.innerHTML = `
-		<div class="text-center text-white mb-8">
-			<h2 class="text-4xl font-bold mb-4">Game Over!</h2>
-			<p class="text-2xl">Winner: ${winner}</p>
-		</div>
-		<button id="exit-game-btn" class="bg-[#66fcf1] text-black px-8 py-4 rounded-lg text-xl font-bold hover:bg-[#5ae6d9] transition-colors">
-			Exit Game
-		</button>
-	`;
-
-  document.body.appendChild(exitOverlay);
-
-  // Add exit functionality
-  const exitBtn = document.getElementById("exit-game-btn");
-  if (exitBtn) 
-    exitBtn.addEventListener("click", exitFullscreen);
 }
 
 function collisionTest(): void {

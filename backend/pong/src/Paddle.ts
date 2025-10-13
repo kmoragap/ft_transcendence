@@ -22,15 +22,6 @@ export default class Paddle {
 		this._x = x;
 		this._y = data.canvas.height / 2 - data.paddleHeight / 2;
 		this._p = p;
-		this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
-		
-		// Use fallback colors if the color values are empty or invalid
-		const outerCol = this._p.outerCol || '#808080';
-		const innerCol = this._p.innerCol || '#ffffff';
-		
-		this._paddleGrad.addColorStop(0, outerCol);
-		this._paddleGrad.addColorStop(0.5, innerCol);
-		this._paddleGrad.addColorStop(1, outerCol);
 		this.draw();
 	}
 
@@ -65,20 +56,23 @@ export default class Paddle {
 	public isGo(): number {return this._goTime;}
 
 	public draw(): void {
-		//debug collision outlne
-		//debugOutline(this);
-		//draw paddle center
+		this._paddleGrad = data.ctx.createLinearGradient(this._x, this._y, this.getX2(), this._y);
+		const outerCol = this._p.outerCol || '#808080';
+		const innerCol = this._p.innerCol || '#ffffff';
+		this._paddleGrad.addColorStop(0, outerCol);
+		this._paddleGrad.addColorStop(0.5, innerCol);
+		this._paddleGrad.addColorStop(1, outerCol);
+		
 		data.ctx.beginPath();
 		data.ctx.fillStyle = this._paddleGrad;
 		data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
 
-		//define corner grads
-		this._topCornerGrad = data.ctx.createRadialGradient(this._x + 10, this._y, data.paddleWidth / 7, this._x, this._y, data.paddleWidth);
+		this._topCornerGrad = data.ctx.createRadialGradient(this._x + data.paddleWidth / 2, this._y + data.paddleWidth / 2, data.paddleWidth / 7, this._x + data.paddleWidth / 2, this._y + data.paddleWidth / 2, data.paddleWidth);
 		this._topCornerGrad.addColorStop(0, "white");
-		this._topCornerGrad.addColorStop(0.75, this._p.cornerCol);
-		this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + 10, this.getY2(), data.paddleWidth / 7, this._x, this.getY2(), data.paddleWidth);
+		this._topCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
+		this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth / 2, data.paddleWidth / 7, this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth / 2, data.paddleWidth);
 		this._bottomCornerGrad.addColorStop(0, "white");
-		this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol);
+		this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
 		
 		if (!this._p.isAi) quarterCorner(this);
 		 else halfCorner(this);

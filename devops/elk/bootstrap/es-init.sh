@@ -6,7 +6,6 @@ ES_HOST="${ES_HOST:-es01}"
 ES_URL="https://${ES_HOST}:9200"
 
 LOGSTASH_ROLE="${LOGSTASH_ROLE:-logstash_writer}"
-LOGSTASH_USE_ILM="${LOGSTASH_USE_ILM:-false}"
 
 wait_for_file() {
   f="$1"; tries="${2:-60}"; i=0
@@ -47,13 +46,97 @@ json_post "/_security/user/kibana_system/_password" "{\"password\":\"${KIBANA_SY
 
 echo "[init] creating/updating role: $LOGSTASH_ROLE"
 ROLE_BODY='{
-  "cluster": ["monitor"],
+  "cluster": ["monitor", "manage_ilm", "manage_index_templates"],
   "indices": [
-    { "names": ["logs-*"], "privileges": ["auto_configure","create_index","create","write"] }
+    {
+      "names": ["logs", "logs-*", "logstash-*"],
+      "privileges": [
+        "auto_configure",
+        "create_index",
+        "create",
+        "write",
+        "read",
+        "view_index_metadata",
+        "manage_ilm"
+      ]
+    }
   ]
 }'
-
 json_put "/_security/role/${LOGSTASH_ROLE}" "$ROLE_BODY"
+
+echo "[init] creating ILM policy: logs_policy"
+ILM_POLICY_BODY='{
+  "policy": {
+    "phases": {
+      "hot": {
+        "actions": {
+          "rollover": {
+            "max_size": "2MB",
+            "max_age": "5m"
+          }
+        }
+      },
+      "delete": {
+        "min_age": "15m",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}'
+
+json_put "/_ilm/policy/logs_policy" "$ILM_POLICY_BODY" || true
+
+echo "[init] creating/updating index template: logs-template"
+LOGS_TEMPLATE_BODY='{
+  "index_patterns": ["logs-*"],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "logs_policy",
+      "index.lifecycle.rollover_alias": "logs"
+    },
+    "mappings": {
+      "dynamic": true,
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "message":     { "type": "text" },
+        "log.level":   { "type": "keyword" },
+        "service.name":{ "type": "keyword" },
+        "client.ip":   { "type": "ip" },
+        "http.response.status_code": { "type": "integer" }
+      }
+    }
+  }
+}'
+json_put "/_index_template/logs-template" "$LOGS_TEMPLATE_BODY" || true
+
+
+echo "[init] creating initial index and alias for ILM"
+json_put "/logs-000001" '{
+  "settings": {
+    "index.lifecycle.name": "logs_policy",
+    "index.lifecycle.rollover_alias": "logs",
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  }
+}' || true
+
+json_post "/_aliases" '{
+  "actions": [
+    {
+      "add": {
+        "index": "logs-000001",
+        "alias": "logs",
+        "is_write_index": true
+      }
+    }
+  ]
+}' || true
+
 
 echo "[init] creating/updating user: ${LOGSTASH_WRITER_USER}"
 USER_BODY="{\"password\":\"${LOGSTASH_WRITER_PASSWORD}\",\"roles\":[\"${LOGSTASH_ROLE}\"]}"

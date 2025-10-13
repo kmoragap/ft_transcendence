@@ -233,7 +233,10 @@ export async function endGame() {
   }
 
   if (isMobile()) {
-    showExitButton(winner);
+    setTimeout(() => {
+      exitFullscreen();
+      exitGameMessage(winner);
+    }, 3000);
   } else {
     if (data.isTournament && data.tournamentId) {
       console.log(
@@ -265,28 +268,6 @@ export function isMobile(): boolean {
     ) ||
     (window.innerWidth <= 768 && window.innerHeight <= 1024)
   );
-}
-
-function showExitButton(winner: string): void {
-  const exitOverlay = document.createElement("div");
-  exitOverlay.className =
-    "fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[10000]";
-  exitOverlay.innerHTML = `
-		<div class="text-center text-white mb-8">
-			<h2 class="text-4xl font-bold mb-4">Game Over!</h2>
-			<p class="text-2xl">Winner: ${winner}</p>
-		</div>
-		<button id="exit-game-btn" class="bg-[#66fcf1] text-black px-8 py-4 rounded-lg text-xl font-bold hover:bg-[#5ae6d9] transition-colors">
-			Exit Game
-		</button>
-	`;
-
-  document.body.appendChild(exitOverlay);
-
-  // Add exit functionality
-  const exitBtn = document.getElementById("exit-game-btn");
-  if (exitBtn) 
-    exitBtn.addEventListener("click", exitFullscreen);
 }
 
 function collisionTest(): void {

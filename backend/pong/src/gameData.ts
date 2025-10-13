@@ -107,9 +107,9 @@ function loadPlayer(
     isAi: finalIsAi,
     up: up,
     down: down,
-    innerCol: innerCol,
-    outerCol: outercol,
-    cornerCol: cornerCol,
+    innerCol: innerCol || '#ffffff',
+    outerCol: outercol || '#808080',
+    cornerCol: cornerCol || '#ff0000',
   };
   return p;
 }
@@ -341,15 +341,33 @@ export async function loadConfig(mode: string): Promise<void> {
       );
     }
   }
-	canvas.height = screen.height;
-	canvas.width = screen.width;
+	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	
+	const resizeCanvas = () => {
+		canvas.width = isMobile ? window.innerWidth : screen.width;
+		canvas.height = isMobile ? window.innerHeight : screen.height;
+		
+		if (data && data.ctx) {
+			data.paddleWidth = canvas.width / (isMobile ? 80 : 60);
+			data.paddleHeight = canvas.height / 5;
+			data.bg = ctx.createLinearGradient(0, 0, canvas.width, 0);
+			data.bg.addColorStop(0, data.outerBg);
+			data.bg.addColorStop(0.5, data.innerBg);
+			data.bg.addColorStop(1, data.outerBg);
+		}
+	};
+	
+	resizeCanvas();
+	
+	document.addEventListener("fullscreenchange", resizeCanvas);
+	window.addEventListener("resize", resizeCanvas);
+	
 	setTimeout(async () => {
 		try {
 			await enterFullscreen();
+			setTimeout(resizeCanvas, 100);
 		} catch (error) {
 			console.log("Auto fullscreen failed, showing manual prompt:", error);
-			// If automatic fullscreen fails (Firefox requires user gesture),
-			// show a button to enter fullscreen manually
 			showFullscreenPrompt();
 		}
 	}, 100);
@@ -362,7 +380,7 @@ export async function loadConfig(mode: string): Promise<void> {
 		nameTB2: p2name,
 		timestamp: 0,
 		lastTime: 0,
-		paddleWidth: canvas.width / 60,
+		paddleWidth: canvas.width / (isMobile ? 80 : 60),
 		paddleHeight: canvas.height / 5,
 		ctx: ctx,
 		p: p,
@@ -380,8 +398,8 @@ export async function loadConfig(mode: string): Promise<void> {
 		ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
 		ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
 		ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
-		outerBg: loadIn("outerBg") || "#000808",
-		innerBg: loadIn("innerBg") || "#031b1b",
+		outerBg: loadIn("outerBg") || "#001a1a",
+		innerBg: loadIn("innerBg") || "#1a4d4d",
 
 		serve: Math.floor(Math.random() * 2) ? -1 : 1,
 		keys: {},
@@ -403,7 +421,6 @@ export async function loadConfig(mode: string): Promise<void> {
   if (mode === "tournament") {
     loadData.mode = "tournament";
     loadData.isTournament = true;
-    // For tournaments, show the first two players in the current match
     loadData.nameTB1.value = p[0]?.name || "Player 1";
     loadData.nameTB2.value = p[1]?.name || "Player 2";
   } else if (mode === "multi") {
@@ -446,25 +463,20 @@ export async function loadConfig(mode: string): Promise<void> {
 	}
 	data = loadData;
 
-  // Set tournament ID if we have a pending one
   if (pendingTournamentId) {
     data.tournamentId = pendingTournamentId;
     pendingTournamentId = null; // Clear the pending ID
   }
 
-  // Remove all existing content from app div except what we want to keep
   const gameAppDiv = document.getElementById("app");
   if (gameAppDiv) {
-    // Clear all content
     gameAppDiv.innerHTML = "";
-    // Change layout for game view
     gameAppDiv.className = [
       "fixed inset-0 flex flex-col",
       "bg-black/60",
       "z-50",
     ].join(" ");
 
-    // Add only the scoreboard and canvas
     gameAppDiv.appendChild(scoreboard);
     gameAppDiv.appendChild(canvas);
   }

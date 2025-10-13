@@ -98,15 +98,15 @@ export async function oauth42CallbackHandler(
 
       // extract the avatar URL from the 42 API response
       const avatarUrl =
-        user42.image?.versions?.medium || user42.image?.link || null;
+        user42.image?.versions?.medium || user42.image?.link || undefined;
 
       user = await createUser(
         user42.login, // this is username
         user42.email,
         user42.displayname, //this the full intra name
-        randomBytes(32).toString("hex"), // random password since they'll use 42 auth
+        randomBytes(32).toString("hex") + "A", // random password
         avatarUrl, // pic from 42
-        true // isOAuthUser
+        true, // isOAuthUser
       );
     }
 

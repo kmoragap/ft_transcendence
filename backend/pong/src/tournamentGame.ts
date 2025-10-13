@@ -1,7 +1,7 @@
 import { data } from "./gameData";
-import { gameService } from "./services/gameService";
 import { tournamentService } from "./services/tournamentService";
 import { t } from "./i18n";
+import { enterFullscreen, exitFullscreen } from "./controls";
 
 export interface TournamentBracket {
   id: string;
@@ -200,6 +200,8 @@ export class TournamentManager {
     data.go = false;
 
     // Start the new match with countdown
+
+    enterFullscreen();
     const { countdown } = await import("./pong");
     setTimeout(() => countdown(3, 500), 500);
 
@@ -208,7 +210,7 @@ export class TournamentManager {
 
   async completeMatch(winnerId: string, gameId: string): Promise<boolean> {
     if (!this.tournament) return false;
-
+    exitFullscreen();
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return false;
 
@@ -305,14 +307,17 @@ export class TournamentManager {
   }
 
   public showMatchTransition(nextMatch: TournamentMatch): void {
+
     const overlay = document.createElement("div");
     overlay.className =
-      "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+      "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center";
+    overlay.style.zIndex = "9999";
     overlay.id = "matchTransitionOverlay";
 
     const modal = document.createElement("div");
     modal.className =
-      "bg-[rgba(3,27,27,0.8)] z-50 rounded-lg p-8 max-w-md w-full mx-4 text-center";
+      "bg-[rgba(3,27,27,0.8)] rounded-lg p-8 max-w-md w-full mx-4 text-center";
+    modal.style.zIndex = "10000";
     modal.innerHTML = `
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-[#66fcf1] mb-4">${t(
@@ -335,7 +340,13 @@ export class TournamentManager {
     `;
 
     overlay.appendChild(modal);
-    document.body.appendChild(overlay);
+    
+    const gameAppDiv = document.getElementById("app");
+    if (gameAppDiv) {
+      gameAppDiv.appendChild(overlay);
+    } else {
+      document.body.appendChild(overlay);
+    }
 
     const startBtn = document.getElementById("startNextMatchBtn");
     if (startBtn) {

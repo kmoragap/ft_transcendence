@@ -19,17 +19,12 @@ export function renderGame(): HTMLElement {
         <span class="mid_line" data-i18n="pong">PONG</span>
       </h1>
           <div class="w-full max-w-7xl rounded-t-xl md:overflow-hidden shadow-2xl border border-[rgba(102,252,241,0.15)] bg-[rgba(3,27,27,0.8)]">
-     <div class="flex items-center justify-between px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
+     <div class="flex items-center px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
         aria-hidden="true"
         data-i18n="back_to_modes">
         Back
-      </button>
-      <button id="game-exit"
-        class="btn py-1.5 px-8 m-0 text-lg font-bold cursor-pointer"
-        data-i18n="exit">
-        Exit
       </button>
     </div>
       <div id="game-root" class="flex flex-col justify-center items-center w-full min-h-80 relative"></div>
@@ -37,7 +32,6 @@ export function renderGame(): HTMLElement {
   `;
 
   const root = section.querySelector("#game-root") as HTMLDivElement;
-  const exitBtn = section.querySelector("#game-exit") as HTMLButtonElement;
   const backBtn = section.querySelector("#game-back") as HTMLButtonElement;
   const title = section.querySelector("#game-title") as HTMLHeadingElement;
 
@@ -167,10 +161,6 @@ export function renderGame(): HTMLElement {
   }
 
   backBtn.addEventListener("click", () => setMode("menu"));
-  exitBtn.addEventListener("click", () => {
-    destroyIframe();
-    window.location.href = "#/home";
-  });
 
   setMode("menu");
 

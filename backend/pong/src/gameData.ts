@@ -181,7 +181,7 @@ export async function loadConfig(mode: string): Promise<void> {
     }
   }
   const scoreboard = Object.assign(document.createElement("div"), {
-    className: "scoreboard w-full flex justify-between items-center",
+    className: "scoreboard w-full justify-between items-center",
   }) as HTMLDivElement;
 
   const leftSide = Object.assign(document.createElement("div"), {

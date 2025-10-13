@@ -74,7 +74,14 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
           >
             ${t("submit")}
           </button>
-          
+           <button class="btn !w-full">
+            <a
+              href="#/login_42"
+              data-i18n="login_42"
+            >
+              ${t("login_42")}
+            </a>
+          </button>
           <button
             type="button"
             id="modal-cancel"

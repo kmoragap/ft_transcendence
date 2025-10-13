@@ -117,7 +117,7 @@ function render(): void {
 		p2NameAndScore = margin + data.p[1].score + " - Team 2";
 	}
 	data.ctx.font = `bold ${data.canvas.height / 12}px jura, sans-serif`;
-	data.ctx.fillStyle = "#66fcf1";
+	data.ctx.fillStyle = "rgba(102, 252, 241, 0.5)";
 	data.ctx.textBaseline = "top";
 	data.ctx.textAlign = "right";
 	data.ctx.fillText(p1NameAndScore, data.canvas.width / 2, 20);

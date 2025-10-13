@@ -454,7 +454,7 @@
     font-weight: 700;
   }
   .scoreboard {
-			display: flex;
+			display: none;
 			justify-content: center;
 			color: #66fcf1;
 			font-family: 'jura', sans-serif;

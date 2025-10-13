@@ -107,9 +107,9 @@ function loadPlayer(
     isAi: finalIsAi,
     up: up,
     down: down,
-    innerCol: innerCol,
-    outerCol: outercol,
-    cornerCol: cornerCol,
+    innerCol: innerCol || '#ffffff',
+    outerCol: outercol || '#808080',
+    cornerCol: cornerCol || '#ff0000',
   };
   return p;
 }

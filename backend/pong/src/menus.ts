@@ -303,7 +303,7 @@ export function tournamentSetupMenu(): {
     id: "playersNumber",
     name: "playersNumber",
   }) as HTMLSelectElement;
-  [4, 6, 8].forEach(num => {
+  [4, 8].forEach(num => {
     const option = document.createElement("option");
     option.value = num.toString();
     option.textContent = num.toString();

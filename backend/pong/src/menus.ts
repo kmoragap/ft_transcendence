@@ -772,7 +772,7 @@ export function gameSetupMenu(mode: string): {
     type: "color",
     id: "innerBg",
     name: "innerBg",
-    value: "#031b1b",
+    value: "#1a4d4d",
   }) as HTMLInputElement;
   const e19 = Object.assign(document.createElement("label"), {
     className: "game-text",
@@ -784,7 +784,7 @@ export function gameSetupMenu(mode: string): {
     type: "color",
     id: "outerBg",
     name: "outerBg",
-    value: "#000808",
+    value: "#001a1a",
   }) as HTMLInputElement;
   const e21 = Object.assign(document.createElement("label"), {
     className: "game-text",

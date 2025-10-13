@@ -600,7 +600,6 @@ export function renderMyProfile(): HTMLElement {
     if (statusPollingInterval) return;
 
     statusPollingInterval = window.setInterval(async () => {
-      //we check if component is still mounted and if we're on the profile page
       if (!isComponentMounted || !location.hash.includes("/myprofile")) {
         stopStatusPolling();
         return;
@@ -624,7 +623,6 @@ export function renderMyProfile(): HTMLElement {
     startStatusPolling();
   }
 
-  // Use MutationObserver to detect when section is removed from the DOM
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       for (const removedNode of Array.from(mutation.removedNodes)) {

@@ -1,4 +1,5 @@
 import { t } from "./i18n";
+import { allPlayerData } from "./wizard";
 
 let currentGameMode: string = "single"; // Track current game mode for key conflict checks
 
@@ -215,7 +216,6 @@ window.addEventListener("message", event => {
 
   if (event.data.type === "LOGIN_SUCCESS") {
     const { playerId, playerName, username, userData } = event.data;
-    console.log(`LOGIN_SUCCESS for Player ${playerId}:`, { playerId, playerName, username, userData });
     const nameInput = document.getElementById(playerName) as HTMLInputElement;
     if (nameInput) {
       nameInput.value = username;
@@ -227,12 +227,23 @@ window.addEventListener("message", event => {
     if (idInput && userData?.id) {
       idInput.value = userData.id;
     }
+    
+    const aiCheckbox = document.getElementById(`p${playerId}Ai`) as HTMLInputElement;
+    if (aiCheckbox) {
+      aiCheckbox.checked = false;
+    }
 
     if (savedPlayerData[playerId]) {
       savedPlayerData[playerId].name = username;
       savedPlayerData[playerId].id = userData?.id || "";
       savedPlayerData[playerId].isAi = false;
-      savedPlayerData[playerId].loggedInUsername = username; // Store the actual logged-in username
+      savedPlayerData[playerId].loggedInUsername = username;
+    }
+    
+    const playerIdx = parseInt(playerId) - 1;
+    if (allPlayerData && allPlayerData[playerIdx]) {
+      allPlayerData[playerIdx].name = username;
+      allPlayerData[playerIdx].isAi = false;
     }
 
     if (playerId === "2") {

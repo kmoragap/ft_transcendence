@@ -8,7 +8,6 @@ import { renderGame} from './views/game';
 import { updateText } from './i18n';
 import { ensureA11yScaffold, announce, setPageTitleAndFocus } from './utils/a11y.ts';
 import { renderOAuthCallback } from './views/oauth.ts';
-import { store } from './store.ts';
 import { shouldRedirectFromAuth, shouldRedirectFromProtected } from './utils/auth.ts';
 
 const protectedRoutes = new Set<string>(['/myprofile', '/dashboard', '/game']);

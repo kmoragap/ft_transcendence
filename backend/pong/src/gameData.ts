@@ -1,8 +1,7 @@
 import { controlKeys, enterFullscreen, showFullscreenPrompt } from "./controls";
 import { countdown } from "./pong";
-import { playerSetupMenu } from "./menus";
 import { t } from "./i18n";
-import { wizard } from "./wizard";
+import { wizard, allPlayerData } from "./wizard";
 
 export type playerData = {
   name: string;
@@ -55,7 +54,6 @@ export type gameData = {
   mode: string;
   status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 
-
   //tournament fields
   isTournament: boolean;
   tournamentId?: string;
@@ -95,12 +93,6 @@ function loadPlayer(
   const isAiByName = name.includes("Player") && name !== "Player 1";
   
   let finalIsAi = isAi || isAiByName;
-  
-  // Default Player 2 to AI in multi mode if form inputs are empty
-  if (playerIndex === 2 && mode === "multi" && !name && !id) {
-    finalIsAi = true;
-  }
-  
 
   let finalName = name;
   if (!finalName || finalName.trim() === "") {
@@ -132,7 +124,6 @@ function loadPlayer(
     }
   }
   
-  // Ensure Player 2 has correct keys when AI in multi mode
   if (playerIndex === 2 && mode === "multi" && finalIsAi) {
     finalUp = "ArrowUp";
     finalDown = "ArrowDown";
@@ -164,11 +155,9 @@ function loadIn(id: string): string {
   return el ? el.value : "";
 }
 
-// Get player data from allPlayerData when form inputs are not available
 function getPlayerDataFromWizard(playerIndex: number): any {
-  const allPlayerData = (window as any).allPlayerData;
   if (allPlayerData && allPlayerData.length >= playerIndex) {
-    return allPlayerData[playerIndex - 1]; // allPlayerData is 0-indexed
+    return allPlayerData[playerIndex - 1];
   }
   return null;
 }
@@ -298,20 +287,6 @@ export async function loadConfig(mode: string): Promise<void> {
 
   var p: playerData[] = [];
 
-  // Debug: Check what form inputs exist
-  if (mode === "multi") {
-    console.log("Multi mode form inputs check:");
-    for (let i = 1; i <= 4; i++) {
-      const nameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
-      const idInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
-      const aiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
-      console.log(`Player ${i}:`, {
-        nameInput: nameInput?.value || "not found",
-        idInput: idInput?.value || "not found",
-        aiInput: aiInput?.checked || "not found"
-      });
-    }
-  }
 
   if (mode === "tournament") {
     const playersNumberInput = document.getElementById(
@@ -353,7 +328,6 @@ export async function loadConfig(mode: string): Promise<void> {
       );
     }
   } else {
-    // Standard 2-player setup or multi mode
     for (let i = 1; i <= (mode === "multi" ? 4 : 2); i++) {
       const wizardData = getPlayerDataFromWizard(i);
       
@@ -362,18 +336,6 @@ export async function loadConfig(mode: string): Promise<void> {
       const isAi = loadInB(`p${i}Ai`) || wizardData?.isAi || false;
       const up = loadIn(`p${i}Up`) || wizardData?.keys?.up || "ArrowUp";
       const down = loadIn(`p${i}Down`) || wizardData?.keys?.down || "ArrowDown";
-      
-      // Debug: Show what data each player gets
-      if (mode === "multi") {
-        console.log(`Player ${i} final data:`, {
-          name,
-          id,
-          isAi,
-          up,
-          down,
-          wizardData: wizardData ? "found" : "not found"
-        });
-      }
       
       p.push(
         loadPlayer(
@@ -390,9 +352,7 @@ export async function loadConfig(mode: string): Promise<void> {
         ),
       );
     }
-
-  }
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  	}	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	
 	const resizeCanvas = () => {
 		canvas.width = isMobile ? window.innerWidth : screen.width;
@@ -413,15 +373,6 @@ export async function loadConfig(mode: string): Promise<void> {
 	document.addEventListener("fullscreenchange", resizeCanvas);
 	window.addEventListener("resize", resizeCanvas);
 	
-	setTimeout(async () => {
-		try {
-			await enterFullscreen();
-			setTimeout(resizeCanvas, 100);
-		} catch (error) {
-			console.log("Auto fullscreen failed, showing manual prompt:", error);
-			showFullscreenPrompt();
-		}
-	}, 100);
 	const loadData: gameData = {
 		canvas: canvas,
 		fps: 50,
@@ -516,7 +467,7 @@ export async function loadConfig(mode: string): Promise<void> {
 
   if (pendingTournamentId) {
     data.tournamentId = pendingTournamentId;
-    pendingTournamentId = null; // Clear the pending ID
+    pendingTournamentId = null;
   }
 
   const gameAppDiv = document.getElementById("app");
@@ -534,8 +485,16 @@ export async function loadConfig(mode: string): Promise<void> {
   controlKeys();
   document.getElementById("board")?.focus();
 
+  setTimeout(async () => {
+    try {
+      await enterFullscreen();
+    } catch (error) {
+      console.log("Auto fullscreen failed, showing manual prompt:", error);
+      showFullscreenPrompt();
+    }
+  }, 100);
+
   if (mode !== "tournament") {
     setTimeout(() => countdown(3, 500), 500);
   }
 }
-

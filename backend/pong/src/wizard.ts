@@ -3,10 +3,10 @@ import { t } from "./i18n";
 import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode, clearSavedPlayerData } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
 
+export let allPlayerData: any[] = [];
 let currentStep = 1;
 let currentPlayerPage = 0;
 let totalPlayerPages = 0;
-let allPlayerData: any[] = [];
 let currentGameSettingsPage = 0;
 
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
@@ -44,7 +44,6 @@ export function wizard(mode: string) {
 	setGameMode(mode);
 	clearSavedPlayerData();
 	const card = document.getElementById("card") as HTMLDivElement;
-
 	const urlParams = new URLSearchParams(window.location.search);
 	const username = urlParams.get("username") || "Player 1";
 	const userId = urlParams.get("userId") || "";
@@ -191,7 +190,6 @@ export function wizard(mode: string) {
 			
 			renderPlayerPage(currentPlayerPage, 1, playerSetupFlexContainer);
 			
-			// Set userId for player 1 after form is created
 			const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
 			if (p1IdInput && userId) p1IdInput.value = userId;
 		}
@@ -288,7 +286,6 @@ function createPlayerBoxes(numPlayers: number) {
 	
 	renderPlayerPage(currentPlayerPage, playersPerPage);
 	
-	// Set userId for player 1 after form is created
 	const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
 	if (p1IdInput && userId) p1IdInput.value = userId;
 	

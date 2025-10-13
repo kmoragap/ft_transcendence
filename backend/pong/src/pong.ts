@@ -68,28 +68,17 @@ function initBoard(): void {
   data.keys = {};
   balls.push(new Ball());
   pad = new Array(new Paddle(0, data.p[0]));
-  if (data.mode == "twoPlayers")
+  if (data.mode == "twoPlayers" || data.mode == "tournament")
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   if (data.mode == "doublePaddle") {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
-    pad.push(
-      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0])
-    );
-    pad.push(
-      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1])
-    );
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
   }
   if (data.mode == "multi") {
-    pad.push(
-      new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1])
-    );
-    pad.push(
-      new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2])
-    );
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
-  }
-  if (data.mode == "tournament") {
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
   }
 }
 
@@ -114,19 +103,35 @@ function update(): void {
 }
 
 function render(): void {
-  data.ctx.fillStyle = data.bg;
-  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-  data.ctx.fill();
-  midline();
-  for (let i: number = 0; i < pad.length; i++) pad[i].draw();
-  if (data.trailLength)
-    for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
-  for (let i: number = 0; i < balls.length; i++) balls[i].draw();
-  if (data.touchControl) touchControlArrows();
+	data.ctx.fillStyle = data.bg;
+	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+	data.ctx.fill();
+	var p1NameAndScore: string;
+	var p2NameAndScore: string;
+	var margin: string = "   ";
+	if (data.mode != "multi") {
+		p1NameAndScore = data.p[0].name + " - " + data.p[0].score + margin;
+		p2NameAndScore = margin + data.p[1].score + " - " + data.p[1].name;
+	} else {
+		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
+		p2NameAndScore = margin + data.p[1].score + " - Team 2";
+	}
+	data.ctx.font = `bold ${data.canvas.height / 12}px jura, sans-serif`;
+	data.ctx.fillStyle = "#66fcf1";
+	data.ctx.textBaseline = "top";
+	data.ctx.textAlign = "right";
+	data.ctx.fillText(p1NameAndScore, data.canvas.width / 2, 20);
+	data.ctx.textAlign = "left";
+	data.ctx.fillText(p2NameAndScore, data.canvas.width / 2, 20);
+	midline();
+	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
+	if (data.trailLength)
+		for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
+	for (let i: number = 0; i < balls.length; i++) balls[i].draw();
+	if (data.touchControl) touchControlArrows();
 }
 
 export function endRound(): void {
-  //gameService.updateScore(data.[0].id, data.gameID, data.p[0].score, data.p[1].score);
   while (balls.length) {
     balls[0].stop();
     balls.shift();

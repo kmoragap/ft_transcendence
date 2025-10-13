@@ -161,12 +161,12 @@ export async function finito(): Promise<void> {
   let winnerId: string;
   var pl2 = 1;
   if (data.mode == "multi") pl2 = 2;
-  if (data.p[0].score > data.p[1].score) {
+  
+  if (data.p[0].score > data.p[pl2].score) {
     winnerId = data.p[0].id;
   } else {
     winnerId = data.p[pl2].id;
   }
-  //results upload for 1v1 and tournament
   var result, result2;
   if (data.mode != "multi") {
     const gameData: gameInfo = {
@@ -192,9 +192,7 @@ export async function finito(): Promise<void> {
       return;
     }
   } else {
-
-    //upload 2 sets of scores for 2vs2 mode
-      const gameData1: gameInfo = {
+    const gameData1: gameInfo = {
       status: "FINISHED",
       player1Id: data.p[0].id,
       player1Name: data.p[0].name,
@@ -216,10 +214,11 @@ export async function finito(): Promise<void> {
       console.error("Failed to finish game on server");
       return;
     }
+    
     if (winnerId == data.p[0].id) winnerId = data.p[1].id;
     else winnerId = data.p[3].id;
-      console.log("id: ", data.p[1].id);
-      const gameData2: gameInfo = {
+      
+    const gameData2: gameInfo = {
       status: "FINISHED",
       player1Id: data.p[1].id,
       player1Name: data.p[1].name,
@@ -277,13 +276,6 @@ export async function endGame() {
   data.showingText = false;
 
   try {
-    console.log("Sending game data:", data);
-    console.log("player1ID: ", data.p[0].id);
-    console.log("player2ID: ", data.p[1].id);
-    if (data.mode == "multi") {
-    console.log("player3ID: ", data.p[2].id);
-    console.log("player4ID: ", data.p[3].id);
-    }
     finito();
   } catch (error) {
     console.error("Failed to finish game:", error);
@@ -295,11 +287,7 @@ export async function endGame() {
       exitGameMessage(winner);
     }, 3000);
   } else {
-    if (data.isTournament && data.tournamentId) {
-      console.log(
-        "Tournament mode: not auto-exiting, waiting for transition window"
-      );
-    } else {
+    if (!data.isTournament || !data.tournamentId) {
       setTimeout(() => {
         exitGameMessage(winner);
       }, 3000);

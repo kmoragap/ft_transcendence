@@ -90,9 +90,7 @@ function loadPlayer(
   playerIndex?: number,
   mode?: string,
 ): playerData {
-  const isAiByName = name.includes("Player") && name !== "Player 1";
-  
-  let finalIsAi = isAi || isAiByName;
+  let finalIsAi = isAi;
 
   let finalName = name;
   if (!finalName || finalName.trim() === "") {
@@ -107,38 +105,42 @@ function loadPlayer(
     }
   }
   
-  if (playerIndex === 2 && mode === "multi" && finalIsAi) {
-    finalName = "Roger Federror";
-  }
   
 
   let finalUp = up;
   let finalDown = down;
   if (!finalUp || !finalDown) {
     if (playerIndex === 1) {
-      finalUp = "Shift";
-      finalDown = "Control";
+      finalUp = "w";
+      finalDown = "s";
     } else {
       finalUp = "ArrowUp";
       finalDown = "ArrowDown";
     }
   }
   
-  if (playerIndex === 2 && mode === "multi" && finalIsAi) {
-    finalUp = "ArrowUp";
-    finalDown = "ArrowDown";
-  }
   
 
   let finalId = id;
+  let isLocalPlayer = false;
+  
   if (!finalIsAi && !finalId) {
-    const urlParams = new URLSearchParams(window.location.search);
-    finalId = urlParams.get("userId") || finalName; // Use name as last resort
+    if (playerIndex === 1) {
+      const urlParams = new URLSearchParams(window.location.search);
+      finalId = urlParams.get("userId") || finalName;
+    } else {
+      isLocalPlayer = true;
+      finalId = finalName || `Player-${playerIndex}`;
+    }
   }
+  
+  const finalFormattedId = finalIsAi 
+    ? `AI-${finalName.replace(/\s+/g, '-')}` 
+    : (isLocalPlayer ? `Local-${finalId.replace(/\s+/g, '-')}` : finalId);
 
   var p: playerData = {
     name: finalName,
-    id: finalIsAi ? `AI-${finalName.replace(/\s+/g, '-')}` : finalId,
+    id: finalFormattedId,
     score: 0,
     isAi: finalIsAi,
     up: finalUp,
@@ -296,13 +298,19 @@ export async function loadConfig(mode: string): Promise<void> {
       ? parseInt(playersNumberInput.value) || 4
       : 4;
 
-    const leftUpKey = loadIn("tournamentLeftUp") || "Shift";
-    const leftDownKey = loadIn("tournamentLeftDown") || "Control";
+    const leftUpKey = loadIn("tournamentLeftUp") || "w";
+    const leftDownKey = loadIn("tournamentLeftDown") || "s";
     const rightUpKey = loadIn("tournamentRightUp") || "ArrowUp";
     const rightDownKey = loadIn("tournamentRightDown") || "ArrowDown";
 
     for (let i = 1; i <= numPlayers; i++) {
+      const wizardData = getPlayerDataFromWizard(i);
+      
       let playerId = loadIn(`p${i}Id`);
+      
+      if (!playerId && wizardData?.id) {
+        playerId = wizardData.id;
+      }
 
       if (i === 1 && !playerId) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -332,8 +340,20 @@ export async function loadConfig(mode: string): Promise<void> {
       const wizardData = getPlayerDataFromWizard(i);
       
       const name = loadIn(`name_p${i}`) || wizardData?.name || `Player ${i}`;
-      const id = loadIn(`p${i}Id`) || (wizardData?.isAi ? "" : "");
+      
+      let id = loadIn(`p${i}Id`);
+      
+      if (!id && wizardData?.id) {
+        id = wizardData.id;
+      }
+      
+      if (!id && i === 1) {
+        const urlParams = new URLSearchParams(window.location.search);
+        id = urlParams.get("userId") || "";
+      }
+      
       const isAi = loadInB(`p${i}Ai`) || wizardData?.isAi || false;
+      
       const up = loadIn(`p${i}Up`) || wizardData?.keys?.up || "ArrowUp";
       const down = loadIn(`p${i}Down`) || wizardData?.keys?.down || "ArrowDown";
       

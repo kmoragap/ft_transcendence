@@ -73,6 +73,16 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
       keyName = "Cmd";
     }
     
+    // Block modifier keys that interfere with browser shortcuts
+    if (keyName === "Control" || keyName === "Shift" || keyName === "Alt" || keyName === "Meta" || keyName === "Cmd") {
+      showKeyRestrictedWarning(keyName);
+      input.style.backgroundColor = "rgba(255,0,0,0.2)";
+      setTimeout(() => {
+        input.style.backgroundColor = "";
+      }, 500);
+      return;
+    }
+    
     if (checkKeyConflict(id, keyName)) {
       input.style.backgroundColor = "rgba(255,0,0,0.2)";
       setTimeout(() => {
@@ -185,6 +195,33 @@ function showAINameWarning(aiName: string): void {
   }, 2000);
 }
 
+function showKeyRestrictedWarning(keyName: string): void {
+  const warning = document.createElement("div");
+  warning.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-family: 'jura', sans-serif;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  `;
+  warning.textContent = `"${keyName}" key is restricted (interferes with browser shortcuts)`;
+  
+  document.body.appendChild(warning);
+  
+  setTimeout(() => {
+    if (warning.parentNode) {
+      warning.parentNode.removeChild(warning);
+    }
+  }, 2000);
+}
+
 function getPlayerNameFromInputId(inputId: string): string {
   const match = inputId.match(/p(\d+)/);
   if (match) {
@@ -227,6 +264,7 @@ window.addEventListener("message", event => {
 
   if (event.data.type === "LOGIN_SUCCESS") {
     const { playerId, playerName, username, userData } = event.data;
+    
     const nameInput = document.getElementById(playerName) as HTMLInputElement;
     if (nameInput) {
       nameInput.value = username;
@@ -254,6 +292,7 @@ window.addEventListener("message", event => {
     const playerIdx = parseInt(playerId) - 1;
     if (allPlayerData && allPlayerData[playerIdx]) {
       allPlayerData[playerIdx].name = username;
+      allPlayerData[playerIdx].id = userData?.id || "";
       allPlayerData[playerIdx].isAi = false;
     }
 
@@ -267,11 +306,16 @@ window.addEventListener("message", event => {
     }
   } else if (event.data.type === "LOGIN_CANCELLED") {
     const { playerId } = event.data;
-    const aiCheckbox = document.getElementById(
-      `p${playerId}Ai`
-    ) as HTMLInputElement;
-    if (aiCheckbox) {
-      aiCheckbox.checked = true;
+    
+    const hasSavedData = savedPlayerData[playerId] && savedPlayerData[playerId].id;
+    
+    if (!hasSavedData) {
+      const aiCheckbox = document.getElementById(
+        `p${playerId}Ai`
+      ) as HTMLInputElement;
+      if (aiCheckbox) {
+        aiCheckbox.checked = true;
+      }
     }
   } else if (event.data.type === "CLEAR_PLAYER2_DATA") {
     (window as any).gamePlayer2 = null;
@@ -351,7 +395,7 @@ export function tournamentSetupMenu(): {
     textContent: `Left Player ${t("up")}: `,
   }) as HTMLLabelElement;
   
-  const leftUpInput = createKeyCaptureInput("tournamentLeftUp", "Shift");
+  const leftUpInput = createKeyCaptureInput("tournamentLeftUp", "w");
   
   const row4 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2",
@@ -363,7 +407,7 @@ export function tournamentSetupMenu(): {
     textContent: `Left Player ${t("down")}: `,
   }) as HTMLLabelElement;
   
-  const leftDownInput = createKeyCaptureInput("tournamentLeftDown", "Control");
+  const leftDownInput = createKeyCaptureInput("tournamentLeftDown", "s");
   
   const row5 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2",
@@ -427,6 +471,7 @@ export function setGameMode(mode: string): void {
 
 export function clearSavedPlayerData(): void {
   savedPlayerData = {};
+  (window as any).gamePlayer2 = null;
 }
 
 export function playerSetupMenu(

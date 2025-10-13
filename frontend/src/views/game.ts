@@ -5,6 +5,7 @@ import { alertSuccess, alertError } from "./../utils/modal-alerts";
 
 let iframeRef: HTMLIFrameElement | null = null;
 let loggedInUsers: Set<string> = new Set();
+let messageHandler: ((event: MessageEvent) => void) | null = null;
 
 type GameMode = "menu" | "single" | "multi" | "tournament";
 
@@ -79,6 +80,7 @@ export function renderGame(): HTMLElement {
     } else {
       showBack();
       hideTitle();
+      loggedInUsers.clear();
       const currentState = store.getState();
       if (currentState.isAuthenticated && currentState.currentUser?.username) {
         loggedInUsers.add(currentState.currentUser.username);
@@ -186,7 +188,11 @@ export function renderGame(): HTMLElement {
 
   window.addEventListener("languageChanged", languageChangeHandler);
 
-  window.addEventListener("message", async event => {
+  if (messageHandler) {
+    window.removeEventListener("message", messageHandler);
+  }
+
+  messageHandler = async (event: MessageEvent) => {
     if (event.origin !== window.location.origin) {
       return;
     }
@@ -266,7 +272,9 @@ export function renderGame(): HTMLElement {
       const { username } = event.data;
       loggedInUsers.delete(username);
     }
-  });
+  };
+
+  window.addEventListener("message", messageHandler);
 
   (section as any).__destroyGameView = destroyGameView;
 
@@ -281,6 +289,10 @@ export function renderGame(): HTMLElement {
 
 export function destroyGameView() {
   loggedInUsers.clear();
+  if (messageHandler) {
+    window.removeEventListener("message", messageHandler);
+    messageHandler = null;
+  }
   if (iframeRef) {
     try {
       iframeRef.contentWindow?.postMessage(

@@ -156,10 +156,10 @@ export function wizard(mode: string) {
 	} else {
 		if (mode === "multi") {
 			allPlayerData = [
-				{ index: 1, name: username, isAi: false, keys: { up: "Shift", down: "Control" } },
-				{ index: 2, name: "Roger Federror", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } },
-				{ index: 3, name: "Boolena Williams", isAi: true, keys: { up: "i", down: "k" } },
-				{ index: 4, name: "Boris Backend", isAi: true, keys: { up: "PageUp", down: "PageDown" } }
+				{ index: 1, name: username, id: userId, isAi: false, keys: { up: "w", down: "s" } },
+				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } },
+				{ index: 3, name: "Boolena Williams", id: "", isAi: true, keys: { up: "i", down: "k" } },
+				{ index: 4, name: "Boris Backend", id: "", isAi: true, keys: { up: "PageUp", down: "PageDown" } }
 			];
 			
 			(window as any).allPlayerData = allPlayerData;
@@ -178,8 +178,8 @@ export function wizard(mode: string) {
 			if (p1IdInput && userId) p1IdInput.value = userId;
 		} else {
 			allPlayerData = [
-				{ index: 1, name: username, isAi: false, keys: { up: "Shift", down: "Control" } },
-				{ index: 2, name: "Roger Federror", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } }
+				{ index: 1, name: username, id: userId, isAi: false, keys: { up: "w", down: "s" } },
+				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } }
 			];
 			
 			totalPlayerPages = 2;
@@ -256,13 +256,13 @@ function createPlayerBoxes(numPlayers: number) {
 		"Novak Breaković",
 	];
 	const defaultKeys = [
-		{ up: "Shift", down: "Control" },
+		{ up: "w", down: "s" },
 		{ up: "ArrowUp", down: "ArrowDown" },
-		{ up: "Shift", down: "Control" },
+		{ up: "w", down: "s" },
 		{ up: "ArrowUp", down: "ArrowDown" },
-		{ up: "Shift", down: "Control" },
+		{ up: "w", down: "s" },
 		{ up: "ArrowUp", down: "ArrowDown" },
-		{ up: "Shift", down: "Control" },
+		{ up: "w", down: "s" },
 		{ up: "ArrowUp", down: "ArrowDown" },
 	];
 	
@@ -273,12 +273,15 @@ function createPlayerBoxes(numPlayers: number) {
 	for (let i = 1; i <= numPlayers; i++) {
 		let playerName = defaultNames[i - 1] || `Player ${i}`;
 		const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
+		let playerId = "";
 		if (i === 1) {
 			playerName = username;
+			playerId = userId;
 		}
 		allPlayerData.push({
 			index: i,
 			name: playerName,
+			id: playerId,
 			isAi: i > 1,
 			keys: playerKeys
 		});

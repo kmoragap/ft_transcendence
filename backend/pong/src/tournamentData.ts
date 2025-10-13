@@ -1,6 +1,7 @@
 import { loadConfig, setPendingTournamentId } from "./gameData";
 import { tournamentService } from "./services/tournamentService";
 import { newTournamentGame } from "./tournamentGame";
+import { allPlayerData } from "./wizard";
 
 export async function createAndStartTournament(): Promise<void> {
   try {
@@ -28,8 +29,14 @@ export async function createAndStartTournament(): Promise<void> {
         const playerName = playerNameInput?.value || `Player ${i}`;
         players.push(`AI-${playerName.replace(/\s+/g, '-')}`);
       } else {
-        if (playerIdInput && playerIdInput.value) {
-          players.push(playerIdInput.value);
+        let playerId = playerIdInput?.value || "";
+        
+        if (!playerId && allPlayerData && allPlayerData[i - 1]) {
+          playerId = allPlayerData[i - 1].id || "";
+        }
+        
+        if (playerId) {
+          players.push(playerId);
         } else if (i === 1) {
           const urlParams = new URLSearchParams(window.location.search);
           const userId = urlParams.get("userId") || playerNameInput?.value;
@@ -42,29 +49,9 @@ export async function createAndStartTournament(): Promise<void> {
           players.push(userId);
         } else {
           const name = playerNameInput?.value || `player${i}`;
-          players.push(name);
+          players.push(`Local-${name.replace(/\s+/g, '-')}`);
         }
       }
-    }
-
-    console.log("Creating tournament with players:", players);
-    console.log("Player details:");
-    for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(
-        `p${i}Id`,
-      ) as HTMLInputElement;
-      const playerNameInput = document.getElementById(
-        `name_p${i}`,
-      ) as HTMLInputElement;
-      const playerAiInput = document.getElementById(
-        `p${i}Ai`,
-      ) as HTMLInputElement;
-      console.log(`Player ${i}:`, {
-        id: playerIdInput?.value || "none",
-        name: playerNameInput?.value || "none",
-        isAi: playerAiInput?.checked || false,
-        finalId: players[i - 1],
-      });
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -84,10 +71,8 @@ export async function createAndStartTournament(): Promise<void> {
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       const playerId = players[i - 1];
       
-      // Get the correct player name - try form input first, then use the name from allPlayerData
       let playerName = playerNameInput?.value;
       if (!playerName || playerName.trim() === "") {
-        // Fallback: use the same logic as wizard.ts createPlayerBoxes
         const urlParams = new URLSearchParams(window.location.search);
         const username = urlParams.get("username") || "Player 1";
         const defaultNames = ["Player 1", "Roger Federror", "Boolena Williams", "Boris Backend"];
@@ -102,9 +87,7 @@ export async function createAndStartTournament(): Promise<void> {
       playerIdToNameMap[playerId] = playerName;
     }
 
-    // Store the mapping in a global variable for tournament use
     (window as any).playerIdToNameMap = playerIdToNameMap;
-    console.log("Player ID to Name mapping:", playerIdToNameMap);
     const defaultName = `Tournament - ${new Date().toISOString()} (${
       players.length
     } players)`;
@@ -124,8 +107,6 @@ export async function createAndStartTournament(): Promise<void> {
       alert("Failed to create tournament. Please try again.");
       return;
     }
-
-    console.log("Tournament created successfully:", tournament.id);
 
     setPendingTournamentId(tournament.id);
 

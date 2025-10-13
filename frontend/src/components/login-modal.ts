@@ -10,6 +10,9 @@ export interface LoginModalOptions {
 }
 
 export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
+  const existingModals = document.querySelectorAll("#login-modal");
+  existingModals.forEach(modal => modal.remove());
+  
   const modal = document.createElement("div");
   modal.className =
     "fixed inset-0 bg-[rgba(3,27,27,0.75)] flex items-center justify-center z-50";

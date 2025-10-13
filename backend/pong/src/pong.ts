@@ -96,8 +96,11 @@ function update(): void {
     data.lastTime = now;
     for (let i: number = 0; i < balls.length; i++) balls[i].move();
     for (let i: number = 0; i < pad.length; i++) {
-      if (pad[i].isAi()) pad[i].moveAI();
-      else pad[i].movePaddle();
+      if (pad[i].isAi()) {
+        pad[i].moveAI();
+      } else {
+        pad[i].movePaddle();
+      }
     }
   }
 }

@@ -215,6 +215,7 @@ window.addEventListener("message", event => {
 
   if (event.data.type === "LOGIN_SUCCESS") {
     const { playerId, playerName, username, userData } = event.data;
+    console.log(`LOGIN_SUCCESS for Player ${playerId}:`, { playerId, playerName, username, userData });
     const nameInput = document.getElementById(playerName) as HTMLInputElement;
     if (nameInput) {
       nameInput.value = username;
@@ -472,6 +473,8 @@ export function playerSetupMenu(
   }) as HTMLInputElement;
   e4.addEventListener("change", event => {
     const target = event.target as HTMLInputElement;
+    
+    
     if (!target.checked) {
       window.parent.postMessage(
         {

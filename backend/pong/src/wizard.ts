@@ -163,6 +163,8 @@ export function wizard(mode: string) {
 				{ index: 4, name: "Boris Backend", isAi: true, keys: { up: "PageUp", down: "PageDown" } }
 			];
 			
+			(window as any).allPlayerData = allPlayerData;
+			
 			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 			const playersPerPage = isMobile ? 1 : 2;
 			totalPlayerPages = Math.ceil(4 / playersPerPage);
@@ -173,7 +175,6 @@ export function wizard(mode: string) {
 			
 			renderPlayerPage(currentPlayerPage, playersPerPage, playerSetupFlexContainer);
 			
-			// Set userId for player 1 after form is created
 			const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
 			if (p1IdInput && userId) p1IdInput.value = userId;
 		} else {

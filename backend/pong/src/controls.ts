@@ -14,22 +14,32 @@ export function controlKeys(): void {
 	
 	document.addEventListener("keyup", (ev) => {
 		if (pad.length) {
-			if (ev.key == "Shift" || ev.key == "Control") {
-				if (ev.location == 1) {
-					if (ev.key == data.p[0].up || ev.key == data.p[0].down) {
-						pad[0].setDir(0);
-						if (data.mode == "doublePaddle") pad[2].setDir(0);
+			// Handle specific key releases for each player
+			for (let i: number = 0; i < data.p.length; i++) {
+				if (ev.key == data.p[i].up || ev.key == data.p[i].down) {
+					// Find the corresponding paddle(s) for this player
+					if (data.mode == "multi") {
+						// In multi mode, each player has one paddle
+						if (i < pad.length) {
+							pad[i].setDir(0);
+						}
+					} else if (data.mode == "doublePaddle") {
+						// In double paddle mode, players have multiple paddles
+						if (i == 0) {
+							pad[0].setDir(0);
+							pad[2].setDir(0);
+						} else if (i == 1) {
+							pad[1].setDir(0);
+							pad[3].setDir(0);
+						}
+					} else {
+						// Standard 2-player mode
+						if (i < pad.length) {
+							pad[i].setDir(0);
+						}
 					}
-					else if (ev.key == data.p[1].up || ev.key == data.p[1].down) {
-						pad[1].setDir(0);
-						if (data.mode == "doublePaddle") pad[3].setDir(0);
-					}
-				}
-				data.keys[ev.key] = false;
-			} else {
-				for (let i: number = 0; i < pad.length; i++) {
-					pad[i].setDir(0);
 					data.keys[ev.key] = false;
+					break; // Found the matching player, stop searching
 				}
 			}
 			if (ev.key == "Escape") {//debug

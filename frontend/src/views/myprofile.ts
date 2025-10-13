@@ -1,5 +1,6 @@
 import { store } from "../store";
 import { t, updateText } from "../i18n";
+import { logout } from "../utils/auth";
 import {
   uploadMyAvatar,
   updateMyProfile,
@@ -468,7 +469,6 @@ export function renderMyProfile(): HTMLElement {
         });
       });
 
-    // Bind event listeners for remove friend buttons
     friendRequestsList.querySelectorAll(".remove-friend-btn").forEach(btn => {
       btn.addEventListener("click", async e => {
         const target = e.target as HTMLButtonElement;
@@ -719,7 +719,7 @@ export function renderMyProfile(): HTMLElement {
     });
   }
 
-  function enterEditMode() {
+  async function enterEditMode() {
     section.innerHTML = getEditHTML();
     updateText();
     const form = section.querySelector("form") as HTMLFormElement;
@@ -744,6 +744,9 @@ export function renderMyProfile(): HTMLElement {
       const is2faEnabled = data.get("is2faEnabled") === "on";
 
       try {
+        const emailChanged = profileData.email !== user.email;
+        const usernameChanged = profileData.username !== user.username;
+
         await updateMyProfile(profileData);
         updateCurrentUserProfile(profileData);
 
@@ -769,6 +772,13 @@ export function renderMyProfile(): HTMLElement {
         bindViewEvents();
         updateText();
 
+        if (emailChanged || usernameChanged) {
+          alertSuccess(t("profile_updated"));
+          await logout();
+          window.location.href = "/login";
+          return;
+        }
+
         alertSuccess(t("profile_updated"));
       } catch (error: any) {
         console.error("Failed to update profile:", error);
@@ -777,5 +787,6 @@ export function renderMyProfile(): HTMLElement {
     });
   }
   updateText();
+  
   return section;
 }

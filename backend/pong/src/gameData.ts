@@ -90,9 +90,17 @@ function loadPlayer(
   outercol: string,
   cornerCol: string,
   playerIndex?: number,
+  mode?: string,
 ): playerData {
   const isAiByName = name.includes("Player") && name !== "Player 1";
-  const finalIsAi = isAi || isAiByName;
+  
+  let finalIsAi = isAi || isAiByName;
+  
+  // Default Player 2 to AI in multi mode if form inputs are empty
+  if (playerIndex === 2 && mode === "multi" && !name && !id) {
+    finalIsAi = true;
+  }
+  
 
   let finalName = name;
   if (!finalName || finalName.trim() === "") {
@@ -101,11 +109,16 @@ function loadPlayer(
       finalName = urlParams.get("username") || "Player 1";
     } else if (finalIsAi) {
       const defaultNames = ["Player 1", "Roger Federror", "Boolena Williams", "Boris Backend"];
-      finalName = defaultNames[playerIndex - 1] || `Player ${playerIndex}`;
+      finalName = defaultNames[(playerIndex || 1) - 1] || `Player ${playerIndex || 1}`;
     } else {
-      finalName = `Player ${playerIndex}`;
+      finalName = `Player ${playerIndex || 1}`;
     }
   }
+  
+  if (playerIndex === 2 && mode === "multi" && finalIsAi) {
+    finalName = "Roger Federror";
+  }
+  
 
   let finalUp = up;
   let finalDown = down;
@@ -118,6 +131,13 @@ function loadPlayer(
       finalDown = "ArrowDown";
     }
   }
+  
+  // Ensure Player 2 has correct keys when AI in multi mode
+  if (playerIndex === 2 && mode === "multi" && finalIsAi) {
+    finalUp = "ArrowUp";
+    finalDown = "ArrowDown";
+  }
+  
 
   let finalId = id;
   if (!finalIsAi && !finalId) {
@@ -142,6 +162,15 @@ function loadPlayer(
 function loadIn(id: string): string {
   const el = document.getElementById(id) as HTMLInputElement;
   return el ? el.value : "";
+}
+
+// Get player data from allPlayerData when form inputs are not available
+function getPlayerDataFromWizard(playerIndex: number): any {
+  const allPlayerData = (window as any).allPlayerData;
+  if (allPlayerData && allPlayerData.length >= playerIndex) {
+    return allPlayerData[playerIndex - 1]; // allPlayerData is 0-indexed
+  }
+  return null;
 }
 
 function loadInB(id: string): boolean {
@@ -269,6 +298,21 @@ export async function loadConfig(mode: string): Promise<void> {
 
   var p: playerData[] = [];
 
+  // Debug: Check what form inputs exist
+  if (mode === "multi") {
+    console.log("Multi mode form inputs check:");
+    for (let i = 1; i <= 4; i++) {
+      const nameInput = document.getElementById(`name_p${i}`) as HTMLInputElement;
+      const idInput = document.getElementById(`p${i}Id`) as HTMLInputElement;
+      const aiInput = document.getElementById(`p${i}Ai`) as HTMLInputElement;
+      console.log(`Player ${i}:`, {
+        nameInput: nameInput?.value || "not found",
+        idInput: idInput?.value || "not found",
+        aiInput: aiInput?.checked || "not found"
+      });
+    }
+  }
+
   if (mode === "tournament") {
     const playersNumberInput = document.getElementById(
       "playersNumber",
@@ -304,67 +348,49 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn(`p${i}OuterCol`),
           loadIn(`p${i}CornerCol`),
           i,
+          mode,
         ),
       );
     }
   } else {
-    // Standard 2-player setup
-    p.push(
-      loadPlayer(
-        loadIn("name_p1"),
-        loadIn("p1Id"), // get user id from hidden input
-        loadInB("p1Ai"),
-        loadIn("p1Up"),
-        loadIn("p1Down"),
-        loadIn("p1InnerCol"),
-        loadIn("p1OuterCol"),
-        loadIn("p1CornerCol"),
-        1,
-      ),
-    );
-    p.push(
-      loadPlayer(
-        loadIn("name_p2"),
-        loadIn("p2Id"), // get user ID from hidden input
-        loadInB("p2Ai"),
-        loadIn("p2Up"),
-        loadIn("p2Down"),
-        loadIn("p2InnerCol"),
-        loadIn("p2OuterCol"),
-        loadIn("p2CornerCol"),
-        2,
-      ),
-    );
-
-    // Add players 3 and 4 for multi mode
-    if (mode === "multi") {
+    // Standard 2-player setup or multi mode
+    for (let i = 1; i <= (mode === "multi" ? 4 : 2); i++) {
+      const wizardData = getPlayerDataFromWizard(i);
+      
+      const name = loadIn(`name_p${i}`) || wizardData?.name || `Player ${i}`;
+      const id = loadIn(`p${i}Id`) || (wizardData?.isAi ? "" : "");
+      const isAi = loadInB(`p${i}Ai`) || wizardData?.isAi || false;
+      const up = loadIn(`p${i}Up`) || wizardData?.keys?.up || "ArrowUp";
+      const down = loadIn(`p${i}Down`) || wizardData?.keys?.down || "ArrowDown";
+      
+      // Debug: Show what data each player gets
+      if (mode === "multi") {
+        console.log(`Player ${i} final data:`, {
+          name,
+          id,
+          isAi,
+          up,
+          down,
+          wizardData: wizardData ? "found" : "not found"
+        });
+      }
+      
       p.push(
         loadPlayer(
-          loadIn("name_p3"),
-          "", //player ID
-          loadInB("p3Ai"),
-          loadIn("p3Up"),
-          loadIn("p3Down"),
-          loadIn("p3InnerCol"),
-          loadIn("p3OuterCol"),
-          loadIn("p3CornerCol"),
-          3,
-        ),
-      );
-      p.push(
-        loadPlayer(
-          loadIn("name_p4"),
-          "", //player ID
-          loadInB("p4Ai"),
-          loadIn("p4Up"),
-          loadIn("p4Down"),
-          loadIn("p4InnerCol"),
-          loadIn("p4OuterCol"),
-          loadIn("p4CornerCol"),
-          4,
+          name,
+          id,
+          isAi,
+          up,
+          down,
+          loadIn(`p${i}InnerCol`),
+          loadIn(`p${i}OuterCol`),
+          loadIn(`p${i}CornerCol`),
+          i,
+          mode,
         ),
       );
     }
+
   }
 	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	
@@ -512,3 +538,4 @@ export async function loadConfig(mode: string): Promise<void> {
     setTimeout(() => countdown(3, 500), 500);
   }
 }
+

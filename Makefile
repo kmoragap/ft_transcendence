@@ -1,6 +1,7 @@
 SSL_SCRIPT := tools/ssl_generator.sh
 PROJECT := backend/nginx
 COMPOSE_ALL := docker-compose -f docker-compose.yml -f devops/elk/compose.elk.yml
+COMPOSE_APP := docker-compose -f compose-app.yml
 SSL := backend/nginx
 
 .PHONY: all up down rebuild clean show-url rebuild_game
@@ -17,20 +18,30 @@ ssl:
 	@bash $(SSL_SCRIPT)
 
 up:
-	@echo "🚀 Starting containers..."
+	@echo "Starting containers..."
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
-	@echo "✅ Containers are up and running."
+	@echo "Containers are up and running."
+
+app:
+	@echo "Starting application containers..."
+	@$(COMPOSE_APP) up -d > /dev/null 2>&1
+	@echo "Application containers are up and running."
 
 down:
-	@echo "🛑 Stopping containers..."
+	@echo "Stopping containers..."
 	@$(COMPOSE_ALL) down
 	@docker system prune -f
 	@echo "Containers have been stopped."
 
 rebuild: down ssl show-url
-	@echo "🔄 Rebuilding images and starting containers..."
+	@echo "Rebuilding images and starting containers..."
 	@$(COMPOSE_ALL) up --build -d > /dev/null 2>&1
-	@echo "✅ Containers are up and running."
+	@echo "Containers are up and running."
+
+reapp: down ssl show-url
+	@echo "Rebuilding application images and starting containers..."
+	@$(COMPOSE_APP) up --build -d > /dev/null 2>&1
+	@echo "Application containers are up and running."
 
 clean: down
 	@echo "Removing SSL certificates..."
@@ -40,7 +51,7 @@ clean: down
 	@echo "🧹 Removing Docker volumes..."
 	@$(COMPOSE_ALL) down -v > /dev/null 2>&1
 	@docker volume ls -q | xargs -r docker volume rm
-	@echo "✅ Cleanup complete."
+	@echo "Cleanup complete."
 
 rebuild_game: down
 	@docker image rm ft_transcendence-pong:latest

@@ -69,8 +69,6 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
     
     if (event.key === " ") {
       keyName = "Space";
-    } else if (event.key === "Control") {
-      keyName = "Ctrl";
     } else if (event.key === "Meta") {
       keyName = "Cmd";
     }

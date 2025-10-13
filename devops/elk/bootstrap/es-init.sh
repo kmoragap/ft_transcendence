@@ -71,13 +71,13 @@ ILM_POLICY_BODY='{
       "hot": {
         "actions": {
           "rollover": {
-            "max_size": "1GB",
-            "max_age": "1d"
+            "max_size": "2MB",
+            "max_age": "5m"
           }
         }
       },
       "delete": {
-        "min_age": "7d",
+        "min_age": "15m",
         "actions": {
           "delete": {}
         }

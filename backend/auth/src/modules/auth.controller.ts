@@ -1,21 +1,20 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
+import { User, JWTPayload } from "../types/auth.types";
 import {
-  LoginRequest,
-  RegisterRequest,
-  AuthResponse,
-  User,
-  JWTPayload,
-} from "../types/auth.types";
-import {
-  AuthError,
-  ValidationError,
   UnauthorizedError,
   ConflictError,
   handleAuthError,
 } from "../utils/errorHandler";
 import { send2faCode, verify2faCode } from "./email_2fa.controller";
+import { validateBody } from "./auth.middleware";
+import {
+  Verify2faRequest,
+  Resend2faRequest,
+  RegisterRequest,
+  LoginRequest,
+} from "./auth.schema";
 
 async function authenticateUser(
   identifier: string,
@@ -184,15 +183,6 @@ export async function registerHandler(
 ) {
   try {
     const { username, email, firstname, password } = request.body;
-
-    //validation
-    if (
-      !username?.trim() ||
-      !email?.trim() ||
-      !firstname?.trim() ||
-      !password?.trim()
-    )
-      throw new ValidationError("All fields are required");
     // Check if email exists.
     const existingUser = await getUserByEmail(email);
     if (existingUser)
@@ -246,24 +236,16 @@ export async function loginHandler(
   reply: FastifyReply,
 ) {
   try {
-    const body = request.body as Record<string, any>;
-    const password = String(body.password || "");
-    const identifier: string | undefined =
-      typeof body.username === "string"
-        ? body.username
-        : typeof body.email === "string"
-          ? body.email
-          : typeof body.identifier === "string"
-            ? body.identifier
-            : undefined;
-
-    if (!identifier) {
+    const { username, email, identifier, password } = request.body;
+    // Validation handled by middleware
+    const loginIdentifier = username || email || identifier;
+    if (!loginIdentifier) {
       return reply
         .code(400)
         .send({ message: "Must provide email or username" });
     }
 
-    const user = await authenticateUser(identifier, password);
+    const user = await authenticateUser(loginIdentifier, password);
 
     // 2FA flow:
     if (user?.is2faEnabled) {
@@ -324,7 +306,8 @@ export async function resend2faHandler(
       await send2faCode(user.email);
     }
     return reply.code(200).send({
-      message: "If your account supports two-factor authentication, a code has been sent to your email.",
+      message:
+        "If your account supports two-factor authentication, a code has been sent to your email.",
     });
   } catch (error) {
     console.error("Error resending 2FA code:", error);

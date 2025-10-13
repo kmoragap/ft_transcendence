@@ -1,5 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { authenticateToken } from "../modules/users.middleware";
+import {
+  authenticateToken,
+  validateBody,
+  validateParams,
+  validateQuery,
+} from "../modules/users.middleware";
 import {
   createUserHandler,
   deleteUserHandler,
@@ -29,35 +34,40 @@ import {
   getMatchHistoryHandler,
 } from "./stats.controller";
 import { userIdParamsSchema, updateStatsBodySchema } from "./stats.schema";
-
+import { userSchemas } from "./users.schemas";
 export default async function userRoutes(fastify: FastifyInstance) {
   // profile routes (register first to avoid conflicts)
   fastify.put(
     "/me",
-    { preHandler: [authenticateToken] },
-    updateMyProfileHandler
+    {
+      preHandler: [authenticateToken, validateBody(userSchemas.updateProfile)],
+    },
+    updateMyProfileHandler,
   );
   fastify.post(
     "/me/avatar",
     { preHandler: [authenticateToken] },
-    uploadAvatarHandler
+    uploadAvatarHandler,
   );
   fastify.put(
     "/me/online-status",
     { preHandler: [authenticateToken] },
-    updateOnlineStatusHandler
+    updateOnlineStatusHandler,
   );
   fastify.put(
     "/me/2fa",
-    { preHandler: [authenticateToken] },
-    toggle2faHandler
+    { preHandler: [authenticateToken, validateBody(userSchemas.toggle2fa)] },
+    toggle2faHandler,
   );
-
   // internal service route for auth service
   fastify.put("/:userId/online-status", updateOnlineStatusByIdHandler);
 
   // public routes
-  fastify.post("/", createUserHandler); // user registartion
+  fastify.post(
+    "/",
+    { preHandler: validateBody(userSchemas.create) },
+    createUserHandler,
+  );
   fastify.get("/by-email/:email", getUserByEmailHandler); // for the auth service
   fastify.get("/by-username/:username", getUserByUsernameHandler); // for the auth service
 
@@ -65,41 +75,44 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.get("/", { preHandler: [authenticateToken] }, getUsersHandler);
   fastify.get(
     "/search",
-    { preHandler: [authenticateToken] },
-    searchUsersHandler
+    { preHandler: [authenticateToken, validateQuery(userSchemas.searchUsers)] },
+    searchUsersHandler,
   );
-  fastify.delete("/", { preHandler: [authenticateToken] }, deleteUserHandler);
-
+  fastify.delete(
+    "/",
+    { preHandler: validateBody(userSchemas.delete) },
+    deleteUserHandler,
+  );
   // --- Friend Request Routes ---
   fastify.post(
     "/friends/requests",
     { preHandler: [authenticateToken] },
-    sendFriendRequestHandler
+    sendFriendRequestHandler,
   );
   fastify.get(
     "/friends/requests/pending",
     { preHandler: [authenticateToken] },
-    getFriendRequestsHandler
+    getFriendRequestsHandler,
   );
   fastify.put(
     "/friends/requests/:friendshipId",
     { preHandler: [authenticateToken] },
-    respondToFriendRequestHandler
+    respondToFriendRequestHandler,
   );
   fastify.get(
     "/friends",
     { preHandler: [authenticateToken] },
-    getFriendsHandler
+    getFriendsHandler,
   );
   fastify.get(
     "/friendships",
     { preHandler: [authenticateToken] },
-    getAllFriendshipsHandler
+    getAllFriendshipsHandler,
   );
   fastify.delete(
     "/friends/:friendshipId",
     { preHandler: [authenticateToken] },
-    deleteFriendHandler
+    deleteFriendHandler,
   );
 
   // pong routes
@@ -111,7 +124,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         params: userIdParamsSchema,
       },
     },
-    getUserStatsHandler
+    getUserStatsHandler,
   );
 
   fastify.put(
@@ -122,7 +135,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         body: updateStatsBodySchema,
       },
     },
-    updateUserHistoryHandler
+    updateUserHistoryHandler,
   );
 
   fastify.put(
@@ -133,7 +146,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         body: updateStatsBodySchema,
       },
     },
-    updateUserStatsHandler
+    updateUserStatsHandler,
   );
   fastify.get(
     "/:id/matches",
@@ -143,7 +156,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         params: userIdParamsSchema,
       },
     },
-    getMatchHistoryHandler
+    getMatchHistoryHandler,
   );
 
   fastify.post("/users/batch", getUsersByIds);

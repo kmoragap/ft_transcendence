@@ -1,7 +1,7 @@
 import { t } from "./i18n";
 import { allPlayerData } from "./wizard";
 
-let currentGameMode: string = "single"; // Track current game mode for key conflict checks
+let currentGameMode: string = "single";
 
 const AI_NAMES = [
   "Roger Federror",
@@ -91,6 +91,19 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
     }, 300);
     
     input.blur();
+    
+    const playerKeyMatch = id.match(/^p(\d+)(Up|Down)$/);
+    if (playerKeyMatch && allPlayerData) {
+      const playerIndex = parseInt(playerKeyMatch[1]) - 1;
+      const direction = playerKeyMatch[2].toLowerCase() as 'up' | 'down';
+      
+      if (allPlayerData[playerIndex]) {
+        if (!allPlayerData[playerIndex].keys) {
+          allPlayerData[playerIndex].keys = { up: '', down: '' };
+        }
+        allPlayerData[playerIndex].keys[direction] = keyName;
+      }
+    }
   });
 
   return input;

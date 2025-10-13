@@ -117,7 +117,7 @@ function render(): void {
 		p2NameAndScore = margin + data.p[1].score + " - " + data.p[1].name;
 	} else {
 		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
-		p2NameAndScore = margin + data.p[1].score + " - Team 2";
+		p2NameAndScore = margin + data.p[2].score + " - Team 2";
 	}
 	data.ctx.font = `bold ${data.canvas.height / 24}px jura, sans-serif`;
 	data.ctx.fillStyle = "rgba(102, 252, 241, 0.5)";

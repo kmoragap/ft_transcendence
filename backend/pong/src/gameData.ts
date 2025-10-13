@@ -94,19 +94,44 @@ function loadPlayer(
   const isAiByName = name.includes("Player") && name !== "Player 1";
   const finalIsAi = isAi || isAiByName;
 
+  let finalName = name;
+  if (!finalName || finalName.trim() === "") {
+    if (playerIndex === 1) {
+      const urlParams = new URLSearchParams(window.location.search);
+      finalName = urlParams.get("username") || "Player 1";
+    } else if (finalIsAi) {
+      const defaultNames = ["Player 1", "Roger Federror", "Boolena Williams", "Boris Backend"];
+      finalName = defaultNames[playerIndex - 1] || `Player ${playerIndex}`;
+    } else {
+      finalName = `Player ${playerIndex}`;
+    }
+  }
+
+  let finalUp = up;
+  let finalDown = down;
+  if (!finalUp || !finalDown) {
+    if (playerIndex === 1) {
+      finalUp = "Shift";
+      finalDown = "Control";
+    } else {
+      finalUp = "ArrowUp";
+      finalDown = "ArrowDown";
+    }
+  }
+
   let finalId = id;
   if (!finalIsAi && !finalId) {
     const urlParams = new URLSearchParams(window.location.search);
-    finalId = urlParams.get("userId") || name; // Use name as last resort
+    finalId = urlParams.get("userId") || finalName; // Use name as last resort
   }
 
   var p: playerData = {
-    name: name,
-    id: finalIsAi ? `AI-${name.replace(/\s+/g, '-')}` : finalId,
+    name: finalName,
+    id: finalIsAi ? `AI-${finalName.replace(/\s+/g, '-')}` : finalId,
     score: 0,
     isAi: finalIsAi,
-    up: up,
-    down: down,
+    up: finalUp,
+    down: finalDown,
     innerCol: innerCol || '#ffffff',
     outerCol: outercol || '#808080',
     cornerCol: cornerCol || '#ff0000',

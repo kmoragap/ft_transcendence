@@ -1,6 +1,6 @@
 import { loadConfig } from "./gameData";
 import { t } from "./i18n";
-import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode } from "./menus";
+import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode, clearSavedPlayerData } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
 
 let currentStep = 1;
@@ -12,14 +12,12 @@ let currentGameSettingsPage = 0;
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
 	settingsForm.style.display = "block";
 	bgColorsForm.style.display = "none";
-	// Remove pagination navigation - use main wizard buttons instead
 }
 
 function updateButtonText() {
 	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	
 	if (currentStep === 2 || (currentStep === 1 && totalPlayerPages > 1)) {
-		// Player setup step (tournament step 2 or 2vs2 step 1)
 		if (totalPlayerPages > 1) {
 			nextButton.textContent = currentPlayerPage < totalPlayerPages - 1 ? `Next (${currentPlayerPage + 1}/${totalPlayerPages})` : "Next";
 			backButton.textContent = currentPlayerPage > 0 ? `Back (${currentPlayerPage + 1}/${totalPlayerPages})` : "Back";
@@ -28,7 +26,6 @@ function updateButtonText() {
 			backButton.textContent = "Back";
 		}
 	} else if (currentStep === 3 && isMobile) {
-		// Game settings step on mobile
 		nextButton.textContent = currentGameSettingsPage === 0 ? "Next (1/2)" : "Next";
 		backButton.textContent = currentGameSettingsPage === 1 ? "Back (2/2)" : "Back";
 	} else {
@@ -37,7 +34,6 @@ function updateButtonText() {
 	}
 }
 
-//navigation
 const backButton = btn("back", "Back", "backBtn");
 const nextButton = btn("next", "Next", "nextBtn");
 const finishButton = btn("start", "Start", "finishBtn");
@@ -46,11 +42,8 @@ finishButton.classList.add("hidden");
 
 export function wizard(mode: string) {
 	setGameMode(mode);
+	clearSavedPlayerData();
 	const card = document.getElementById("card") as HTMLDivElement;
-	const player1Container = createPlayerContainer(1);
-	const player2Container = createPlayerContainer(2);
-	const player1List = createPlayerList();
-	const player2List = createPlayerList();
 
 	const urlParams = new URLSearchParams(window.location.search);
 	const username = urlParams.get("username") || "Player 1";
@@ -64,15 +57,7 @@ export function wizard(mode: string) {
 	}) as HTMLDivElement;
 	navigationContainer.appendChild(backButton);
 	navigationContainer.appendChild(nextButton);
-	navigationContainer.appendChild(finishButton);
-	
-	playerSetupMenu(player1List, "1", username, false, "Shift", "Control", "#ffffff", "#808080", "#ff0000");
-	const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
-	if (p1IdInput && userId) p1IdInput.value = userId;
-	playerSetupMenu(player2List, "2", "Roger Federror", true, "ArrowUp", "ArrowDown", "#ffffff", "#808080", "#ff0000");
-
-	player1Container.appendChild(player1List);
-	player2Container.appendChild(player2List);
+	navigationContainer.appendChild(finishButton)
 
 	const { form: setupForm } = gameSetupMenu(mode);
 	const settingsForm = setupForm.querySelector("#settings") as HTMLFormElement;
@@ -171,7 +156,6 @@ export function wizard(mode: string) {
 		});
 	} else {
 		if (mode === "multi") {
-			// Use pagination for 4 players in 2vs2 mode
 			allPlayerData = [
 				{ index: 1, name: username, isAi: false, keys: { up: "Shift", down: "Control" } },
 				{ index: 2, name: "Roger Federror", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } },
@@ -188,10 +172,27 @@ export function wizard(mode: string) {
 			step1Container.appendChild(playerSetupFlexContainer);
 			
 			renderPlayerPage(currentPlayerPage, playersPerPage, playerSetupFlexContainer);
+			
+			// Set userId for player 1 after form is created
+			const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
+			if (p1IdInput && userId) p1IdInput.value = userId;
 		} else {
-			playerSetupFlexContainer.appendChild(player1Container);
-			playerSetupFlexContainer.appendChild(player2Container);
+			allPlayerData = [
+				{ index: 1, name: username, isAi: false, keys: { up: "Shift", down: "Control" } },
+				{ index: 2, name: "Roger Federror", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } }
+			];
+			
+			totalPlayerPages = 2;
+			currentPlayerPage = 0;
+			
+			playerSetupFlexContainer.id = "playerSetupContainer";
 			step1Container.appendChild(playerSetupFlexContainer);
+			
+			renderPlayerPage(currentPlayerPage, 1, playerSetupFlexContainer);
+			
+			// Set userId for player 1 after form is created
+			const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
+			if (p1IdInput && userId) p1IdInput.value = userId;
 		}
 		const singleStep2FlexContainer = createFlexContainer();
 		singleStep2FlexContainer.appendChild(settingsForm);
@@ -200,9 +201,8 @@ export function wizard(mode: string) {
 
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
-			if (mode === "multi" && currentStep === 1) {
-				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-				const playersPerPage = isMobile ? 1 : 2;
+			if (currentStep === 1 && totalPlayerPages > 1) {
+				const playersPerPage = mode === "multi" ? (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 1 : 2) : 1;
 				if (currentPlayerPage < totalPlayerPages - 1) {
 					currentPlayerPage++;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
@@ -214,10 +214,9 @@ export function wizard(mode: string) {
 		});
 		backButton.addEventListener("click", (e) => {
 			e.preventDefault();
-			if (mode === "multi" && currentStep === 1) {
+			if (currentStep === 1 && totalPlayerPages > 1) {
 				if (currentPlayerPage > 0) {
-					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-					const playersPerPage = isMobile ? 1 : 2;
+					const playersPerPage = mode === "multi" ? (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 1 : 2) : 1;
 					currentPlayerPage--;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
 					updateButtonText();
@@ -268,12 +267,14 @@ function createPlayerBoxes(numPlayers: number) {
 		{ up: "ArrowUp", down: "ArrowDown" },
 	];
 	
+	const urlParams = new URLSearchParams(window.location.search);
+	const username = urlParams.get("username") || "Player 1";
+	const userId = urlParams.get("userId") || "";
+	
 	for (let i = 1; i <= numPlayers; i++) {
 		let playerName = defaultNames[i - 1] || `Player ${i}`;
 		const playerKeys = defaultKeys[i - 1] || { up: "q", down: "a" };
 		if (i === 1) {
-			const urlParams = new URLSearchParams(window.location.search);
-			const username = urlParams.get("username") || "Player 1";
 			playerName = username;
 		}
 		allPlayerData.push({
@@ -285,6 +286,11 @@ function createPlayerBoxes(numPlayers: number) {
 	}
 	
 	renderPlayerPage(currentPlayerPage, playersPerPage);
+	
+	// Set userId for player 1 after form is created
+	const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
+	if (p1IdInput && userId) p1IdInput.value = userId;
+	
 	updateButtonText();
 }
 

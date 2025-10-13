@@ -116,7 +116,7 @@ function render(): void {
 		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
 		p2NameAndScore = margin + data.p[1].score + " - Team 2";
 	}
-	data.ctx.font = `bold ${data.canvas.height / 12}px jura, sans-serif`;
+	data.ctx.font = `bold ${data.canvas.height / 24}px jura, sans-serif`;
 	data.ctx.fillStyle = "rgba(102, 252, 241, 0.5)";
 	data.ctx.textBaseline = "top";
 	data.ctx.textAlign = "right";
@@ -188,7 +188,6 @@ export async function finito(): Promise<void> {
 
   console.log("Game data successfully sent to server");
 
-  // Handle tournament progression if this is a tournament game
   if (data.isTournament && data.tournamentId) {
     try {
       const tournamentResult = await handleTournamentGameCompletion(

@@ -201,7 +201,7 @@ function savePlayerData(playerId: string): void {
 
 function restorePlayerData(playerId: string, nameInput: HTMLInputElement, idInput: HTMLInputElement, aiCheckbox: HTMLInputElement): void {
   const saved = savedPlayerData[playerId];
-  if (saved) {
+  if (saved && saved.name) {
     nameInput.value = saved.name;
     idInput.value = saved.id;
     aiCheckbox.checked = saved.isAi;
@@ -402,6 +402,10 @@ export function setGameMode(mode: string): void {
   currentGameMode = mode;
 }
 
+export function clearSavedPlayerData(): void {
+  savedPlayerData = {};
+}
+
 export function playerSetupMenu(
   list: HTMLUListElement,
   p: string,
@@ -413,8 +417,6 @@ export function playerSetupMenu(
   c2: string,
   c3: string
 ) {
-  savePlayerData(p);
-  
   if (!savedPlayerData[p]) {
     savedPlayerData[p] = {
       name: name,
@@ -468,11 +470,9 @@ export function playerSetupMenu(
     checked: isAi,
     className: "ml-1",
   }) as HTMLInputElement;
-  // Add login modal for any player when AI is unchecked, logout when checked
   e4.addEventListener("change", event => {
     const target = event.target as HTMLInputElement;
     if (!target.checked) {
-      // Request login when AI is unchecked
       window.parent.postMessage(
         {
           type: "REQUEST_LOGIN",
@@ -718,7 +718,6 @@ export function gameSetupMenu(mode: string): {
     if (option.selected) opt.selected = true;
     e7.appendChild(opt);
   });
-  //multiball
   const e10 = Object.assign(document.createElement("input"), {
     type: "checkbox",
     id: "multiball",
@@ -730,7 +729,6 @@ export function gameSetupMenu(mode: string): {
     htmlFor: "multiball",
     textContent: ` ${t("multiball")}`,
   }) as HTMLLabelElement;
-  //double paddle
   const e12 = Object.assign(document.createElement("input"), {
     type: "checkbox",
     id: "doublePaddle",
@@ -742,7 +740,6 @@ export function gameSetupMenu(mode: string): {
     htmlFor: "doublePaddle",
     textContent: ` ${t("doublePaddle")}`,
   }) as HTMLLabelElement;
-  //colors
   const e14 = Object.assign(document.createElement("input"), {
     className: "game-text",
     type: "color",
@@ -791,14 +788,12 @@ export function gameSetupMenu(mode: string): {
     for: "outerBg",
     textContent: ` ${t("outerBg")}`,
   }) as HTMLLabelElement;
-  //start button
   const e22 = Object.assign(document.createElement("input"), {
     type: "submit",
     className:
       "btn w-auto py-2 md:py-1.5 px-6 md:px-8 m-0 text-base md:text-lg font-bold w-25 cursor-pointer",
     value: `${t("start")}`,
   });
-  //assemble - create row containers for each label-select pair
   const row1 = Object.assign(document.createElement("div"), {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
@@ -841,7 +836,7 @@ export function gameSetupMenu(mode: string): {
     row4.appendChild(e10);
   }
   
-  if (mode === "single" || mode === "multi") {
+  if (mode === "single") {
     row5.appendChild(e13);
     row5.appendChild(e12);
   }

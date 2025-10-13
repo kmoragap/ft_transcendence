@@ -63,16 +63,13 @@ export class TournamentManager {
     const rounds: TournamentRound[] = [];
     const playerIdToNameMap = (window as any).playerIdToNameMap || {};
 
-    // Calculate how many rounds we need
     let numPlayers = players.length;
     let roundNumber = 1;
 
-    // Generate all rounds upfront
     while (numPlayers > 1) {
       const numMatches = Math.floor(numPlayers / 2);
       const matches: TournamentMatch[] = [];
 
-      // Create placeholder matches for this round
       for (let i = 0; i < numMatches; i++) {
         matches.push({
           matchNumber: i + 1,
@@ -90,12 +87,10 @@ export class TournamentManager {
         isComplete: false,
       });
 
-      // Next round will have half the players (winners)
       numPlayers = numMatches;
       roundNumber++;
     }
 
-    // Now populate the first round with actual players
     if (rounds.length > 0) {
       const firstRound = rounds[0];
       for (let i = 0; i < firstRound.matches.length; i++) {
@@ -109,12 +104,12 @@ export class TournamentManager {
           const player1Name =
             playerIdToNameMap[player1Id] ||
             (player1Id.startsWith("AI-")
-              ? `AI Player ${player1Id.split("-")[2]}`
+              ? player1Id.substring(3).replace(/-/g, ' ')
               : `Player ${player1Id}`);
           const player2Name =
             playerIdToNameMap[player2Id] ||
             (player2Id.startsWith("AI-")
-              ? `AI Player ${player2Id.split("-")[2]}`
+              ? player2Id.substring(3).replace(/-/g, ' ')
               : `Player ${player2Id}`);
 
           firstRound.matches[i] = {
@@ -143,28 +138,23 @@ export class TournamentManager {
   }
 
   private async resetGameState(): Promise<void> {
-    // Import the game arrays directly
     const { balls, pad } = await import("./pong");
 
-    // Properly clean up balls (like endRound does)
     while (balls.length) {
       balls[0].stop();
       balls.shift();
     }
 
-    // Properly clean up paddles (like endRound does)
     while (pad.length) {
       pad[0].stop();
       pad.shift();
     }
 
-    // Clear any existing game text/overlays
     const existingOverlay = document.getElementById("matchTransitionOverlay");
     if (existingOverlay) {
       existingOverlay.remove();
     }
 
-    // Reset serve direction
     data.serve = Math.floor(Math.random() * 2) ? -1 : 1;
   }
 
@@ -178,7 +168,6 @@ export class TournamentManager {
     data.tournamentRound = this.tournament.currentRound + 1;
     data.tournamentMatch = match.matchNumber;
 
-    // Update player data
     data.p[0].id = match.player1Id;
     data.p[0].name = match.player1Name;
     data.p[0].score = 0;
@@ -189,17 +178,13 @@ export class TournamentManager {
     data.p[1].score = 0;
     data.p[1].isAi = match.player2Id.startsWith("AI-");
 
-    // Update UI elements
     data.nameTB1.value = match.player1Name;
     data.nameTB2.value = match.player2Name;
     data.scoreTB1.value = "0";
     data.scoreTB2.value = "0";
 
-    // Reset game flags
     data.showingText = false;
     data.go = false;
-
-    // Start the new match with countdown
 
     enterFullscreen();
     const { countdown } = await import("./pong");
@@ -210,7 +195,10 @@ export class TournamentManager {
 
   async completeMatch(winnerId: string, gameId: string): Promise<boolean> {
     if (!this.tournament) return false;
+    
+    await new Promise(resolve => setTimeout(resolve, 2000));
     exitFullscreen();
+    
     const currentRound = this.tournament.rounds[this.tournament.currentRound];
     if (!currentRound) return false;
 
@@ -256,7 +244,6 @@ export class TournamentManager {
 
     const playerIdToNameMap = (window as any).playerIdToNameMap || {};
 
-    // Populate the next round matches with the winners
     let winnerIndex = 0;
     for (let i = 0; i < nextRound.matches.length; i++) {
       const match = nextRound.matches[i];
@@ -267,7 +254,7 @@ export class TournamentManager {
         match.player1Name =
           playerIdToNameMap[player1Id] ||
           (player1Id.startsWith("AI-")
-            ? `AI Player ${player1Id.split("-")[2]}`
+            ? player1Id.substring(3).replace(/-/g, ' ')
             : `Player ${player1Id}`);
         winnerIndex++;
       }
@@ -278,7 +265,7 @@ export class TournamentManager {
         match.player2Name =
           playerIdToNameMap[player2Id] ||
           (player2Id.startsWith("AI-")
-            ? `AI Player ${player2Id.split("-")[2]}`
+            ? player2Id.substring(3).replace(/-/g, ' ')
             : `Player ${player2Id}`);
         winnerIndex++;
       }
@@ -307,6 +294,11 @@ export class TournamentManager {
   }
 
   public showMatchTransition(nextMatch: TournamentMatch): void {
+    // Remove any existing overlay first
+    const existingOverlay = document.getElementById("matchTransitionOverlay");
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
 
     const overlay = document.createElement("div");
     overlay.className =
@@ -453,9 +445,6 @@ export async function newTournamentGame(
   return await tournamentManager.startTournamentMatch(nextMatch);
 }
 
-/**
- * Handle tournament game completion
- */
 export async function handleTournamentGameCompletion(
   winnerId: string,
   gameId: string
@@ -464,11 +453,11 @@ export async function handleTournamentGameCompletion(
   const isComplete = tournamentManager.isTournamentComplete();
 
   if (success && !isComplete) {
-    // Show match transition window instead of starting automatically
     const nextMatch = tournamentManager.getNextMatch();
     if (nextMatch) {
+      await new Promise(resolve => setTimeout(resolve, 500));
       tournamentManager.showMatchTransition(nextMatch);
-      return true; // Return success but don't start the match yet
+      return true;
     }
   }
 

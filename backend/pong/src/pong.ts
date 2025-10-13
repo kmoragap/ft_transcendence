@@ -157,37 +157,92 @@ export function endRound(): void {
   }
 }
 
-//TODO: adapt for 2vs2 mode
 export async function finito(): Promise<void> {
   let winnerId: string;
+  var pl2 = 1;
+  if (data.mode == "multi") pl2 = 2;
   if (data.p[0].score > data.p[1].score) {
     winnerId = data.p[0].id;
   } else {
-    winnerId = data.p[1].id;
+    winnerId = data.p[pl2].id;
   }
+  //results upload for 1v1 and tournament
+  var result, result2;
+  if (data.mode != "multi") {
+    const gameData: gameInfo = {
+      status: "FINISHED",
+      player1Id: data.p[0].id,
+      player1Name: data.p[0].name,
+      score1: data.p[0].score,
+      player2Id: data.p[1].id,
+      player2Name: data.p[1].name,
+      score2: data.p[1].score,
+      maxScore: data.maxScore,
+      multiBall: data.multiball,
+      mode: data.mode,
+      isTournament: data.isTournament,
+      tournamentId: data.tournamentId,
+      tournamentRound: data.tournamentRound,
+      tournamentMatch: data.tournamentMatch,
+      winnerId: winnerId,
+    };
+    result = await gameService.finishGame(gameData);
+    if (!result) {
+      console.error("Failed to finish game on server");
+      return;
+    }
+  } else {
 
-  const gameData: gameInfo = {
-    status: "FINISHED",
-    player1Id: data.p[0].id,
-    player1Name: data.p[0].name,
-    score1: data.p[0].score,
-    player2Id: data.p[1].id,
-    player2Name: data.p[1].name,
-    score2: data.p[1].score,
-    maxScore: data.maxScore,
-    multiBall: data.multiball,
-    mode: data.mode,
-    isTournament: data.isTournament,
-    tournamentId: data.tournamentId,
-    tournamentRound: data.tournamentRound,
-    tournamentMatch: data.tournamentMatch,
-    winnerId: winnerId,
-  };
-  const result = await gameService.finishGame(gameData);
-  if (!result) {
-    console.error("Failed to finish game on server");
-    return;
+    //upload 2 sets of scores for 2vs2 mode
+      const gameData1: gameInfo = {
+      status: "FINISHED",
+      player1Id: data.p[0].id,
+      player1Name: data.p[0].name,
+      score1: data.p[0].score,
+      player2Id: data.p[2].id,
+      player2Name: data.p[2].name,
+      score2: data.p[2].score,
+      maxScore: data.maxScore,
+      multiBall: data.multiball,
+      mode: data.mode,
+      isTournament: data.isTournament,
+      tournamentId: data.tournamentId,
+      tournamentRound: data.tournamentRound,
+      tournamentMatch: data.tournamentMatch,
+      winnerId: winnerId,
+    };
+    result = await gameService.finishGame(gameData1);
+    if (!result) {
+      console.error("Failed to finish game on server");
+      return;
+    }
+    if (winnerId == data.p[0].id) winnerId = data.p[1].id;
+    else winnerId = data.p[3].id;
+      console.log("id: ", data.p[1].id);
+      const gameData2: gameInfo = {
+      status: "FINISHED",
+      player1Id: data.p[1].id,
+      player1Name: data.p[1].name,
+      score1: data.p[0].score,
+      player2Id: data.p[3].id,
+      player2Name: data.p[3].name,
+      score2: data.p[2].score,
+      maxScore: data.maxScore,
+      multiBall: data.multiball,
+      mode: data.mode,
+      isTournament: data.isTournament,
+      tournamentId: data.tournamentId,
+      tournamentRound: data.tournamentRound,
+      tournamentMatch: data.tournamentMatch,
+      winnerId: winnerId,
+    };
+    result2 = await gameService.finishGame(gameData2);
+    if (!result2) {
+      console.error("Failed to finish game on server");
+      return;
+    }
   }
+  
 
   console.log("Game data successfully sent to server");
 

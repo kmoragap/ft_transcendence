@@ -303,7 +303,7 @@ export function tournamentSetupMenu(): {
     id: "playersNumber",
     name: "playersNumber",
   }) as HTMLSelectElement;
-  [4, 6, 8].forEach(num => {
+  [4, 8].forEach(num => {
     const option = document.createElement("option");
     option.value = num.toString();
     option.textContent = num.toString();
@@ -772,7 +772,7 @@ export function gameSetupMenu(mode: string): {
     type: "color",
     id: "innerBg",
     name: "innerBg",
-    value: "#031b1b",
+    value: "#1a4d4d",
   }) as HTMLInputElement;
   const e19 = Object.assign(document.createElement("label"), {
     className: "game-text",
@@ -784,7 +784,7 @@ export function gameSetupMenu(mode: string): {
     type: "color",
     id: "outerBg",
     name: "outerBg",
-    value: "#000808",
+    value: "#001a1a",
   }) as HTMLInputElement;
   const e21 = Object.assign(document.createElement("label"), {
     className: "game-text",

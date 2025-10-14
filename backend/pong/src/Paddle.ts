@@ -1,3 +1,9 @@
+/*
+Unsurprisingly, the paddle class handles the positions and movement of the player paddles.
+If one of the players is AI, it calculates a new target position every second and moves towards
+the targets using the normal player movement logic.
+*/
+
 import { data, playerData } from "./gameData";
 import { pad, balls, isMobile } from "./pong";
 import Ball from "./Ball";
@@ -139,10 +145,6 @@ export default class Paddle {
 					else balls[i].setY(this.getY2() + balls[i].getSize() * 2);
 					balls[i].collision(this);
 					if (balls[i].getY() < balls[i].getSize()) {
-//						while (this.hitX(balls[i])) {
-//							console.log("correcting " + balls[i].getX() + " with " + balls[i].getDirX());
-//							balls[i].setX(balls[i].getX() + balls[i].getDirX());//????
-//						}
 						balls[i].setY(balls[i].getSize() + 1);
 					}
 				}

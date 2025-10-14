@@ -422,8 +422,8 @@ html.hc #fullscreen-toggle:hover {
 
   @media (max-width: 768px) {
     body {
-      overscroll-behavior-y: auto !important; /* Enable pull-to-refresh */
-      -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+      overscroll-behavior-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
     }
     
     #main {
@@ -431,12 +431,10 @@ html.hc #fullscreen-toggle:hover {
       -webkit-overflow-scrolling: touch !important;
     }
     
-    /* Ensure pull-to-refresh works when mobile menu is closed */
     body:not(.mobile-menu-open) {
       overflow-y: auto !important;
     }
     
-    /* Fix Game Setup mobile overflow - only affects game content */
     #game-root {
       min-height: auto !important;
       height: auto !important;
@@ -444,22 +442,17 @@ html.hc #fullscreen-toggle:hover {
       align-items: flex-start !important;
     }
     
-    /* Ensure game setup content flows naturally on mobile */
     #game-root > div {
       width: 100% !important;
       max-height: none !important;
       overflow-y: visible !important;
     }
     
-    /* Fix mobile game container - ensure proper height for game settings */
     .mobile-game-container {
-      height: 85vh !important; /* Increased to show full content */
-      min-height: 600px !important; /* Increased minimum height */
       max-height: none !important;
       padding-bottom: 20px !important; /* Add bottom padding for shadows */
     }
     
-    /* Ensure iframe content has proper spacing for shadows */
     .mobile-game-container iframe {
       padding-bottom: 10px !important;
     }
@@ -635,6 +628,7 @@ html.hc #fullscreen-toggle:hover {
     display: flex;
     flex-direction: column;
     min-width: 300px;
+    min-height: 250px;
     gap: 10px;
     padding: 8px;
     background-color: rgba(102,252,241,0.1);

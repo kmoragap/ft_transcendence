@@ -120,7 +120,7 @@ export function renderProfile(username: string): HTMLElement {
     switch (friendshipStatus) {
       case 'accepted':
         return `
-          <button id="remove-friend-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+          <button id="remove-friend-btn" type="button" aria-label="${t('remove_friend') || 'Remove Friend'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                   bg-gradient-to-r from-red-500 to-red-700 text-white border-0 rounded-md
                   hover:bg-red-600 font-[jura] hover:shadow-lg
                   transition-shadow duration-300" data-i18n="remove_friend">
@@ -129,7 +129,7 @@ export function renderProfile(username: string): HTMLElement {
         `;
       case 'pending':
         return `
-          <button id="cancel-friend-request-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+          <button id="cancel-friend-request-btn" type="button" aria-label="${t('cancel_friend_request') || 'Cancel Friend Request'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                   bg-gradient-to-r from-orange-500 to-orange-700 text-white border-0 rounded-md
                   hover:bg-orange-600 font-[jura] hover:shadow-lg
                   transition-shadow duration-300" data-i18n="cancel_friend_request">
@@ -138,7 +138,7 @@ export function renderProfile(username: string): HTMLElement {
         `;
       case 'rejected':
         return `
-          <button id="send-friend-request-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+          <button id="send-friend-request-btn" type="button" aria-label="${t('send_friend_request') || 'Send Friend Request'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                   transition-shadow duration-300" data-i18n="send_friend_request">
@@ -147,7 +147,7 @@ export function renderProfile(username: string): HTMLElement {
         `;
       default:
         return `
-          <button id="send-friend-request-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+          <button id="send-friend-request-btn" type="button" aria-label="${t('send_friend_request') || 'Send Friend Request'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                   transition-shadow duration-300" data-i18n="send_friend_request">

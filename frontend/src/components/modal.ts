@@ -17,6 +17,8 @@ export function createModal(options: ModalOptions): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-[rgba(3,27,27,0.85)] backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in';
   modal.id = 'custom-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
 
   const modalContent = document.createElement('div');
   modalContent.className = 'bg-[rgba(3,27,27,0.95)] rounded-xl p-8 max-w-md mx-4 border border-[rgba(102,252,241,0.25)] shadow-2xl backdrop-blur-sm animate-scale-in';
@@ -27,6 +29,9 @@ export function createModal(options: ModalOptions): HTMLElement {
   const icon = getIcon(options.type);
   const titleColor = getTitleColor(options.type);
 
+  modalContent.setAttribute('role', 'document');
+  const titleId = options.title ? 'modal-title' : '';
+  if (titleId) modalContent.setAttribute('aria-labelledby', titleId);
   modalContent.innerHTML = `
     <div class="flex flex-col items-center text-center">
       <div class="mb-4 text-4xl">
@@ -34,7 +39,7 @@ export function createModal(options: ModalOptions): HTMLElement {
       </div>
       
       ${options.title ? `
-        <h2 class="text-2xl font-bold ${titleColor} mb-4 font-[jura]">
+        <h2 id="modal-title" class="text-2xl font-bold ${titleColor} mb-4 font-[jura]">
           ${options.title}
         </h2>
       ` : ''}

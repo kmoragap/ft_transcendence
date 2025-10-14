@@ -77,8 +77,7 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
     } catch (error) {
     }
     
-    const { mockSearchUsers } = await import('./mockUsers');
-    return mockSearchUsers(query);
+    throw new Error('Search service unavailable');
   }
   
   try {
@@ -112,8 +111,7 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
         } catch (fallbackError) {
         }
         
-        const { mockSearchUsers } = await import('./mockUsers');
-        return mockSearchUsers(query);
+        throw new Error('Search service unavailable');
       }
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Search failed (${res.status})`);
@@ -122,8 +120,7 @@ export async function searchUsers(query: string): Promise<UserSearchResult[]> {
     const data = await res.json();
     return data;
   } catch (error) {
-    const { mockSearchUsers } = await import('./mockUsers');
-    return mockSearchUsers(query);
+    throw new Error('Search service unavailable');
   }
 }
 
@@ -147,12 +144,7 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
     } catch (error) {
     }
     
-    const { mockGetUserProfile } = await import('./mockUsers');
-    const mockUser = mockGetUserProfile(username);
-    if (!mockUser) {
-      throw new Error('User not found');
-    }
-    return mockUser;
+    throw new Error('Profile service unavailable');
   }
   
   try {
@@ -183,12 +175,7 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
         } catch (fallbackError) {
         }
         
-        const { mockGetUserProfile } = await import('./mockUsers');
-        const mockUser = mockGetUserProfile(username);
-        if (mockUser) {
-          return mockUser;
-        }
-        throw new Error('User not found');
+        throw new Error('Profile service unavailable');
       }
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `User not found (${res.status})`);
@@ -197,12 +184,7 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
     const data = await res.json();
     return data;
   } catch (error) {
-    const { mockGetUserProfile } = await import('./mockUsers');
-    const mockUser = mockGetUserProfile(username);
-    if (!mockUser) {
-      throw new Error('User not found');
-    }
-    return mockUser;
+    throw new Error('Profile service unavailable');
   }
 }
 

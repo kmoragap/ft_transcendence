@@ -243,7 +243,6 @@ export async function finito(): Promise<void> {
   }
   
 
-  console.log("Game data successfully sent to server");
 
   if (data.isTournament && data.tournamentId) {
     try {
@@ -252,12 +251,8 @@ export async function finito(): Promise<void> {
         result.gameId || ""
       );
       if (tournamentResult) {
-        console.log(
-          "Tournament game completed, showing match transition window"
-        );
         return;
       } else {
-        console.log("Tournament completed or failed, will auto-exit");
       }
     } catch (error) {
       console.error("Error handling tournament game completion:", error);

@@ -206,10 +206,8 @@ export function enterFullscreen(): Promise<void> {
 		else reject(new Error("Fullscreen not supported"));
 		if (screen.orientation && (screen.orientation as any).lock) {
 			(screen.orientation as any).lock("landscape").catch((err: any) => {
-				console.log("Orientation lock failed:", err);
 			});
 		}
-		console.log("Fullscreen entered successfully");
 		resolve();
 	});
 }
@@ -225,7 +223,6 @@ export function exitFullscreen(): void {
 }
 
 export function showFullscreenPrompt(): void {
-	// Create a fullscreen prompt overlay
 	const prompt = document.createElement("div");
 	prompt.className =
 		"fixed inset-0 bg-black/80 flex items-center justify-center z-50";
@@ -251,15 +248,12 @@ export function showFullscreenPrompt(): void {
 
 	document.body.appendChild(prompt);
 
-	// Add click handler for fullscreen button
 	const fullscreenBtn = prompt.querySelector("#fullscreen-btn");
 	fullscreenBtn?.addEventListener("click", async () => {
 		try {
 			await enterFullscreen();
 			prompt.remove();
 		} catch (err) {
-			console.log("Manual fullscreen failed:", err);
-			// Remove prompt anyway to not block the game
 			prompt.remove();
 		}
 	});

@@ -49,13 +49,21 @@ export function renderA11yControls(): HTMLElement {
       <span data-i18n="${labelKey}">${t(labelKey)}</span>
       <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15">${Math.round(scale * 100)}%</span>
     `;
-    row.addEventListener('mousedown', (e) => {
+    
+    const applyScale = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
       setTextScale(scale);
       syncUI();
       close();
       trigger.focus();
+    };
+    
+    row.addEventListener('mousedown', applyScale);
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        applyScale(e);
+      }
     });
     return row;
   };
@@ -68,11 +76,19 @@ export function renderA11yControls(): HTMLElement {
     <span data-i18n="high_contrast">${t('high_contrast')}</span>
     <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15" data-state>Off</span>
   `;
-  hcRow.addEventListener('mousedown', (e) => {
+  
+  const toggleContrast = (e: Event) => {
     e.preventDefault();
     e.stopPropagation();
     toggleHighContrast();
     syncUI();
+  };
+  
+  hcRow.addEventListener('mousedown', toggleContrast);
+  hcRow.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      toggleContrast(e);
+    }
   });
 
   panel.append(

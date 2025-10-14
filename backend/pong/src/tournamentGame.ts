@@ -1,3 +1,8 @@
+/*
+tournamentGame.ts sets up and handles the tournament bracketing and sets up the
+individual matches.
+*/
+
 import { data } from "./gameData";
 import { tournamentService } from "./services/tournamentService";
 import { t } from "./i18n";

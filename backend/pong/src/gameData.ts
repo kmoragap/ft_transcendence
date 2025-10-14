@@ -1,3 +1,8 @@
+/*
+gameData.ts contains the important data type that stores most of the game's variables
+and handles loading and initialization.
+*/
+
 import { controlKeys, enterFullscreen, showFullscreenPrompt, setupFullscreenToggle } from "./controls";
 import { countdown } from "./pong";
 import { t } from "./i18n";
@@ -412,7 +417,7 @@ export async function loadConfig(mode: string): Promise<void> {
 		ballSize: 80,
 		maxScore:
 			mode === "tournament" ? parseInt(loadIn("matchLength") || "5", 10) : 3,
-		trailLength: 20, //parseInt(loadIn("trailLength") || "20", 10),
+		trailLength: 20,
 
 		bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
 		uiCol: loadIn("uiCol"),

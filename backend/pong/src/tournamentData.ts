@@ -1,3 +1,8 @@
+/*
+tournamentData.ts handles the setup of a new tournament and retrieves 
+its data from the site. 
+*/
+
 import { loadConfig, setPendingTournamentId } from "./gameData";
 import { tournamentService } from "./services/tournamentService";
 import { newTournamentGame } from "./tournamentGame";

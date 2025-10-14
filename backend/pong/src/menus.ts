@@ -1,3 +1,7 @@
+/*
+The functions in 
+*/
+
 import { t } from "./i18n";
 import { allPlayerData } from "./wizard";
 

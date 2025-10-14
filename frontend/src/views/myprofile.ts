@@ -780,7 +780,7 @@ export function renderMyProfile(): HTMLElement {
         if (emailChanged || usernameChanged) {
           alertSuccess(t("profile_updated"));
           await logout();
-          window.location.href = "/login";
+          location.hash = "#/login";
           return;
         }
 

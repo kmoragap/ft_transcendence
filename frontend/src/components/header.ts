@@ -284,7 +284,7 @@ export function renderHeader(): HTMLElement {
     mobileMenuHeader.className = 'flex items-center justify-between p-4 border-b border-[#66fcf1]/20';
     
     const headerLangWrap = document.createElement('label');
-    headerLangWrap.className = 'flex items-center gap-2';
+    headerLangWrap.className = 'sr-only';
     headerLangWrap.textContent = t('language') || 'Language';
     const headerLangSelect = document.createElement('select');
     headerLangSelect.className = 'px-2 py-1 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1]/30 rounded text-sm';
@@ -383,7 +383,7 @@ export function renderHeader(): HTMLElement {
     const langLi = document.createElement('li');
     langLi.classList.add('ml-5', 'flex', 'items-center', 'gap-2');
     const langLabel = document.createElement('label');
-    langLabel.className = 'text-[#66fcf1] text-xs md:text-sm font-[jura]';
+    langLabel.className = 'sr-only';
     langLabel.textContent = t('language') || 'Language';
     langLabel.htmlFor = 'language-switcher';
     const langSelect = document.createElement('select');

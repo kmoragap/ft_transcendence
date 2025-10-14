@@ -1,5 +1,6 @@
 /*
 controls.ts handles the eventListeners for keyboard and touchscreen input.
+Also contains functions to handle fullscreen mode.
 */
 
 import { data } from "./gameData";
@@ -55,138 +56,79 @@ export function controlKeys(): void {
 			}
 		}
 	});
-	
-	// Add mobile touch controls for full screen
-	let touchStartY = 0;
-	let touchStartX = 0;
-	data.canvas.addEventListener("touchstart", (e) => {
-			e.preventDefault();
-			const touch = e.touches[0];
-			touchStartY = touch.clientY;
-			touchStartX = touch.clientX;
-		},
-		{ passive: false },
-	);
-
-	data.canvas.addEventListener("touchmove", (e) => {
-			e.preventDefault();
-			if (!data || !data.p) return;
-
-			const touch = e.touches[0];
-			const deltaY = touch.clientY - touchStartY;
-			const deltaX = touch.clientX - touchStartX;
-
-			// Simple touch controls - left side controls player 1, right side controls player 2
-			const canvasRect = data.canvas.getBoundingClientRect();
-			const touchX = touch.clientX - canvasRect.left;
-			const isLeftSide = touchX < data.canvas.width / 2;
-
-			if (isLeftSide && data.p[0]) {
-				// Player 1 controls
-				if (deltaY < -10) {
-					data.keys[data.p[0].up] = true;
-					data.keys[data.p[0].down] = false;
-				} else if (deltaY > 10) {
-					data.keys[data.p[0].down] = true;
-					data.keys[data.p[0].up] = false;
-				}
-			} else if (!isLeftSide && data.p[1]) {
-				// Player 2 controls
-				if (deltaY < -10) {
-					data.keys[data.p[1].up] = true;
-					data.keys[data.p[1].down] = false;
-				} else if (deltaY > 10) {
-					data.keys[data.p[1].down] = true;
-					data.keys[data.p[1].up] = false;
-				}
-			}
-		},
-		{ passive: false },
-	);
-
-	data.canvas.addEventListener(
-		"touchend",
-		(e) => {
-			e.preventDefault();
-			if (data && data.p) {
-				data.p.forEach((player) => {
-					data.keys[player.up] = false;
-					data.keys[player.down] = false;
-				});
-			}
-		},
-		{ passive: false },
-	);
-
 	data.canvas.addEventListener("touchstart", touchDown);
 	data.canvas.addEventListener("touchend", touchUp);
 }
 
 function touchDown(ev: TouchEvent) {
-	lastX  = data.canvas.height / 2;
-	if (data.go) {
-		ev.preventDefault();
-		var x: number = lastX = ev.touches[0].clientX;
-		var y: number = ev.touches[0].clientY;
-		if (x < data.canvas.width / 4) {
-			if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
-			if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
-		}
-		if (data.mode != "multi" ) {
-			if (x > data.canvas.width * 3 / 4) {
-				if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
-				if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
-			}
-		} else {
-			if (x > data.canvas.width / 4 && x < data.canvas.width / 2) {
-				if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
-				if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
-			}
-			if (x > data.canvas.width / 2 && x < data.canvas.width * 3 / 4) {
-				if (y < data.canvas.height / 4) data.keys[data.p[2].up] = true;
-				if (y > data.canvas.height * 3 / 4) data.keys[data.p[2].down] = true;
-			}
-			if (x > data.canvas.width * 3 / 4) {
-				if (y < data.canvas.height / 4) data.keys[data.p[3].up] = true;
-				if (y > data.canvas.height * 3 / 4) data.keys[data.p[3].down] = true;
-			}
-		}
-	}
+    if (!data.go) return;
+    
+    ev.preventDefault();
+    for (const touch of ev.touches) {
+        const x = touch.clientX;
+        const y = touch.clientY;
+        if (x < data.canvas.width / 4) {
+            if (y < data.canvas.height / 4) data.keys[data.p[0].up] = true;
+            if (y > data.canvas.height * 3 / 4) data.keys[data.p[0].down] = true;
+        }
+        if (data.mode == "multi") {
+            if (x > data.canvas.width / 4 && x < data.canvas.width / 2) {
+                if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+                if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+            }
+            if (x > data.canvas.width / 2 && x < data.canvas.width * 3 / 4) {
+                if (y < data.canvas.height / 4) data.keys[data.p[2].up] = true;
+                if (y > data.canvas.height * 3 / 4) data.keys[data.p[2].down] = true;
+            }
+            if (x > data.canvas.width * 3 / 4) {
+                if (y < data.canvas.height / 4) data.keys[data.p[3].up] = true;
+                if (y > data.canvas.height * 3 / 4) data.keys[data.p[3].down] = true;
+            }
+        } else {
+            if (x > data.canvas.width * 3 / 4) {
+                if (y < data.canvas.height / 4) data.keys[data.p[1].up] = true;
+                if (y > data.canvas.height * 3 / 4) data.keys[data.p[1].down] = true;
+            }
+        }
+    }
 }
 
-function touchUp() {
-	if (data.go) {
-		if (lastX < data.canvas.width / 4) {
-			data.keys[data.p[0].up] = false;
-			data.keys[data.p[0].down] = false;
-			pad[0].setDir(0);
-			if (data.mode == "doublePaddle") pad[2].setDir(0);
-		}
-		if (data.mode != "multi" ) {
-			if (lastX > data.canvas.width * 3 / 4) {
-				data.keys[data.p[1].up] = false;
-				data.keys[data.p[1].down] = false;
-				pad[1].setDir(0);
-				if (data.mode == "doublePaddle") pad[3].setDir(0);
-			}
-		} else {
-			if (lastX > data.canvas.width / 4 && lastX < data.canvas.width / 2) {
-				data.keys[data.p[1].up] = false;
-				data.keys[data.p[1].down] = false;
-				pad[1].setDir(0);
-			}
-			if (lastX > data.canvas.width / 2 && lastX < data.canvas.width * 3 / 4) {
-				data.keys[data.p[2].up] = false;
-				data.keys[data.p[2].down] = false;
-				pad[2].setDir(0);
-			}
-			if (lastX > data.canvas.width * 3 / 4) {
-				data.keys[data.p[3].up] = false;
-				data.keys[data.p[3].down] = false;
-				pad[3].setDir(0);
-			}
-		}
-	}
+function touchUp(ev: TouchEvent) {
+    if (!data.go) return;
+    ev.preventDefault();
+    for (const touch of ev.changedTouches) {
+        const x = touch.clientX;
+        if (x < data.canvas.width / 4) {
+            data.keys[data.p[0].up] = false;
+            data.keys[data.p[0].down] = false;
+            pad[0].setDir(0);
+            if (data.mode == "doublePaddle") pad[2].setDir(0);
+        }
+        if (data.mode === "multi") {
+            if (x > data.canvas.width / 4 && x < data.canvas.width / 2) {
+                data.keys[data.p[1].up] = false;
+                data.keys[data.p[1].down] = false;
+                pad[1].setDir(0);
+            }
+            if (x > data.canvas.width / 2 && x < data.canvas.width * 3 / 4) {
+                data.keys[data.p[2].up] = false;
+                data.keys[data.p[2].down] = false;
+                pad[2].setDir(0);
+            }
+            if (x > data.canvas.width * 3 / 4) {
+                data.keys[data.p[3].up] = false;
+                data.keys[data.p[3].down] = false;
+                pad[3].setDir(0);
+            }
+        } else {
+            if (x > data.canvas.width * 3 / 4) {
+                data.keys[data.p[1].up] = false;
+                data.keys[data.p[1].down] = false;
+                pad[1].setDir(0);
+                if (data.mode == "doublePaddle") pad[3].setDir(0);
+            }
+        }
+    }
 }
 
 export function enterFullscreen(): Promise<void> {

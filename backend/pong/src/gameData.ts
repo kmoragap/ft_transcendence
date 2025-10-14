@@ -188,7 +188,7 @@ export async function newGame(mode: string): Promise<void> {
   }) as HTMLDivElement;
 
   appDiv.className = [
-    "fixed inset-0 flex flex-col items-center justify-center",
+    "fixed game-hc inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
     "z-50 pb-2 md:pb-0",
   ].join(" ");

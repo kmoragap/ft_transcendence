@@ -2,6 +2,7 @@ import { t, getCurrentLang, updateText } from "./../i18n";
 import { store } from "./../store";
 import { showLoginModal } from "./../components/login-modal";
 import { alertSuccess, alertError } from "./../utils/modal-alerts";
+import { navigate } from "./../router";
 
 let iframeRef: HTMLIFrameElement | null = null;
 let loggedInUsers: Set<string> = new Set();
@@ -267,7 +268,9 @@ export function renderGame(): HTMLElement {
       const { winner } = event.data;
       loggedInUsers.clear();
       destroyGameView();
-      setMode("menu");
+      // Navigate to dashboard and update URL
+      location.hash = '#/dashboard';
+      navigate('/dashboard');
     } else if (event.data.type === "PLAYER_LOGOUT") {
       const { username } = event.data;
       loggedInUsers.delete(username);

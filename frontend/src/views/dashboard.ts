@@ -72,7 +72,10 @@ export function renderDashboard(): HTMLElement {
 
   function makeTab(label: string, translationKey?: string) {
     const btn = document.createElement("button");
+    btn.type = "button";
     btn.textContent = label;
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-label", label);
     if (translationKey) {
       btn.setAttribute("data-i18n", translationKey);
     }

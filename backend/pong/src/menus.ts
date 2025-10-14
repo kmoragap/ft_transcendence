@@ -519,15 +519,8 @@ export function playerSetupMenu(
     id: `name_p${p}`,
     name: `name_p${p}`,
     value: name,
+    readOnly: true,
   }) as HTMLInputElement;
-  
-  e2.addEventListener("blur", () => {
-    const aiCheckbox = document.getElementById(`p${p}Ai`) as HTMLInputElement;
-    if (!aiCheckbox?.checked && AI_NAMES.includes(e2.value)) {
-      showAINameWarning(e2.value);
-      e2.value = savedPlayerData[p]?.name || `Player ${p}`;
-    }
-  });
   
   const e3 = Object.assign(document.createElement("label"), {
     className: "game-text",

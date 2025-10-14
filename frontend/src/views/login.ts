@@ -79,7 +79,9 @@ export function renderLogin(): HTMLElement {
       </button>
 
       <button
+        type="button"
         class="btn !w-full"
+        aria-label="${t("login_42")}"
       >
         <a
           href="#/login_42"
@@ -90,7 +92,9 @@ export function renderLogin(): HTMLElement {
       </button>
 
       <button
+        type="button"
         class="btn !w-full"
+        aria-label="${t("register")}"
       >
         <a
           href="#/register"

@@ -26,6 +26,8 @@ export function renderGame(): HTMLElement {
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
         tabindex="-1"
+        type="button"
+        aria-label="${t('back_to_modes') || 'Back to modes'}"
         data-i18n="back_to_modes">
         Back
       </button>
@@ -103,6 +105,8 @@ export function renderGame(): HTMLElement {
                   bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-xl
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
+            type="button"
+            aria-label="${t('create_tournament') || 'Create a tournament'}"
             data-i18n="create_tournament"
           >
             Create a tournament
@@ -113,6 +117,8 @@ export function renderGame(): HTMLElement {
                   bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-xl
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
+            type="button"
+            aria-label="1 vs 1"
           >
             1 vs 1
           </button>
@@ -122,6 +128,8 @@ export function renderGame(): HTMLElement {
                   bg-[rgba(102,252,241,0.12)] text-[#66fcf1] font-bold text-lg md:text-2xl
                   shadow-lg
                   hover:bg-[rgba(102,252,241,0.18)] focus:outline-none focus:ring-2 focus:ring-[#66fcf1]/40"
+            type="button"
+            aria-label="2 vs 2"
           >
             2 vs 2
           </button>

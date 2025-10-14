@@ -1,3 +1,8 @@
+/*
+The wizard creates the menu boxes to set up the game according to the chosen game mode
+using functions from menus.ts.
+*/
+
 import { loadConfig } from "./gameData";
 import { t } from "./i18n";
 import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode, clearSavedPlayerData } from "./menus";

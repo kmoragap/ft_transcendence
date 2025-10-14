@@ -1,3 +1,9 @@
+/*
+Main function. Here we start the game proper, set up the static canvas elements,
+initialize the movable game elements and run the game loop. When the game ends,
+the scores are uploaded to pong-db.
+*/
+
 import { data, newGame, getSecondPlayerData } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";

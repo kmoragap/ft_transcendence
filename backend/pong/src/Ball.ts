@@ -1,3 +1,16 @@
+/*
+The ball class handles the movement and drawing of the pong ball and its trail.
+The size and speed of the ball all are derived from the canvas dimensions.
+
+Important functions:
+checkWalls() reflects the ball from the top and bottom wall, if a left or
+right wall is hit and there is only one ball in play, it ends the round and
+awards a point to the player on the other end.
+
+if Multiball mode is enabled, spawnMultiball() spawns another ball at the paddle
+that was hit last. It only triggers every 5-10 paddle hits.
+*/
+
 import Paddle from "./Paddle";
 import { scoreText } from "./Paddle.draw";
 import { data } from "./gameData";
@@ -105,7 +118,6 @@ export default class Ball {
 		angle += variationAngle;
 		this._dirX = (Math.cos(angle)) / 10;
 		this._dirY = (Math.sin(angle)) / 10;
-		//if (data.multiball) spawnMultiball(this);
 	}
 
 	private checkWalls(): void {
@@ -176,8 +188,7 @@ export function spawnMultiball(ball: Ball) {
 		let variation: number = ((Math.random() * 40)- 30) / 100;
 		if (Math.floor(Math.random() * 2)) variation *= -1;
 		angle +=  variation;
-//		let newBall: Ball = new Ball(data.canvas.width / 2, data.canvas.height / 2, Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball in center
-		let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);//spawn multiball at ball pos
+		let newBall: Ball = new Ball(ball.getX(), ball.getY(), Math.cos(angle) / 10, Math.sin(angle) / 10);
 		newBall.go();
 		balls.push(newBall);
 	}

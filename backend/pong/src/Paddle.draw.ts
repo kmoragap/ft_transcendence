@@ -1,3 +1,8 @@
+/*
+Paddle.draw has some functions that draw on the canvas to display the
+paddles, the scoring texts and the mobile control arrows.
+*/
+
 import { data } from "./gameData";
 import Paddle from "./Paddle";
 import { t } from "./i18n";

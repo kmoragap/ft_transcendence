@@ -162,7 +162,7 @@ export function renderGame(): HTMLElement {
       src += `&hc=true`;
     }
     return `
-      <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
+      <div class="w-full h-[60vh] md:min-h-[400px] max-h-[800px] mobile-game-container"> 
         <iframe id="pong-frame" class="w-full h-full" src="${src}" allow="cross-origin-isolated"></iframe>
       </div>
     `;

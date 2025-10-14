@@ -330,7 +330,7 @@ export function tournamentSetupMenu(): {
 } {
   const settings = Object.assign(document.createElement("form"), {
     id: "tournamentSettings",
-    className: "editBox flex flex-col h-full p-2 md:p-4",
+    className: "editBox flex flex-col p-2 md:p-4 min-h-[300px]",
   }) as HTMLFormElement;
   
   const row1 = Object.assign(document.createElement("div"), {
@@ -340,7 +340,7 @@ export function tournamentSetupMenu(): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
   
-  // Match length
+  // Match length (number of rounds)
   const matchLengthLabel = Object.assign(document.createElement("label"), {
     className: "game-text text-sm md:text-base",
     htmlFor: "matchLength",
@@ -401,7 +401,7 @@ export function tournamentSetupMenu(): {
   const leftUpInput = createKeyCaptureInput("tournamentLeftUp", "w");
   
   const row4 = Object.assign(document.createElement("div"), {
-    className: "flex justify-between items-center mb-2",
+    className: "flex justify-between items-center mb-3",
   }) as HTMLDivElement;
   
   const leftDownLabel = Object.assign(document.createElement("label"), {
@@ -413,7 +413,7 @@ export function tournamentSetupMenu(): {
   const leftDownInput = createKeyCaptureInput("tournamentLeftDown", "s");
   
   const row5 = Object.assign(document.createElement("div"), {
-    className: "flex justify-between items-center mb-2",
+    className: "flex justify-between items-center mb-3",
   }) as HTMLDivElement;
   
   const rightUpLabel = Object.assign(document.createElement("label"), {
@@ -706,11 +706,11 @@ export function gameSetupMenu(mode: string): {
 } {
   const settings = Object.assign(document.createElement("form"), {
     id: "settings",
-    className: "editBox flex flex-col h-full p-2 md:p-4 flex-1",
+    className: "editBox flex flex-col p-2 md:p-4 flex-1 min-h-[300px]",
   }) as HTMLFormElement;
   const bgColors = Object.assign(document.createElement("form"), {
     id: "bgColors",
-    className: "editBox flex flex-col h-full p-2 md:p-4 flex-1",
+    className: "editBox flex flex-col p-2 md:p-4 flex-1 min-h-[300px]",
   }) as HTMLFormElement;
   //paddle speed
   const e3 = Object.assign(document.createElement("label"), {

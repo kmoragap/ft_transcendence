@@ -207,32 +207,32 @@ export function renderMyProfile(): HTMLElement {
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
                     shadow-lg px-4 md:px-10 py-4 md:py-5">
           <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
-          <div class="grid grid-cols-2 gap-2 md:gap-4 mb-4 md:mb-6">
-            <div class="p-2 md:p-4 text-center">
+          <div class="grid grid-cols-2 gap-2 md:gap-2 mb-2 md:mb-2">
+            <div class="p-2 md:p-2 text-center">
               <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
               <div class="text-xs md:text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
             </div>
-            <div class="p-2 md:p-4 text-center">
+            <div class="p-2 md:p-2 text-center">
               <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
               <div class="text-xs md:text-sm text-gray-300" data-i18n="losses">Losses</div>
             </div>
-            <div class="p-2 md:p-4 text-center">
+            <div class="p-2 md:p-2 text-center">
               <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
               <div class="text-xs md:text-sm text-gray-300" data-i18n="total_games">Total Games</div>
             </div>
-            <div class="p-2 md:p-4 text-center">
+            <div class="p-2 md:p-2 text-center">
               <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
               <div class="text-xs md:text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
             </div>
-            <div class="p-2 md:p-4 text-center col-span-2">
+            <div class="p-2 md:p-2 text-center col-span-2">
               <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.elo || 1000}</div>
               <div class="text-xs md:text-sm text-gray-300" data-i18n="elo_rating">ELO Rating</div>
             </div>
           </div>
           
           <div class="border-t border-[rgba(102,252,241,0.15)] pt-4">
-            <h3 class="text-base md:text-lg font-bold text-[#66fcf1] mb-3" data-i18n="recent_games">Recent Games</h3>
-            <div id="game-history-list" class="bg-[rgba(30,41,40,0.7)] border border-[rgba(102,252,241,0.15)] rounded p-3 max-h-48 overflow-y-auto">
+            <h3 class="text-base md:text-lg font-bold text-[#66fcf1] mb-3" data-i18n="last_game">Last Game</h3>
+            <div id="game-history-list" class="bg-[rgba(30,41,40,0.7)] border border-[rgba(102,252,241,0.15)] rounded p-3">
               <div class="text-center text-gray-400 text-sm" data-i18n="loading_games">Loading games...</div>
             </div>
           </div>
@@ -557,6 +557,7 @@ export function renderMyProfile(): HTMLElement {
       }
 
       gameHistoryList.innerHTML = gameHistory
+        .slice(0, 1)
         .map((game: GameHistoryEntry) => {
           const resultClass = game.isWinner ? "text-green-400" : "text-red-400";
           const resultIcon = game.isWinner ? "✓" : "✗";
@@ -564,7 +565,7 @@ export function renderMyProfile(): HTMLElement {
           const eloClass = game.eloChange > 0 ? "text-green-400" : "text-red-400";
           
           return `
-            <div class="p-2 border-b border-[rgba(102,252,241,0.1)] last:border-b-0">
+            <div class="p-2">
               <div class="flex items-center justify-between">
                 <div class="flex w-full items-center justify-between gap-2">
                   <span class="${resultClass} font-bold">${resultIcon}</span>

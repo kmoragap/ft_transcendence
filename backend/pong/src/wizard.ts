@@ -15,7 +15,7 @@ let totalPlayerPages = 0;
 let currentGameSettingsPage = 0;
 
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
-	settingsForm.style.display = "block";
+	settingsForm.style.display = "flex";
 	bgColorsForm.style.display = "none";
 }
 
@@ -115,7 +115,7 @@ export function wizard(mode: string) {
 					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
 					if (settingsForm && bgColorsForm) {
 						settingsForm.style.display = "none";
-						bgColorsForm.style.display = "block";
+						bgColorsForm.style.display = "flex";
 						updateButtonText();
 					}
 					return;
@@ -141,7 +141,7 @@ export function wizard(mode: string) {
 					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
 					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
 					if (settingsForm && bgColorsForm) {
-						settingsForm.style.display = "block";
+						settingsForm.style.display = "flex";
 						bgColorsForm.style.display = "none";
 						updateButtonText();
 					}
@@ -339,6 +339,11 @@ function updatePlayerNavigation() {
 	if (navContainer) {
 		navContainer.remove();
 	}
+	
+	if (currentStep === 1 && totalPlayerPages > 1) {
+		const shouldHideBack = currentPlayerPage === 0;
+		backButton.classList.toggle("hidden", shouldHideBack);
+	}
 }
 
 function showStep(step: number, singleMatch: boolean) {
@@ -348,7 +353,8 @@ function showStep(step: number, singleMatch: boolean) {
 	const stepElement = document.getElementById(`step${step}`);
 	if (stepElement) stepElement.classList.remove("hidden");
 	if (singleMatch) {
-		backButton.classList.toggle("hidden", step === 1);
+		const shouldHideBack = step === 1 && currentPlayerPage === 0;
+		backButton.classList.toggle("hidden", shouldHideBack);
 		nextButton.classList.toggle("hidden", step === 2);
 		finishButton.classList.toggle("hidden", step !== 2);
 	} else {
@@ -381,7 +387,7 @@ function btn(ts: string, alt: string, id: string): HTMLButtonElement {
 
 function createPlayerContainer(p: number): HTMLDivElement {
 	return Object.assign(document.createElement("div"), {
-		className: "flex-1 min-w-[300px] flex flex-col",
+		className: "flex flex-col flex-1",
 		id: `player${p}Container`,
 	}) as HTMLDivElement;
 }
@@ -392,7 +398,7 @@ function createPlayerList(): HTMLUListElement {
 
 function createFlexContainer(): HTMLDivElement {
 	return Object.assign(document.createElement("div"), {
-		className: "flex flex-col md:flex-row gap-4 justify-start items-stretch flex-wrap"
+		className: "flex flex-col md:flex-row gap-4 items-stretch"
 	}) as HTMLDivElement;
 }
 

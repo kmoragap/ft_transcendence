@@ -30,7 +30,7 @@ function validateField(input: HTMLInputElement): string {
       if (!/\p{Lu}/u.test(input.value)) return 'Include at least one uppercase letter.';
       if (!/\p{Ll}/u.test(input.value)) return 'Include at least one lowercase letter.';
       if (!/[0-9]/.test(input.value)) return 'Include at least one number.';
-      if (!/[^\p{L}\p{N}_\s]/u.test(input.value)) return 'Include at least one special character.';
+      if (!/[^\p{L}\p{N}\s]/u.test(input.value)) return 'Include at least one special character.';
       if (input.form) {
         const username = (input.form.elements.namedItem('username') as HTMLInputElement)?.value;
         const email = (input.form.elements.namedItem('email') as HTMLInputElement)?.value;

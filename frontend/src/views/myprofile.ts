@@ -15,6 +15,7 @@ import {
 } from "../api/users";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from "../utils/session";
+import { attachValidation } from "../form-validation";
 import {
   alertError,
   alertSuccess,
@@ -247,23 +248,29 @@ export function renderMyProfile(): HTMLElement {
       <span class="mid_line" data-i18n="myprofile">MY PROFILE</span>
     </h1>
       
-      <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4" aria-label="${t('edit_profile') || 'Edit profile'}">
+      <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4" novalidate aria-label="${t('edit_profile') || 'Edit profile'}">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="display_name">Display Name</label>
-          <input name="name" type="text" value="${user.name}"
+          <input name="name" type="text" value="${user.name}" id="name" required
+                 aria-required="true" aria-invalid="false" aria-describedby="name-error"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
+          <p id="name-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
         </div>
         
         <div class="space-y-2">
           <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="username">Username</label>
-          <input name="username" type="text" value="${user.username}"
+          <input name="username" type="text" value="${user.username}" id="username" required
+                 aria-required="true" aria-invalid="false" aria-describedby="username-error"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
+          <p id="username-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
         </div>
         
         <div class="space-y-2">
           <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="email">Email</label>
-          <input name="email" type="email" value="${user.email}"
+          <input name="email" type="email" value="${user.email}" id="email" required
+                 aria-required="true" aria-invalid="false" aria-describedby="email-error"
                  class="w-full px-3 py-2 bg-[rgba(102,252,241,0.1)] border border-[#66fcf1] rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66fcf1]" />
+          <p id="email-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
         </div>
         
         <div class="space-y-2">
@@ -723,6 +730,8 @@ export function renderMyProfile(): HTMLElement {
     updateText();
     const form = section.querySelector("form") as HTMLFormElement;
     const cancel = section.querySelector("#cancel-btn") as HTMLButtonElement;
+
+    attachValidation(form);
 
     cancel.addEventListener("click", () => {
       section.innerHTML = getViewHTML();

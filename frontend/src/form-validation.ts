@@ -11,7 +11,7 @@ function clearError(input: HTMLInputElement) {
   input.setAttribute('aria-invalid', 'false');
 }
 
-const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 function validateField(input: HTMLInputElement): string {
   switch (input.name) {
     case 'username':

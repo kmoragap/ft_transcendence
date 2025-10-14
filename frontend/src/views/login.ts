@@ -1,16 +1,14 @@
+// Login page
 import { t } from "./../i18n";
 import { store } from "../store";
-//import { redirectIfAuthenticated } from '../utils/auth';
 import { alertError, alertSuccess } from "./../utils/modal-alerts";
 
 export function renderLogin(): HTMLElement {
-  //redirectIfAuthenticated();
 
   const section = document.createElement("section");
   section.className =
     "flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]";
 
-  // Check for OAuth error in URL
   const urlParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : "");
   const oauthError = urlParams.get('error');
   
@@ -21,7 +19,6 @@ export function renderLogin(): HTMLElement {
       } else {
         alertError("OAuth login failed. Please try again or use a different login method.");
       }
-      // Clean up the URL
       window.location.hash = '/login';
     }, 100);
   }
@@ -115,7 +112,6 @@ export function renderLogin(): HTMLElement {
     const identifier = identifierInput.value.trim();
     const password = passwordInput.value;
     
-    // Basic validation
     if (!identifier || !password) {
       alertError("Please fill in all fields");
       return;
@@ -273,13 +269,11 @@ function show2FAForm(section: HTMLElement, email: string) {
     window.location.reload();
   });
 
-  // Handle 2FA verification
   twoFAForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     
     const code = codeInput.value.trim();
     
-    // Validate 2FA code (6 digits)
     if (!code || code.length !== 6 || !/^[0-9]{6}$/.test(code)) {
       alertError("Please enter a valid 6-digit code");
       return;

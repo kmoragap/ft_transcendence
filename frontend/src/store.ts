@@ -1,3 +1,4 @@
+// This file implements a simple state management system for user authentication and profile management.
 type User = {
   id: string;
   username: string;

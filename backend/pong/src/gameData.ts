@@ -1,8 +1,7 @@
-import { controlKeys, enterFullscreen, showFullscreenPrompt } from "./controls";
+import { controlKeys, enterFullscreen, showFullscreenPrompt, setupFullscreenToggle } from "./controls";
 import { countdown } from "./pong";
-import { playerSetupMenu } from "./menus";
 import { t } from "./i18n";
-import { wizard } from "./wizard";
+import { wizard, allPlayerData } from "./wizard";
 
 export type playerData = {
   name: string;
@@ -55,7 +54,6 @@ export type gameData = {
   mode: string;
   status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 
-
   //tournament fields
   isTournament: boolean;
   tournamentId?: string;
@@ -90,23 +88,63 @@ function loadPlayer(
   outercol: string,
   cornerCol: string,
   playerIndex?: number,
+  mode?: string,
 ): playerData {
-  const isAiByName = name.includes("Player") && name !== "Player 1";
-  const finalIsAi = isAi || isAiByName;
+  let finalIsAi = isAi;
+
+  let finalName = name;
+  if (!finalName || finalName.trim() === "") {
+    if (playerIndex === 1) {
+      const urlParams = new URLSearchParams(window.location.search);
+      finalName = urlParams.get("username") || "Player 1";
+    } else if (finalIsAi) {
+      const defaultNames = ["Player 1", "Roger Federror", "Boolena Williams", "Boris Backend"];
+      finalName = defaultNames[(playerIndex || 1) - 1] || `Player ${playerIndex || 1}`;
+    } else {
+      finalName = `Player ${playerIndex || 1}`;
+    }
+  }
+  
+  
+
+  let finalUp = up;
+  let finalDown = down;
+  if (!finalUp || !finalDown) {
+    if (playerIndex === 1) {
+      finalUp = "w";
+      finalDown = "s";
+    } else {
+      finalUp = "ArrowUp";
+      finalDown = "ArrowDown";
+    }
+  }
+  
+  
 
   let finalId = id;
+  let isLocalPlayer = false;
+  
   if (!finalIsAi && !finalId) {
-    const urlParams = new URLSearchParams(window.location.search);
-    finalId = urlParams.get("userId") || name; // Use name as last resort
+    if (playerIndex === 1) {
+      const urlParams = new URLSearchParams(window.location.search);
+      finalId = urlParams.get("userId") || finalName;
+    } else {
+      isLocalPlayer = true;
+      finalId = finalName || `Player-${playerIndex}`;
+    }
   }
+  
+  const finalFormattedId = finalIsAi 
+    ? `AI-${finalName.replace(/\s+/g, '-')}` 
+    : (isLocalPlayer ? `Local-${finalId.replace(/\s+/g, '-')}` : finalId);
 
   var p: playerData = {
-    name: name,
-    id: finalIsAi ? `AI-${name.replace(/\s+/g, '-')}` : finalId,
+    name: finalName,
+    id: finalFormattedId,
     score: 0,
     isAi: finalIsAi,
-    up: up,
-    down: down,
+    up: finalUp,
+    down: finalDown,
     innerCol: innerCol || '#ffffff',
     outerCol: outercol || '#808080',
     cornerCol: cornerCol || '#ff0000',
@@ -117,6 +155,13 @@ function loadPlayer(
 function loadIn(id: string): string {
   const el = document.getElementById(id) as HTMLInputElement;
   return el ? el.value : "";
+}
+
+function getPlayerDataFromWizard(playerIndex: number): any {
+  if (allPlayerData && allPlayerData.length >= playerIndex) {
+    return allPlayerData[playerIndex - 1];
+  }
+  return null;
 }
 
 function loadInB(id: string): boolean {
@@ -143,7 +188,7 @@ export async function newGame(mode: string): Promise<void> {
   }) as HTMLDivElement;
 
   appDiv.className = [
-    "fixed inset-0 flex flex-col items-center justify-center",
+    "fixed game-hc inset-0 flex flex-col items-center justify-center",
     "bg-black/60",
     "z-50 pb-2 md:pb-0",
   ].join(" ");
@@ -181,7 +226,7 @@ export async function loadConfig(mode: string): Promise<void> {
     }
   }
   const scoreboard = Object.assign(document.createElement("div"), {
-    className: "scoreboard w-full flex justify-between items-center",
+    className: "scoreboard w-full justify-between items-center",
   }) as HTMLDivElement;
 
   const leftSide = Object.assign(document.createElement("div"), {
@@ -244,6 +289,7 @@ export async function loadConfig(mode: string): Promise<void> {
 
   var p: playerData[] = [];
 
+
   if (mode === "tournament") {
     const playersNumberInput = document.getElementById(
       "playersNumber",
@@ -252,13 +298,19 @@ export async function loadConfig(mode: string): Promise<void> {
       ? parseInt(playersNumberInput.value) || 4
       : 4;
 
-    const leftUpKey = loadIn("tournamentLeftUp") || "Shift";
-    const leftDownKey = loadIn("tournamentLeftDown") || "Control";
+    const leftUpKey = loadIn("tournamentLeftUp") || "w";
+    const leftDownKey = loadIn("tournamentLeftDown") || "s";
     const rightUpKey = loadIn("tournamentRightUp") || "ArrowUp";
     const rightDownKey = loadIn("tournamentRightDown") || "ArrowDown";
 
     for (let i = 1; i <= numPlayers; i++) {
+      const wizardData = getPlayerDataFromWizard(i);
+      
       let playerId = loadIn(`p${i}Id`);
+      
+      if (!playerId && wizardData?.id) {
+        playerId = wizardData.id;
+      }
 
       if (i === 1 && !playerId) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -279,69 +331,48 @@ export async function loadConfig(mode: string): Promise<void> {
           loadIn(`p${i}OuterCol`),
           loadIn(`p${i}CornerCol`),
           i,
+          mode,
         ),
       );
     }
   } else {
-    // Standard 2-player setup
-    p.push(
-      loadPlayer(
-        loadIn("name_p1"),
-        loadIn("p1Id"), // get user id from hidden input
-        loadInB("p1Ai"),
-        loadIn("p1Up"),
-        loadIn("p1Down"),
-        loadIn("p1InnerCol"),
-        loadIn("p1OuterCol"),
-        loadIn("p1CornerCol"),
-        1,
-      ),
-    );
-    p.push(
-      loadPlayer(
-        loadIn("name_p2"),
-        loadIn("p2Id"), // get user ID from hidden input
-        loadInB("p2Ai"),
-        loadIn("p2Up"),
-        loadIn("p2Down"),
-        loadIn("p2InnerCol"),
-        loadIn("p2OuterCol"),
-        loadIn("p2CornerCol"),
-        2,
-      ),
-    );
-
-    // Add players 3 and 4 for multi mode
-    if (mode === "multi") {
+    for (let i = 1; i <= (mode === "multi" ? 4 : 2); i++) {
+      const wizardData = getPlayerDataFromWizard(i);
+      
+      const name = loadIn(`name_p${i}`) || wizardData?.name || `Player ${i}`;
+      
+      let id = loadIn(`p${i}Id`);
+      
+      if (!id && wizardData?.id) {
+        id = wizardData.id;
+      }
+      
+      if (!id && i === 1) {
+        const urlParams = new URLSearchParams(window.location.search);
+        id = urlParams.get("userId") || "";
+      }
+      
+      const isAi = loadInB(`p${i}Ai`) || wizardData?.isAi || false;
+      
+      const up = loadIn(`p${i}Up`) || wizardData?.keys?.up || "ArrowUp";
+      const down = loadIn(`p${i}Down`) || wizardData?.keys?.down || "ArrowDown";
+      
       p.push(
         loadPlayer(
-          loadIn("name_p3"),
-          "", //player ID
-          loadInB("p3Ai"),
-          loadIn("p3Up"),
-          loadIn("p3Down"),
-          loadIn("p3InnerCol"),
-          loadIn("p3OuterCol"),
-          loadIn("p3CornerCol"),
-          3,
-        ),
-      );
-      p.push(
-        loadPlayer(
-          loadIn("name_p4"),
-          "", //player ID
-          loadInB("p4Ai"),
-          loadIn("p4Up"),
-          loadIn("p4Down"),
-          loadIn("p4InnerCol"),
-          loadIn("p4OuterCol"),
-          loadIn("p4CornerCol"),
-          4,
+          name,
+          id,
+          isAi,
+          up,
+          down,
+          loadIn(`p${i}InnerCol`),
+          loadIn(`p${i}OuterCol`),
+          loadIn(`p${i}CornerCol`),
+          i,
+          mode,
         ),
       );
     }
-  }
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  	}	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	
 	const resizeCanvas = () => {
 		canvas.width = isMobile ? window.innerWidth : screen.width;
@@ -362,15 +393,6 @@ export async function loadConfig(mode: string): Promise<void> {
 	document.addEventListener("fullscreenchange", resizeCanvas);
 	window.addEventListener("resize", resizeCanvas);
 	
-	setTimeout(async () => {
-		try {
-			await enterFullscreen();
-			setTimeout(resizeCanvas, 100);
-		} catch (error) {
-			console.log("Auto fullscreen failed, showing manual prompt:", error);
-			showFullscreenPrompt();
-		}
-	}, 100);
 	const loadData: gameData = {
 		canvas: canvas,
 		fps: 50,
@@ -465,7 +487,7 @@ export async function loadConfig(mode: string): Promise<void> {
 
   if (pendingTournamentId) {
     data.tournamentId = pendingTournamentId;
-    pendingTournamentId = null; // Clear the pending ID
+    pendingTournamentId = null;
   }
 
   const gameAppDiv = document.getElementById("app");
@@ -477,11 +499,32 @@ export async function loadConfig(mode: string): Promise<void> {
       "z-50",
     ].join(" ");
 
+    const fullscreenToggle = Object.assign(document.createElement("button"), {
+      id: "fullscreen-toggle",
+      className: "fixed top-4 right-4 z-50 bg-[rgba(3,27,27,0.9)] border-2 border-[#66fcf1] rounded-lg p-2 hover:bg-[rgba(102,252,241,0.2)] transition-colors hidden",
+    }) as HTMLButtonElement;
+    fullscreenToggle.setAttribute("aria-label", "Enter fullscreen");
+    fullscreenToggle.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    `;
+
     gameAppDiv.appendChild(scoreboard);
     gameAppDiv.appendChild(canvas);
+    gameAppDiv.appendChild(fullscreenToggle);
   }
   controlKeys();
+  setupFullscreenToggle();
   document.getElementById("board")?.focus();
+
+  setTimeout(async () => {
+    try {
+      await enterFullscreen();
+    } catch (error) {
+      showFullscreenPrompt();
+    }
+  }, 100);
 
   if (mode !== "tournament") {
     setTimeout(() => countdown(3, 500), 500);

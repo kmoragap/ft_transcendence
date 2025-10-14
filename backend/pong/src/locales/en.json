@@ -1,6 +1,6 @@
 {
-  "scores": "Scores",
-  "wins": "Wins",
+  "scores": "scores",
+  "wins": "wins",
   "player": "Player",
   "game_over": "Game Over",
   "restart": "Restart",

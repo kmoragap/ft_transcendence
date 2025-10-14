@@ -13,7 +13,7 @@ export function renderHeader(): HTMLElement {
   let lastAuthState: { isAuthenticated: boolean; currentUser: any } | null = null;
   let abortController: AbortController | null = null;
   
-  let searchTimeout: number | null = null;
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null;
   let searchResults: UserSearchResult[] = [];
   let searchDropdown: HTMLDivElement | null = null;
   
@@ -225,14 +225,20 @@ export function renderHeader(): HTMLElement {
     
     links.forEach(key => {
       const li = document.createElement('li');
-      li.classList.add(
-        'ml-5', 'font-[jura]', 'font-semibold', 'text-xl', 'text-[#66fcf1]'
-      );
-      li.setAttribute('data-i18n', key);
-      li.textContent = t(key);
-      li.style.cursor = 'pointer';
+      li.classList.add('ml-5');
+      
+      const link = document.createElement('a');
+      link.href = `#/${key}`;
+      link.className = [
+        'font-[jura]', 'font-semibold', 'text-xl', 'text-[#66fcf1]',
+        'hover:text-[#66fcf1]/80', 'focus-visible:ring-2', 'focus-visible:ring-[#66fcf1]',
+        'rounded', 'outline-none'
+      ].join(' ');
+      link.setAttribute('data-i18n', key);
+      link.textContent = t(key);
 
-      li.addEventListener('click', async () => {
+      link.addEventListener('click', async (e) => {
+        e.preventDefault();
         switch (key) {
           case 'logout':
             await logout();
@@ -248,6 +254,7 @@ export function renderHeader(): HTMLElement {
         }
       });
 
+      li.appendChild(link);
       desktopNav.appendChild(li);
     });
 

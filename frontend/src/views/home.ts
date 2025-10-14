@@ -1,3 +1,4 @@
+// Home page
 export function renderHome(): HTMLElement {
   const section = document.createElement('section');
   section.className = 'home-section flex flex-col w-full items-center justify-center text-center z-10 font-[pressstart2p] px-4';

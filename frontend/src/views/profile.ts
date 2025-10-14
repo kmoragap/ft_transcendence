@@ -1,4 +1,4 @@
-import { store } from '../store';
+// Other User Profile page
 import { t, updateText } from '../i18n';
 import { getUserProfile, sendFriendRequest, getFriendshipStatus, removeFriendRequest, UserSearchResult, getUserStats, UserStats } from "../api/users";
 import { alertError, alertSuccess, alertWarning } from './../utils/modal-alerts';

@@ -4,6 +4,14 @@
 @source "../../index.html";
 @source "../../public/**/*.html";
 
+
+@theme {
+  --font-mclaren: "McLaren", cursive;
+  --font-pressstart2p: "PressStart2P", cursive;
+  --font-jura: "Jura", cursive;
+  --font-vt323: "VT323", cursive;
+}
+
 @media (max-width: 768px) {
   header {
     min-height: 60px;
@@ -107,7 +115,7 @@
   }
   /*high-contrast theme*/
   html.hc { color-scheme: dark; }
-  html.hc body { background:#000 !important; color:#fff !important; }
+  html.hc body, html.hc .game-hc { background:#000 !important; color:#fff !important; }
 
   html.hc header, html.hc footer, html.hc main, html.hc section, html.hc nav {
     background-image:none !important;
@@ -115,12 +123,25 @@
     border-color:#fff !important;
   }
 
-  html.hc a { color:#00e5ff !important; text-decoration:underline !important; }
+  html.hc .whitespace-nowrap { color:#000 !important; }
 
-  html.hc button, html.hc input, html.hc select, html.hc textarea {
+  html.hc a, html.hc footer { color:#fff !important; text-decoration:none !important; }
+
+  html.hc button, html.hc button span, html.hc #a11y-menu button {
+    background:#fff !important;
+    color:#000 !important;
+    border:none !important;
+  }
+  
+  html.hc input, html.hc select, html.hc textarea {
     background-color:#000 !important;
     color:#fff !important;
     border:2px solid #fff !important;
+  }
+  
+  html.hc input::placeholder, html.hc textarea::placeholder {
+    color:#fff !important;
+    opacity: 0.8 !important;
   }
 
   html.hc :focus-visible {
@@ -128,17 +149,111 @@
     outline-offset:3px !important;
   }
 
-  select option {
-    background-color: #0a2b2b !important;
-    color: #66fcf1 !important;
+  html.hc .btn, html.hc [class*="btn"], html.hc .btn a {
+    background:#fff !important;
+    color:#000 !important;
+    border:2px solid #000 !important;
   }
   
-  select option:hover,
-  select option:focus,
-  select option:active,
-  select option:checked {
-    background-color: #0a2b2b !important;
-    color: #66fcf1 !important;
+  html.hc .btn:hover, html.hc [class*="btn"]:hover {
+    background:#f0f0f0 !important;
+    color:#000 !important;
+  }
+  
+  html.hc .card, html.hc [class*="card"] {
+    background-color:#000 !important;
+    color:#fff !important;
+    border:2px solid #fff !important;
+  }
+  
+  html.hc .modal, html.hc [class*="modal"] {
+    background-color:#000 !important;
+    color:#fff !important;
+    border:2px solid #fff !important;
+  }
+  
+  html.hc h1, html.hc h2, html.hc h3, html.hc h4, html.hc h5, html.hc h6 {
+    color:#fff !important;
+  }
+  
+  html.hc p, html.hc span, html.hc div {
+    color:#fff !important;
+  }
+  
+  html.hc canvas, html.hc #board {
+    border: 2px solid #fff !important;
+    background-color: #000 !important;
+  }
+  
+  html.hc .game-overlay, html.hc .scoreboard {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+  }
+  
+  html.hc .game-text {
+    color: #fff !important;
+  }
+  
+  html.hc #app {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+  
+  html.hc .scoreboard, html.hc [class*="score"] {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+  }
+  
+html.hc .game-controls button, html.hc .game-menu button {
+  background-color: #fff !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+}
+
+html.hc #fullscreen-toggle {
+  background-color: #fff !important;
+  border-color: #000 !important;
+}
+
+html.hc #fullscreen-toggle svg {
+  stroke: #000 !important;
+}
+
+html.hc #fullscreen-toggle:hover {
+  background-color: #f0f0f0 !important;
+}
+  
+  html.hc * {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    text-decoration: none !important;
+    text-shadow: none !important;
+    text-decoration-color: none !important;
+    text-decoration-style: none !important;
+    text-decoration-thickness: none !important;
+    text-decoration-line: none !important;
+    text-decoration-skip: none !important;
+    text-decoration-skip-ink: none !important;
+    text-decoration-skip-ink-color: none !important;
+    text-decoration-skip-ink-style: none !important;
+    text-decoration-skip-ink-thickness: none !important;
+  }
+
+  html.hc select option {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+  
+  html.hc select option:hover,
+  html.hc select option:focus,
+  html.hc select option:active,
+  html.hc select option:checked {
+    background-color: #fff !important;
+    color: #000 !important;
   }
   
   select#language-switcher option {
@@ -454,7 +569,7 @@
     font-weight: 700;
   }
   .scoreboard {
-			display: flex;
+			display: none;
 			justify-content: center;
 			color: #66fcf1;
 			font-family: 'jura', sans-serif;

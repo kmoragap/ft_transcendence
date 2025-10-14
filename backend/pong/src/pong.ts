@@ -22,6 +22,11 @@ export async function startGame() {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get("lang") || "en";
     const mode = urlParams.get("mode") || "twoPlayers";
+    const isHighContrast = urlParams.get("hc") === "true";
+
+    if (isHighContrast) {
+      document.documentElement.classList.add('hc');
+    }
 
     await initI18n(lang);
     await newGame(mode);
@@ -96,8 +101,11 @@ function update(): void {
     data.lastTime = now;
     for (let i: number = 0; i < balls.length; i++) balls[i].move();
     for (let i: number = 0; i < pad.length; i++) {
-      if (pad[i].isAi()) pad[i].moveAI();
-      else pad[i].movePaddle();
+      if (pad[i].isAi()) {
+        pad[i].moveAI();
+      } else {
+        pad[i].movePaddle();
+      }
     }
   }
 }
@@ -114,10 +122,10 @@ function render(): void {
 		p2NameAndScore = margin + data.p[1].score + " - " + data.p[1].name;
 	} else {
 		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
-		p2NameAndScore = margin + data.p[1].score + " - Team 2";
+		p2NameAndScore = margin + data.p[2].score + " - Team 2";
 	}
-	data.ctx.font = `bold ${data.canvas.height / 12}px jura, sans-serif`;
-	data.ctx.fillStyle = "#66fcf1";
+	data.ctx.font = `bold ${data.canvas.height / 24}px jura, sans-serif`;
+	data.ctx.fillStyle = "rgba(102, 252, 241, 0.5)";
 	data.ctx.textBaseline = "top";
 	data.ctx.textAlign = "right";
 	data.ctx.fillText(p1NameAndScore, data.canvas.width / 2, 20);
@@ -154,41 +162,93 @@ export function endRound(): void {
   }
 }
 
-//TODO: adapt for 2vs2 mode
 export async function finito(): Promise<void> {
   let winnerId: string;
-  if (data.p[0].score > data.p[1].score) {
+  var pl2 = 1;
+  if (data.mode == "multi") pl2 = 2;
+  
+  if (data.p[0].score > data.p[pl2].score) {
     winnerId = data.p[0].id;
   } else {
-    winnerId = data.p[1].id;
+    winnerId = data.p[pl2].id;
   }
-
-  const gameData: gameInfo = {
-    status: "FINISHED",
-    player1Id: data.p[0].id,
-    player1Name: data.p[0].name,
-    score1: data.p[0].score,
-    player2Id: data.p[1].id,
-    player2Name: data.p[1].name,
-    score2: data.p[1].score,
-    maxScore: data.maxScore,
-    multiBall: data.multiball,
-    mode: data.mode,
-    isTournament: data.isTournament,
-    tournamentId: data.tournamentId,
-    tournamentRound: data.tournamentRound,
-    tournamentMatch: data.tournamentMatch,
-    winnerId: winnerId,
-  };
-  const result = await gameService.finishGame(gameData);
-  if (!result) {
-    console.error("Failed to finish game on server");
-    return;
+  var result, result2;
+  if (data.mode != "multi") {
+    const gameData: gameInfo = {
+      status: "FINISHED",
+      player1Id: data.p[0].id,
+      player1Name: data.p[0].name,
+      score1: data.p[0].score,
+      player2Id: data.p[1].id,
+      player2Name: data.p[1].name,
+      score2: data.p[1].score,
+      maxScore: data.maxScore,
+      multiBall: data.multiball,
+      mode: data.mode,
+      isTournament: data.isTournament,
+      tournamentId: data.tournamentId,
+      tournamentRound: data.tournamentRound,
+      tournamentMatch: data.tournamentMatch,
+      winnerId: winnerId,
+    };
+    result = await gameService.finishGame(gameData);
+    if (!result) {
+      console.error("Failed to finish game on server");
+      return;
+    }
+  } else {
+    const gameData1: gameInfo = {
+      status: "FINISHED",
+      player1Id: data.p[0].id,
+      player1Name: data.p[0].name,
+      score1: data.p[0].score,
+      player2Id: data.p[2].id,
+      player2Name: data.p[2].name,
+      score2: data.p[2].score,
+      maxScore: data.maxScore,
+      multiBall: data.multiball,
+      mode: data.mode,
+      isTournament: data.isTournament,
+      tournamentId: data.tournamentId,
+      tournamentRound: data.tournamentRound,
+      tournamentMatch: data.tournamentMatch,
+      winnerId: winnerId,
+    };
+    result = await gameService.finishGame(gameData1);
+    if (!result) {
+      console.error("Failed to finish game on server");
+      return;
+    }
+    
+    if (winnerId == data.p[0].id) winnerId = data.p[1].id;
+    else winnerId = data.p[3].id;
+      
+    const gameData2: gameInfo = {
+      status: "FINISHED",
+      player1Id: data.p[1].id,
+      player1Name: data.p[1].name,
+      score1: data.p[0].score,
+      player2Id: data.p[3].id,
+      player2Name: data.p[3].name,
+      score2: data.p[2].score,
+      maxScore: data.maxScore,
+      multiBall: data.multiball,
+      mode: data.mode,
+      isTournament: data.isTournament,
+      tournamentId: data.tournamentId,
+      tournamentRound: data.tournamentRound,
+      tournamentMatch: data.tournamentMatch,
+      winnerId: winnerId,
+    };
+    result2 = await gameService.finishGame(gameData2);
+    if (!result2) {
+      console.error("Failed to finish game on server");
+      return;
+    }
   }
+  
 
-  console.log("Game data successfully sent to server");
 
-  // Handle tournament progression if this is a tournament game
   if (data.isTournament && data.tournamentId) {
     try {
       const tournamentResult = await handleTournamentGameCompletion(
@@ -196,12 +256,8 @@ export async function finito(): Promise<void> {
         result.gameId || ""
       );
       if (tournamentResult) {
-        console.log(
-          "Tournament game completed, showing match transition window"
-        );
         return;
       } else {
-        console.log("Tournament completed or failed, will auto-exit");
       }
     } catch (error) {
       console.error("Error handling tournament game completion:", error);
@@ -220,13 +276,6 @@ export async function endGame() {
   data.showingText = false;
 
   try {
-    console.log("Sending game data:", data);
-    console.log("player1ID: ", data.p[0].id);
-    console.log("player2ID: ", data.p[1].id);
-    if (data.mode == "multi") {
-    console.log("player3ID: ", data.p[2].id);
-    console.log("player4ID: ", data.p[3].id);
-    }
     finito();
   } catch (error) {
     console.error("Failed to finish game:", error);
@@ -238,11 +287,7 @@ export async function endGame() {
       exitGameMessage(winner);
     }, 3000);
   } else {
-    if (data.isTournament && data.tournamentId) {
-      console.log(
-        "Tournament mode: not auto-exiting, waiting for transition window"
-      );
-    } else {
+    if (!data.isTournament || !data.tournamentId) {
       setTimeout(() => {
         exitGameMessage(winner);
       }, 3000);

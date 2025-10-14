@@ -16,7 +16,7 @@ function validateField(input: HTMLInputElement): string {
   switch (input.name) {
     case 'username':
       if (!input.value) return 'Username is required.';
-      if (input.value.length < 3) return 'At least 3 characters';
+      if (input.value.length < 3) return 'At least 3 characters.';
       if(input.value.length > 20) return 'Must be at most 20 characters.'
       return '';
     case 'email':

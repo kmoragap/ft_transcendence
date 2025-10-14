@@ -23,7 +23,7 @@ export function renderGame(): HTMLElement {
      <div class="flex items-center px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
-        aria-hidden="true"
+        tabindex="-1"
         data-i18n="back_to_modes">
         Back
       </button>
@@ -38,12 +38,12 @@ export function renderGame(): HTMLElement {
 
   function showBack() {
     backBtn.classList.remove("invisible", "pointer-events-none");
-    backBtn.removeAttribute("aria-hidden");
+    backBtn.removeAttribute("tabindex");
   }
 
   function hideBack() {
     backBtn.classList.add("invisible", "pointer-events-none");
-    backBtn.setAttribute("aria-hidden", "true");
+    backBtn.setAttribute("tabindex", "-1");
   }
 
   function showTitle() {

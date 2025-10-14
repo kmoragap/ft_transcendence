@@ -51,7 +51,6 @@ export class TournamentManager {
         status: "IN_PROGRESS",
       };
 
-      console.log("Tournament initialized:", this.tournament);
       return true;
     } catch (error) {
       console.error("Error initializing tournament:", error);
@@ -438,7 +437,6 @@ export async function newTournamentGame(
 
   const nextMatch = tournamentManager.getNextMatch();
   if (!nextMatch) {
-    console.log("No more matches in tournament");
     return false;
   }
 

@@ -509,7 +509,6 @@ export async function loadConfig(mode: string): Promise<void> {
     try {
       await enterFullscreen();
     } catch (error) {
-      console.log("Auto fullscreen failed, showing manual prompt:", error);
       showFullscreenPrompt();
     }
   }, 100);

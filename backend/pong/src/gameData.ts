@@ -473,12 +473,12 @@ export async function loadConfig(mode: string): Promise<void> {
 		default:		loadData.paddleSpeed = 40;	break;
 	}
 	switch (loadIn("ballSpeed")) {
-		case "glacial":	loadData.ballSpeed = 15;	break;
-		case "slow":	loadData.ballSpeed = 12;	break;
-		case "standard":loadData.ballSpeed = 10;	break;
-		case "fast":	loadData.ballSpeed = 8;		break;
-		case "insane":	loadData.ballSpeed = 6;		break;
-		default:		loadData.ballSpeed = 10;	break;
+		case "glacial":	loadData.ballSpeed = 12;	break;
+		case "slow":	loadData.ballSpeed = 10;	break;
+		case "standard":loadData.ballSpeed = 8;	break;
+		case "fast":	loadData.ballSpeed = 6;		break;
+		case "insane":	loadData.ballSpeed = 4;		break;
+		default:		loadData.ballSpeed = 8;	break;
 	}
 	switch (loadIn("ballSize")) {
 		case "tiny":	loadData.ballSize = 160;	break;

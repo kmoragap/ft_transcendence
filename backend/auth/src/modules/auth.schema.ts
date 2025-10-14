@@ -22,7 +22,7 @@ const commonSchemas = {
     .min(1, "First name is required")
     .max(50, "First name must be at most 50 characters")
     .regex(
-      /^[\p{L}\p{N}_]+$/u,
+      /^[\p{L}\p{N}_' -]+$/u,
       "First name can only contain letters, spaces, hyphens, and apostrophes",
     ),
 
@@ -32,9 +32,9 @@ const commonSchemas = {
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password must be at most 128 characters")
     .regex(/\p{Lu}/u, "Password must contain at least one uppercase letter")
-    .regex(/\p{Lu}/u, "Password must contain at least one lowercase letter")
+    .regex(/\p{Ll}/u, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[^\p{L}\p{N}_\s]/u, "Password can only contain letters, numbers, and underscores"),
+    .regex(/^[\p{L}\p{N}_]+$/u, "Password can only contain letters, numbers, and underscores"),
 
   // cuid validation (for database ids)
   cuid: z.string().regex(/^c[a-z0-9]{24}$/, "Invalid ID format"),

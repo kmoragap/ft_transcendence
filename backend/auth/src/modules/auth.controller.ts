@@ -14,6 +14,7 @@ import {
   Resend2faRequest,
   RegisterRequest,
   LoginRequest,
+  authSchemas
 } from "./auth.schema";
 
 async function authenticateUser(
@@ -182,7 +183,8 @@ export async function registerHandler(
   reply: FastifyReply,
 ) {
   try {
-    const { username, email, firstname, password } = request.body;
+    const parsed = authSchemas.register.parse(request.body);
+    const { username, email, firstname, password } = parsed;
     // Check if email exists.
     const existingUser = await getUserByEmail(email);
     if (existingUser)
@@ -236,9 +238,9 @@ export async function loginHandler(
   reply: FastifyReply,
 ) {
   try {
-    const { username, email, identifier, password } = request.body;
-    // Validation handled by middleware
-    const loginIdentifier = username || email || identifier;
+    const parsed = authSchemas.login.parse(request.body);
+    const { username, email, identifier, password } = parsed;    // Validation handled by middleware
+    const loginIdentifier = username || email;
     if (!loginIdentifier) {
       return reply
         .code(400)

@@ -26,10 +26,10 @@ function validateField(input: HTMLInputElement): string {
     case 'password':
       if (!input.value) return 'Password is required.';
       if (input.value.length < 8) return 'At least 8 characters.';
-      if (!/[A-Z]/.test(input.value)) return 'Include at least one uppercase letter.';
-      if (!/[a-z]/.test(input.value)) return 'Include at least one lowercase letter.';
+      if (!/\p{Lu}/u.test(input.value)) return 'Include at least one uppercase letter.';
+      if (!/\p{Lu}/u.test(input.value)) return 'Include at least one lowercase letter.';
       if (!/[0-9]/.test(input.value)) return 'Include at least one number.';
-      if (!/[^A-Za-z0-9]/.test(input.value)) return 'Include at least one special character.';
+      if (!/^[\p{L}\p{N}_]+$/u.test(input.value)) return 'Include at least one special character.';
       if (input.form) {
         const username = (input.form.elements.namedItem('username') as HTMLInputElement)?.value;
         const email = (input.form.elements.namedItem('email') as HTMLInputElement)?.value;

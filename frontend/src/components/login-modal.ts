@@ -70,21 +70,13 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
           <p id="modal-password-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
         </div>
 
-        <div class="flex flex-col gap-3 w-full">
+        <div class="flex flex-col gap-2 w-full">
           <button
             type="submit"
             class="btn py-2 text-lg font-bold flex-1"
             data-i18n="submit"
           >
             ${t("submit")}
-          </button>
-           <button class="btn !w-full">
-            <a
-              href="#/login_42"
-              data-i18n="login_42"
-            >
-              ${t("login_42")}
-            </a>
           </button>
           <button
             type="button"

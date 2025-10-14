@@ -34,7 +34,7 @@ const commonSchemas = {
     .regex(/\p{Lu}/u, "Password must contain at least one uppercase letter")
     .regex(/\p{Lu}/u, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/^[\p{L}\p{N}_]+$/u, "Password can only contain letters, numbers, and underscores"),
+    .regex(/[^\p{L}\p{N}_\s]/u, "Password can only contain letters, numbers, and underscores"),
 
   // cuid validation (for database ids)
   cuid: z.string().regex(/^c[a-z0-9]{24}$/, "Invalid ID format"),

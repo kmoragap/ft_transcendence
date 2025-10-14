@@ -182,13 +182,15 @@ export function wizard(mode: string) {
 				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } }
 			];
 			
-			totalPlayerPages = 2;
+			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			const playersPerPage = isMobile ? 1 : 2;
+			totalPlayerPages = Math.ceil(2 / playersPerPage);
 			currentPlayerPage = 0;
 			
 			playerSetupFlexContainer.id = "playerSetupContainer";
 			step1Container.appendChild(playerSetupFlexContainer);
 			
-			renderPlayerPage(currentPlayerPage, 1, playerSetupFlexContainer);
+			renderPlayerPage(currentPlayerPage, playersPerPage, playerSetupFlexContainer);
 			
 			const p1IdInput = document.getElementById("p1Id") as HTMLInputElement;
 			if (p1IdInput && userId) p1IdInput.value = userId;
@@ -201,7 +203,8 @@ export function wizard(mode: string) {
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
 			if (currentStep === 1 && totalPlayerPages > 1) {
-				const playersPerPage = mode === "multi" ? (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 1 : 2) : 1;
+				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+				const playersPerPage = isMobile ? 1 : 2;
 				if (currentPlayerPage < totalPlayerPages - 1) {
 					currentPlayerPage++;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
@@ -215,7 +218,8 @@ export function wizard(mode: string) {
 			e.preventDefault();
 			if (currentStep === 1 && totalPlayerPages > 1) {
 				if (currentPlayerPage > 0) {
-					const playersPerPage = mode === "multi" ? (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 1 : 2) : 1;
+					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+					const playersPerPage = isMobile ? 1 : 2;
 					currentPlayerPage--;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
 					updateButtonText();

@@ -1,3 +1,7 @@
+/*
+controls.ts handles the eventListeners for keyboard and touchscreen input.
+*/
+
 import { data } from "./gameData";
 import { pad, balls } from "./pong";
 
@@ -14,17 +18,13 @@ export function controlKeys(): void {
 	
 	document.addEventListener("keyup", (ev) => {
 		if (pad.length) {
-			// Handle specific key releases for each player
 			for (let i: number = 0; i < data.p.length; i++) {
 				if (ev.key == data.p[i].up || ev.key == data.p[i].down) {
-					// Find the corresponding paddle(s) for this player
 					if (data.mode == "multi") {
-						// In multi mode, each player has one paddle
 						if (i < pad.length) {
 							pad[i].setDir(0);
 						}
 					} else if (data.mode == "doublePaddle") {
-						// In double paddle mode, players have multiple paddles
 						if (i == 0) {
 							pad[0].setDir(0);
 							pad[2].setDir(0);
@@ -33,13 +33,12 @@ export function controlKeys(): void {
 							pad[3].setDir(0);
 						}
 					} else {
-						// Standard 2-player mode
 						if (i < pad.length) {
 							pad[i].setDir(0);
 						}
 					}
 					data.keys[ev.key] = false;
-					break; // Found the matching player, stop searching
+					break;
 				}
 			}
 			if (ev.key == "Escape") {//debug

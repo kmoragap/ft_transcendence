@@ -119,31 +119,31 @@ export function touchControlArrows(): void {
 			if (i == 1 && !pad[i].isAi()) {
 				data.ctx.textBaseline = "top";
 				data.ctx.textAlign = "right";
-				data.ctx.fillText("\u{2B06}", data.canvas.width * 15 / 16, 0);
+				data.ctx.drawImage(upImg, data.canvas.width * 15 / 16 - arrowSize/2, 0, arrowSize, arrowSize);
 				data.ctx.textBaseline = "bottom";
-				data.ctx.fillText("\u{2B07}", data.canvas.width * 15 / 16, data.canvas.height);
+				data.ctx.drawImage(downImg, data.canvas.width * 15 / 16 - arrowSize/2, data.canvas.height - arrowSize, arrowSize, arrowSize);
 			}
 		} else {
 			if (i == 1 && !pad[i].isAi()) {
 				data.ctx.textBaseline = "top";
 				data.ctx.textAlign = "right";
-				data.ctx.fillText("\u{2B06}", data.canvas.width * 2 / 5, 0);
+				data.ctx.drawImage(upImg, data.canvas.width * 2 / 5 - arrowSize/2, 0, arrowSize, arrowSize);
 				data.ctx.textBaseline = "bottom";
-				data.ctx.fillText("\u{2B07}", data.canvas.width * 2 / 5, data.canvas.height);
+				data.ctx.drawImage(downImg, data.canvas.width * 2 / 5 - arrowSize/2, data.canvas.height - arrowSize, arrowSize, arrowSize);
 			}
 			if (i == 2 && !pad[i].isAi()) {
 				data.ctx.textBaseline = "top";
 				data.ctx.textAlign = "left";
-				data.ctx.fillText("\u{2B06}", data.canvas.width * 3 / 5, 0);
+				data.ctx.drawImage(upImg, data.canvas.width * 3 / 5 - arrowSize/2, 0, arrowSize, arrowSize);
 				data.ctx.textBaseline = "bottom";
-				data.ctx.fillText("\u{2B07}", data.canvas.width * 3 / 5, data.canvas.height);
+				data.ctx.drawImage(downImg, data.canvas.width * 3 / 5 - arrowSize/2, data.canvas.height - arrowSize, arrowSize, arrowSize);
 			}
 			if (i == 3 && !pad[i].isAi()) {
 				data.ctx.textBaseline = "top";
 				data.ctx.textAlign = "right";
-				data.ctx.fillText("\u{2B06}", data.canvas.width * 15 / 16, 0);
+				data.ctx.drawImage(upImg, data.canvas.width * 15 / 16 - arrowSize/2, 0, arrowSize, arrowSize);
 				data.ctx.textBaseline = "bottom";
-				data.ctx.fillText("\u{2B07}", data.canvas.width * 15 / 16, data.canvas.height);
+				data.ctx.drawImage(downImg, data.canvas.width * 15 / 16 - arrowSize/2, data.canvas.height - arrowSize, arrowSize, arrowSize);
 			}
 		}
 	}

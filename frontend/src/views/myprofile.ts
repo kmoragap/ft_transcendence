@@ -9,7 +9,6 @@ import {
   rejectFriendRequest,
   removeFriendRequest,
   getUserStats,
-  UserStats,
   toggle2fa,
   getUserGameHistory,
   GameHistoryEntry,
@@ -188,13 +187,13 @@ export function renderMyProfile(): HTMLElement {
               <p class="text-sm text-gray-400">${user.email}</p>
             </div>
             <div class="flex flex-col gap-2 md:gap-3">
-              ${!user.isOAuthUser ? `<button id="edit-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+              ${!user.isOAuthUser ? `<button id="edit-btn" type="button" aria-label="${t('edit_profile') || 'Edit profile'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                       transition-shadow duration-300" data-i18n="edit_profile">
                 Edit Profile
               </button>` : ''}
-              <button id="refresh-stats-btn" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+              <button id="refresh-stats-btn" type="button" aria-label="${t('refresh_stats') || 'Refresh stats'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45fcf1] font-[jura] hover:shadow-lg
                       transition-shadow duration-300" data-i18n="refresh_stats">
@@ -248,7 +247,7 @@ export function renderMyProfile(): HTMLElement {
       <span class="mid_line" data-i18n="myprofile">MY PROFILE</span>
     </h1>
       
-      <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4">
+      <form class="bg-[rgba(102,252,241,0.1)] rounded-md shadow-lg p-8 w-80 space-y-4" aria-label="${t('edit_profile') || 'Edit profile'}">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-[#66fcf1] text-left" data-i18n="display_name">Display Name</label>
           <input name="name" type="text" value="${user.name}"
@@ -276,13 +275,13 @@ export function renderMyProfile(): HTMLElement {
         </div>
         
         <div class="flex flex-col gap-3 pt-4">
-          <button type="button" id="cancel-btn" class="cursor-pointer text-lg font-bold px-8 py-2
+          <button type="button" id="cancel-btn" aria-label="${t('cancel') || 'Cancel'}" class="cursor-pointer text-lg font-bold px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                   transition-shadow duration-300" data-i18n="cancel">
             Cancel
           </button>
-          <button type="submit" class="cursor-pointer text-lg font-bold px-8 py-2
+          <button type="submit" aria-label="${t('save_changes') || 'Save changes'}" class="cursor-pointer text-lg font-bold px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
                   transition-shadow duration-300" data-i18n="save_changes">
@@ -388,7 +387,7 @@ export function renderMyProfile(): HTMLElement {
               }" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
               <a href="#/profile/${
                 friend.username
-              }" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${
+              }" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer" aria-label="View profile of ${friend.username}">${
             friend.username
           }</a>
             </div>
@@ -408,17 +407,17 @@ export function renderMyProfile(): HTMLElement {
               }" alt="User avatar" class="w-8 h-8 rounded-full" onerror="this.src='/assets/img/avatar.jpg'">
               <a href="#/profile/${
                 friend.username
-              }" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer">${
+              }" class="text-[#66fcf1] font-medium hover:text-[#4dd0e1] hover:underline transition-colors cursor-pointer" aria-label="View profile of ${friend.username}">${
             friend.username
           }</a>
             </div>
             <div class="flex space-x-2">
-              <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" data-request-id="${
+              <button class="accept-friend-request-btn px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors" type="button" aria-label="Accept friend request" data-request-id="${
                 friend.id
               }" data-username="${friend.username}" title="Accept">
                 ✓
               </button>
-              <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" data-request-id="${
+              <button class="reject-friend-request-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors" type="button" aria-label="Reject friend request" data-request-id="${
                 friend.id
               }" data-username="${friend.username}" title="Reject">
                 ✗
@@ -754,7 +753,7 @@ export function renderMyProfile(): HTMLElement {
           await toggle2fa(is2faEnabled);
           updateCurrentUserProfile({ is2faEnabled });
         }
-
+        let oldUsername = user.username;
         const updated: UserProfile = {
           name: profileData.firstname,
           username: profileData.username,
@@ -771,11 +770,17 @@ export function renderMyProfile(): HTMLElement {
         section.innerHTML = getViewHTML();
         bindViewEvents();
         updateText();
-
+        if (usernameChanged) {
+          try {
+            await fetch(`/api/pong/update-username?oldUsername=${encodeURIComponent(oldUsername)}&newUsername=${encodeURIComponent(profileData.username)}`, { method: 'PATCH', credentials: 'include' });
+          } catch (err) {
+            console.error("Failed to update username in games:", err);
+          }
+        }
         if (emailChanged || usernameChanged) {
           alertSuccess(t("profile_updated"));
           await logout();
-          window.location.href = "/login";
+          location.hash = "#/login";
           return;
         }
 

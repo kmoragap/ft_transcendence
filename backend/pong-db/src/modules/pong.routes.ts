@@ -6,6 +6,7 @@ import {
   getLeaderboard,
   getUserGames,
   updateTournamentStatus,
+  updateUsernameInGames,
 } from "./pong.controller";
 import { validateBody, validateParams, validateQuery } from "./pong.middleware";
 import { gameSchemas } from "./pong.schemas";
@@ -37,6 +38,7 @@ export default async function pongRoutes(fastify: FastifyInstance) {
     getUserGames,
   );
   // get leaderboard (for dashboard)
+  fastify.patch("/update-username", updateUsernameInGames);
   fastify.get(
     "/leaderboard",
     { preHandler: validateQuery(gameSchemas.getLeaderboard) },

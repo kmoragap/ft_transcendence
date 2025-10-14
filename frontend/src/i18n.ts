@@ -1,3 +1,4 @@
+// This file implements internationalization (i18n) support for the frontend application.
 type Translations = Record<string, string>;
 let translations: Translations = {};
 let currentLang = 'en';

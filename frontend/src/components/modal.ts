@@ -1,3 +1,4 @@
+// This file defines and exports functions to create and display customizable modal dialogs with various types (success, error, warning, info) and a confirmation dialog.
 import { t } from '../i18n';
 
 export interface ModalOptions {

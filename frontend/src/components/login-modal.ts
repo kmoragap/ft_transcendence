@@ -1,3 +1,4 @@
+// This file defines and exports functions to create and display a login modal dialog with form validation and submission handling.
 import { t } from "../i18n";
 import { store } from "../store";
 import { alertError, alertSuccess } from "../utils/modal-alerts";

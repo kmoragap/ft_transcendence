@@ -1,3 +1,4 @@
+// This file defines and exports a function to render accessibility controls (text size and high contrast mode) as a dropdown menu.
 import { toggleHighContrast, getA11yState, setTextScale } from '../utils/a11y';
 import { updateText, t } from '../i18n';
 

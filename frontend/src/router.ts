@@ -1,3 +1,4 @@
+// Simple client-side router for SPA navigation
 import { renderHome } from './views/home.ts';
 import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';

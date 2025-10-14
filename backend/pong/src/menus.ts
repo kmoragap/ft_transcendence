@@ -73,7 +73,6 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
       keyName = "Cmd";
     }
     
-    // Block modifier keys that interfere with browser shortcuts
     if (keyName === "Control" || keyName === "Shift" || keyName === "Alt" || keyName === "Meta" || keyName === "Cmd") {
       showKeyRestrictedWarning(keyName);
       input.style.backgroundColor = "rgba(255,0,0,0.2)";

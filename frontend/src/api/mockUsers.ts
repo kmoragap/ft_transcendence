@@ -1,8 +1,6 @@
 import { UserSearchResult } from './users';
 
-// Mock data for testing until backend is implemented
 const mockUsers: UserSearchResult[] = [
-  // No mock users - using real backend data only
 ];
 
 export function mockSearchUsers(query: string): UserSearchResult[] {

@@ -1,3 +1,4 @@
+// This file contains functions to interact with the user-related API endpoints, including profile management, avatar upload, user search, friendship management, and user statistics.
 export async function uploadMyAvatar(file: File): Promise<string> {
   const token = localStorage.getItem('accessToken');
   if (!token) {

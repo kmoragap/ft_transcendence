@@ -9,7 +9,6 @@ import {
   rejectFriendRequest,
   removeFriendRequest,
   getUserStats,
-  UserStats,
   toggle2fa,
   getUserGameHistory,
   GameHistoryEntry,
@@ -754,7 +753,7 @@ export function renderMyProfile(): HTMLElement {
           await toggle2fa(is2faEnabled);
           updateCurrentUserProfile({ is2faEnabled });
         }
-
+        let oldUsername = user.username;
         const updated: UserProfile = {
           name: profileData.firstname,
           username: profileData.username,
@@ -771,7 +770,13 @@ export function renderMyProfile(): HTMLElement {
         section.innerHTML = getViewHTML();
         bindViewEvents();
         updateText();
-
+        if (usernameChanged) {
+          try {
+            await fetch(`/api/pong/update-username?oldUsername=${encodeURIComponent(oldUsername)}&newUsername=${encodeURIComponent(profileData.username)}`, { method: 'PATCH', credentials: 'include' });
+          } catch (err) {
+            console.error("Failed to update username in games:", err);
+          }
+        }
         if (emailChanged || usernameChanged) {
           alertSuccess(t("profile_updated"));
           await logout();

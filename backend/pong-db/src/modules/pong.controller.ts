@@ -57,6 +57,41 @@ export const updateTournamentStatus = async (
   }
 };
 
+export const updateUsernameInGames = async (
+  request: FastifyRequest<{ Querystring: { oldUsername: string; newUsername: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { oldUsername, newUsername } = request.query;
+
+    if (!oldUsername || !newUsername) {
+      return reply
+        .status(400)
+        .send({ error: "oldUsername and newUsername are required" });
+    }
+
+    // Update player1Name where player1Name matches oldUsername
+    await prisma.game.updateMany({
+      where: { player1Name: oldUsername },
+      data: { player1Name: newUsername },
+    });
+
+    // Update player2Name where player2Name matches oldUsername
+    await prisma.game.updateMany({
+      where: { player2Name: oldUsername },
+      data: { player2Name: newUsername },
+    });
+
+    return reply.send({ message: "Username updated in games successfully" });
+  } catch (error) {
+    console.error("Error updating username in games:", error);
+    return reply
+      .status(500)
+      .send({ error: "Failed to update username in games" });
+  }
+};
+
+
 export const createGame = async (
   request: FastifyRequest<{ Body: { data: gameInfo } }>,
   reply: FastifyReply

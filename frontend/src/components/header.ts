@@ -287,6 +287,9 @@ export function renderHeader(): HTMLElement {
     headerLangWrap.className = 'sr-only';
     headerLangWrap.textContent = t('language') || 'Language';
     const headerLangSelect = document.createElement('select');
+    const headerLangSelectId = 'header-lang-select';
+    headerLangSelect.id = headerLangSelectId;
+    headerLangWrap.htmlFor = headerLangSelectId;
     headerLangSelect.className = 'px-2 py-1 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1]/30 rounded text-sm';
     headerLangSelect.setAttribute('aria-label', 'Select language');
     languages.forEach(({ code, label }) => {
@@ -408,6 +411,8 @@ export function renderHeader(): HTMLElement {
       
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     });
+    // Keep label accessible to SRs and explicitly associate it
+    langLabel.htmlFor = langSelect.id;
     langLi.appendChild(langLabel);
     langLi.appendChild(langSelect);
     

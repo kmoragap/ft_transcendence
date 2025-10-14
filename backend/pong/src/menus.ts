@@ -340,7 +340,7 @@ export function tournamentSetupMenu(): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
   
-  // Number of rounds
+  // Match length (number of rounds)
   const matchLengthLabel = Object.assign(document.createElement("label"), {
     className: "game-text text-sm md:text-base",
     htmlFor: "matchLength",

@@ -4,6 +4,14 @@
 @source "../../index.html";
 @source "../../public/**/*.html";
 
+
+@theme {
+  --font-mclaren: "McLaren", cursive;
+  --font-pressstart2p: "PressStart2P", cursive;
+  --font-jura: "Jura", cursive;
+  --font-vt323: "VT323", cursive;
+}
+
 @media (max-width: 768px) {
   header {
     min-height: 60px;

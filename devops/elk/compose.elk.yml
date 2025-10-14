@@ -121,6 +121,8 @@ services:
     ports:
       - "5044:5044"
       - "12201:12201/udp"
+    entrypoint: ["/bin/sh", "-lc"]
+    command: [/usr/local/bin/wait-for-certs && exec /usr/local/bin/docker-entrypoint -f /usr/share/logstash/pipeline/logstash.conf]
     restart: unless-stopped
     networks:
       app-network: {}

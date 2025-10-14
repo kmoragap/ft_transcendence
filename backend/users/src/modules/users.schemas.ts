@@ -93,7 +93,7 @@ export const userSchemas = {
       .min(2, "Search query must be at least 2 characters")
       .max(50, "Search query must be at most 50 characters")
       .regex(
-        /^[\p{L}\p{N}_]+$/u,
+        /^[\p{L}\p{N}\s_]+$/u,
         "Search query can only contain letters, numbers, and spaces",
       ),
   }),

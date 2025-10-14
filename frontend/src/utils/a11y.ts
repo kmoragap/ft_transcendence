@@ -1,3 +1,4 @@
+// This file provides accessibility (a11y) utilities for enhancing user experience, including skip links, live regions, and text scaling.
 export const SKIP_LINK_ID = 'skip-to-content';
 export const SR_ANNOUNCER_ID = 'sr-announcer';
 export const PAGE_TITLE_ID = 'page-title';

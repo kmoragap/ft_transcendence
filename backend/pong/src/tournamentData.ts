@@ -1,22 +1,17 @@
 import { loadConfig, setPendingTournamentId } from "./gameData";
 import { tournamentService } from "./services/tournamentService";
 import { newTournamentGame } from "./tournamentGame";
+import { allPlayerData } from "./wizard";
 
-/**
- * Create tournament and start the first match
- */
 export async function createAndStartTournament(): Promise<void> {
   try {
-    // Get tournament settings from form
     const playersNumber = parseInt(
       (document.getElementById("playersNumber") as HTMLInputElement)?.value ||
         "4",
     );
 
-    // Get player data from the form
     const players: string[] = [];
 
-    // Collect player IDs from the form (using the correct IDs: p1Id, p2Id, etc.)
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(
         `p${i}Id`,
@@ -28,14 +23,20 @@ export async function createAndStartTournament(): Promise<void> {
         `p${i}Ai`,
       ) as HTMLInputElement;
 
-      // Check if player is AI
-      const isAi = playerAiInput ? playerAiInput.checked : i > 1; // Default: first player human, rest AI
+      const isAi = playerAiInput ? playerAiInput.checked : i > 1;
 
       if (isAi) {
-        players.push(`AI-Player-${i}`);
+        const playerName = playerNameInput?.value || `Player ${i}`;
+        players.push(`AI-${playerName.replace(/\s+/g, '-')}`);
       } else {
-        if (playerIdInput && playerIdInput.value) {
-          players.push(playerIdInput.value);
+        let playerId = playerIdInput?.value || "";
+        
+        if (!playerId && allPlayerData && allPlayerData[i - 1]) {
+          playerId = allPlayerData[i - 1].id || "";
+        }
+        
+        if (playerId) {
+          players.push(playerId);
         } else if (i === 1) {
           const urlParams = new URLSearchParams(window.location.search);
           const userId = urlParams.get("userId") || playerNameInput?.value;
@@ -48,29 +49,9 @@ export async function createAndStartTournament(): Promise<void> {
           players.push(userId);
         } else {
           const name = playerNameInput?.value || `player${i}`;
-          players.push(name);
+          players.push(`Local-${name.replace(/\s+/g, '-')}`);
         }
       }
-    }
-
-    console.log("Creating tournament with players:", players);
-    console.log("Player details:");
-    for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(
-        `p${i}Id`,
-      ) as HTMLInputElement;
-      const playerNameInput = document.getElementById(
-        `name_p${i}`,
-      ) as HTMLInputElement;
-      const playerAiInput = document.getElementById(
-        `p${i}Ai`,
-      ) as HTMLInputElement;
-      console.log(`Player ${i}:`, {
-        id: playerIdInput?.value || "none",
-        name: playerNameInput?.value || "none",
-        isAi: playerAiInput?.checked || false,
-        finalId: players[i - 1],
-      });
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -89,14 +70,24 @@ export async function createAndStartTournament(): Promise<void> {
 
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       const playerId = players[i - 1];
-      const playerName = playerNameInput?.value || `Player ${i}`;
+      
+      let playerName = playerNameInput?.value;
+      if (!playerName || playerName.trim() === "") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get("username") || "Player 1";
+        const defaultNames = ["Player 1", "Roger Federror", "Boolena Williams", "Boris Backend"];
+        
+        if (i === 1) {
+          playerName = username;
+        } else {
+          playerName = defaultNames[i - 1] || `Player ${i}`;
+        }
+      }
 
       playerIdToNameMap[playerId] = playerName;
     }
 
-    // Store the mapping in a global variable for tournament use
     (window as any).playerIdToNameMap = playerIdToNameMap;
-    console.log("Player ID to Name mapping:", playerIdToNameMap);
     const defaultName = `Tournament - ${new Date().toISOString()} (${
       players.length
     } players)`;
@@ -116,8 +107,6 @@ export async function createAndStartTournament(): Promise<void> {
       alert("Failed to create tournament. Please try again.");
       return;
     }
-
-    console.log("Tournament created successfully:", tournament.id);
 
     setPendingTournamentId(tournament.id);
 

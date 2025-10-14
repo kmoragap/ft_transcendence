@@ -1,3 +1,4 @@
+// This file initializes the frontend application, sets up the UI shell, manages session restoration, and handles routing.
 import { renderHeader } from './components/header';
 import { renderFooter } from './components/footer';
 import { navigate } from './router';

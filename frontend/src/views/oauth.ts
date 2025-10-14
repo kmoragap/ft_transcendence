@@ -1,4 +1,4 @@
-import { t } from './../i18n';
+// OAuth callback page
 import { store } from '../store';
 import { alertError } from './../utils/modal-alerts';
 

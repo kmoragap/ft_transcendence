@@ -14,22 +14,32 @@ export function controlKeys(): void {
 	
 	document.addEventListener("keyup", (ev) => {
 		if (pad.length) {
-			if (ev.key == "Shift" || ev.key == "Control") {
-				if (ev.location == 1) {
-					if (ev.key == data.p[0].up || ev.key == data.p[0].down) {
-						pad[0].setDir(0);
-						if (data.mode == "doublePaddle") pad[2].setDir(0);
+			// Handle specific key releases for each player
+			for (let i: number = 0; i < data.p.length; i++) {
+				if (ev.key == data.p[i].up || ev.key == data.p[i].down) {
+					// Find the corresponding paddle(s) for this player
+					if (data.mode == "multi") {
+						// In multi mode, each player has one paddle
+						if (i < pad.length) {
+							pad[i].setDir(0);
+						}
+					} else if (data.mode == "doublePaddle") {
+						// In double paddle mode, players have multiple paddles
+						if (i == 0) {
+							pad[0].setDir(0);
+							pad[2].setDir(0);
+						} else if (i == 1) {
+							pad[1].setDir(0);
+							pad[3].setDir(0);
+						}
+					} else {
+						// Standard 2-player mode
+						if (i < pad.length) {
+							pad[i].setDir(0);
+						}
 					}
-					else if (ev.key == data.p[1].up || ev.key == data.p[1].down) {
-						pad[1].setDir(0);
-						if (data.mode == "doublePaddle") pad[3].setDir(0);
-					}
-				}
-				data.keys[ev.key] = false;
-			} else {
-				for (let i: number = 0; i < pad.length; i++) {
-					pad[i].setDir(0);
 					data.keys[ev.key] = false;
+					break; // Found the matching player, stop searching
 				}
 			}
 			if (ev.key == "Escape") {//debug
@@ -196,10 +206,8 @@ export function enterFullscreen(): Promise<void> {
 		else reject(new Error("Fullscreen not supported"));
 		if (screen.orientation && (screen.orientation as any).lock) {
 			(screen.orientation as any).lock("landscape").catch((err: any) => {
-				console.log("Orientation lock failed:", err);
 			});
 		}
-		console.log("Fullscreen entered successfully");
 		resolve();
 	});
 }
@@ -215,7 +223,6 @@ export function exitFullscreen(): void {
 }
 
 export function showFullscreenPrompt(): void {
-	// Create a fullscreen prompt overlay
 	const prompt = document.createElement("div");
 	prompt.className =
 		"fixed inset-0 bg-black/80 flex items-center justify-center z-50";
@@ -241,16 +248,34 @@ export function showFullscreenPrompt(): void {
 
 	document.body.appendChild(prompt);
 
-	// Add click handler for fullscreen button
 	const fullscreenBtn = prompt.querySelector("#fullscreen-btn");
 	fullscreenBtn?.addEventListener("click", async () => {
 		try {
 			await enterFullscreen();
 			prompt.remove();
 		} catch (err) {
-			console.log("Manual fullscreen failed:", err);
-			// Remove prompt anyway to not block the game
 			prompt.remove();
+		}
+	});
+}
+
+export function setupFullscreenToggle(): void {
+	const toggleBtn = document.getElementById("fullscreen-toggle");
+	if (!toggleBtn) return;
+
+	toggleBtn.addEventListener("click", async () => {
+		try {
+			await enterFullscreen();
+		} catch (err) {
+			console.error("Failed to enter fullscreen:", err);
+		}
+	});
+
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement) {
+			toggleBtn.classList.remove("hidden");
+		} else {
+			toggleBtn.classList.add("hidden");
 		}
 	});
 }

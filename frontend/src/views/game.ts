@@ -1,10 +1,13 @@
+// Game page
 import { t, getCurrentLang, updateText } from "./../i18n";
 import { store } from "./../store";
 import { showLoginModal } from "./../components/login-modal";
 import { alertSuccess, alertError } from "./../utils/modal-alerts";
+import { navigate } from "./../router";
 
 let iframeRef: HTMLIFrameElement | null = null;
 let loggedInUsers: Set<string> = new Set();
+let messageHandler: ((event: MessageEvent) => void) | null = null;
 
 type GameMode = "menu" | "single" | "multi" | "tournament";
 
@@ -22,7 +25,7 @@ export function renderGame(): HTMLElement {
      <div class="flex items-center px-2.5 py-2.5 border-b border-[rgba(102,252,241,0.15)]">
       <button id="game-back"
         class="btn py-1.5 px-4 w-auto m-0 text-lg font-bold cursor-pointer invisible pointer-events-none"
-        aria-hidden="true"
+        tabindex="-1"
         data-i18n="back_to_modes">
         Back
       </button>
@@ -37,12 +40,12 @@ export function renderGame(): HTMLElement {
 
   function showBack() {
     backBtn.classList.remove("invisible", "pointer-events-none");
-    backBtn.removeAttribute("aria-hidden");
+    backBtn.removeAttribute("tabindex");
   }
 
   function hideBack() {
     backBtn.classList.add("invisible", "pointer-events-none");
-    backBtn.setAttribute("aria-hidden", "true");
+    backBtn.setAttribute("tabindex", "-1");
   }
 
   function showTitle() {
@@ -79,6 +82,7 @@ export function renderGame(): HTMLElement {
     } else {
       showBack();
       hideTitle();
+      loggedInUsers.clear();
       const currentState = store.getState();
       if (currentState.isAuthenticated && currentState.currentUser?.username) {
         loggedInUsers.add(currentState.currentUser.username);
@@ -141,6 +145,7 @@ export function renderGame(): HTMLElement {
   function renderIframeHTML(mode: Exclude<GameMode, "menu">) {
     const currentLang = getCurrentLang();
     const { currentUser } = store.getState();
+    const isHighContrast = document.documentElement.classList.contains('hc');
     let src = "";
     if (mode === "single")
       src = `/pong/?mode=single&lang=${currentLang}`;
@@ -152,6 +157,9 @@ export function renderGame(): HTMLElement {
     if (["single", "tournament", "multi"].includes(mode) && currentUser?.username) {
       src += `&username=${encodeURIComponent(currentUser.username)}`;
       src += `&userId=${encodeURIComponent(currentUser.id)}`;
+    }
+    if (isHighContrast) {
+      src += `&hc=true`;
     }
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 
@@ -186,7 +194,11 @@ export function renderGame(): HTMLElement {
 
   window.addEventListener("languageChanged", languageChangeHandler);
 
-  window.addEventListener("message", async event => {
+  if (messageHandler) {
+    window.removeEventListener("message", messageHandler);
+  }
+
+  messageHandler = async (event: MessageEvent) => {
     if (event.origin !== window.location.origin) {
       return;
     }
@@ -261,12 +273,16 @@ export function renderGame(): HTMLElement {
       const { winner } = event.data;
       loggedInUsers.clear();
       destroyGameView();
-      setMode("menu");
+      // Navigate to dashboard and update URL
+      location.hash = '#/dashboard';
+      navigate('/dashboard');
     } else if (event.data.type === "PLAYER_LOGOUT") {
       const { username } = event.data;
       loggedInUsers.delete(username);
     }
-  });
+  };
+
+  window.addEventListener("message", messageHandler);
 
   (section as any).__destroyGameView = destroyGameView;
 
@@ -281,6 +297,10 @@ export function renderGame(): HTMLElement {
 
 export function destroyGameView() {
   loggedInUsers.clear();
+  if (messageHandler) {
+    window.removeEventListener("message", messageHandler);
+    messageHandler = null;
+  }
   if (iframeRef) {
     try {
       iframeRef.contentWindow?.postMessage(

@@ -1,3 +1,4 @@
+// This file manages session restoration state and allows components to register callbacks that execute once the session is restored.
 type SessionCallback = () => void;
 
 class SessionManager {

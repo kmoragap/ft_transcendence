@@ -1,5 +1,5 @@
 import { data, playerData } from "./gameData";
-import { pad, balls } from "./pong";
+import { pad, balls, isMobile } from "./pong";
 import Ball from "./Ball";
 import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
 
@@ -66,13 +66,29 @@ export default class Paddle {
 		data.ctx.beginPath();
 		data.ctx.fillStyle = this._paddleGrad;
 		data.ctx.fillRect(this._x, this._y + data.paddleWidth, data.paddleWidth, data.paddleHeight - data.paddleWidth * 2);
-
-		this._topCornerGrad = data.ctx.createRadialGradient(this._x + data.paddleWidth / 2, this._y + data.paddleWidth / 2, data.paddleWidth / 7, this._x + data.paddleWidth / 2, this._y + data.paddleWidth / 2, data.paddleWidth);
-		this._topCornerGrad.addColorStop(0, "white");
-		this._topCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
-		this._bottomCornerGrad = data.ctx.createRadialGradient(this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth / 2, data.paddleWidth / 7, this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth / 2, data.paddleWidth);
-		this._bottomCornerGrad.addColorStop(0, "white");
-		this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
+		if (isMobile()) {
+			this._topCornerGrad = data.ctx.createRadialGradient(
+				this._x + data.paddleWidth / 2, this._y + data.paddleWidth / 2, data.paddleWidth / 7,
+				this._x + data.paddleWidth / 2,	this._y + data.paddleWidth / 2, data.paddleWidth);
+			this._topCornerGrad.addColorStop(0, "white");
+			this._topCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
+			this._bottomCornerGrad = data.ctx.createRadialGradient(
+				this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth / 2, data.paddleWidth / 7,
+				this._x + data.paddleWidth / 2, this.getY2() - data.paddleWidth / 2, data.paddleWidth);
+			this._bottomCornerGrad.addColorStop(0, "white");
+			this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
+		} else {
+			this._topCornerGrad = data.ctx.createRadialGradient(
+				this._x + 10, this._y, data.paddleWidth / 7, 
+				this._x, this._y, data.paddleWidth);
+			this._topCornerGrad.addColorStop(0, "white");
+			this._topCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
+			this._bottomCornerGrad = data.ctx.createRadialGradient(
+				this._x + 10, this.getY2(), data.paddleWidth / 7,
+				this._x, this.getY2(), data.paddleWidth);
+			this._bottomCornerGrad.addColorStop(0, "white");
+			this._bottomCornerGrad.addColorStop(0.75, this._p.cornerCol || '#ff0000');
+		}
 		
 		if (!this._p.isAi) quarterCorner(this);
 		 else halfCorner(this);

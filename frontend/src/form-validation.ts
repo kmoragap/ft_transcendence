@@ -1,3 +1,4 @@
+// This file implements client-side form validation for registration and login forms.
 function showError(input: HTMLInputElement, message: string) {
   const err = document.getElementById(`${input.id}-error`)! as HTMLElement;
   err.textContent = message;

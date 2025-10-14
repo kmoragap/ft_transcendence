@@ -1,3 +1,4 @@
+// This file defines and exports functions to create and display a login modal dialog with form validation and submission handling.
 import { t } from "../i18n";
 import { store } from "../store";
 import { alertError, alertSuccess } from "../utils/modal-alerts";
@@ -10,6 +11,9 @@ export interface LoginModalOptions {
 }
 
 export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
+  const existingModals = document.querySelectorAll("#login-modal");
+  existingModals.forEach(modal => modal.remove());
+  
   const modal = document.createElement("div");
   modal.className =
     "fixed inset-0 bg-[rgba(3,27,27,0.75)] flex items-center justify-center z-50";
@@ -74,7 +78,14 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
           >
             ${t("submit")}
           </button>
-          
+           <button class="btn !w-full">
+            <a
+              href="#/login_42"
+              data-i18n="login_42"
+            >
+              ${t("login_42")}
+            </a>
+          </button>
           <button
             type="button"
             id="modal-cancel"

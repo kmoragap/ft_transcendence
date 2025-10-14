@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import {
   createUser,
   getUserByEmail,
+  getUserByUsername,
   updateUserOnlineStatus,
 } from "./auth.controller";
 import prisma from "../utils/prisma";
@@ -33,6 +34,25 @@ export async function oauth42Handler(
   authUrl.searchParams.set("state", state);
 
   return reply.redirect(authUrl.toString());
+}
+
+async function generateUniqueOAuthUsername(
+  baseUsername: string,
+): Promise<string> {
+  let username = baseUsername;
+  let suffix = 1;
+
+  // we keep trying until we find an available username
+  while (await getUserByUsername(username)) {
+    // we create a suffix that stays within the 20 character limit for zod
+    // if baseUsername is long, use shorter suffix
+    const maxBaseLength = 20 - (suffix.toString().length + 1); // +1 for the underscore
+    const truncatedBase = baseUsername.substring(0, maxBaseLength);
+    username = `${truncatedBase}_${suffix}`;
+    suffix++;
+  }
+
+  return username;
 }
 
 function generateValidPassword(): string {
@@ -83,16 +103,26 @@ export async function oauth42CallbackHandler(
     }
 
     const user42 = await userResponse.json();
-
     // check if user exists in our system
     let user = await getUserByEmail(user42.email);
     if (!user) {
+      // if no user found by email, check if there's a username conflict
+      const existingUsername = await getUserByUsername(user42.login);
+
+      let finalUsername = user42.login;
+
+      if (existingUsername) {
+        // we generate a unique username that respects the 20-character limit
+        finalUsername = await generateUniqueOAuthUsername(user42.login);
+      }
       const oauthUser = {
-        username: user42.login,
+        username: finalUsername,
         email: user42.email,
         firstname: user42.displayname,
         password: generateValidPassword(),
       };
+
+      console.log("Attempting to create OAuth user:", oauthUser);
 
       const parsed = authSchemas.register.safeParse(oauthUser);
       if (!parsed.success) {
@@ -101,24 +131,26 @@ export async function oauth42CallbackHandler(
         return reply.redirect(errorUrl);
       }
 
-      // Now you are safe to use `parsed.data` because it’s validated
       const { username, email, firstname, password } = parsed.data;
 
       const avatarUrl =
         user42.image?.versions?.medium || user42.image?.link || undefined;
 
       user = await createUser(
-        username, // this is username
+        username,
         email,
-        firstname, //this the full intra name
-        password, // random password
-        avatarUrl, // pic from 42
+        firstname,
+        password,
+        avatarUrl,
         true, // isOAuthUser
+      );
+    } else {
+      console.log(
+        `Found existing user by email: ${user.email}, username: ${user.username}`,
       );
     }
 
     if (!user) throw new Error("Failed to create or retrieve user");
-
     // Generate our JWT token
     const token = request.server.jwt.sign(
       { userId: user.id, email: user.email },

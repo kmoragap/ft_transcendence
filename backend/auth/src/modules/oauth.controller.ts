@@ -3,10 +3,10 @@ import { randomBytes } from "crypto";
 import {
   createUser,
   getUserByEmail,
-  getUserByUsername,
   updateUserOnlineStatus,
 } from "./auth.controller";
 import prisma from "../utils/prisma";
+import { authSchemas } from "./auth.schema";
 
 const OAUTH_CONFIG = {
   clientId: process.env.OAUTH_42_CLIENT_ID!,
@@ -33,6 +33,13 @@ export async function oauth42Handler(
   authUrl.searchParams.set("state", state);
 
   return reply.redirect(authUrl.toString());
+}
+
+function generateValidPassword(): string {
+  const hex = randomBytes(32).toString("hex");
+  const upper = "A";
+  const underscore = "_";
+  return hex + upper + underscore;
 }
 
 export async function oauth42CallbackHandler(
@@ -79,32 +86,32 @@ export async function oauth42CallbackHandler(
 
     // check if user exists in our system
     let user = await getUserByEmail(user42.email);
-
     if (!user) {
-      // create new user
-      console.log("42 user data:", {
-        login: user42.login,
+      const oauthUser = {
+        username: user42.login,
         email: user42.email,
-        displayname: user42.displayname,
-        image: user42.image,
-      });
+        firstname: user42.displayname,
+        password: generateValidPassword(),
+      };
 
-      // Check if username already exists
-      const existingUsername = await getUserByUsername(user42.login);
-      if (existingUsername) {
-        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080/"}/#/login?error=username_exists`;
+      const parsed = authSchemas.register.safeParse(oauthUser);
+      if (!parsed.success) {
+        console.error("Invalid OAuth user data:", parsed.error.format());
+        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080/"}/#/login?error=invalid_user_data`;
         return reply.redirect(errorUrl);
       }
 
-      // extract the avatar URL from the 42 API response
+      // Now you are safe to use `parsed.data` because it’s validated
+      const { username, email, firstname, password } = parsed.data;
+
       const avatarUrl =
         user42.image?.versions?.medium || user42.image?.link || undefined;
 
       user = await createUser(
-        user42.login, // this is username
-        user42.email,
-        user42.displayname, //this the full intra name
-        randomBytes(32).toString("hex") + "A", // random password
+        username, // this is username
+        email,
+        firstname, //this the full intra name
+        password, // random password
         avatarUrl, // pic from 42
         true, // isOAuthUser
       );

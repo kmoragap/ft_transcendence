@@ -1,4 +1,3 @@
-// This file implements client-side form validation for registration and login forms.
 function showError(input: HTMLInputElement, message: string) {
   const err = document.getElementById(`${input.id}-error`)! as HTMLElement;
   err.textContent = message;
@@ -12,12 +11,13 @@ function clearError(input: HTMLInputElement) {
   input.setAttribute('aria-invalid', 'false');
 }
 
-const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 function validateField(input: HTMLInputElement): string {
   switch (input.name) {
     case 'username':
       if (!input.value) return 'Username is required.';
       if (input.value.length < 3) return 'At least 3 characters.';
+      if(input.value.length > 20) return 'Must be at most 20 characters.';
       return '';
     case 'email':
       if (!input.value) return 'Email is required.';
@@ -27,10 +27,10 @@ function validateField(input: HTMLInputElement): string {
     case 'password':
       if (!input.value) return 'Password is required.';
       if (input.value.length < 8) return 'At least 8 characters.';
-      if (!/[A-Z]/.test(input.value)) return 'Include at least one uppercase letter.';
-      if (!/[a-z]/.test(input.value)) return 'Include at least one lowercase letter.';
+      if (!/\p{Lu}/u.test(input.value)) return 'Include at least one uppercase letter.';
+      if (!/\p{Ll}/u.test(input.value)) return 'Include at least one lowercase letter.';
       if (!/[0-9]/.test(input.value)) return 'Include at least one number.';
-      if (!/[^A-Za-z0-9]/.test(input.value)) return 'Include at least one special character.';
+      if (!/[^\p{L}\p{N}\s]/u.test(input.value)) return 'Include at least one special character.';
       if (input.form) {
         const username = (input.form.elements.namedItem('username') as HTMLInputElement)?.value;
         const email = (input.form.elements.namedItem('email') as HTMLInputElement)?.value;

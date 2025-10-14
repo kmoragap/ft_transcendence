@@ -3,15 +3,23 @@ import * as z from "zod";
 // for usrs
 const commonSchemas = {
   // email validation
-  email: z.email("Invalid email format"),
-
+  /*
+  - /^[^\s@]+@` - One or more non-whitespace, non-@ characters before @
+  - `[^\s@]+@` - One or more non-whitespace, non-@ characters before the final dot
+  - `\.[^\s@]+$/` - A dot followed by one or more non-whitespace, non-@ characters
+  */
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .max(254, "Email is too long")
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"),
   // username validation
   username: z
     .string()
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must be at most 20 characters")
     .regex(
-      /^[a-zA-Z0-9_]+$/,
+      /^[\p{L}\p{N}_]+$/u,
       "Username can only contain letters, numbers, and underscores",
     ),
 
@@ -21,8 +29,8 @@ const commonSchemas = {
     .min(1, "First name is required")
     .max(50, "First name must be at most 50 characters")
     .regex(
-      /^[a-zA-Z\s'-]+$/,
-      "First name can only contain letters, spaces, hyphens, and apostrophes",
+      /^[\p{L}\p{N}_' -]+$/u,
+      "First name can only contain letters, numbers, underscores, spaces, hyphens, and apostrophes",
     ),
 
   // password validation
@@ -30,10 +38,13 @@ const commonSchemas = {
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password must be at most 128 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
-
+    .regex(/\p{Lu}/u, "Password must contain at least one uppercase letter")
+    .regex(/\p{Ll}/u, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(
+      /[\p{S}\p{P}]/u,
+      "Password must contain at least one special character",
+    ),
   // cuid validation (for database ids)
   cuid: z.string().regex(/^c[a-z0-9]{24}$/, "Invalid ID format"),
 
@@ -82,8 +93,8 @@ export const userSchemas = {
       .min(2, "Search query must be at least 2 characters")
       .max(50, "Search query must be at most 50 characters")
       .regex(
-        /^[a-zA-Z0-9\s]+$/,
-        "Search query can only contain letters, numbers, and spaces",
+        /^[\p{L}\p{N}\s_]+$/u,
+        "Search query can only contain letters, numbers, and underscores",
       ),
   }),
 

@@ -16,7 +16,7 @@ function validateField(input: HTMLInputElement): string {
   switch (input.name) {
     case 'username':
       if (!input.value) return 'Username is required.';
-      if (input.value.length < 3) return 'At least 3 characters';
+      if (input.value.length < 3) return 'At least 3 characters.';
       if(input.value.length > 20) return 'Must be at most 20 characters.'
       return '';
     case 'email':
@@ -28,7 +28,7 @@ function validateField(input: HTMLInputElement): string {
       if (!input.value) return 'Password is required.';
       if (input.value.length < 8) return 'At least 8 characters.';
       if (!/\p{Lu}/u.test(input.value)) return 'Include at least one uppercase letter.';
-      if (!/\p{Lu}/u.test(input.value)) return 'Include at least one lowercase letter.';
+      if (!/\p{Ll}/u.test(input.value)) return 'Include at least one lowercase letter.';
       if (!/[0-9]/.test(input.value)) return 'Include at least one number.';
       if (!/[^\p{L}\p{N}_\s]/u.test(input.value)) return 'Include at least one special character.';
       if (input.form) {

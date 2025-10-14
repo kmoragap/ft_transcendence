@@ -206,11 +206,24 @@
     border: 1px solid #fff !important;
   }
   
-  html.hc .game-controls button, html.hc .game-menu button {
-    background-color: #fff !important;
-    color: #000 !important;
-    border: 2px solid #000 !important;
-  }
+html.hc .game-controls button, html.hc .game-menu button {
+  background-color: #fff !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+}
+
+html.hc #fullscreen-toggle {
+  background-color: #fff !important;
+  border-color: #000 !important;
+}
+
+html.hc #fullscreen-toggle svg {
+  stroke: #000 !important;
+}
+
+html.hc #fullscreen-toggle:hover {
+  background-color: #f0f0f0 !important;
+}
   
   html.hc * {
     animation-duration: 0s !important;

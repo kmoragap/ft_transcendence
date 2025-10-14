@@ -258,3 +258,24 @@ export function showFullscreenPrompt(): void {
 		}
 	});
 }
+
+export function setupFullscreenToggle(): void {
+	const toggleBtn = document.getElementById("fullscreen-toggle");
+	if (!toggleBtn) return;
+
+	toggleBtn.addEventListener("click", async () => {
+		try {
+			await enterFullscreen();
+		} catch (err) {
+			console.error("Failed to enter fullscreen:", err);
+		}
+	});
+
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement) {
+			toggleBtn.classList.remove("hidden");
+		} else {
+			toggleBtn.classList.add("hidden");
+		}
+	});
+}

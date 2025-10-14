@@ -22,6 +22,11 @@ export async function startGame() {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get("lang") || "en";
     const mode = urlParams.get("mode") || "twoPlayers";
+    const isHighContrast = urlParams.get("hc") === "true";
+
+    if (isHighContrast) {
+      document.documentElement.classList.add('hc');
+    }
 
     await initI18n(lang);
     await newGame(mode);

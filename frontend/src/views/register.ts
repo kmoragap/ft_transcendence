@@ -1,11 +1,9 @@
-import { t } from "./../i18n";
+// Registration page
 import { attachValidation } from "./../form-validation";
-//import { redirectIfAuthenticated } from '../utils/auth';
 import { alertError, alertSuccess } from "./../utils/modal-alerts";
 import { store } from "../store";
 
 export function renderRegistration(): HTMLElement {
-  //redirectIfAuthenticated();
   const section = document.createElement("section");
   section.className =
     "flex flex-col m-0 items-center justify-center h-full text-center relative z-10 font-[jura] text-[#66fcf1]";

@@ -1,3 +1,4 @@
+// Game page
 import { t, getCurrentLang, updateText } from "./../i18n";
 import { store } from "./../store";
 import { showLoginModal } from "./../components/login-modal";
@@ -144,6 +145,7 @@ export function renderGame(): HTMLElement {
   function renderIframeHTML(mode: Exclude<GameMode, "menu">) {
     const currentLang = getCurrentLang();
     const { currentUser } = store.getState();
+    const isHighContrast = document.documentElement.classList.contains('hc');
     let src = "";
     if (mode === "single")
       src = `/pong/?mode=single&lang=${currentLang}`;
@@ -155,6 +157,9 @@ export function renderGame(): HTMLElement {
     if (["single", "tournament", "multi"].includes(mode) && currentUser?.username) {
       src += `&username=${encodeURIComponent(currentUser.username)}`;
       src += `&userId=${encodeURIComponent(currentUser.id)}`;
+    }
+    if (isHighContrast) {
+      src += `&hc=true`;
     }
     return `
       <div class="w-full h-[70vh] min-h-[400px] max-h-[800px] mobile-game-container"> 

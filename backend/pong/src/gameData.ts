@@ -1,4 +1,4 @@
-import { controlKeys, enterFullscreen, showFullscreenPrompt } from "./controls";
+import { controlKeys, enterFullscreen, showFullscreenPrompt, setupFullscreenToggle } from "./controls";
 import { countdown } from "./pong";
 import { t } from "./i18n";
 import { wizard, allPlayerData } from "./wizard";
@@ -499,10 +499,23 @@ export async function loadConfig(mode: string): Promise<void> {
       "z-50",
     ].join(" ");
 
+    const fullscreenToggle = Object.assign(document.createElement("button"), {
+      id: "fullscreen-toggle",
+      className: "fixed top-4 right-4 z-50 bg-[rgba(3,27,27,0.9)] border-2 border-[#66fcf1] rounded-lg p-2 hover:bg-[rgba(102,252,241,0.2)] transition-colors hidden",
+    }) as HTMLButtonElement;
+    fullscreenToggle.setAttribute("aria-label", "Enter fullscreen");
+    fullscreenToggle.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    `;
+
     gameAppDiv.appendChild(scoreboard);
     gameAppDiv.appendChild(canvas);
+    gameAppDiv.appendChild(fullscreenToggle);
   }
   controlKeys();
+  setupFullscreenToggle();
   document.getElementById("board")?.focus();
 
   setTimeout(async () => {

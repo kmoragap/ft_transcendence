@@ -1,3 +1,4 @@
+// Login page
 import { t } from "./../i18n";
 import { store } from "../store";
 import { alertError, alertSuccess } from "./../utils/modal-alerts";

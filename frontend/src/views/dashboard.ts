@@ -1,3 +1,4 @@
+// Dashboard page
 import { t } from "../i18n.js";
 import { store } from "../store.js";
 const API_BASE = "/api/pong";

@@ -1,3 +1,4 @@
+// My Profile page
 import { store } from "../store";
 import { t, updateText } from "../i18n";
 import { logout } from "../utils/auth";

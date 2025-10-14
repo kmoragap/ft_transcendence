@@ -86,7 +86,6 @@ export async function oauth42CallbackHandler(
 
     // check if user exists in our system
     let user = await getUserByEmail(user42.email);
-    console.log(user);
     if (!user) {
       const oauthUser = {
         username: user42.login,

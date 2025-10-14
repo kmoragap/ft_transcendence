@@ -14,7 +14,7 @@ import {
   Resend2faRequest,
   RegisterRequest,
   LoginRequest,
-  authSchemas
+  authSchemas,
 } from "./auth.schema";
 
 async function authenticateUser(
@@ -239,7 +239,7 @@ export async function loginHandler(
 ) {
   try {
     const parsed = authSchemas.login.parse(request.body);
-    const { username, email, identifier, password } = parsed;    // Validation handled by middleware
+    const { username, email, identifier, password } = parsed;
     const loginIdentifier = username || email;
     if (!loginIdentifier) {
       return reply

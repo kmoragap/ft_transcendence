@@ -3,7 +3,6 @@ import { randomBytes } from "crypto";
 import {
   createUser,
   getUserByEmail,
-  getUserByUsername,
   updateUserOnlineStatus,
 } from "./auth.controller";
 import prisma from "../utils/prisma";
@@ -89,12 +88,6 @@ export async function oauth42CallbackHandler(
     let user = await getUserByEmail(user42.email);
     console.log(user);
     if (!user) {
-            console.log("42 user data:", {
-        login: user42.login,
-        email: user42.email,
-        displayname: user42.displayname,
-        image: user42.image,
-      });
       const oauthUser = {
         username: user42.login,
         email: user42.email,
@@ -114,7 +107,7 @@ export async function oauth42CallbackHandler(
 
       const avatarUrl =
         user42.image?.versions?.medium || user42.image?.link || undefined;
-       
+
       user = await createUser(
         username, // this is username
         email,

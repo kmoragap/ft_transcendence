@@ -30,7 +30,7 @@ const commonSchemas = {
     .max(50, "First name must be at most 50 characters")
     .regex(
       /^[\p{L}\p{N}_' -]+$/u,
-      "First name can only contain letters, spaces, hyphens, and apostrophes",
+      "First name can only contain letters, numbers, underscores, spaces, hyphens, and apostrophes",
     ),
 
   // password validation

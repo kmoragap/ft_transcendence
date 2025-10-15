@@ -327,14 +327,14 @@ export async function loadConfig(mode: string): Promise<void> {
 
       p.push(
         loadPlayer(
-          loadIn(`name_p${i}`),
+          loadIn(`name_p${i}`) || wizardData?.name,
           playerId,
-          loadInB(`p${i}Ai`),
+          loadInB(`p${i}Ai`) || !!wizardData?.isAi,
           upKey,
           downKey,
-          loadIn(`p${i}InnerCol`),
-          loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`),
+          loadIn(`p${i}InnerCol`) || wizardData?.innerCol || '#ffffff',
+          loadIn(`p${i}OuterCol`) || wizardData?.outerCol || '#808080',
+          loadIn(`p${i}CornerCol`) || wizardData?.cornerCol || '#ff0000',
           i,
           mode,
         ),

@@ -203,7 +203,7 @@ export function renderHeader(): HTMLElement {
     // Mobile hamburger menu
     const hamburgerBtn = document.createElement('button');
     hamburgerBtn.type = 'button';
-    hamburgerBtn.className = 'md:hidden inline-flex items-center justify-center w-10 h-10 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1] rounded';
+    hamburgerBtn.className = 'lg:hidden inline-flex items-center justify-center w-10 h-10 border-0 text-[#66fcf1] bg-transparent focus-visible:ring-2 focus-visible:ring-[#66fcf1] rounded';
     hamburgerBtn.setAttribute('aria-label', 'Open menu');
     hamburgerBtn.setAttribute('aria-expanded', 'false');
 
@@ -217,7 +217,7 @@ export function renderHeader(): HTMLElement {
     enhanceButton(hamburgerBtn, { ripple: true, bounce: true });
 
     const desktopNav = document.createElement('ul');
-    desktopNav.className = 'hidden md:flex justify-end items-center list-none';
+    desktopNav.className = 'hidden lg:flex justify-end items-center list-none';
 
     const { isAuthenticated, currentUser } = store.getState();
     
@@ -266,7 +266,7 @@ export function renderHeader(): HTMLElement {
 
     // Mobile menu overlay
     const mobileMenu = document.createElement('div');
-    mobileMenu.className = 'fixed inset-0 bg-black/50 z-50 md:hidden opacity-0 pointer-events-none transition-opacity duration-300';
+    mobileMenu.className = 'fixed inset-0 bg-black/50 z-50 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300';
     
     const mobileMenuContent = document.createElement('div');
     mobileMenuContent.className = 'fixed right-0 top-0 h-full w-64 bg-[rgba(3,27,27,0.95)] backdrop-blur-sm transform translate-x-full transition-transform duration-300 shadow-2xl';

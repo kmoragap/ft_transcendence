@@ -1,4 +1,5 @@
-// This file defines and exports functions to create and display a login modal dialog with form validation and submission handling.
+// This file defines and exports functions to create and display a login modal 
+// dialog with form validation and submission handling.
 
 import { t } from "../utils/i18n";
 import { store } from "../store";
@@ -50,25 +51,36 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
             aria-required="true"
             aria-invalid="false"
             aria-describedby="modal-identifier-error"
-            class='custom-input px-4 py-2'
+            class='custom-input px-4 py-2 w-full'
           />
           <p id="modal-identifier-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
         </div>
 
         <div class="w-full mb-5">
-          <input
-            id="modal-password"
-            type="password"
-            name="password"
-            autocomplete="current-password"
-            data-i18n-placeholder="password"
-            placeholder="${t("password")}"
-            required
-            aria-required="true"
-            aria-invalid="false"
-            aria-describedby="modal-password-error"
-            class='custom-input px-4 py-2'
-          />
+          <div style="position: relative;">
+            <input
+              id="modal-password"
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              data-i18n-placeholder="password"
+              placeholder="${t("password")}"
+              required
+              aria-required="true"
+              aria-invalid="false"
+              aria-describedby="modal-password-error"
+              class='custom-input px-4 py-2 w-full'
+              style="padding-right: 2.5rem;"
+            />
+            <button
+              type="button"
+              id="toggle-password"
+              aria-label="${t('show_password') || 'Show password'}"
+              title="${t('show_password') || 'Show password'}"
+              class="password-toggle"
+              style="position:absolute; right:10px; top:11px; cursor:pointer; user-select:none; background:transparent; border:none; padding:0; line-height:0;"
+            ></button>
+          </div>
           <p id="modal-password-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
         </div>
 
@@ -100,8 +112,35 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     form.querySelector<HTMLInputElement>("#modal-identifier")!;
   const passwordInput =
     form.querySelector<HTMLInputElement>("#modal-password")!;
+  const togglePassword = modal.querySelector<HTMLButtonElement>("#toggle-password")!;
   const cancelBtn = modal.querySelector<HTMLButtonElement>("#modal-cancel")!;
   const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  const eyeOpenSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  const eyeClosedSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-7.94"></path><path d="M10.58 10.58a2 2 0 1 0 2.83 2.83"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+  const setPasswordVisibility = (visible: boolean) => {
+    passwordInput.type = visible ? "text" : "password";
+    togglePassword.innerHTML = visible ? eyeClosedSvg : eyeOpenSvg;
+    togglePassword.setAttribute("aria-label", visible ? (t('hide_password') || 'Hide password') : (t('show_password') || 'Show password'));
+    togglePassword.setAttribute("title", visible ? (t('hide_password') || 'Hide password') : (t('show_password') || 'Show password'));
+    togglePassword.setAttribute("aria-pressed", String(visible));
+  };
+  let passwordVisible = false;
+  setPasswordVisibility(passwordVisible);
+
+  togglePassword.addEventListener('click', () => {
+    passwordVisible = !passwordVisible;
+    setPasswordVisibility(passwordVisible);
+    passwordInput.focus();
+  });
+  togglePassword.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      passwordVisible = !passwordVisible;
+      setPasswordVisibility(passwordVisible);
+      passwordInput.focus();
+    }
+  });
+
 
   // Enhance modal buttons with animations
   enhanceButton(cancelBtn, { ripple: true, bounce: true });

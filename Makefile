@@ -17,7 +17,13 @@ ssl:
 	@echo "Generating SSL certificates..."
 	@bash $(SSL_SCRIPT)
 
-up:
+data:
+	@mkdir -p data/users-db
+	@mkdir -p data/auth-db
+	@mkdir -p data/pong-db
+	@mkdir -p data/uploads
+
+up: data
 	@echo "Starting containers..."
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
 	@echo "Containers are up and running."
@@ -30,7 +36,7 @@ app:
 down:
 	@echo "Stopping containers..."
 	@$(COMPOSE_ALL) down
-	@docker system prune -f
+#	@docker system prune -f
 	@echo "Containers have been stopped."
 
 rebuild: down ssl show-url
@@ -46,6 +52,7 @@ reapp: down ssl show-url
 clean: down
 	@echo "Removing SSL certificates..."
 	@rm -rf $(SSL)/ssl
+	@rm -rf data
 	@echo "Removing Docker images..."
 	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
@@ -57,4 +64,3 @@ rebuild_game: down
 	@docker image rm ft_transcendence-pong:latest
 	@docker volume rm ft_transcendence_pong-static
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
-

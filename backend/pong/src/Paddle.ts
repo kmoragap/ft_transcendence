@@ -12,6 +12,9 @@ import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
 export default class Paddle {
 	private _x: number;
 	private _y: number;
+	private _maxTop: number;
+	private _maxBottom: number;
+
 	private _p: playerData;
 	private _dir: number = 0;
 	
@@ -20,14 +23,18 @@ export default class Paddle {
 	private _bottomCornerGrad!: CanvasGradient;
 	private _goTime: number = 0;
 	private _moveSpeed: number = data.canvas.height / data.paddleSpeed;
+	private _parent: number;
 	
 	private _aiTarget: number = data.canvas.height / 2;
 	private _aiRecalcTime: number = 0;
 
-	public constructor(x: number, p: playerData) {
+	public constructor(x: number, p: playerData, ballSize: number, parent: number) {
 		this._x = x;
 		this._y = data.canvas.height / 2 - data.paddleHeight / 2;
 		this._p = p;
+		this._maxTop = ballSize;
+		this._maxBottom = data.canvas.height - ballSize - data.paddleHeight;
+		this._parent = parent;
 		this.draw();
 	}
 
@@ -137,6 +144,8 @@ export default class Paddle {
 
 	private move(): void {
 		this._y += this._dir * this._moveSpeed;
+		if (this._parent != -1)
+			this._y = pad[this._parent].getY();
 		if (this._dir)
 			for (let i: number = 0; i < balls.length; i++)
 				if (this.hitX(balls[i]) && this.hitY(balls[i])) {
@@ -148,8 +157,8 @@ export default class Paddle {
 						balls[i].setY(balls[i].getSize() + 1);
 					}
 				}
-		if (this._y < 0) this._y = 0;
-		if (this._y > data.canvas.height - data.paddleHeight) this._y = data.canvas.height - data.paddleHeight;
+		if (this._y < this._maxTop) this._y = this._maxTop;
+		if (this._y > this._maxBottom) this._y = this._maxBottom;
 	}
 
 	private isApproaching(ball: Ball): boolean {

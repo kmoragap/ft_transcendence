@@ -44,6 +44,9 @@
   "tournament_complete": "Турнір завершено!",
   "winner": "Переможець",
   "congratulations_victory": "Вітаємо з перемогою!",
-  "exit_tournament": "Вийти з турніру"
+  "exit_tournament": "Вийти з турніру",
+  "press_any_key": "Натисніть будь-яку клавішу...",
+  "keys_disabled_mobile": "Налаштування клавіш недоступне на мобільних",
+  "match_controls": "Керування матчем"
 }
 

@@ -54,19 +54,42 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
     id: id,
     value: initialValue,
     readonly: true,
-    placeholder: "Press any key..."
+    placeholder: t("press_any_key") || "Press any key..."
   }) as HTMLInputElement;
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (isMobile) {
+    input.disabled = true;
+    input.title = t("keys_disabled_mobile") || "Key bindings are not configurable on mobile";
+    input.classList.add("opacity-50", "cursor-not-allowed");
+    return input;
+  }
+
+  let previousValue = initialValue;
+  const placeholderText = t("press_any_key") || "Press any key...";
+
   input.addEventListener("focus", () => {
-    input.value = "Press any key...";
+    previousValue = input.value;
+    input.value = placeholderText;
     input.style.backgroundColor = "rgba(102,252,241,0.2)";
   });
 
   input.addEventListener("blur", () => {
     input.style.backgroundColor = "";
+    if (input.value === placeholderText || input.value.trim() === "") {
+      input.value = previousValue;
+    }
   });
 
   input.addEventListener("keydown", (event) => {
+    if (event.key === "Tab") {
+      return;
+    }
+    if (event.key === "Escape") {
+      input.value = previousValue;
+      input.blur();
+      return;
+    }
     event.preventDefault();
     
     let keyName = event.key;
@@ -139,6 +162,29 @@ function checkKeyConflict(currentInputId: string, newKeyName: string): boolean {
       showKeyConflictWarning(input.id, newKeyName);
       return true;
     }
+  }
+  
+  try {
+    const currentMatch = currentInputId.match(/^p(\d+)(Up|Down)$/);
+    const currentPlayerIndex = currentMatch ? parseInt(currentMatch[1], 10) : null;
+    if (allPlayerData && Array.isArray(allPlayerData)) {
+      for (let i = 0; i < allPlayerData.length; i++) {
+        const playerIndex = i + 1;
+        if (currentPlayerIndex && playerIndex === currentPlayerIndex) continue;
+        const keys = allPlayerData[i]?.keys;
+        if (!keys) continue;
+        if (keys.up === newKeyName) {
+          showKeyConflictWarning(`p${playerIndex}Up`, newKeyName);
+          return true;
+        }
+        if (keys.down === newKeyName) {
+          showKeyConflictWarning(`p${playerIndex}Down`, newKeyName);
+          return true;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error in checkKeyConflict:", err);
   }
   
   return false;
@@ -387,7 +433,7 @@ export function tournamentSetupMenu(): {
   
   const controlsTitle = Object.assign(document.createElement("h3"), {
     className: "game-text font-bold mt-4 mb-2 text-center",
-    textContent: "Match Controls",
+    textContent: t("match_controls") || "Match Controls",
   }) as HTMLHeadingElement;
   
   const row3 = Object.assign(document.createElement("div"), {

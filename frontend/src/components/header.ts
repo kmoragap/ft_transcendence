@@ -551,6 +551,28 @@ export function renderHeader(): HTMLElement {
     
     const mobileA11y = renderA11yControls();
     mobileA11y.className = mobileA11y.className.replace('ml-5', 'mb-4');
+
+    const mobileDrawerLangSelect = document.createElement('select');
+    mobileDrawerLangSelect.className = 'mb-4 px-2 py-1 bg-[#0a2b2b] text-[#66fcf1] font-[jura] border border-[#66fcf1]/30 rounded text-sm self-end';
+    mobileDrawerLangSelect.setAttribute('aria-label', 'Select language');
+    languages.forEach(({ code, label }) => {
+      const option = document.createElement('option');
+      option.value = code;
+      option.textContent = label;
+      option.className = 'border-0 bg-transparent text-[#66fcf1]';
+      mobileDrawerLangSelect.appendChild(option);
+    });
+    mobileDrawerLangSelect.value = localStorage.getItem('lang') || 'en';
+    mobileDrawerLangSelect.addEventListener('change', async (e) => {
+      const lang = (e.target as HTMLSelectElement).value;
+      localStorage.setItem('lang', lang);
+      await loadLanguage(lang);
+      updateSearchInputPlaceholder();
+      updateHeader();
+      window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+    });
+
+    mobileNav.appendChild(mobileDrawerLangSelect);
     mobileNav.appendChild(mobileA11y);
     
     if (isAuthenticated) {

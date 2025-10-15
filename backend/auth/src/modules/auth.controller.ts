@@ -263,7 +263,7 @@ export async function loginHandler(
     return await completeLogin(request, user);
   } catch (error) {
     console.error("Error during login:", error);
-    return reply.code(500).send({ message: "Login failed" });
+    return reply.code(401).send({ message: "Login failed" });
   }
 }
 

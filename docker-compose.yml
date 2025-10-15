@@ -90,7 +90,7 @@ services:
   users:
     build: ./backend/users
     volumes:
-      - users-db-data:/app/prisma
+      - users-db-data:/app/prisma/data
       - uploads-db:/app/uploads
     #ports:
     #  - "3004:3000"

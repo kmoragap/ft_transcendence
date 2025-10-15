@@ -494,6 +494,7 @@ export async function loadConfig(mode: string): Promise<void> {
   loadData.ballCol = checkColors(loadData.ballCol, "#0000FFFF");
   loadData.innerBg = checkColors(loadData.innerBg, "#1a4d4d");
   loadData.outerBg = checkColors(loadData.outerBg, "#001a1a");
+  loadData.uiCol = checkColors(loadData.uiCol, "#001a1a");
   var i = 0;
   while (i < 5) {
     if (loadData.p[i]) {

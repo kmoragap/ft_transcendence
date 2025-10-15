@@ -37,4 +37,4 @@ export function handleAuthError(error: any, reply: any) {
 
   console.error('Unexpected auth error:', error);
   return reply.code(500).send({ error: 'Internal server error' });
-}
+} 

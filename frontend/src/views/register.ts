@@ -140,9 +140,23 @@ export function renderRegistration(): HTMLElement {
     toggleRegisterPassword.setAttribute('aria-pressed', String(v));
   };
   setRegPwdVisible(regPwdVisible);
-  toggleRegisterPassword.addEventListener('click', () => {
+  const handleTogglePassword = () => {
     regPwdVisible = !regPwdVisible;
     setRegPwdVisible(regPwdVisible);
+    passwordInput.focus();
+  };
+  toggleRegisterPassword.addEventListener('click', handleTogglePassword);
+  toggleRegisterPassword.addEventListener('keydown', (e) => {
+    if (
+      e.key === 'Enter' ||
+      e.key === ' ' ||
+      e.key === 'Spacebar' ||
+      e.keyCode === 13 ||
+      e.keyCode === 32
+    ) {
+      e.preventDefault();
+      handleTogglePassword();
+    }
   });
 
   form.addEventListener("submit", async e => {

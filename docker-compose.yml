@@ -7,7 +7,7 @@ services:
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./backend/nginx/ssl:/etc/nginx/ssl:ro
-      - ./backend/users/uploads:/app/uploads:ro
+      - uploads-db:/app/uploads:ro
       - pong-static:/app/pong-static:ro
     depends_on:
       - logstash
@@ -26,7 +26,7 @@ services:
   auth:
     build: ./backend/auth
     volumes:
-      - ./backend/auth/prisma/auth-db.sqlite:/app/prisma/auth-db.sqlite
+      - auth-db-data:/app/prisma
     #ports:
     #  - "3001:3000"
     environment:
@@ -56,6 +56,8 @@ services:
     build: ./backend/pong-db
     #ports:
     # - "3003:3000"
+    volumes:
+      - pong-db-data:/app/prisma
     depends_on:
       - logstash
     networks:
@@ -88,8 +90,8 @@ services:
   users:
     build: ./backend/users
     volumes:
-      - ./backend/users/prisma/users-db.sqlite:/app/prisma/users-db.sqlite
-      - ./backend/users/uploads:/app/uploads
+      - users-db-data:/app/prisma
+      - uploads-db:/app/uploads
     #ports:
     #  - "3004:3000"
     depends_on:
@@ -136,3 +138,27 @@ volumes:
   es_certs:
     name: ft_es_certs
   pong-static:
+  auth-db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/auth-db
+  users-db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/users-db
+  pong-db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/pong-db
+  uploads-db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/uploads

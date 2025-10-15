@@ -488,6 +488,23 @@ export async function loadConfig(mode: string): Promise<void> {
 		case "huge":	loadData.ballSize = 40;		break;
 		default:		loadData.ballSize = 80;		break;
 	}
+
+
+  console.log(loadData.ballCol);
+  loadData.ballCol = checkColors(loadData.ballCol, "#0000FFFF");
+  loadData.innerBg = checkColors(loadData.innerBg, "#1a4d4d");
+  loadData.outerBg = checkColors(loadData.outerBg, "#001a1a");
+  var i = 0;
+  while (i < 5) {
+    if (loadData.p[i]) {
+      loadData.p[i].innerCol = checkColors(loadData.p[i].innerCol, "#ffffff");
+      loadData.p[i].outerCol = checkColors(loadData.p[i].outerCol, "#808080");
+      loadData.p[i].cornerCol = checkColors(loadData.p[i].cornerCol, "#ff0000");
+    }
+    i++;
+  }
+  
+
 	data = loadData;
 
   if (pendingTournamentId) {
@@ -534,4 +551,10 @@ export async function loadConfig(mode: string): Promise<void> {
   if (mode !== "tournament") {
     setTimeout(() => countdown(3, 500), 500);
   }
+}
+function checkColors(col: string, def: string): string {
+  if (col == "rgba(0, 0, 0, 0)")
+    return def;
+  return col;
+
 }

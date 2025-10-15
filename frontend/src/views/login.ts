@@ -139,12 +139,12 @@ export function renderLogin(): HTMLElement {
     const showPwd = t('show_password') || 'Show password';
     toggleLoginPassword.setAttribute('aria-label', v ? hidePwd : showPwd);
     toggleLoginPassword.setAttribute('title', v ? hidePwd : showPwd);
+    toggleLoginPassword.setAttribute('aria-pressed', String(v));
   };
   setLoginPwdVisible(loginPwdVisible);
   toggleLoginPassword.addEventListener('click', () => {
     loginPwdVisible = !loginPwdVisible;
     setLoginPwdVisible(loginPwdVisible);
-    passwordInput.focus();
   });
 
   form.addEventListener("submit", async e => {

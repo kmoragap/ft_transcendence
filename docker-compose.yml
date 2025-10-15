@@ -57,7 +57,7 @@ services:
     #ports:
     # - "3003:3000"
     volumes:
-      - pong-db-data:/app/prisma
+      - pong-db-data:/app/prisma/data
     depends_on:
       - logstash
     networks:

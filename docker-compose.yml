@@ -57,7 +57,7 @@ services:
     #ports:
     # - "3003:3000"
     volumes:
-      - pong-db-data:/app/prisma/data
+      - pong-db-data:/app/prisma
     depends_on:
       - logstash
     networks:
@@ -90,7 +90,7 @@ services:
   users:
     build: ./backend/users
     volumes:
-      - users-db-data:/app/prisma/data
+      - users-db-data:/app/prisma
       - uploads-db:/app/uploads
     #ports:
     #  - "3004:3000"
@@ -161,4 +161,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/data/uploads
+      device: ./data/uploads

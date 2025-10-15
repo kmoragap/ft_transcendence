@@ -28,10 +28,17 @@ export async function createAndStartTournament(): Promise<void> {
         `p${i}Ai`,
       ) as HTMLInputElement;
 
-      const isAi = playerAiInput ? playerAiInput.checked : i > 1;
+      const isAi = playerAiInput
+        ? playerAiInput.checked
+        : (allPlayerData && allPlayerData[i - 1]
+            ? !!allPlayerData[i - 1].isAi
+            : i > 1);
 
       if (isAi) {
-        const playerName = playerNameInput?.value || `Player ${i}`;
+        const playerName =
+          playerNameInput?.value ||
+          (allPlayerData && allPlayerData[i - 1]?.name) ||
+          `Player ${i}`;
         players.push(`AI-${playerName.replace(/\s+/g, '-')}`);
       } else {
         let playerId = playerIdInput?.value || "";
@@ -44,7 +51,11 @@ export async function createAndStartTournament(): Promise<void> {
           players.push(playerId);
         } else if (i === 1) {
           const urlParams = new URLSearchParams(window.location.search);
-          const userId = urlParams.get("userId") || playerNameInput?.value;
+          const userId =
+            urlParams.get("userId") ||
+            playerNameInput?.value ||
+            (allPlayerData && allPlayerData[i - 1]?.name) ||
+            "";
           if (!userId) {
             alert(
               "No valid user ID or player name found for the first player. Please enter a name or log in.",
@@ -53,7 +64,10 @@ export async function createAndStartTournament(): Promise<void> {
           }
           players.push(userId);
         } else {
-          const name = playerNameInput?.value || `player${i}`;
+          const name =
+            playerNameInput?.value ||
+            (allPlayerData && allPlayerData[i - 1]?.name) ||
+            `player${i}`;
           players.push(`Local-${name.replace(/\s+/g, '-')}`);
         }
       }
@@ -76,9 +90,8 @@ export async function createAndStartTournament(): Promise<void> {
       const isAi = playerAiInput ? playerAiInput.checked : i > 1;
       const playerId = players[i - 1];
       
-      let playerName = playerNameInput?.value;
+      let playerName = playerNameInput?.value || (allPlayerData && allPlayerData[i - 1]?.name);
       if (!playerName || playerName.trim() === "") {
-        const urlParams = new URLSearchParams(window.location.search);
         const username = urlParams.get("username") || "Player 1";
         const defaultNames = ["Player 1", "Roger Federror", "Boolena Williams", "Boris Backend"];
         

@@ -1,5 +1,5 @@
 // This file provides utility functions to display modal alerts of various types (success, error, warning, info) and a confirmation dialog.
-import { showModal, showSuccessModal, showErrorModal, showWarningModal, showInfoModal, showConfirmModal } from '../components/modal';
+import { showModal, showSuccessModal, showErrorModal, showWarningModal, showConfirmModal } from '../components/modal';
 
 export function showAlert(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): Promise<boolean> {
   return showModal({
@@ -21,27 +21,6 @@ export function alertWarning(message: string): Promise<boolean> {
   return showWarningModal(message);
 }
 
-export function alertInfo(message: string): Promise<boolean> {
-  return showInfoModal(message, undefined, 3000);
-}
-
 export function alertConfirm(message: string, title?: string): Promise<boolean> {
   return showConfirmModal(message, title);
-}
-
-export function replaceGlobalAlert() {
-  const originalAlert = window.alert;
-  
-  window.alert = (message: string) => {
-    showAlert(message, 'info');
-  };
-  
-  const originalConfirm = window.confirm;
-  
-  return {
-    restore: () => {
-      window.alert = originalAlert;
-      window.confirm = originalConfirm;
-    }
-  };
 }

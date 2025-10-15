@@ -1,7 +1,9 @@
 // Login page
-import { t } from "./../i18n";
+
+import { t } from "./../utils/i18n";
 import { store } from "../store";
 import { alertError, alertSuccess } from "./../utils/modal-alerts";
+import { enhanceButton, setButtonLoading, removeButtonLoading } from "../utils/button-animations";
 
 export function renderLogin(): HTMLElement {
 
@@ -109,6 +111,10 @@ export function renderLogin(): HTMLElement {
   const form = section.querySelector<HTMLFormElement>("#login-form")!;
   const identifierInput = form.querySelector<HTMLInputElement>("#identifier")!;
   const passwordInput = form.querySelector<HTMLInputElement>("#password")!;
+  const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+  // Enhance submit button
+  enhanceButton(submitBtn, { ripple: true, bounce: true });
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -120,6 +126,9 @@ export function renderLogin(): HTMLElement {
       alertError("Please fill in all fields");
       return;
     }
+
+    // Set loading state
+    setButtonLoading(submitBtn, "Logging in...");
 
     const payload: Record<string, string> = { password };
     if (identifier.includes("@")) {
@@ -164,6 +173,8 @@ export function renderLogin(): HTMLElement {
     } catch (err) {
       console.error(err);
       alertError("An unexpected error occurred.");
+    } finally {
+      removeButtonLoading(submitBtn);
     }
   });
 
@@ -236,6 +247,12 @@ function show2FAForm(section: HTMLElement, email: string) {
   const codeInput = section.querySelector<HTMLInputElement>("#twofa-code")!;
   const resendButton = section.querySelector<HTMLButtonElement>("#resend-code")!;
   const backButton = section.querySelector<HTMLButtonElement>("#back-to-login")!;
+  const submitBtn = twoFAForm.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+  // Enhance 2FA form buttons
+  enhanceButton(resendButton, { ripple: true, bounce: true });
+  enhanceButton(backButton, { ripple: true, bounce: true });
+  enhanceButton(submitBtn, { ripple: true, bounce: true });
 
   codeInput.focus();
 
@@ -283,6 +300,9 @@ function show2FAForm(section: HTMLElement, email: string) {
       return;
     }
 
+    // Set loading state
+    setButtonLoading(submitBtn, "Verifying...");
+
     try {
       const res = await fetch("/api/auth/verify-2fa", {
         method: "POST",
@@ -314,6 +334,8 @@ function show2FAForm(section: HTMLElement, email: string) {
     } catch (err) {
       console.error(err);
       alertError("An unexpected error occurred.");
+    } finally {
+      removeButtonLoading(submitBtn);
     }
   });
 }

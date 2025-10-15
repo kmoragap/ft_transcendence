@@ -1,7 +1,8 @@
 // This file provides accessibility (a11y) utilities for enhancing user experience, including skip links, live regions, and text scaling.
-export const SKIP_LINK_ID = 'skip-to-content';
-export const SR_ANNOUNCER_ID = 'sr-announcer';
-export const PAGE_TITLE_ID = 'page-title';
+
+const SKIP_LINK_ID = 'skip-to-content';
+const SR_ANNOUNCER_ID = 'sr-announcer';
+const PAGE_TITLE_ID = 'page-title';
 const STORAGE = { HC: 'a11y.hc', SCALE: 'a11y.textScale' };
 
 type A11yState = { hc: boolean; scale: number };
@@ -58,13 +59,6 @@ export function setPageTitleAndFocus(title: string) {
   if (h1) { h1.textContent = title; h1.focus(); }
 }
 
-export function focusMain() {
-  const main = document.getElementById('main') as HTMLElement | null;
-  if (!main) return;
-  if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
-  main.focus();
-}
-
 export function setTextScale(next: number) {
   state.scale = Math.min(1.6, Math.max(0.9, +next.toFixed(2)));
   applyTheme();
@@ -72,7 +66,7 @@ export function setTextScale(next: number) {
 
 function applyTheme() {
   document.documentElement.classList.toggle('hc', state.hc);
-  const base = 16; // keep aligned with your Tailwind base
+  const base = 16;
   document.documentElement.style.fontSize = `calc(${base}px * ${state.scale})`;
   localStorage.setItem(STORAGE.HC, String(state.hc));
   localStorage.setItem(STORAGE.SCALE, String(state.scale));
@@ -80,7 +74,4 @@ function applyTheme() {
 
 export function initA11yTheme() { applyTheme(); }
 export function toggleHighContrast() { state.hc = !state.hc; applyTheme(); }
-export function increaseText() { state.scale = Math.min(1.6, +(state.scale + 0.1).toFixed(2)); applyTheme(); }
-export function decreaseText() { state.scale = Math.max(0.9,  +(state.scale - 0.1).toFixed(2)); applyTheme(); }
-export function resetText()    { state.scale = 1; applyTheme(); }
 export function getA11yState(): A11yState { return { ...state }; }

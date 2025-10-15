@@ -1,4 +1,5 @@
 // Simple client-side router for SPA navigation
+
 import { renderHome } from './views/home.ts';
 import { renderLogin } from './views/login.ts';
 import { renderRegistration } from './views/register.ts';
@@ -6,7 +7,7 @@ import { renderMyProfile } from './views/myprofile.ts';
 import { renderProfile } from './views/profile.ts';
 import { renderDashboard } from './views/dashboard.ts';
 import { renderGame} from './views/game';
-import { updateText } from './i18n';
+import { updateText } from './utils/i18n';
 import { ensureA11yScaffold, announce, setPageTitleAndFocus } from './utils/a11y.ts';
 import { renderOAuthCallback } from './views/oauth.ts';
 import { shouldRedirectFromAuth, shouldRedirectFromProtected } from './utils/auth.ts';
@@ -44,7 +45,9 @@ ensureA11yScaffold();
 
 // Navigate to a given path, handling auth redirects and rendering
 export function navigate(path: string) {
-  if (protectedRoutes.has(path) && shouldRedirectFromProtected()) {
+  const isProtected = protectedRoutes.has(path) || path.startsWith('/profile/');
+  
+  if (isProtected && shouldRedirectFromProtected()) {
     if (location.hash !== '#/home') {
       location.hash = '/home';
     }

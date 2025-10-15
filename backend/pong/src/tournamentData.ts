@@ -77,9 +77,6 @@ export async function createAndStartTournament(): Promise<void> {
 
     const playerIdToNameMap: Record<string, string> = {};
     for (let i = 1; i <= playersNumber; i++) {
-      const playerIdInput = document.getElementById(
-        `p${i}Id`,
-      ) as HTMLInputElement;
       const playerNameInput = document.getElementById(
         `name_p${i}`,
       ) as HTMLInputElement;

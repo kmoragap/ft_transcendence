@@ -193,7 +193,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
         alertError("Please enter a valid 6-digit code");
         return;
       }
-      setButtonLoading(submitBtn, "Verifying...");
+      setButtonLoading(submitBtn, t("verifying") || "Verifying...");
       try {
         const res = await fetch("/api/auth/verify-2fa", {
           method: "POST",
@@ -295,7 +295,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     }
 
     // Set loading state
-    setButtonLoading(submitBtn, "Logging in...");
+    setButtonLoading(submitBtn, t("logging_in") || "Logging in...");
 
     try {
       const res = await fetch("/api/auth/login", {

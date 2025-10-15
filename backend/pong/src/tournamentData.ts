@@ -16,6 +16,7 @@ export async function createAndStartTournament(): Promise<void> {
     );
 
     const players: string[] = [];
+    const urlParams = new URLSearchParams(window.location.search);
 
     for (let i = 1; i <= playersNumber; i++) {
       const playerIdInput = document.getElementById(
@@ -50,7 +51,6 @@ export async function createAndStartTournament(): Promise<void> {
         if (playerId) {
           players.push(playerId);
         } else if (i === 1) {
-          const urlParams = new URLSearchParams(window.location.search);
           const userId =
             urlParams.get("userId") ||
             playerNameInput?.value ||
@@ -72,8 +72,6 @@ export async function createAndStartTournament(): Promise<void> {
         }
       }
     }
-
-    const urlParams = new URLSearchParams(window.location.search);
 
     const playerIdToNameMap: Record<string, string> = {};
     for (let i = 1; i <= playersNumber; i++) {

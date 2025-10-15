@@ -136,12 +136,12 @@ export function renderRegistration(): HTMLElement {
     toggleRegisterPassword.innerHTML = v ? eyeClosedSvg : eyeOpenSvg;
     toggleRegisterPassword.setAttribute('aria-label', v ? 'Hide password' : 'Show password');
     toggleRegisterPassword.setAttribute('title', v ? 'Hide password' : 'Show password');
+    toggleRegisterPassword.setAttribute('aria-pressed', String(v));
   };
   setRegPwdVisible(regPwdVisible);
   toggleRegisterPassword.addEventListener('click', () => {
     regPwdVisible = !regPwdVisible;
     setRegPwdVisible(regPwdVisible);
-    passwordInput.focus();
   });
 
   form.addEventListener("submit", async e => {

@@ -30,7 +30,7 @@ app:
 down:
 	@echo "Stopping containers..."
 	@$(COMPOSE_ALL) down
-	@docker system prune -f
+#	@docker system prune -f
 	@echo "Containers have been stopped."
 
 rebuild: down ssl show-url
@@ -50,11 +50,10 @@ clean: down
 	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
 	@$(COMPOSE_ALL) down -v > /dev/null 2>&1
-	@docker volume ls -q | xargs -r docker volume rm
+#	@docker volume ls -q | xargs -r docker volume rm
 	@echo "Cleanup complete."
 
 rebuild_game: down
 	@docker image rm ft_transcendence-pong:latest
 	@docker volume rm ft_transcendence_pong-static
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
-

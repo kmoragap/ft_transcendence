@@ -1,7 +1,10 @@
 // Other User Profile page
-import { t, updateText } from '../i18n';
-import { getUserProfile, sendFriendRequest, getFriendshipStatus, removeFriendRequest, UserSearchResult, getUserStats, UserStats } from "../api/users";
+
+import { t, updateText } from '../utils/i18n';
+import { getUserProfile, UserSearchResult, getUserStats, UserStats } from "../api/users";
+import { sendFriendRequest, getFriendshipStatus, removeFriendRequest } from "../api/friends";
 import { alertError, alertSuccess, alertWarning } from './../utils/modal-alerts';
+import { enhanceButton } from "../utils/button-animations";
 
 export function renderProfile(username: string): HTMLElement {
   const section = document.createElement('section')
@@ -216,6 +219,10 @@ export function renderProfile(username: string): HTMLElement {
     const removeFriendBtn = section.querySelector('#remove-friend-btn') as HTMLButtonElement;
     const cancelFriendRequestBtn = section.querySelector('#cancel-friend-request-btn') as HTMLButtonElement;
 
+    if (sendFriendRequestBtn) {
+      enhanceButton(sendFriendRequestBtn, { ripple: true, bounce: true });
+    }
+    
     sendFriendRequestBtn?.addEventListener('click', async () => {
       if (!user) return;
       
@@ -245,6 +252,10 @@ export function renderProfile(username: string): HTMLElement {
       }
     });
 
+    if (removeFriendBtn) {
+      enhanceButton(removeFriendBtn, { ripple: true, bounce: true });
+    }
+    
     removeFriendBtn?.addEventListener('click', async () => {
       if (!user) return;
       

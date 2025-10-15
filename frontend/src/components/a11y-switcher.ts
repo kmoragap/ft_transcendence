@@ -1,6 +1,8 @@
 // This file defines and exports a function to render accessibility controls (text size and high contrast mode) as a dropdown menu.
+
 import { toggleHighContrast, getA11yState, setTextScale } from '../utils/a11y';
-import { updateText, t } from '../i18n';
+import { updateText, t } from '../utils/i18n';
+import { enhanceButton } from '../utils/button-animations';
 
 export function renderA11yControls(): HTMLElement {
   const wrap = document.createElement('div');
@@ -22,6 +24,9 @@ export function renderA11yControls(): HTMLElement {
       <path d="M5 7l5 6 5-6" fill="none" bg-[#0a2b2b] stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     </svg>
   `;
+
+  // Enhance trigger button with animations
+  enhanceButton(trigger, { ripple: true, bounce: true });
 
   const panel = document.createElement('div');
   panel.id = 'a11y-menu';
@@ -50,6 +55,9 @@ export function renderA11yControls(): HTMLElement {
       <span data-i18n="${labelKey}">${t(labelKey)}</span>
       <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15">${Math.round(scale * 100)}%</span>
     `;
+
+    // Enhance radio row button with animations
+    enhanceButton(row, { ripple: true, bounce: true });
     
     const applyScale = (e: Event) => {
       e.preventDefault();
@@ -77,6 +85,9 @@ export function renderA11yControls(): HTMLElement {
     <span data-i18n="high_contrast">${t('high_contrast')}</span>
     <span class="opacity-90 text-sm hover:bg-[#66fcf1]/15" data-state>Off</span>
   `;
+
+  // Enhance high contrast button with animations
+  enhanceButton(hcRow, { ripple: true, bounce: true });
   
   const toggleContrast = (e: Event) => {
     e.preventDefault();

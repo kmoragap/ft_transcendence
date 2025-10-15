@@ -21,13 +21,6 @@ class SessionManager {
       this.callbacks.push(callback);
     }
   }
-
-  removeCallback(callback: SessionCallback): void {
-    const index = this.callbacks.indexOf(callback);
-    if (index > -1) {
-      this.callbacks.splice(index, 1);
-    }
-  }
 }
 
 export const sessionManager = new SessionManager();

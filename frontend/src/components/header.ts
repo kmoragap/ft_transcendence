@@ -1,9 +1,12 @@
-import { t, loadLanguage } from './../i18n';
+// Header component
+
+import { t, loadLanguage } from './../utils/i18n';
 import { store } from '../store';
 import { logout } from '../utils/auth';
 import { renderA11yControls } from './a11y-switcher';
 import { sessionManager } from '../utils/session';
 import { searchUsers, UserSearchResult } from '../api/users';
+import { enhanceButton } from '../utils/button-animations';
 
 export function renderHeader(): HTMLElement {
   const header = document.createElement('header');
@@ -210,6 +213,9 @@ export function renderHeader(): HTMLElement {
       </svg>
     `;
 
+    // Enhance hamburger button with animations
+    enhanceButton(hamburgerBtn, { ripple: true, bounce: true });
+
     const desktopNav = document.createElement('ul');
     desktopNav.className = 'hidden md:flex justify-end items-center list-none';
 
@@ -319,6 +325,9 @@ export function renderHeader(): HTMLElement {
         <path d="M18 6L6 18M6 6l12 12" stroke="#66fcf1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `;
+
+    // Enhance close button with animations
+    enhanceButton(closeBtn, { ripple: true, bounce: true });
     
     headerLangWrap.appendChild(headerLangSelect);
     mobileMenuHeader.appendChild(headerLangWrap);
@@ -344,6 +353,9 @@ export function renderHeader(): HTMLElement {
         'hover:bg-[#66fcf1]/10 focus:bg-[#66fcf1]/10',
         'focus:outline-none focus:ring-2 focus:ring-[#66fcf1]'
       ].join(' ');
+
+      // Enhance menu item buttons with animations
+      enhanceButton(menuItem, { ripple: true, bounce: true });
       menuItem.setAttribute('data-i18n', key);
       menuItem.textContent = t(key);
       
@@ -452,6 +464,9 @@ export function renderHeader(): HTMLElement {
       trigger.setAttribute('aria-haspopup', 'menu');
       trigger.setAttribute('aria-expanded', 'false');
 
+      // Enhance user profile trigger button with animations
+      enhanceButton(trigger, { ripple: true, bounce: true });
+
       const name = document.createElement('span');
       name.className = 'font-[jura] font-bold text-lg';
       name.textContent = currentUser.username;
@@ -479,6 +494,10 @@ export function renderHeader(): HTMLElement {
         <button data-i18n="logout" data-action="logout" type="button" aria-label="${t('logout') || 'Logout'}"
           class="block w-full text-center p-2.5 px-6 text-[#66fcf1] text-base font-[jura] font-bold bg-transparent border-0 rounded-md hover:bg-[#66fcf1]/10">${t('logout')}</button>
       `;
+
+      // Enhance dropdown menu buttons with animations
+      const menuButtons = menu.querySelectorAll('button');
+      menuButtons.forEach(btn => enhanceButton(btn, { ripple: true, bounce: true }));
 
       let open = false;
       const setOpen = (v: boolean) => {

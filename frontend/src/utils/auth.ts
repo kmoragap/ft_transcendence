@@ -1,7 +1,7 @@
 // This file implements authentication utilities including checking auth status, redirecting based on auth state, and handling logout.
 import { store } from '../store';
 
-export function isAuthenticated(): boolean {
+function isAuthenticated(): boolean {
   return store.getState().isAuthenticated;
 }
 
@@ -11,12 +11,6 @@ export function shouldRedirectFromAuth(): boolean {
 
 export function shouldRedirectFromProtected(): boolean {
   return !isAuthenticated();
-}
-
-export function redirectIfUnauthenticated(): void {
-  if (shouldRedirectFromProtected()) {
-    location.hash = '/home';
-  }
 }
 
 export async function logout(): Promise<void> {

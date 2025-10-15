@@ -1,5 +1,7 @@
 // This file defines and exports functions to create and display customizable modal dialogs with various types (success, error, warning, info) and a confirmation dialog.
-import { t } from '../i18n';
+
+import { t } from '../utils/i18n';
+import { enhanceButton } from '../utils/button-animations';
 
 export interface ModalOptions {
   title?: string;
@@ -13,7 +15,7 @@ export interface ModalOptions {
   autoClose?: number;
 }
 
-export function createModal(options: ModalOptions): HTMLElement {
+function createModal(options: ModalOptions): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-[rgba(3,27,27,0.85)] backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in';
   modal.id = 'custom-modal';
@@ -72,6 +74,10 @@ export function createModal(options: ModalOptions): HTMLElement {
 
   const confirmBtn = modal.querySelector<HTMLButtonElement>('#modal-confirm')!;
   const cancelBtn = modal.querySelector<HTMLButtonElement>('#modal-cancel');
+
+  // Enhance modal buttons with animations
+  enhanceButton(confirmBtn, { ripple: true, bounce: true });
+  if (cancelBtn) enhanceButton(cancelBtn, { ripple: true, bounce: true });
 
   confirmBtn.addEventListener('click', () => {
     if (options.onConfirm) {

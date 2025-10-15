@@ -1,7 +1,9 @@
 // Registration page
-import { attachValidation } from "./../form-validation";
+
+import { attachValidation } from "./../utils/form-validation";
 import { alertError, alertSuccess } from "./../utils/modal-alerts";
 import { store } from "../store";
+import { enhanceButton, setButtonLoading, removeButtonLoading } from "../utils/button-animations";
 
 export function renderRegistration(): HTMLElement {
   const section = document.createElement("section");
@@ -107,7 +109,12 @@ export function renderRegistration(): HTMLElement {
   `;
 
   const form = section.querySelector<HTMLFormElement>("#register-form")!;
+  const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  
   attachValidation(form);
+  
+  // Enhance submit button
+  enhanceButton(submitBtn, { ripple: true, bounce: true });
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -119,6 +126,9 @@ export function renderRegistration(): HTMLElement {
       .value;
     const password = (form.querySelector("#password") as HTMLInputElement)
       .value;
+
+    // Set loading state
+    setButtonLoading(submitBtn, "Creating account...");
 
     try {
       const res = await fetch("/api/auth/register", {
@@ -160,6 +170,8 @@ export function renderRegistration(): HTMLElement {
     } catch (err) {
       console.error(err);
       alertError("An unexpected error occurred.");
+    } finally {
+      removeButtonLoading(submitBtn);
     }
   });
 

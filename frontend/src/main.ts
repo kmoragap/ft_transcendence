@@ -1,8 +1,9 @@
 // This file initializes the frontend application, sets up the UI shell, manages session restoration, and handles routing.
+
 import { renderHeader } from './components/header';
 import { renderFooter } from './components/footer';
 import { navigate } from './router';
-import { initI18n } from './i18n';
+import { initI18n } from './utils/i18n';
 import { store } from './store';
 import { initA11yTheme } from './utils/a11y';
 import { sessionManager } from './utils/session';

@@ -1,7 +1,9 @@
 // This file defines and exports functions to create and display a login modal dialog with form validation and submission handling.
-import { t } from "../i18n";
+
+import { t } from "../utils/i18n";
 import { store } from "../store";
 import { alertError, alertSuccess } from "../utils/modal-alerts";
+import { enhanceButton, setButtonLoading, removeButtonLoading } from "../utils/button-animations";
 
 export interface LoginModalOptions {
   onSuccess?: (user: any) => void;
@@ -99,6 +101,11 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
   const passwordInput =
     form.querySelector<HTMLInputElement>("#modal-password")!;
   const cancelBtn = modal.querySelector<HTMLButtonElement>("#modal-cancel")!;
+  const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+  // Enhance modal buttons with animations
+  enhanceButton(cancelBtn, { ripple: true, bounce: true });
+  enhanceButton(submitBtn, { ripple: true, bounce: true });
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -115,6 +122,9 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     } else {
       payload.username = identifier;
     }
+
+    // Set loading state
+    setButtonLoading(submitBtn, "Logging in...");
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -156,6 +166,8 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     } catch (err) {
       console.error(err);
       alertError(t("unexpected_error"));
+    } finally {
+      removeButtonLoading(submitBtn);
     }
   });
 

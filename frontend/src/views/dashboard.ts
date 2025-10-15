@@ -1,6 +1,8 @@
 // Dashboard page
-import { t } from "../i18n.js";
+
+import { t } from "../utils/i18n.js";
 import { store } from "../store.js";
+import { enhanceButton } from "../utils/button-animations";
 const API_BASE = "/api/pong";
 
 type GameRow = {
@@ -87,6 +89,10 @@ export function renderDashboard(): HTMLElement {
       "active:scale-95 animation-[press_0.2s_ease]",
       "transition cursor-pointer",
     ].join(" ");
+    
+    // Enhance with animations
+    enhanceButton(btn, { ripple: true, bounce: true });
+    
     return btn;
   }
 
@@ -191,13 +197,22 @@ export function renderDashboard(): HTMLElement {
     table.appendChild(list);
   }
 
+  // Function to set active tab with color wave animation
+  function setActiveTab(activeTab: HTMLButtonElement) {
+    // Remove active class from all tabs
+    tabLast.classList.remove("dashboard-tab-active", "bg-[rgba(102,252,241,0.12)]");
+    tabTop.classList.remove("dashboard-tab-active", "bg-[rgba(102,252,241,0.12)]");
+    tabMy.classList.remove("dashboard-tab-active", "bg-[rgba(102,252,241,0.12)]");
+    
+    // Add active class to the selected tab
+    activeTab.classList.add("dashboard-tab-active");
+  }
+
   async function loadLast5() {
     try {
       const data = await fetchJSON<GameRow[]>(`${API_BASE}/games?take=5`);
       renderGames(data);
-      tabLast.classList.add("bg-[rgba(102,252,241,0.12)]");
-      tabTop.classList.remove("bg-[rgba(102,252,241,0.12)]");
-      tabMy.classList.remove("bg-[rgba(102,252,241,0.12)]");
+      setActiveTab(tabLast);
     } catch (e) {
       table.innerHTML = `<div class="p-4 text-red-300" data-i18n="failed_to_load_games">Failed to load games</div>`;
       console.error(e);
@@ -210,9 +225,7 @@ export function renderDashboard(): HTMLElement {
         `${API_BASE}/leaderboard?limit=5`
       );
       renderLeaders(data);
-      tabTop.classList.add("bg-[rgba(102,252,241,0.12)]");
-      tabLast.classList.remove("bg-[rgba(102,252,241,0.12)]");
-      tabMy.classList.remove("bg-[rgba(102,252,241,0.12)]");
+      setActiveTab(tabTop);
     } catch (e) {
       table.innerHTML = `<div class="p-4 text-red-300">Failed to load leaderboard</div>`;
       console.error(e);
@@ -231,9 +244,7 @@ export function renderDashboard(): HTMLElement {
         `${API_BASE}/user-games?userId=${currentUser.id}`
       );
       renderGames(data);
-      tabMy.classList.add("bg-[rgba(102,252,241,0.12)]");
-      tabLast.classList.remove("bg-[rgba(102,252,241,0.12)]");
-      tabTop.classList.remove("bg-[rgba(102,252,241,0.12)]");
+      setActiveTab(tabMy);
     } catch (e) {
       table.innerHTML = `<div class="p-4 text-red-300">Failed to load your games</div>`;
       console.error(e);
@@ -245,11 +256,11 @@ export function renderDashboard(): HTMLElement {
   tabMy.addEventListener("click", loadMyGames);
 
   window.addEventListener("languageChanged", () => {
-    if (tabLast.classList.contains("bg-[rgba(102,252,241,0.12)]")) {
+    if (tabLast.classList.contains("dashboard-tab-active")) {
       loadLast5();
-    } else if (tabTop.classList.contains("bg-[rgba(102,252,241,0.12)]")) {
+    } else if (tabTop.classList.contains("dashboard-tab-active")) {
       loadTop5();
-    } else if (tabMy.classList.contains("bg-[rgba(102,252,241,0.12)]")) {
+    } else if (tabMy.classList.contains("dashboard-tab-active")) {
       loadMyGames();
     }
   });

@@ -1,21 +1,25 @@
 // My Profile page
+
 import { store } from "../store";
-import { t, updateText } from "../i18n";
+import { t, updateText } from "../utils/i18n";
 import { logout } from "../utils/auth";
 import {
   uploadMyAvatar,
   updateMyProfile,
-  acceptReceivedFriendRequest,
-  rejectFriendRequest,
-  removeFriendRequest,
   getUserStats,
   toggle2fa,
   getUserGameHistory,
   GameHistoryEntry,
 } from "../api/users";
+import {
+  acceptReceivedFriendRequest,
+  rejectFriendRequest,
+  removeFriendRequest,
+} from "../api/friends";
 import { updateCurrentUserAvatar, updateCurrentUserProfile } from "../store";
 import { sessionManager } from "../utils/session";
-import { attachValidation } from "../form-validation";
+import { attachValidation } from "../utils/form-validation";
+import { enhanceButton, handleAsyncButtonClick, setButtonLoading, removeButtonLoading } from "../utils/button-animations";
 import {
   alertError,
   alertSuccess,
@@ -441,18 +445,28 @@ export function renderMyProfile(): HTMLElement {
     friendRequestsList
       .querySelectorAll(".accept-friend-request-btn")
       .forEach(btn => {
-        btn.addEventListener("click", async e => {
+        const button = btn as HTMLButtonElement;
+        enhanceButton(button, { ripple: true, bounce: true });
+        
+        button.addEventListener("click", async e => {
           const target = e.target as HTMLButtonElement;
           const requestId = target.dataset.requestId;
           const username = target.dataset.username;
           if (requestId && username) {
-            try {
-              await acceptReceivedFriendRequest(username, requestId);
-              await populateFriendRequests();
-              alertSuccess(t("friend_request_accepted"));
-            } catch (error: any) {
-              alertError(error?.message || t("friend_request_accept_failed"));
-            }
+            await handleAsyncButtonClick(
+              target,
+              async () => {
+                await acceptReceivedFriendRequest(username, requestId);
+                await populateFriendRequests();
+              },
+              {
+                loadingText: t("accepting") || "Accepting...",
+                successMessage: t("friend_request_accepted"),
+                errorMessage: t("friend_request_accept_failed"),
+                onSuccess: () => alertSuccess(t("friend_request_accepted")),
+                onError: (error: any) => alertError(error?.message || t("friend_request_accept_failed"))
+              }
+            );
           }
         });
       });
@@ -460,18 +474,28 @@ export function renderMyProfile(): HTMLElement {
     friendRequestsList
       .querySelectorAll(".reject-friend-request-btn")
       .forEach(btn => {
-        btn.addEventListener("click", async e => {
+        const button = btn as HTMLButtonElement;
+        enhanceButton(button, { ripple: true, bounce: true });
+        
+        button.addEventListener("click", async e => {
           const target = e.target as HTMLButtonElement;
           const requestId = target.dataset.requestId;
           const username = target.dataset.username;
           if (requestId && username) {
-            try {
-              await rejectFriendRequest(requestId);
-              await populateFriendRequests();
-              alertSuccess(t("friend_request_rejected"));
-            } catch (error: any) {
-              alertError(error?.message || t("friend_request_reject_failed"));
-            }
+            await handleAsyncButtonClick(
+              target,
+              async () => {
+                await rejectFriendRequest(requestId);
+                await populateFriendRequests();
+              },
+              {
+                loadingText: t("rejecting") || "Rejecting...",
+                successMessage: t("friend_request_rejected"),
+                errorMessage: t("friend_request_reject_failed"),
+                onSuccess: () => alertSuccess(t("friend_request_rejected")),
+                onError: (error: any) => alertError(error?.message || t("friend_request_reject_failed"))
+              }
+            );
           }
         });
       });
@@ -698,31 +722,56 @@ export function renderMyProfile(): HTMLElement {
     }
 
     if (editBtn) {
+      enhanceButton(editBtn, { ripple: true, bounce: true });
       editBtn.addEventListener("click", enterEditMode);
     }
 
-    refreshStatsBtn?.addEventListener("click", async () => {
-      try {
-        user = await getCurrentUserWithStats();
-        section.innerHTML = getViewHTML();
-        bindViewEvents();
-        updateText();
-        alertSuccess(t("stats_refreshed"));
-      } catch (error) {
-        console.error("Error refreshing stats:", error);
-        alertError(t("stats_refresh_failed"));
-      }
-    });
+    if (refreshStatsBtn) {
+      enhanceButton(refreshStatsBtn, { ripple: true, bounce: true });
+      refreshStatsBtn.addEventListener("click", async () => {
+        await handleAsyncButtonClick(
+          refreshStatsBtn,
+          async () => {
+            user = await getCurrentUserWithStats();
+            section.innerHTML = getViewHTML();
+            bindViewEvents();
+            updateText();
+          },
+          {
+            loadingText: t("refreshing") || "Refreshing...",
+            successMessage: t("stats_refreshed"),
+            errorMessage: t("stats_refresh_failed"),
+            onSuccess: () => alertSuccess(t("stats_refreshed")),
+            onError: (error: any) => {
+              console.error("Error refreshing stats:", error);
+              alertError(t("stats_refresh_failed"));
+            }
+          }
+        );
+      });
+    }
 
-    refreshFriendsBtn?.addEventListener("click", async () => {
-      try {
-        await populateFriendRequests();
-        alertSuccess(t("friend_status_refreshed"));
-      } catch (error) {
-        console.error("Error refreshing friends:", error);
-        alertError(t("friend_status_refresh_failed"));
-      }
-    });
+    if (refreshFriendsBtn) {
+      enhanceButton(refreshFriendsBtn, { ripple: true, bounce: true });
+      refreshFriendsBtn.addEventListener("click", async () => {
+        await handleAsyncButtonClick(
+          refreshFriendsBtn,
+          async () => {
+            await populateFriendRequests();
+          },
+          {
+            loadingText: t("refreshing") || "Refreshing...",
+            successMessage: t("friend_status_refreshed"),
+            errorMessage: t("friend_status_refresh_failed"),
+            onSuccess: () => alertSuccess(t("friend_status_refreshed")),
+            onError: (error: any) => {
+              console.error("Error refreshing friends:", error);
+              alertError(t("friend_status_refresh_failed"));
+            }
+          }
+        );
+      });
+    }
   }
 
   async function enterEditMode() {
@@ -733,11 +782,19 @@ export function renderMyProfile(): HTMLElement {
 
     attachValidation(form);
 
-    cancel.addEventListener("click", () => {
-      section.innerHTML = getViewHTML();
-      bindViewEvents();
-      updateText();
-    });
+    if (cancel) {
+      enhanceButton(cancel, { ripple: true, bounce: true });
+      cancel.addEventListener("click", () => {
+        section.innerHTML = getViewHTML();
+        bindViewEvents();
+        updateText();
+      });
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    if (submitBtn) {
+      enhanceButton(submitBtn, { ripple: true, bounce: true });
+    }
 
     form.addEventListener("submit", async e => {
       e.preventDefault();
@@ -751,6 +808,10 @@ export function renderMyProfile(): HTMLElement {
 
       const is2faEnabled = data.get("is2faEnabled") === "on";
 
+      if (submitBtn) {
+        setButtonLoading(submitBtn, t("saving") || "Saving...");
+      }
+      
       try {
         const emailChanged = profileData.email !== user.email;
         const usernameChanged = profileData.username !== user.username;
@@ -797,6 +858,10 @@ export function renderMyProfile(): HTMLElement {
       } catch (error: any) {
         console.error("Failed to update profile:", error);
         alertError(error?.message || t("update_failed"));
+      } finally {
+        if (submitBtn) {
+          removeButtonLoading(submitBtn);
+        }
       }
     });
   }

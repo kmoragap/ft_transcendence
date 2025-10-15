@@ -1,9 +1,11 @@
 // Game page
-import { t, getCurrentLang, updateText } from "./../i18n";
+
+import { t, getCurrentLang, updateText } from "./../utils/i18n";
 import { store } from "./../store";
 import { showLoginModal } from "./../components/login-modal";
 import { alertSuccess, alertError } from "./../utils/modal-alerts";
 import { navigate } from "./../router";
+import { enhanceButton } from "../utils/button-animations";
 
 let iframeRef: HTMLIFrameElement | null = null;
 let loggedInUsers: Set<string> = new Set();
@@ -139,15 +141,20 @@ export function renderGame(): HTMLElement {
   }
 
   function wireMenuHandlers() {
-    root
-      .querySelector<HTMLButtonElement>("#btn-single")
-      ?.addEventListener("click", () => setMode("single"));
-    root
-      .querySelector<HTMLButtonElement>("#btn-multi")
-      ?.addEventListener("click", () => setMode("multi"));
-    root
-      .querySelector<HTMLButtonElement>("#btn-tournament")
-      ?.addEventListener("click", () => setMode("tournament"));
+    const singleBtn = root.querySelector<HTMLButtonElement>("#btn-single");
+    const multiBtn = root.querySelector<HTMLButtonElement>("#btn-multi");
+    const tournamentBtn = root.querySelector<HTMLButtonElement>("#btn-tournament");
+    const backBtn = root.querySelector<HTMLButtonElement>("#game-back");
+
+    // Enhance buttons with animations
+    if (singleBtn) enhanceButton(singleBtn, { ripple: true, bounce: true });
+    if (multiBtn) enhanceButton(multiBtn, { ripple: true, bounce: true });
+    if (tournamentBtn) enhanceButton(tournamentBtn, { ripple: true, bounce: true });
+    if (backBtn) enhanceButton(backBtn, { ripple: true, bounce: true });
+
+    singleBtn?.addEventListener("click", () => setMode("single"));
+    multiBtn?.addEventListener("click", () => setMode("multi"));
+    tournamentBtn?.addEventListener("click", () => setMode("tournament"));
   }
 
   function renderIframeHTML(mode: Exclude<GameMode, "menu">) {

@@ -10,9 +10,9 @@ const commonSchemas = {
   */
   email: z
     .string()
+    .email()
     .min(1, "Email is required")
-    .max(254, "Email is too long")
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"),
+    .max(254, "Email is too long"),
   // username validation
   username: z
     .string()

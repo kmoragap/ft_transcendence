@@ -196,6 +196,27 @@
     color:#fff !important;
   }
   
+  /* High-contrast overrides for home title lines and text */
+  html.hc .first_line::after {
+    background-image: linear-gradient(90deg, transparent, #fff) !important;
+  }
+  html.hc .last_line::after {
+    background-image: linear-gradient(90deg, #fff, transparent) !important;
+  }
+  html.hc .mid_line {
+    color: #fff !important;
+  }
+  html.hc .mobile-line-1,
+  html.hc .mobile-line-2 {
+    color: #fff !important;
+  }
+  
+  /* Ensure labels are white in high-contrast mode */
+  html.hc label,
+  html.hc label.game-text {
+    color: #fff !important;
+  }
+
   html.hc p, html.hc span, html.hc div {
     color:#fff !important;
   }

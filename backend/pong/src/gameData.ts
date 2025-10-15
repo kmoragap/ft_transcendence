@@ -327,14 +327,14 @@ export async function loadConfig(mode: string): Promise<void> {
 
       p.push(
         loadPlayer(
-          loadIn(`name_p${i}`),
+          loadIn(`name_p${i}`) || wizardData?.name,
           playerId,
-          loadInB(`p${i}Ai`),
+          loadInB(`p${i}Ai`) || !!wizardData?.isAi,
           upKey,
           downKey,
-          loadIn(`p${i}InnerCol`),
-          loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`),
+          loadIn(`p${i}InnerCol`) || wizardData?.innerCol || '#ffffff',
+          loadIn(`p${i}OuterCol`) || wizardData?.outerCol || '#808080',
+          loadIn(`p${i}CornerCol`) || wizardData?.cornerCol || '#ff0000',
           i,
           mode,
         ),
@@ -369,9 +369,9 @@ export async function loadConfig(mode: string): Promise<void> {
           isAi,
           up,
           down,
-          loadIn(`p${i}InnerCol`),
-          loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`),
+          loadIn(`p${i}InnerCol`) || wizardData?.innerCol,
+          loadIn(`p${i}OuterCol`) || wizardData?.outerCol,
+          loadIn(`p${i}CornerCol`) || wizardData?.cornerCol,
           i,
           mode,
         ),
@@ -420,11 +420,11 @@ export async function loadConfig(mode: string): Promise<void> {
 		trailLength: 20,
 
 		bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
-		uiCol: loadIn("uiCol"),
-		ballCol: loadIn("ballCol"),
-		ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
-		ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
-		ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
+		uiCol: loadIn("uiCol") || "#ffffff",
+		ballCol: loadIn("ballCol") || "#0000ff",
+		ballR: String(parseInt((loadIn("ballCol") || "#0000ff").slice(1, 3), 16)),
+		ballG: String(parseInt((loadIn("ballCol") || "#0000ff").slice(3, 5), 16)),
+		ballB: String(parseInt((loadIn("ballCol") || "#0000ff").slice(5, 7), 16)),
 		outerBg: loadIn("outerBg") || "#001a1a",
 		innerBg: loadIn("innerBg") || "#1a4d4d",
 
@@ -460,9 +460,9 @@ export async function loadConfig(mode: string): Promise<void> {
     loadData.nameTB2.value = p[1].name;
   }
 	loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
-	loadData.bg.addColorStop(0, loadIn("outerBg"));
-	loadData.bg.addColorStop(0.5, loadIn("innerBg"));
-	loadData.bg.addColorStop(1, loadIn("outerBg"));
+	loadData.bg.addColorStop(0, loadData.outerBg);
+	loadData.bg.addColorStop(0.5, loadData.innerBg);
+	loadData.bg.addColorStop(1, loadData.outerBg);
 
 	switch (loadIn("paddleSpeed")) {
 		case "glacial":	loadData.paddleSpeed = 80;	break;
@@ -488,6 +488,24 @@ export async function loadConfig(mode: string): Promise<void> {
 		case "huge":	loadData.ballSize = 40;		break;
 		default:		loadData.ballSize = 80;		break;
 	}
+
+
+  console.log(loadData.ballCol);
+  loadData.ballCol = checkColors(loadData.ballCol, "#0000FFFF");
+  loadData.innerBg = checkColors(loadData.innerBg, "#1a4d4d");
+  loadData.outerBg = checkColors(loadData.outerBg, "#001a1a");
+  loadData.uiCol = checkColors(loadData.uiCol, "#001a1a");
+  var i = 0;
+  while (i < 5) {
+    if (loadData.p[i]) {
+      loadData.p[i].innerCol = checkColors(loadData.p[i].innerCol, "#ffffff");
+      loadData.p[i].outerCol = checkColors(loadData.p[i].outerCol, "#808080");
+      loadData.p[i].cornerCol = checkColors(loadData.p[i].cornerCol, "#ff0000");
+    }
+    i++;
+  }
+  
+
 	data = loadData;
 
   if (pendingTournamentId) {
@@ -534,4 +552,10 @@ export async function loadConfig(mode: string): Promise<void> {
   if (mode !== "tournament") {
     setTimeout(() => countdown(3, 500), 500);
   }
+}
+function checkColors(col: string, def: string): string {
+  if (col == "rgba(0, 0, 0, 0)")
+    return def;
+  return col;
+
 }

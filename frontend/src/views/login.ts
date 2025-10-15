@@ -50,25 +50,36 @@ export function renderLogin(): HTMLElement {
           aria-required="true"
           aria-invalid="false"
           aria-describedby="identifier-error"
-          class='custom-input px-4 py-2'
+          class='custom-input px-4 py-2 w-full'
         />
         <p id="identifier-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
 
       <div class="w-full mb-5">
-        <input
-          id="password"
-          type="password"
-          name="password"
-          autocomplete="current-password"
-          data-i18n-placeholder="password"
-          placeholder="${t("password")}"
-          required
-          aria-required="true"
-          aria-invalid="false"
-          aria-describedby="password-error"
-          class='custom-input px-4 py-2'
-        />
+        <div style="position: relative;">
+          <input
+            id="password"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            data-i18n-placeholder="password"
+            placeholder="${t("password")}"
+            required
+            aria-required="true"
+            aria-invalid="false"
+            aria-describedby="password-error"
+            class='custom-input px-4 py-2 w-full'
+            style="padding-right: 2.5rem;"
+          />
+          <button
+            type="button"
+            id="toggle-login-password"
+            aria-label="${t('show_password') || 'Show password'}"
+            title="${t('show_password') || 'Show password'}"
+            class="password-toggle"
+            style="position:absolute; right:10px; top:11px; cursor:pointer; user-select:none; background:transparent; border:none; padding:0; line-height:0;"
+          ></button>
+        </div>
         <p id="password-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
       </div>
 
@@ -111,11 +122,47 @@ export function renderLogin(): HTMLElement {
   const form = section.querySelector<HTMLFormElement>("#login-form")!;
   const identifierInput = form.querySelector<HTMLInputElement>("#identifier")!;
   const passwordInput = form.querySelector<HTMLInputElement>("#password")!;
+  const toggleLoginPassword = form.querySelector<HTMLButtonElement>("#toggle-login-password")!;
   const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
 
   // Enhance submit button
   enhanceButton(submitBtn, { ripple: true, bounce: true });
 
+  // Password reveal toggle for login
+  const eyeOpenSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  const eyeClosedSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-7.94"></path><path d="M10.58 10.58a2 2 0 1 0 2.83 2.83"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+  let loginPwdVisible = false;
+  const setLoginPwdVisible = (v: boolean) => {
+    passwordInput.type = v ? 'text' : 'password';
+    toggleLoginPassword.innerHTML = v ? eyeClosedSvg : eyeOpenSvg;
+    const hidePwd = t('hide_password') || 'Hide password';
+    const showPwd = t('show_password') || 'Show password';
+    toggleLoginPassword.setAttribute('aria-label', v ? hidePwd : showPwd);
+    toggleLoginPassword.setAttribute('title', v ? hidePwd : showPwd);
+    toggleLoginPassword.setAttribute('aria-pressed', String(v));
+  };
+  setLoginPwdVisible(loginPwdVisible);
+  toggleLoginPassword.addEventListener('click', () => {
+    loginPwdVisible = !loginPwdVisible;
+    setLoginPwdVisible(loginPwdVisible);
+    passwordInput.focus();
+  });
+
+  // Accessibility: handle Enter/Space for password toggle
+  toggleLoginPassword.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (
+      e.key === "Enter" ||
+      e.key === " " ||
+      e.key === "Spacebar" || // for older browsers
+      e.keyCode === 13 ||
+      e.keyCode === 32
+    ) {
+      e.preventDefault();
+      loginPwdVisible = !loginPwdVisible;
+      setLoginPwdVisible(loginPwdVisible);
+      passwordInput.focus();
+    }
+  });
   form.addEventListener("submit", async e => {
     e.preventDefault();
     

@@ -16,6 +16,7 @@ import {
   updateMyProfileHandler,
   getUsersByIds,
   toggle2faHandler,
+  getUserProfile,
 } from "../modules/users.controller";
 import {
   sendFriendRequestHandler,
@@ -70,7 +71,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   );
   fastify.get("/by-email/:email", getUserByEmailHandler); // for the auth service
   fastify.get("/by-username/:username", getUserByUsernameHandler); // for the auth service
-
+  fastify.get("/user-profile/:username", getUserProfile);
   // protected routes
   fastify.get("/", { preHandler: [authenticateToken] }, getUsersHandler);
   fastify.get(

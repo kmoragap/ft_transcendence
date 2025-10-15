@@ -153,12 +153,12 @@ export function renderMyProfile(): HTMLElement {
 
     <section class="w-full
                     rounded-xl shadow-2xl
-                    max-w-7xl mx-auto px-4 md:px-15 py-4 md:py-7.5">
-      <div class="flex flex-col md:flex-row items-stretch gap-4 md:gap-x-8">
+                    max-w-7xl mx-auto px-4 lg:px-15 py-4 lg:py-7.5">
+      <div class="flex flex-col lg:flex-row items-stretch gap-4 lg:gap-x-8">
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-4 md:px-10 py-4 min-h-50 md:py-5">
+                    shadow-lg px-2 lg:px-4 py-4 min-h-50 lg:py-5">
           <div class="flex items-center justify-between mb-2">
-            <h2 class="text-lg md:text-xl font-bold text-[#66fcf1]" data-i18n="social">Social</h2>
+            <h2 class="text-lg lg:text-xl font-bold text-[#66fcf1]" data-i18n="social">Social</h2>
           </div>
           <div class="bg-[rgba(30,41,40,0.7)] w-full flex-1 border border-[rgba(102,252,241,0.15)] p-4">
             <div id="friend-requests-section">
@@ -169,39 +169,39 @@ export function renderMyProfile(): HTMLElement {
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-4 md:px-10 py-4 md:py-5">
-          <div class="flex flex-col items-center space-y-3 md:space-y-4 mb-4 md:mb-6">
+                    shadow-lg px-4 lg:px-10 py-4 lg:py-5">
+          <div class="flex flex-col items-center space-y-3 lg:space-y-4 mb-4 lg:mb-6">
             <div class="relative group">
               <img id="profile-avatar-img" src="${user.avatarUrl}" alt="${user.username}'s avatar"
-                  class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover cursor-pointer" 
-                  title="Click to change photo" />
+                  class="w-20 h-20 lg:w-24 lg:h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover ${!user.isOAuthUser ? 'cursor-pointer' : 'cursor-default'}" 
+                  title="${!user.isOAuthUser ? 'Click to change photo' : 'Avatar managed by 42 OAuth'}" />
               <div
                 class="absolute inset-0 rounded-full bg-black/50 opacity-0
                        group-hover:opacity-100 transition-opacity duration-300
                        flex items-center justify-center pointer-events-none"
               >
-                <span class="text-white text-xs font-bold" data-i18n="change_photo">Change Photo</span>
+                <span class="text-white text-xs font-bold" data-i18n="change_photo">${!user.isOAuthUser ? 'Change Photo' : '42 OAuth Avatar'}</span>
               </div>
             </div>
 
-            <input id="avatar-file-input" type="file" accept="image/*" class="hidden" />
+            <input id="avatar-file-input" type="file" accept="image/*" class="hidden" ${user.isOAuthUser ? 'disabled' : ''} />
 
             <div class="text-center">
-              <h2 class="text-xl md:text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
-              <p class="text-base md:text-lg text-gray-300 mb-1">${user.name}</p>
+              <h2 class="text-xl lg:text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
+              <p class="text-base lg:text-lg text-gray-300 mb-1">${user.name}</p>
               <p class="text-sm text-gray-400">${user.email}</p>
             </div>
-            <div class="flex flex-col gap-2 md:gap-3">
-              ${!user.isOAuthUser ? `<button id="edit-btn" type="button" aria-label="${t('edit_profile') || 'Edit profile'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+            <div class="flex flex-col gap-2 lg:gap-3">
+              ${!user.isOAuthUser ? `<button id=\"edit-btn\" type=\"button\" aria-label=\"${t('edit_profile') || 'Edit profile'}\" class=\"cursor-pointer mt-2.5 text-base lg:text-lg font-bold px-6 lg:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
-                      transition-shadow duration-300" data-i18n="edit_profile">
+                      transition-shadow duration-300\" data-i18n=\"edit_profile\">
                 Edit Profile
               </button>` : ''}
-              <button id="refresh-stats-btn" type="button" aria-label="${t('refresh_stats') || 'Refresh stats'}" class="cursor-pointer mt-2.5 text-base md:text-lg font-bold px-6 md:px-8 py-2
+              <button id=\"refresh-stats-btn\" type=\"button\" aria-label=\"${t('refresh_stats') || 'Refresh stats'}\" class=\"cursor-pointer mt-2.5 text-base lg:text-lg font-bold px-6 lg:px-8 py-2
                       bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                       hover:bg-[#45fcf1] font-[jura] hover:shadow-lg
-                      transition-shadow duration-300" data-i18n="refresh_stats">
+                      transition-shadow duration-300\" data-i18n=\"refresh_stats\">
                 Refresh Stats
               </button>
             </div>
@@ -209,33 +209,33 @@ export function renderMyProfile(): HTMLElement {
         </div>
 
         <div class="bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-4 md:px-10 py-4 md:py-5">
-          <h2 class="text-lg md:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
-          <div class="grid grid-cols-2 gap-2 md:gap-2 mb-2 md:mb-2">
-            <div class="p-2 md:p-2 text-center">
-              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
-              <div class="text-xs md:text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
+                    shadow-lg px-4 lg:px-10 py-4 lg:py-5">
+          <h2 class="text-lg lg:text-xl font-bold text-[#66fcf1] mb-2" data-i18n="game_statistics">Game Statistics</h2>
+          <div class="grid grid-cols-2 gap-2 lg:gap-2 mb-2 lg:mb-2">
+            <div class="p-2 lg:p-2 text-center">
+              <div class="text-xl lg:text-2xl font-bold text-[#66fcf1]">${user.wins}</div>
+              <div class="text-xs lg:text-sm text-gray-300" data-i18n="wins_plural">Wins</div>
             </div>
-            <div class="p-2 md:p-2 text-center">
-              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
-              <div class="text-xs md:text-sm text-gray-300" data-i18n="losses">Losses</div>
+            <div class="p-2 lg:p-2 text-center">
+              <div class="text-xl lg:text-2xl font-bold text-[#66fcf1]">${user.losses}</div>
+              <div class="text-xs lg:text-sm text-gray-300" data-i18n="losses">Losses</div>
             </div>
-            <div class="p-2 md:p-2 text-center">
-              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
-              <div class="text-xs md:text-sm text-gray-300" data-i18n="total_games">Total Games</div>
+            <div class="p-2 lg:p-2 text-center">
+              <div class="text-xl lg:text-2xl font-bold text-[#66fcf1]">${user.totalGames}</div>
+              <div class="text-xs lg:text-sm text-gray-300" data-i18n="total_games">Total Games</div>
             </div>
-            <div class="p-2 md:p-2 text-center">
-              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
-              <div class="text-xs md:text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
+            <div class="p-2 lg:p-2 text-center">
+              <div class="text-xl lg:text-2xl font-bold text-[#66fcf1]">${user.winRate}%</div>
+              <div class="text-xs lg:text-sm text-gray-300" data-i18n="win_rate">Win Rate</div>
             </div>
-            <div class="p-2 md:p-2 text-center col-span-2">
-              <div class="text-xl md:text-2xl font-bold text-[#66fcf1]">${user.elo || 1000}</div>
-              <div class="text-xs md:text-sm text-gray-300" data-i18n="elo_rating">ELO Rating</div>
+            <div class="p-2 lg:p-2 text-center col-span-2">
+              <div class="text-xl lg:text-2xl font-bold text-[#66fcf1]">${user.elo || 1000}</div>
+              <div class="text-xs lg:text-sm text-gray-300" data-i18n="elo_rating">ELO Rating</div>
             </div>
           </div>
           
           <div class="border-t border-[rgba(102,252,241,0.15)] pt-4">
-            <h3 class="text-base md:text-lg font-bold text-[#66fcf1] mb-3" data-i18n="last_game">Last Game</h3>
+            <h3 class="text-base lg:text-lg font-bold text-[#66fcf1] mb-3" data-i18n="last_game">Last Game</h3>
             <div id="game-history-list" class="bg-[rgba(30,41,40,0.7)] border border-[rgba(102,252,241,0.15)] rounded p-3">
               <div class="text-center text-gray-400 text-sm" data-i18n="loading_games">Loading games...</div>
             </div>
@@ -687,38 +687,43 @@ export function renderMyProfile(): HTMLElement {
     ) as HTMLImageElement | null;
 
     if (avatarImg && fileInput) {
-      avatarImg.addEventListener("click", () => fileInput.click());
+      if (user.isOAuthUser) {
+        avatarImg.style.cursor = "default";
+        fileInput.disabled = true;
+      } else {
+        avatarImg.addEventListener("click", () => fileInput.click());
 
-      fileInput.addEventListener("change", async () => {
-        const file = fileInput.files?.[0];
-        if (!file) return;
+        fileInput.addEventListener("change", async () => {
+          const file = fileInput.files?.[0];
+          if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-          alertWarning(t("image_too_large"));
-          fileInput.value = "";
-          return;
-        }
-
-        if (avatarImg) {
-          avatarImg.style.opacity = "0.5";
-          avatarImg.style.cursor = "wait";
-        }
-
-        try {
-          const url = await uploadMyAvatar(file);
-          if (avatarImg) avatarImg.src = url;
-          user = { ...user, avatarUrl: url };
-          updateCurrentUserAvatar(url);
-        } catch (e: any) {
-          alertError(e?.message || t("upload_failed"));
-        } finally {
-          if (avatarImg) {
-            avatarImg.style.opacity = "1";
-            avatarImg.style.cursor = "pointer";
+          if (file.size > 2 * 1024 * 1024) {
+            alertWarning(t("image_too_large"));
+            fileInput.value = "";
+            return;
           }
-          fileInput.value = "";
-        }
-      });
+
+          if (avatarImg) {
+            avatarImg.style.opacity = "0.5";
+            avatarImg.style.cursor = "wait";
+          }
+
+          try {
+            const url = await uploadMyAvatar(file);
+            if (avatarImg) avatarImg.src = url;
+            user = { ...user, avatarUrl: url };
+            updateCurrentUserAvatar(url);
+          } catch (e: any) {
+            alertError(e?.message || t("upload_failed"));
+          } finally {
+            if (avatarImg) {
+              avatarImg.style.opacity = "1";
+              avatarImg.style.cursor = "pointer";
+            }
+            fileInput.value = "";
+          }
+        });
+      }
     }
 
     if (editBtn) {

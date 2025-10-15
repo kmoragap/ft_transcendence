@@ -3,6 +3,7 @@
 import { attachValidation } from "./../utils/form-validation";
 import { alertError, alertSuccess } from "./../utils/modal-alerts";
 import { store } from "../store";
+import { t } from "../utils/i18n";
 import { enhanceButton, setButtonLoading, removeButtonLoading } from "../utils/button-animations";
 
 export function renderRegistration(): HTMLElement {
@@ -79,7 +80,7 @@ export function renderRegistration(): HTMLElement {
         <p id="firstname-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>
       </div>
 
-      <div class="w-full mb-5">
+      <div class="w-full mb-5" style="position: relative;">
         <input
           id="password"
           type="password"
@@ -95,7 +96,16 @@ export function renderRegistration(): HTMLElement {
           bg-[#0a2b2b] text-[#66fcf1] placeholder-[#66fcf1]/60
           border border-[#66fcf1]/30 focus:border-[#66fcf1]/60
           outline-none font-[jura]'
+          style="padding-right: 2.5rem;"
         />
+        <button
+          type="button"
+          id="toggle-register-password"
+          aria-label="${t("show_password") || 'Show password'}"
+          title="${t("show_password") || 'Show password'}"
+          class="password-toggle"
+          style="position:absolute; right:10px; top:11px; cursor:pointer; user-select:none; background:transparent; border:none; padding:0; line-height:0;"
+        ></button>
         <p id="password-error" class="text-red-600 mt-1 my-auto text-sm hidden" role="alert"></p>
       </div>
 
@@ -109,12 +119,45 @@ export function renderRegistration(): HTMLElement {
   `;
 
   const form = section.querySelector<HTMLFormElement>("#register-form")!;
+  const passwordInput = form.querySelector<HTMLInputElement>("#password")!;
+  const toggleRegisterPassword = form.querySelector<HTMLButtonElement>("#toggle-register-password")!;
   const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
   
   attachValidation(form);
   
   // Enhance submit button
   enhanceButton(submitBtn, { ripple: true, bounce: true });
+
+  // Password reveal toggle for register
+  const eyeOpenSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  const eyeClosedSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-7.94"></path><path d="M10.58 10.58a2 2 0 1 0 2.83 2.83"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+  let regPwdVisible = false;
+  const setRegPwdVisible = (v: boolean) => {
+    passwordInput.type = v ? 'text' : 'password';
+    toggleRegisterPassword.innerHTML = v ? eyeClosedSvg : eyeOpenSvg;
+    toggleRegisterPassword.setAttribute('aria-label', v ? t('hide_password') || 'Hide password' : t('show_password') || 'Show password');
+    toggleRegisterPassword.setAttribute('title', v ? t('hide_password') || 'Hide password' : t('show_password') || 'Show password');
+    toggleRegisterPassword.setAttribute('aria-pressed', String(v));
+  };
+  setRegPwdVisible(regPwdVisible);
+  const handleTogglePassword = () => {
+    regPwdVisible = !regPwdVisible;
+    setRegPwdVisible(regPwdVisible);
+    passwordInput.focus();
+  };
+  toggleRegisterPassword.addEventListener('click', handleTogglePassword);
+  toggleRegisterPassword.addEventListener('keydown', (e) => {
+    if (
+      e.key === 'Enter' ||
+      e.key === ' ' ||
+      e.key === 'Spacebar' ||
+      e.keyCode === 13 ||
+      e.keyCode === 32
+    ) {
+      e.preventDefault();
+      handleTogglePassword();
+    }
+  });
 
   form.addEventListener("submit", async e => {
     e.preventDefault();

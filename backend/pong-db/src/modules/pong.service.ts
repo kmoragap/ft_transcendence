@@ -78,7 +78,7 @@ export async function fetchUser(userId: string) {
   return userData;
 }
 //notify to user service the result of a match, it doesnt wait for a response (fire-and-forget)
-export function notifyGameResult(userId: string, payload: notifyUser) {
+export async function notifyGameResult(userId: string, payload: notifyUser) {
   const url = `${USERS_SERVICE_URL}/users/${userId}/stats`;
 
   const res = fetch(url, {
@@ -102,7 +102,7 @@ export function notifyGameResult(userId: string, payload: notifyUser) {
 }
 
 //notify gameHistory
-export function notifyGameHistory(userId: string, payload: notifyUser) {
+export async function notifyGameHistory(userId: string, payload: notifyUser) {
   const url = `${USERS_SERVICE_URL}/users/${userId}/match_history`;
 
   const res = fetch(url, {

@@ -140,6 +140,7 @@ export function renderLogin(): HTMLElement {
     toggleLoginPassword.setAttribute('aria-label', v ? hidePwd : showPwd);
     toggleLoginPassword.setAttribute('title', v ? hidePwd : showPwd);
     toggleLoginPassword.setAttribute('aria-pressed', String(v));
+    toggleLoginPassword.setAttribute('aria-pressed', String(v));
   };
   setLoginPwdVisible(loginPwdVisible);
   toggleLoginPassword.addEventListener('click', () => {

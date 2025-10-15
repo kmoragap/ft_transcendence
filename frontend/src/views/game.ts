@@ -276,7 +276,6 @@ export function renderGame(): HTMLElement {
         const msg = (error && error.message) ? error.message : String(error);
         if (msg.toLowerCase().includes("cancel")) {
           alertWarning(t("login_cancelled") || "Login was cancelled");
-          // onCancel handler already notified the iframe about cancellation
         } else {
           alertError((t("unexpected_error") || "Unexpected error") + ": " + msg);
         }
@@ -285,7 +284,6 @@ export function renderGame(): HTMLElement {
       const { winner } = event.data;
       loggedInUsers.clear();
       destroyGameView();
-      // Navigate to dashboard and update URL
       location.hash = '#/dashboard';
       navigate('/dashboard');
     } else if (event.data.type === "PLAYER_LOGOUT") {

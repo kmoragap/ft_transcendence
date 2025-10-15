@@ -108,7 +108,7 @@ export default class Paddle {
 	}
 
 	public hitY(ball: Ball): boolean {
-		const ballCenterY = ball.getY() + ball.getSize() / 2;
+		const ballCenterY = ball.getY() + ball.getSize();
 		return ballCenterY > this._y && ballCenterY < this.getY2() + ball.getSize();
 	}
 

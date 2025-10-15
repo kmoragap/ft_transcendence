@@ -3,6 +3,7 @@
 import { attachValidation } from "./../utils/form-validation";
 import { alertError, alertSuccess } from "./../utils/modal-alerts";
 import { store } from "../store";
+import { t } from "../utils/i18n";
 import { enhanceButton, setButtonLoading, removeButtonLoading } from "../utils/button-animations";
 
 export function renderRegistration(): HTMLElement {
@@ -100,8 +101,8 @@ export function renderRegistration(): HTMLElement {
         <button
           type="button"
           id="toggle-register-password"
-          aria-label="Show password"
-          title="Show password"
+          aria-label="${t("show_password") || 'Show password'}"
+          title="${t("show_password") || 'Show password'}"
           class="password-toggle"
           style="position:absolute; right:10px; top:11px; cursor:pointer; user-select:none; background:transparent; border:none; padding:0; line-height:0;"
         ></button>
@@ -134,8 +135,8 @@ export function renderRegistration(): HTMLElement {
   const setRegPwdVisible = (v: boolean) => {
     passwordInput.type = v ? 'text' : 'password';
     toggleRegisterPassword.innerHTML = v ? eyeClosedSvg : eyeOpenSvg;
-    toggleRegisterPassword.setAttribute('aria-label', v ? 'Hide password' : 'Show password');
-    toggleRegisterPassword.setAttribute('title', v ? 'Hide password' : 'Show password');
+    toggleRegisterPassword.setAttribute('aria-label', v ? t('hide_password') || 'Hide password' : t('show_password') || 'Show password');
+    toggleRegisterPassword.setAttribute('title', v ? t('hide_password') || 'Hide password' : t('show_password') || 'Show password');
     toggleRegisterPassword.setAttribute('aria-pressed', String(v));
   };
   setRegPwdVisible(regPwdVisible);

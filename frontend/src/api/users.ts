@@ -129,7 +129,7 @@ export async function getUserProfile(username: string): Promise<UserSearchResult
   
   if (!token) {
     try {
-      const byUsernameRes = await fetch(`/api/users/by-username/${username}`, {
+      const byUsernameRes = await fetch(`/api/users/user-profile/${username}`, {
         method: "GET",
         headers: {
           'Content-Type': 'application/json'

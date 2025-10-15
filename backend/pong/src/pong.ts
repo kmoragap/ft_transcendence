@@ -78,18 +78,18 @@ function initBoard(): void {
   data.showingText = false;
   data.keys = {};
   balls.push(new Ball());
-  pad = new Array(new Paddle(0, data.p[0]));
+  pad = new Array(new Paddle(0, data.p[0], 0, -1));
   if (data.mode == "twoPlayers" || data.mode == "tournament")
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1], 0, -1));
   if (data.mode == "doublePaddle") {
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1]));
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0]));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1]));
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1], 0, -1));
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0], balls[0].getSize() * 2, 0));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1], balls[0].getSize() * 2, 1));
   }
   if (data.mode == "multi") {
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1]));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2]));
-    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3]));
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1], balls[0].getSize() * 2, -1));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2], balls[0].getSize() * 2, -1));
+    pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3], 0, -1));
   }
 }
 
@@ -402,8 +402,8 @@ function collisionTest(): void {
   );
 
   pad = new Array(
-    new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p[0]),
-    new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p[1])
+    new Paddle(data.canvas.width / 2 - data.paddleWidth * 2, data.p[0], data.ballSize * 2, -1),
+    new Paddle(data.canvas.width / 2 + data.paddleWidth, data.p[1], data.ballSize * 2, -1)
   );
   pad[0].go();
   pad[1].go();

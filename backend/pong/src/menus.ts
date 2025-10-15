@@ -1,5 +1,5 @@
 /*
-The functions in 
+The functions in menus.ts are used for generating the menu boxes for setting up the game.
 */
 
 import { t } from "./i18n";
@@ -717,11 +717,11 @@ export function gameSetupMenu(mode: string): {
     className: "custom-select px-1 py-1 text-sm md:text-base",
   }) as HTMLSelectElement;
   const e2 = [
-    { value: "glacial", text: `${t("glacial")}` },
+    // { value: "glacial", text: `${t("glacial")}` },
     { value: "slow", text: `${t("slow")}` },
     { value: "standard", text: `${t("standard")}`, selected: true },
     { value: "fast", text: `${t("fast")}` },
-    { value: "insane", text: `${t("insane")}` },
+    // { value: "insane", text: `${t("insane")}` },
   ];
   e2.forEach(option => {
     const opt = Object.assign(document.createElement("option"), {
@@ -743,11 +743,11 @@ export function gameSetupMenu(mode: string): {
     className: "custom-select px-1 py-1 text-sm md:text-base",
   }) as HTMLSelectElement;
   const e5 = [
-    { value: "glacial", text: `${t("glacial")}` },
+    // { value: "glacial", text: `${t("glacial")}` },
     { value: "slow", text: `${t("slow")}` },
     { value: "standard", text: `${t("standard")}`, selected: true },
     { value: "fast", text: `${t("fast")}` },
-    { value: "insane", text: `${t("insane")}` },
+    // { value: "insane", text: `${t("insane")}` },
   ];
   e5.forEach(option => {
     const opt = Object.assign(document.createElement("option"), {
@@ -770,11 +770,11 @@ export function gameSetupMenu(mode: string): {
     style: { width: "20px" },
   }) as HTMLSelectElement;
   const e8 = [
-    { value: "tiny", text: `${t("tiny")}` },
+    // { value: "tiny", text: `${t("tiny")}` },
     { value: "small", text: `${t("small")}` },
     { value: "normal", text: `${t("normal")}`, selected: true },
     { value: "big", text: `${t("big")}` },
-    { value: "huge", text: `${t("huge")}` },
+    // { value: "huge", text: `${t("huge")}` },
   ];
   e8.forEach(option => {
     const opt = Object.assign(document.createElement("option"), {

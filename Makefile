@@ -1,7 +1,7 @@
 SSL_SCRIPT := tools/ssl_generator.sh
 PROJECT := backend/nginx
-COMPOSE_ALL := docker-compose -f docker-compose.yml -f devops/elk/compose.elk.yml
-COMPOSE_APP := docker-compose -f compose-app.yml
+COMPOSE_ALL := docker compose -f docker-compose.yml -f devops/elk/compose.elk.yml
+COMPOSE_APP := docker compose -f compose-app.yml
 SSL := backend/nginx
 
 .PHONY: all up down rebuild clean show-url rebuild_game

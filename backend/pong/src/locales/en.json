@@ -44,8 +44,8 @@
   "tournament_complete": "Tournament Complete!",
   "winner": "Winner",
   "congratulations_victory": "Congratulations on your victory!",
-  "exit_tournament": "Exit Tournament"
-  ,"press_any_key": "Press any key..."
-  ,"keys_disabled_mobile": "Key bindings are not configurable on mobile"
-  ,"match_controls": "Match Controls"
+  "exit_tournament": "Exit Tournament",
+  "press_any_key": "Press any key...",
+  "keys_disabled_mobile": "Key bindings are not configurable on mobile",
+  "match_controls": "Match Controls"
 }

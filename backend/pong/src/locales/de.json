@@ -45,4 +45,7 @@
   "winner": "Gewinner",
   "congratulations_victory": "Gratuliere zum Sieg!",
   "exit_tournament": "Turnier verlassen"
+  ,"press_any_key": "Beliebige Taste drücken..."
+  ,"keys_disabled_mobile": "Tastenbelegung ist auf Mobilgeräten nicht verfügbar"
+  ,"match_controls": "Spielsteuerung"
 }

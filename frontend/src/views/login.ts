@@ -91,31 +91,25 @@ export function renderLogin(): HTMLElement {
         ${t("submit")}
       </button>
 
-      <button
-        type="button"
-        class="btn !w-full"
+      <a
+        href="#/login_42"
+        class="btn py-2 text-lg font-bold !w-full block text-center"
+        role="button"
         aria-label="${t("login_42")}"
+        data-i18n="login_42"
       >
-        <a
-          href="#/login_42"
-          data-i18n="login_42"
-        >
-          ${t("login_42")}
-        </a>
-      </button>
+        ${t("login_42")}
+      </a>
 
-      <button
-        type="button"
-        class="btn !w-full"
+      <a
+        href="#/register"
+        class="btn py-2 text-lg font-bold !w-full block text-center"
+        role="button"
         aria-label="${t("register")}"
+        data-i18n="register"
       >
-        <a
-          href="#/register"
-          data-i18n="register"
-        >
-          ${t("register")}
-        </a>
-      </button>
+        ${t("register")}
+      </a>
     </form>
   `;
 

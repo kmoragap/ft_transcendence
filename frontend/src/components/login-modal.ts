@@ -107,6 +107,138 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
 
   modal.appendChild(modalContent);
 
+  function show2FAForm(email: string) {
+    modalContent.innerHTML = `
+    <div class="flex flex-col items-center">
+      <h2 class="text-2xl font-bold text-[#66fcf1] mb-2" data-i18n='two_factor_auth'>Two-Factor Authentication</h2>
+      <p class="text-sm text-[#66fcf1] mb-6" data-i18n="2fa_code_sent">A verification code has been sent to your email</p>
+      <form id="twofa-form" novalidate class="w-full flex flex-col items-center">
+        <div class="w-full mb-5">
+          <input
+            id="twofa-code"
+            type="text"
+            name="code"
+            autocomplete="one-time-code"
+            placeholder="Enter 6-digit code"
+            data-i18n-placeholder="enter_2fa_code"
+            required
+            maxlength="6"
+            pattern="[0-9]{6}"
+            aria-required="true"
+            aria-invalid="false"
+            aria-describedby="code-error"
+            class='custom-input px-4 py-2 text-center text-2xl tracking-widest w-full'
+          />
+          <p id="code-error" class="text-red-600 mt-1 text-sm hidden" role="alert"></p>
+        </div>
+
+        <div class="flex flex-col gap-2 w-full">
+          <button type="submit" class="btn py-2 text-lg font-bold !w-full" data-i18n="verify">Verify</button>
+          <button type="button" id="resend-code" class="btn py-2 text-lg font-bold !w-full" data-i18n="resend_code">Resend Code</button>
+          <button type="button" id="back-to-login" class="btn py-2 text-lg font-bold !w-full" data-i18n="back_to_login">Back to Login</button>
+        </div>
+      </form>
+    </div>
+    `;
+
+    const twoFAForm = modalContent.querySelector<HTMLFormElement>("#twofa-form")!;
+    const codeInput = modalContent.querySelector<HTMLInputElement>("#twofa-code")!;
+    const resendButton = modalContent.querySelector<HTMLButtonElement>("#resend-code")!;
+    const backButton = modalContent.querySelector<HTMLButtonElement>("#back-to-login")!;
+    const submitBtn = twoFAForm.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+    enhanceButton(resendButton, { ripple: true, bounce: true });
+    enhanceButton(backButton, { ripple: true, bounce: true });
+    enhanceButton(submitBtn, { ripple: true, bounce: true });
+
+    codeInput.focus();
+
+    resendButton.addEventListener("click", async () => {
+      resendButton.disabled = true;
+      const originalText = resendButton.textContent || "";
+      resendButton.textContent = t("sending");
+      try {
+        const res = await fetch("/api/auth/resend-2fa", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!res.ok) {
+          let msg = res.statusText;
+          try {
+            const err = await res.json();
+            msg = err.message || err.error || msg;
+          } catch {}
+          alertError(`Failed to resend code: ${msg}`);
+        } else {
+          alertSuccess(t("A new verification code has been sent to your email"));
+        }
+      } catch (err) {
+        console.error(err);
+        alertError(t("Failed to resend code. Please try again."));
+      } finally {
+        resendButton.disabled = false;
+        resendButton.textContent = originalText || t("resend_code");
+      }
+    });
+
+    backButton.addEventListener("click", () => {
+      closeModal();
+    });
+
+    twoFAForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = codeInput.value.trim();
+      if (!code || code.length !== 6 || !/^[0-9]{6}$/.test(code)) {
+        alertError("Please enter a valid 6-digit code");
+        return;
+      }
+      setButtonLoading(submitBtn, t("verifying") || "Verifying...");
+      try {
+        const res = await fetch("/api/auth/verify-2fa", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code }),
+        });
+        if (!res.ok) {
+          let msg = res.statusText;
+          try {
+            const err = await res.json();
+            msg = err.message || err.error || msg;
+          } catch {}
+          alertError(`Verification failed: ${msg}`);
+          codeInput.value = "";
+          codeInput.focus();
+          return;
+        }
+
+        const { token, refresh, id, username, firstname, avatarUrl, is2faEnabled, isOAuthUser } = await res.json();
+        const user = { id, username, firstname, email, avatarUrl, is2faEnabled, isOAuthUser };
+
+        if (!options.gameOnly) {
+          localStorage.setItem("accessToken", token);
+          if (refresh) localStorage.setItem("refreshToken", refresh);
+          store.dispatch({ type: "LOGIN", payload: user });
+        }
+
+        if (options.onSuccess) {
+          options.onSuccess(user);
+        }
+
+        if (!options.gameOnly) {
+          alertSuccess("Login successful!");
+        }
+
+        closeModal();
+      } catch (err) {
+        console.error(err);
+        alertError("An unexpected error occurred.");
+      } finally {
+        removeButtonLoading(submitBtn);
+      }
+    });
+  }
+
   const form = modal.querySelector<HTMLFormElement>("#modal-login-form")!;
   const identifierInput =
     form.querySelector<HTMLInputElement>("#modal-identifier")!;
@@ -163,7 +295,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     }
 
     // Set loading state
-    setButtonLoading(submitBtn, "Logging in...");
+    setButtonLoading(submitBtn, t("logging_in") || "Logging in...");
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -182,14 +314,20 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
         return;
       }
 
-      const { token, refresh, id, username, firstname, email, avatarUrl } =
-        await res.json();
+      const data = await res.json();
 
-      const user = { id, username, firstname, email, avatarUrl };
+      if (data.is2faEnabled && data.email) {
+        show2FAForm(data.email);
+        return;
+      }
+
+      const { token, refresh, id, username, firstname, email, avatarUrl, is2faEnabled, isOAuthUser } = data;
+
+      const user = { id, username, firstname, email, avatarUrl, is2faEnabled, isOAuthUser };
 
       if (!options.gameOnly) {
         localStorage.setItem("accessToken", token);
-        localStorage.setItem("refreshToken", refresh);
+        if (refresh != null) localStorage.setItem("refreshToken", refresh);
         store.dispatch({ type: "LOGIN", payload: user });
       }
 

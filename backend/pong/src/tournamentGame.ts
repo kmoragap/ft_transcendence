@@ -7,6 +7,7 @@ import { data } from "./gameData";
 import { tournamentService } from "./services/tournamentService";
 import { t } from "./i18n";
 import { enterFullscreen, exitFullscreen } from "./controls";
+import { allPlayerData } from "./wizard";
 
 export interface TournamentBracket {
   id: string;
@@ -177,10 +178,30 @@ export class TournamentManager {
     data.p[0].score = 0;
     data.p[0].isAi = match.player1Id.startsWith("AI-");
 
+    // Apply player 1 colors from wizard data when available
+    try {
+      const p1Colors = this.lookupPlayerColors(match.player1Id, match.player1Name);
+      if (p1Colors) {
+        data.p[0].innerCol = p1Colors.innerCol;
+        data.p[0].outerCol = p1Colors.outerCol;
+        data.p[0].cornerCol = p1Colors.cornerCol;
+      }
+    } catch {}
+
     data.p[1].id = match.player2Id;
     data.p[1].name = match.player2Name;
     data.p[1].score = 0;
     data.p[1].isAi = match.player2Id.startsWith("AI-");
+
+    // Apply player 2 colors from wizard data when available
+    try {
+      const p2Colors = this.lookupPlayerColors(match.player2Id, match.player2Name);
+      if (p2Colors) {
+        data.p[1].innerCol = p2Colors.innerCol;
+        data.p[1].outerCol = p2Colors.outerCol;
+        data.p[1].cornerCol = p2Colors.cornerCol;
+      }
+    } catch {}
 
     data.nameTB1.value = match.player1Name;
     data.nameTB2.value = match.player2Name;
@@ -195,6 +216,41 @@ export class TournamentManager {
     setTimeout(() => countdown(3, 500), 500);
 
     return true;
+  }
+
+  private lookupPlayerColors(playerId: string, playerName: string): { innerCol: string; outerCol: string; cornerCol: string } | null {
+    if (!allPlayerData || !Array.isArray(allPlayerData) || allPlayerData.length === 0) return null;
+
+    const normalize = (s: string) => s.trim().toLowerCase();
+    const fromId = (id: string) => {
+      if (id.startsWith("AI-")) return normalize(id.substring(3).replace(/-/g, ' '));
+      if (id.startsWith("Local-")) return normalize(id.substring(6).replace(/-/g, ' '));
+      return null;
+    };
+
+    const idName = fromId(playerId);
+    const targetName = normalize(playerName);
+
+    let entry = null as any;
+
+    if (idName) {
+      entry = allPlayerData.find(p => normalize(p.name || '') === idName) || null;
+    }
+    if (!entry) {
+      entry = allPlayerData.find(p => (p.id && p.id === playerId)) || null;
+    }
+    if (!entry) {
+      entry = allPlayerData.find(p => normalize(p.name || '') === targetName) || null;
+    }
+
+    if (entry && (entry.innerCol || entry.outerCol || entry.cornerCol)) {
+      return {
+        innerCol: entry.innerCol || '#ffffff',
+        outerCol: entry.outerCol || '#808080',
+        cornerCol: entry.cornerCol || '#ff0000',
+      };
+    }
+    return null;
   }
 
   async completeMatch(winnerId: string, gameId: string): Promise<boolean> {

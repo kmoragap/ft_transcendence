@@ -107,6 +107,7 @@
   "login_failed": "Anmeldung fehlgeschlagen",
   "login_successful": "Anmeldung erfolgreich!",
   "sending": "Wird gesendet...",
+  "verifying": "Wird verifiziert...",
   "failed_to_resend_code": "Fehler beim erneuten Senden des Codes. Bitte versuchen Sie es erneut.",
   "a_new_verification_code_has_been_sent_to_your_email": "Ein neuer Bestätigungscode wurde an Ihre E-Mail gesendet",
   "please_enter_a_valid_6_digit_code": "Bitte geben Sie einen gültigen 6-stelligen Code ein",

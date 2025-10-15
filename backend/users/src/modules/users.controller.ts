@@ -102,6 +102,39 @@ export async function deleteUserHandler(
   }
 }
 
+export async function getUserProfile(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { username } = request.params as { username: string };
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (!user) {
+      return reply.code(404).send({ error: "User not found" });
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      gamesPlayed: user.gamesPlayed,
+      wins: user.wins,
+      losses: user.losses,
+      elo: user.elo,
+    };
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+    return reply.code(500).send({ error: "Failed to fetch user" });
+  }
+}
+
+
 export async function getUsersHandler(
   request: FastifyRequest,
   reply: FastifyReply,

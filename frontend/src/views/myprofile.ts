@@ -156,7 +156,7 @@ export function renderMyProfile(): HTMLElement {
                     max-w-7xl mx-auto px-4 lg:px-15 py-4 lg:py-7.5">
       <div class="flex flex-col lg:flex-row items-stretch gap-4 lg:gap-x-8">
         <div class="flex flex-col bg-[rgba(102,252,241,0.1)] rounded-md flex-1
-                    shadow-lg px-4 lg:px-10 py-4 min-h-50 lg:py-5">
+                    shadow-lg px-2 lg:px-4 py-4 min-h-50 lg:py-5">
           <div class="flex items-center justify-between mb-2">
             <h2 class="text-lg lg:text-xl font-bold text-[#66fcf1]" data-i18n="social">Social</h2>
           </div>

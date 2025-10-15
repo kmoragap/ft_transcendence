@@ -83,12 +83,12 @@ function initBoard(): void {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1], 0, -1));
   if (data.mode == "doublePaddle") {
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[1], 0, -1));
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0], balls[0].getSize() * 2, 0));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1], balls[0].getSize() * 2, 1));
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[0], balls[0].getSize() * 3, 0));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[1], balls[0].getSize() * 3, 1));
   }
   if (data.mode == "multi") {
-    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1], balls[0].getSize() * 2, -1));
-    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2], balls[0].getSize() * 2, -1));
+    pad.push(new Paddle(data.canvas.width * 0.25 - data.paddleWidth, data.p[1], balls[0].getSize() * 3, -1));
+    pad.push(new Paddle(data.canvas.width * 0.75 - data.paddleWidth, data.p[2], balls[0].getSize() * 3, -1));
     pad.push(new Paddle(data.canvas.width - data.paddleWidth, data.p[3], 0, -1));
   }
 }

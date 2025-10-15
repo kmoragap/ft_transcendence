@@ -143,19 +143,19 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/data/auth-db
+      device: ./data/auth-db
   users-db-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/data/users-db
+      device: ./data/users-db
   pong-db-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/data/pong-db
+      device: ./data/pong-db
   uploads-db:
     driver: local
     driver_opts:

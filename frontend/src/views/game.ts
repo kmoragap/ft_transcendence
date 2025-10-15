@@ -3,7 +3,7 @@
 import { t, getCurrentLang, updateText } from "./../utils/i18n";
 import { store } from "./../store";
 import { showLoginModal } from "./../components/login-modal";
-import { alertSuccess, alertError } from "./../utils/modal-alerts";
+import { alertSuccess, alertError, alertWarning } from "./../utils/modal-alerts";
 import { navigate } from "./../router";
 import { enhanceButton } from "../utils/button-animations";
 
@@ -272,16 +272,13 @@ export function renderGame(): HTMLElement {
             window.location.origin
           );
         }
-      } catch (error) {
-        alertError("Login failed or cancelled: " + error);
-        if (iframeRef?.contentWindow) {
-          iframeRef.contentWindow.postMessage(
-            {
-              type: "LOGIN_CANCELLED",
-              playerId: playerId,
-            },
-            window.location.origin
-          );
+      } catch (error: any) {
+        const msg = (error && error.message) ? error.message : String(error);
+        if (msg.toLowerCase().includes("cancel")) {
+          alertWarning(t("login_cancelled") || "Login was cancelled");
+          // onCancel handler already notified the iframe about cancellation
+        } else {
+          alertError((t("unexpected_error") || "Unexpected error") + ": " + msg);
         }
       }
     } else if (event.data.type === "EXIT_GAME") {

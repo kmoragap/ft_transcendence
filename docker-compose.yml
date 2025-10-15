@@ -7,7 +7,7 @@ services:
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./backend/nginx/ssl:/etc/nginx/ssl:ro
-      - ./backend/users/uploads:/app/uploads:ro
+      - uploads-db:/app/uploads:ro
       - pong-static:/app/pong-static:ro
     depends_on:
       - logstash
@@ -91,7 +91,7 @@ services:
     build: ./backend/users
     volumes:
       - users-db-data:/app/prisma
-      - ./backend/users/uploads:/app/uploads
+      - uploads-db:/app/uploads
     #ports:
     #  - "3004:3000"
     depends_on:
@@ -156,3 +156,9 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/data/pong-db
+  uploads-db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/uploads

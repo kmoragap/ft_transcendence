@@ -21,6 +21,7 @@ data:
 	@mkdir -p data/users-db
 	@mkdir -p data/auth-db
 	@mkdir -p data/pong-db
+	@mkdir -p data/uploads
 
 up:
 	@echo "Starting containers..."

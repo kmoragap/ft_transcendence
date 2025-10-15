@@ -145,8 +145,24 @@ export function renderLogin(): HTMLElement {
   toggleLoginPassword.addEventListener('click', () => {
     loginPwdVisible = !loginPwdVisible;
     setLoginPwdVisible(loginPwdVisible);
+    passwordInput.focus();
   });
 
+  // Accessibility: handle Enter/Space for password toggle
+  toggleLoginPassword.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (
+      e.key === "Enter" ||
+      e.key === " " ||
+      e.key === "Spacebar" || // for older browsers
+      e.keyCode === 13 ||
+      e.keyCode === 32
+    ) {
+      e.preventDefault();
+      loginPwdVisible = !loginPwdVisible;
+      setLoginPwdVisible(loginPwdVisible);
+      passwordInput.focus();
+    }
+  });
   form.addEventListener("submit", async e => {
     e.preventDefault();
     

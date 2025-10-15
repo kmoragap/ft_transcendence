@@ -183,7 +183,9 @@ function checkKeyConflict(currentInputId: string, newKeyName: string): boolean {
         }
       }
     }
-  } catch {}
+  } catch (err) {
+    console.error("Error in checkKeyConflict:", err);
+  }
   
   return false;
 }

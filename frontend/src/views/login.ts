@@ -135,8 +135,10 @@ export function renderLogin(): HTMLElement {
   const setLoginPwdVisible = (v: boolean) => {
     passwordInput.type = v ? 'text' : 'password';
     toggleLoginPassword.innerHTML = v ? eyeClosedSvg : eyeOpenSvg;
-    toggleLoginPassword.setAttribute('aria-label', v ? 'Hide password' : 'Show password');
-    toggleLoginPassword.setAttribute('title', v ? 'Hide password' : 'Show password');
+    const hidePwd = t('hide_password') || 'Hide password';
+    const showPwd = t('show_password') || 'Show password';
+    toggleLoginPassword.setAttribute('aria-label', v ? hidePwd : showPwd);
+    toggleLoginPassword.setAttribute('title', v ? hidePwd : showPwd);
   };
   setLoginPwdVisible(loginPwdVisible);
   toggleLoginPassword.addEventListener('click', () => {

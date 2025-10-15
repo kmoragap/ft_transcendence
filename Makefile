@@ -17,6 +17,11 @@ ssl:
 	@echo "Generating SSL certificates..."
 	@bash $(SSL_SCRIPT)
 
+data:
+	@mkdir -p data/users-db
+	@mkdir -p data/auth-db
+	@mkdir -p data/pong-db
+
 up:
 	@echo "Starting containers..."
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
@@ -46,11 +51,12 @@ reapp: down ssl show-url
 clean: down
 	@echo "Removing SSL certificates..."
 	@rm -rf $(SSL)/ssl
+	@rm -rf data
 	@echo "Removing Docker images..."
 	@docker image rm $(shell docker images -q)
 	@echo "🧹 Removing Docker volumes..."
 	@$(COMPOSE_ALL) down -v > /dev/null 2>&1
-#	@docker volume ls -q | xargs -r docker volume rm
+	@docker volume ls -q | xargs -r docker volume rm
 	@echo "Cleanup complete."
 
 rebuild_game: down

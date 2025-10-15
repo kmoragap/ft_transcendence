@@ -23,7 +23,7 @@ data:
 	@mkdir -p data/pong-db
 	@mkdir -p data/uploads
 
-up:
+up: data
 	@echo "Starting containers..."
 	@$(COMPOSE_ALL) up -d > /dev/null 2>&1
 	@echo "Containers are up and running."

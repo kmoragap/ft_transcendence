@@ -59,7 +59,7 @@ services:
     #depends_on:
     # - logstash
     volumes:
-      - pong-db-data:/app/prisma
+      - pong-db-data:/app/prisma/data
     networks:
       - app-network
     logging:

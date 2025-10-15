@@ -173,18 +173,18 @@ export function renderMyProfile(): HTMLElement {
           <div class="flex flex-col items-center space-y-3 lg:space-y-4 mb-4 lg:mb-6">
             <div class="relative group">
               <img id="profile-avatar-img" src="${user.avatarUrl}" alt="${user.username}'s avatar"
-                  class="w-20 h-20 lg:w-24 lg:h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover cursor-pointer" 
-                  title="Click to change photo" />
+                  class="w-20 h-20 lg:w-24 lg:h-24 rounded-full border-4 border-[#66fcf1] shadow-lg transition-transform duration-300 group-hover:scale-110 object-cover ${!user.isOAuthUser ? 'cursor-pointer' : 'cursor-default'}" 
+                  title="${!user.isOAuthUser ? 'Click to change photo' : 'Avatar managed by 42 OAuth'}" />
               <div
                 class="absolute inset-0 rounded-full bg-black/50 opacity-0
                        group-hover:opacity-100 transition-opacity duration-300
                        flex items-center justify-center pointer-events-none"
               >
-                <span class="text-white text-xs font-bold" data-i18n="change_photo">Change Photo</span>
+                <span class="text-white text-xs font-bold" data-i18n="change_photo">${!user.isOAuthUser ? 'Change Photo' : '42 OAuth Avatar'}</span>
               </div>
             </div>
 
-            <input id="avatar-file-input" type="file" accept="image/*" class="hidden" />
+            <input id="avatar-file-input" type="file" accept="image/*" class="hidden" ${user.isOAuthUser ? 'disabled' : ''} />
 
             <div class="text-center">
               <h2 class="text-xl lg:text-2xl font-bold text-[#66fcf1] mb-1">${user.username}</h2>
@@ -687,38 +687,43 @@ export function renderMyProfile(): HTMLElement {
     ) as HTMLImageElement | null;
 
     if (avatarImg && fileInput) {
-      avatarImg.addEventListener("click", () => fileInput.click());
+      if (user.isOAuthUser) {
+        avatarImg.style.cursor = "default";
+        fileInput.disabled = true;
+      } else {
+        avatarImg.addEventListener("click", () => fileInput.click());
 
-      fileInput.addEventListener("change", async () => {
-        const file = fileInput.files?.[0];
-        if (!file) return;
+        fileInput.addEventListener("change", async () => {
+          const file = fileInput.files?.[0];
+          if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-          alertWarning(t("image_too_large"));
-          fileInput.value = "";
-          return;
-        }
-
-        if (avatarImg) {
-          avatarImg.style.opacity = "0.5";
-          avatarImg.style.cursor = "wait";
-        }
-
-        try {
-          const url = await uploadMyAvatar(file);
-          if (avatarImg) avatarImg.src = url;
-          user = { ...user, avatarUrl: url };
-          updateCurrentUserAvatar(url);
-        } catch (e: any) {
-          alertError(e?.message || t("upload_failed"));
-        } finally {
-          if (avatarImg) {
-            avatarImg.style.opacity = "1";
-            avatarImg.style.cursor = "pointer";
+          if (file.size > 2 * 1024 * 1024) {
+            alertWarning(t("image_too_large"));
+            fileInput.value = "";
+            return;
           }
-          fileInput.value = "";
-        }
-      });
+
+          if (avatarImg) {
+            avatarImg.style.opacity = "0.5";
+            avatarImg.style.cursor = "wait";
+          }
+
+          try {
+            const url = await uploadMyAvatar(file);
+            if (avatarImg) avatarImg.src = url;
+            user = { ...user, avatarUrl: url };
+            updateCurrentUserAvatar(url);
+          } catch (e: any) {
+            alertError(e?.message || t("upload_failed"));
+          } finally {
+            if (avatarImg) {
+              avatarImg.style.opacity = "1";
+              avatarImg.style.cursor = "pointer";
+            }
+            fileInput.value = "";
+          }
+        });
+      }
     }
 
     if (editBtn) {

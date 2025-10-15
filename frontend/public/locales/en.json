@@ -111,6 +111,7 @@
 	"unexpected_error": "An unexpected error occurred",
 	"login_cancelled": "Login cancelled",
 	"sending": "Sending...",
+	"verifying": "Verifying...",
 	"failed_to_resend_code": "Failed to resend code. Please try again.",
 	"a_new_verification_code_has_been_sent_to_your_email": "A new verification code has been sent to your email",
 	"please_enter_a_valid_6_digit_code": "Please enter a valid 6-digit code",

@@ -107,6 +107,7 @@
   "login_failed": "Помилка входу",
   "login_successful": "Вхід виконано успішно!",
   "sending": "Відправлення...",
+  "verifying": "Перевірка...",
   "failed_to_resend_code": "Не вдалося надіслати код повторно. Спробуйте ще раз.",
   "a_new_verification_code_has_been_sent_to_your_email": "Новий код підтвердження надіслано на вашу електронну пошту",
   "please_enter_a_valid_6_digit_code": "Будь ласка, введіть 6-значний код",

@@ -369,9 +369,9 @@ export async function loadConfig(mode: string): Promise<void> {
           isAi,
           up,
           down,
-          loadIn(`p${i}InnerCol`),
-          loadIn(`p${i}OuterCol`),
-          loadIn(`p${i}CornerCol`),
+          loadIn(`p${i}InnerCol`) || wizardData?.innerCol,
+          loadIn(`p${i}OuterCol`) || wizardData?.outerCol,
+          loadIn(`p${i}CornerCol`) || wizardData?.cornerCol,
           i,
           mode,
         ),
@@ -420,11 +420,11 @@ export async function loadConfig(mode: string): Promise<void> {
 		trailLength: 20,
 
 		bg: ctx.createLinearGradient(0, 0, canvas.width, 0),
-		uiCol: loadIn("uiCol"),
-		ballCol: loadIn("ballCol"),
-		ballR: String(parseInt(loadIn("ballCol").slice(1, 3), 16)),
-		ballG: String(parseInt(loadIn("ballCol").slice(3, 5), 16)),
-		ballB: String(parseInt(loadIn("ballCol").slice(5, 7), 16)),
+		uiCol: loadIn("uiCol") || "#ffffff",
+		ballCol: loadIn("ballCol") || "#0000ff",
+		ballR: String(parseInt((loadIn("ballCol") || "#0000ff").slice(1, 3), 16)),
+		ballG: String(parseInt((loadIn("ballCol") || "#0000ff").slice(3, 5), 16)),
+		ballB: String(parseInt((loadIn("ballCol") || "#0000ff").slice(5, 7), 16)),
 		outerBg: loadIn("outerBg") || "#001a1a",
 		innerBg: loadIn("innerBg") || "#1a4d4d",
 
@@ -460,9 +460,9 @@ export async function loadConfig(mode: string): Promise<void> {
     loadData.nameTB2.value = p[1].name;
   }
 	loadData.bg = ctx.createLinearGradient(0, 0, loadData.canvas.width, 0);
-	loadData.bg.addColorStop(0, loadIn("outerBg"));
-	loadData.bg.addColorStop(0.5, loadIn("innerBg"));
-	loadData.bg.addColorStop(1, loadIn("outerBg"));
+	loadData.bg.addColorStop(0, loadData.outerBg);
+	loadData.bg.addColorStop(0.5, loadData.innerBg);
+	loadData.bg.addColorStop(1, loadData.outerBg);
 
 	switch (loadIn("paddleSpeed")) {
 		case "glacial":	loadData.paddleSpeed = 80;	break;

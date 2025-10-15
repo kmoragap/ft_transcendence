@@ -698,6 +698,25 @@ export function playerSetupMenu(
   list.appendChild(ul);
   
   restorePlayerData(p, e2, idInput, aiCheckbox);
+
+  e9.addEventListener("input", () => {
+    if (allPlayerData) {
+      const idx = parseInt(p) - 1;
+      if (allPlayerData[idx]) allPlayerData[idx].innerCol = e9.value;
+    }
+  });
+  e11.addEventListener("input", () => {
+    if (allPlayerData) {
+      const idx = parseInt(p) - 1;
+      if (allPlayerData[idx]) allPlayerData[idx].outerCol = e11.value;
+    }
+  });
+  e13.addEventListener("input", () => {
+    if (allPlayerData) {
+      const idx = parseInt(p) - 1;
+      if (allPlayerData[idx]) allPlayerData[idx].cornerCol = e13.value;
+    }
+  });
 }
 
 export function gameSetupMenu(mode: string): {

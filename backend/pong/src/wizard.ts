@@ -161,10 +161,10 @@ export function wizard(mode: string) {
 	} else {
 		if (mode === "multi") {
 			allPlayerData = [
-				{ index: 1, name: username, id: userId, isAi: false, keys: { up: "w", down: "s" } },
-				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } },
-				{ index: 3, name: "Boolena Williams", id: "", isAi: true, keys: { up: "i", down: "k" } },
-				{ index: 4, name: "Boris Backend", id: "", isAi: true, keys: { up: "PageUp", down: "PageDown" } }
+				{ index: 1, name: username, id: userId, isAi: false, keys: { up: "w", down: "s" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" },
+				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" },
+				{ index: 3, name: "Boolena Williams", id: "", isAi: true, keys: { up: "i", down: "k" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" },
+				{ index: 4, name: "Boris Backend", id: "", isAi: true, keys: { up: "PageUp", down: "PageDown" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" }
 			];
 			
 			(window as any).allPlayerData = allPlayerData;
@@ -183,8 +183,8 @@ export function wizard(mode: string) {
 			if (p1IdInput && userId) p1IdInput.value = userId;
 		} else {
 			allPlayerData = [
-				{ index: 1, name: username, id: userId, isAi: false, keys: { up: "w", down: "s" } },
-				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" } }
+				{ index: 1, name: username, id: userId, isAi: false, keys: { up: "w", down: "s" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" },
+				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" }
 			];
 			
 			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -264,7 +264,7 @@ function createPlayerBoxes(numPlayers: number) {
 		"Maria Charapova",
 		"Novak Breaković",
 	];
-	const defaultKeys = [
+		const defaultKeys = [
 		{ up: "w", down: "s" },
 		{ up: "ArrowUp", down: "ArrowDown" },
 		{ up: "w", down: "s" },
@@ -292,7 +292,10 @@ function createPlayerBoxes(numPlayers: number) {
 			name: playerName,
 			id: playerId,
 			isAi: i > 1,
-			keys: playerKeys
+			keys: playerKeys,
+			innerCol: "#ffffff",
+			outerCol: "#808080",
+			cornerCol: "#ff0000"
 		});
 	}
 	
@@ -326,7 +329,7 @@ function renderPlayerPage(pageIndex: number, playersPerPage: number, container?:
 		
 		playerSetupMenu(playerList, playerData.index.toString(), playerData.name, playerData.isAi,
 			playerData.keys.up, playerData.keys.down,
-			"#ffffff", "#808080", "#ff0000");
+			playerData.innerCol || "#ffffff", playerData.outerCol || "#808080", playerData.cornerCol || "#ff0000");
 		playerContainer.appendChild(playerList);
 		container.appendChild(playerContainer);
 	}

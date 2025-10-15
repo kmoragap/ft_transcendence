@@ -34,20 +34,7 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // CORS
   server.register(cors, {
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const allowedOrigins = [
-        "http://localhost:5173",
-        "http://localhost",
-        /^http:\/\/192\.168\.\d+\.\d+$/,
-        /^http:\/\/10\.\d+\.\d+\.\d+$/,
-      ];
-      const isAllowed = allowedOrigins.some(pattern => {
-        if (typeof pattern === "string") return origin === pattern;
-        return pattern.test(origin);
-      });
-      callback(null, isAllowed);
-    },
+    origin: ["https://10.12.200.27"],
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

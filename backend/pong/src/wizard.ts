@@ -347,6 +347,7 @@ function updatePlayerNavigation() {
 }
 
 function showStep(step: number, singleMatch: boolean) {
+	currentStep = step;
 	document.querySelectorAll(".wizard-step").forEach((el) => {
 		el.classList.add("hidden");
 	});
@@ -369,7 +370,6 @@ function showStep(step: number, singleMatch: boolean) {
 			}
 		}
 	}
-	currentStep = step;
 	updateButtonText();
 }
 

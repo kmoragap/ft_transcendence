@@ -42,18 +42,6 @@ export function controlKeys(): void {
 					break;
 				}
 			}
-			if (ev.key == "Escape") {//debug
-				data.keys[ev.key] = false;
-				data.go = false;
-				while (pad.length) {
-					pad[0].stop();
-					pad.shift();
-				}
-				while (balls.length) {
-					balls[0].stop();
-					balls.shift();
-				}
-			}
 		}
 	});
 	data.canvas.addEventListener("touchstart", touchDown);

@@ -13,17 +13,6 @@ upImg.src = "img/up_arrow.svg";
 const downImg = new Image();
 downImg.src = "img/down_arrow.svg";
 
-export function debugOutline(pad: Paddle) {
-	data.ctx.beginPath();
-	data.ctx.strokeStyle = data.uiCol;
-	data.ctx.moveTo(pad.getX(), pad.getY());
-	data.ctx.lineTo(pad.getX(), pad.getY2());
-	data.ctx.lineTo(pad.getX2(), pad.getY2());
-	data.ctx.lineTo(pad.getX2(), pad.getY());
-	data.ctx.lineTo(pad.getX(), pad.getY());
-	data.ctx.stroke();
-}
-
 export function quarterCorner(pad: Paddle) {
 	//left paddle corner
 	if (pad.getX() < data.canvas.width / 2) {

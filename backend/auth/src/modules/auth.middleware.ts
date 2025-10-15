@@ -19,7 +19,7 @@ export function validateBody<T>(schema: ZodType<T>) {
         });
       }
 
-      return reply.code(500).send({
+      return reply.code(400).send({
         error: "Internal validation error",
       });
     }
@@ -44,7 +44,7 @@ export function validateParams<T>(schema: ZodType<T>) {
         });
       }
 
-      return reply.code(500).send({
+      return reply.code(400).send({
         error: "Internal validation error",
       });
     }

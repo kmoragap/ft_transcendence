@@ -122,6 +122,7 @@ export function createLoginModal(options: LoginModalOptions = {}): HTMLElement {
     togglePassword.innerHTML = visible ? eyeClosedSvg : eyeOpenSvg;
     togglePassword.setAttribute("aria-label", visible ? (t('hide_password') || 'Hide password') : (t('show_password') || 'Show password'));
     togglePassword.setAttribute("title", visible ? (t('hide_password') || 'Hide password') : (t('show_password') || 'Show password'));
+    togglePassword.setAttribute("aria-pressed", String(visible));
   };
   let passwordVisible = false;
   setPasswordVisibility(passwordVisible);

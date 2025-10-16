@@ -482,8 +482,6 @@ export async function loadConfig(mode: string): Promise<void> {
 		default:		loadData.ballSize = 80;		break;
 	}
 
-
-  console.log(loadData.ballCol);
   loadData.ballCol = checkColors(loadData.ballCol, "#0000FFFF");
   loadData.innerBg = checkColors(loadData.innerBg, "#1a4d4d");
   loadData.outerBg = checkColors(loadData.outerBg, "#001a1a");

@@ -4,6 +4,7 @@ The functions in menus.ts are used for generating the menu boxes for setting up 
 
 import { t } from "./i18n";
 import { allPlayerData } from "./wizard";
+import { isMobileDevice } from "./utils/mobile";
 
 let currentGameMode: string = "single";
 
@@ -57,7 +58,7 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
     placeholder: t("press_any_key") || "Press any key..."
   }) as HTMLInputElement;
 
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isMobile = isMobileDevice();
   if (isMobile) {
     input.disabled = true;
     input.title = t("keys_disabled_mobile") || "Key bindings are not configurable on mobile";
@@ -100,13 +101,30 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
       keyName = "Cmd";
     }
     
-    if (keyName === "Control" || keyName === "Shift" || keyName === "Alt" || keyName === "Meta" || keyName === "Cmd") {
+    const restrictedKeys = [
+      "Control", "Shift", "Alt", "Meta", "Cmd",
+      "F5", "F11", "F12", "Escape", "Tab",
+      "F1", "F2", "F3", "F4", "F6", "F7", "F8", "F9", "F10",
+      "Backspace", "Delete", "Insert", "Home", "End", "PageUp", "PageDown"
+    ];
+    
+    const problematicKeys = ["Space"];
+    
+    if (restrictedKeys.includes(keyName)) {
       showKeyRestrictedWarning(keyName);
       input.style.backgroundColor = "rgba(255,0,0,0.2)";
       setTimeout(() => {
         input.style.backgroundColor = "";
       }, 500);
       return;
+    }
+    
+    if (problematicKeys.includes(keyName)) {
+      showKeyProblematicWarning(keyName);
+      input.style.backgroundColor = "rgba(255,165,0,0.2)";
+      setTimeout(() => {
+        input.style.backgroundColor = "";
+      }, 500);
     }
     
     if (checkKeyConflict(id, keyName)) {
@@ -260,7 +278,19 @@ function showKeyRestrictedWarning(keyName: string): void {
     z-index: 10000;
     box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
   `;
-  warning.textContent = `"${keyName}" key is restricted (interferes with browser shortcuts)`;
+  
+  let message = `"${keyName}" key is restricted`;
+  if (["F5", "F11", "F12"].includes(keyName)) {
+    message = `"${keyName}" key is restricted (browser function)`;
+  } else if (["Control", "Shift", "Alt", "Meta", "Cmd"].includes(keyName)) {
+    message = `"${keyName}" key is restricted (modifier key)`;
+  } else if (["Escape", "Tab", "Backspace"].includes(keyName)) {
+    message = `"${keyName}" key is restricted (browser navigation)`;
+  } else if (keyName.startsWith("F")) {
+    message = `"${keyName}" key is restricted (function key)`;
+  }
+  
+  warning.textContent = message;
   
   document.body.appendChild(warning);
   
@@ -269,6 +299,39 @@ function showKeyRestrictedWarning(keyName: string): void {
       warning.parentNode.removeChild(warning);
     }
   }, 2000);
+}
+
+function showKeyProblematicWarning(keyName: string): void {
+  const warning = document.createElement("div");
+  warning.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 165, 0, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-family: 'jura', sans-serif;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+  `;
+  
+  let message = `"${keyName}" key may cause issues`;
+  if (keyName === "Space") {
+    message = `"${keyName}" key may scroll the page (use with caution)`;
+  }
+  
+  warning.textContent = message;
+  
+  document.body.appendChild(warning);
+  
+  setTimeout(() => {
+    if (warning.parentNode) {
+      warning.parentNode.removeChild(warning);
+    }
+  }, 3000);
 }
 
 function getPlayerNameFromInputId(inputId: string): string {

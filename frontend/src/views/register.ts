@@ -205,7 +205,7 @@ export function renderRegistration(): HTMLElement {
         };
         store.dispatch({ type: "LOGIN", payload: user });
         window.location.hash = "/";
-        alertSuccess("Registration successful! You are now logged in.");
+        alertSuccess("Registration successful!\nYou are now logged in.");
       } else {
         alertSuccess("Registration successful! Please log in.");
         window.location.hash = "/login";

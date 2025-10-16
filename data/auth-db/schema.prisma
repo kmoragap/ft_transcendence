@@ -1,0 +1,18 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./prisma/auth-db.sqlite"
+}
+
+model Session {
+    id        String   @id @default(cuid())
+    userId    String // ->reference to user in users service
+    token     String   @unique
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+
+    @@map("sessions")
+}

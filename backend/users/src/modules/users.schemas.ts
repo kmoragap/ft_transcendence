@@ -69,7 +69,7 @@ export const userSchemas = {
       id: commonSchemas.cuid.optional(),
       email: commonSchemas.email.optional(),
     })
-    .refine((data) => data.id || data.email, {
+    .refine((data: any) => data.id || data.email, {
       error: "Must provide either user ID or email",
       path: ["id"],
     }),
@@ -84,6 +84,12 @@ export const userSchemas = {
   // tggle 2FA schema
   toggle2fa: z.object({
     is2faEnabled: commonSchemas.boolean,
+  }),
+
+  // password change schema
+  changePassword: z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: commonSchemas.password,
   }),
 
   // search query schema
@@ -123,6 +129,7 @@ export type CreateUserRequest = z.infer<typeof userSchemas.create>;
 export type DeleteUserRequest = z.infer<typeof userSchemas.delete>;
 export type UpdateProfileRequest = z.infer<typeof userSchemas.updateProfile>;
 export type Toggle2faRequest = z.infer<typeof userSchemas.toggle2fa>;
+export type ChangePasswordRequest = z.infer<typeof userSchemas.changePassword>;
 export type SearchUsersRequest = z.infer<typeof userSchemas.searchUsers>;
 export type GetUsersByIdsRequest = z.infer<typeof userSchemas.getUsersByIds>;
 export type EmailParamRequest = z.infer<typeof userSchemas.emailParam>;

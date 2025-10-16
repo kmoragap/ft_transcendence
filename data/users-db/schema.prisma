@@ -1,0 +1,77 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./prisma/users-db.sqlite"
+}
+
+model User {
+    id              String   @id @default(cuid())
+    username        String   @unique
+    email           String   @unique
+    firstname       String
+    password        String
+    avatarUrl       String   @default("/assets/img/avatar.jpg")
+    isOnline        Boolean  @default(false)
+    is2faEnabled    Boolean  @default(false)
+    isOAuthUser     Boolean  @default(false)
+    createdAt       DateTime @default(now())
+    // pong stats
+    gamesPlayed     Int      @default(0)
+    wins            Int      @default(0)
+    losses          Int      @default(0)
+    elo             Int      @default(1200) //initial elo
+
+    // relations
+    sentFriendRequests     Friendship[]      @relation("sent_requests")
+    receivedFriendRequests Friendship[]      @relation("received_requests")
+    gameHistory            UserGameHistory[] @relation("user_games")
+
+    @@map("users")
+}
+
+// many to many relationship
+model Friendship {
+    id        String           @id @default(cuid())
+    status    FriendshipStatus @default(PENDING)
+    createdAt DateTime         @default(now())
+    updatedAt DateTime         @updatedAt
+
+    // User who sent the request
+    requesterId String
+    requester   User   @relation("sent_requests", fields: [requesterId], references: [id], onDelete: Cascade)
+
+    // User who received the request
+    receiverId String
+    receiver   User   @relation("received_requests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+    @@unique([requesterId, receiverId])
+    @@map("friendships")
+}
+
+model UserGameHistory {
+    id     String @id @default(cuid())
+    gameId String // Reference to game in pong-db
+
+    // User relation
+    userId String
+    user   User   @relation("user_games", fields: [userId], references: [id])
+
+    // Simplified - just track user's perspective
+    isWinner  Boolean
+    eloChange Int
+    playedAt  DateTime @default(now())
+
+    @@unique([userId, gameId], name: "userId_gameId")
+    @@index([userId])
+    @@map("user_game_history")
+}
+
+enum FriendshipStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    BLOCKED
+}

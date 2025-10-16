@@ -25,6 +25,7 @@ import {
   alertSuccess,
   alertWarning,
 } from "./../utils/modal-alerts";
+import { showPasswordChangeModal } from "../components/password-change-modal";
 
 export interface UserProfile {
   username: string;
@@ -285,7 +286,18 @@ export function renderMyProfile(): HTMLElement {
           </label>
         </div>
         
-        <div class="flex flex-col gap-3 pt-4">
+        ${!user.isOAuthUser ? `
+        <div class="space-y-2 mb-3">
+          <button type="button" id="change-password-btn" class="cursor-pointer text-lg font-bold px-8 py-2
+                  bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
+                  hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
+                  transition-shadow duration-300 w-full" data-i18n="change_password">
+            Change Password
+          </button>
+        </div>
+        ` : ''}
+        
+        <div class="flex flex-col gap-3">
           <button type="button" id="cancel-btn" aria-label="${t('cancel') || 'Cancel'}" class="cursor-pointer text-lg font-bold px-8 py-2
                   bg-gradient-to-r from-[#66fcf1] to-[#1f7474] text-[#031b1b] border-0 rounded-md
                   hover:bg-[#45a8a8] font-[jura] hover:shadow-lg
@@ -799,6 +811,18 @@ export function renderMyProfile(): HTMLElement {
     const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
     if (submitBtn) {
       enhanceButton(submitBtn, { ripple: true, bounce: true });
+    }
+
+    const changePasswordBtn = form.querySelector('#change-password-btn') as HTMLButtonElement;
+    if (changePasswordBtn) {
+      enhanceButton(changePasswordBtn, { ripple: true, bounce: true });
+      changePasswordBtn.addEventListener('click', async () => {
+        try {
+          await showPasswordChangeModal();
+        } catch (error) {
+          console.error('Error showing password change modal:', error);
+        }
+      });
     }
 
     form.addEventListener("submit", async e => {

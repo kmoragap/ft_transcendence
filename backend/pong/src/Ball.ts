@@ -178,6 +178,18 @@ export default class Ball {
 		if (this._go) {
 			this.checkWalls();
 			this.advanceBall();
+			this.checkEdge();
+		}
+	}
+
+	private checkEdge(): void {
+		const bS = balls[0].getSize() * 2;
+		if (this._y > data.canvas.height + bS * 1.5) {
+			this._y = data.canvas.height - bS;
+			if (this._x < data.canvas.width / 2)
+				this._x -= bS;
+			else this._x += bS;
+			if (this._dirY < 0) this._dirY *= -1;
 		}
 	}
 }

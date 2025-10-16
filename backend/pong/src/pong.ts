@@ -7,7 +7,7 @@ the scores are uploaded to pong-db.
 import { data, newGame } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
-import { midline, touchControlArrows } from "./Paddle.draw";
+import { nameAndScore, touchControlArrows } from "./Paddle.draw";
 import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
 import { handleTournamentGameCompletion } from "./tournamentGame";
@@ -41,27 +41,6 @@ export async function startGame() {
   } catch (error) {
     console.error("Failed to load configuration:", error);
   }
-}
-
-export function countdown(nr: number, ms: number) {
-  data.showingText = true;
-  data.ctx.fillStyle = data.bg;
-  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
-  data.ctx.fill();
-  data.ctx.font = `bold ${data.canvas.height * 0.75}px jura, sans-serif`;
-  data.ctx.fillStyle = "#66fcf1";
-  data.ctx.strokeStyle = "#0b4f47";
-  data.ctx.lineWidth = data.canvas.height / 60;
-  data.ctx.textAlign = "center";
-  data.ctx.textBaseline = "middle";
-  data.ctx.strokeText(
-    String(nr),
-    data.canvas.width / 2,
-    data.canvas.height / 2
-  );
-  data.ctx.fillText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
-  if (nr - 1) setTimeout(() => countdown(nr - 1, ms), ms);
-  else setTimeout(() => startRound(), ms);
 }
 
 export function startRound(): void {
@@ -121,24 +100,7 @@ function render(): void {
 	data.ctx.fillStyle = data.bg;
 	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
 	data.ctx.fill();
-	var p1NameAndScore: string;
-	var p2NameAndScore: string;
-	var margin: string = "   ";
-	if (data.mode != "multi") {
-		p1NameAndScore = data.p[0].name + " - " + data.p[0].score + margin;
-		p2NameAndScore = margin + data.p[1].score + " - " + data.p[1].name;
-	} else {
-		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
-		p2NameAndScore = margin + data.p[2].score + " - Team 2";
-	}
-	data.ctx.font = `bold ${data.canvas.height / 24}px jura, sans-serif`;
-	data.ctx.fillStyle = "rgba(102, 252, 241, 0.5)";
-	data.ctx.textBaseline = "top";
-	data.ctx.textAlign = "right";
-	data.ctx.fillText(p1NameAndScore, data.canvas.width / 2, 20);
-	data.ctx.textAlign = "left";
-	data.ctx.fillText(p2NameAndScore, data.canvas.width / 2, 20);
-	midline();
+  nameAndScore();
 	for (let i: number = 0; i < pad.length; i++) pad[i].draw();
 	if (data.trailLength)
 		for (let i: number = 0; i < balls.length; i++) balls[i].drawTrail();
@@ -156,7 +118,6 @@ export function endRound(): void {
     pad.shift();
   }
   var player2: number = 1;
-
   if (data.mode == "multi") player2 = 2;
   if (data.p[0].score >= data.maxScore || data.p[player2].score >= data.maxScore) {
     if (data.isTournament) finito();

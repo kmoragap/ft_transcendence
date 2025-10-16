@@ -138,6 +138,7 @@
 	"password_too_short": "Password must be at least 8 characters",
 	"password_requirements_not_met": "Password must contain uppercase, lowercase, number, and special character",
 	"passwords_do_not_match": "Passwords do not match",
+	"new_password_cannot_be_the_same_as_current_password": "New password cannot be the same as current password",
 	"changing_password": "Changing Password...",
 	"password_changed_successfully": "Password changed successfully",
 	"password_change_failed": "Failed to change password",

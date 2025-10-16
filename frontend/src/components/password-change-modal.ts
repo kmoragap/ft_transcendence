@@ -263,6 +263,12 @@ function createPasswordChangeModal(options: PasswordChangeModalOptions & { onSuc
       error.classList.remove('hidden');
       newPasswordInput.setAttribute('aria-invalid', 'true');
       isValid = false;
+    } else if (newPassword === currentPasswordInput.value) {
+      const error = modal.querySelector('#new-password-error')!;
+      error.textContent = t('new_password_cannot_be_the_same_as_current_password') || 'New password cannot be the same as current password';
+      error.classList.remove('hidden');
+      newPasswordInput.setAttribute('aria-invalid', 'true');
+      isValid = false;
     } else {
       newPasswordInput.setAttribute('aria-invalid', 'false');
     }

@@ -4,7 +4,7 @@ initialize the movable game elements and run the game loop. When the game ends,
 the scores are uploaded to pong-db.
 */
 
-import { data, newGame, getSecondPlayerData } from "./gameData";
+import { data, newGame } from "./gameData";
 import Paddle from "./Paddle";
 import Ball from "./Ball";
 import { midline, touchControlArrows } from "./Paddle.draw";
@@ -12,6 +12,7 @@ import { initI18n } from "./i18n";
 import { gameService, gameInfo } from "./services/gameService";
 import { handleTournamentGameCompletion } from "./tournamentGame";
 import { exitFullscreen } from "./controls";
+import { isMobile } from "./utils/mobile";
 
 export let pad: Paddle[] = [];
 export let balls: Ball[] = [];
@@ -311,14 +312,6 @@ function exitGameMessage(winner: string): void {
   );
 }
 
-// Mobile exit functionality
-export function isMobile(): boolean {
-  return (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    ) ||
-    (window.innerWidth <= 768 && window.innerHeight <= 1024)
-  );
-}
+// Mobile exit functionality - now using utility function from utils/mobile.ts
 
 startGame();

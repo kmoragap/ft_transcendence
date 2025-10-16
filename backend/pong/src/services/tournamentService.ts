@@ -1,19 +1,6 @@
 export interface tournamentInfo {
-  //tournament name?
   name: string;
-  //array of players participating
   playersIds: string[];
-}
-
-export interface TournamentGameInfo {
-  tournamentId: string;
-  round: number;
-  matchNumber: number;
-  player1Id: string;
-  player1Name: string;
-  player2Id: string;
-  player2Name: string;
-  status: "IN_PROGRESS" | "FINISHED" | "CANCELLED";
 }
 
 class TournamentService {

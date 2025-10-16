@@ -6,14 +6,6 @@ export function t(key: string): string {
   return translations[key] || key;
 }
 
-export function setLanguage(lang: string): void {
-  currentLanguage = lang;
-}
-
-export function getCurrentLanguage(): string {
-  return currentLanguage;
-}
-
 export async function initI18n(lang: string = 'en'): Promise<void> {
   currentLanguage = lang;
   
@@ -45,7 +37,7 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
   updateHTMLTranslations();
 }
 
-export function updateHTMLTranslations(): void {
+function updateHTMLTranslations(): void {
   document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (key && translations[key]) {

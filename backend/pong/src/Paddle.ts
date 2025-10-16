@@ -5,9 +5,10 @@ the targets using the normal player movement logic.
 */
 
 import { data, playerData } from "./gameData";
-import { pad, balls, isMobile } from "./pong";
+import { pad, balls } from "./pong";
 import Ball from "./Ball";
-import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
+import { quarterCorner, halfCorner } from "./Paddle.draw";
+import { isMobile } from "./utils/mobile";
 
 export default class Paddle {
 	private _x: number;

@@ -7,6 +7,7 @@ import { loadConfig } from "./gameData";
 import { t } from "./i18n";
 import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode, clearSavedPlayerData } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
+import { isMobileDevice } from "./utils/mobile";
 
 export let allPlayerData: any[] = [];
 let currentStep = 1;
@@ -20,7 +21,7 @@ function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsFor
 }
 
 function updateButtonText() {
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	const isMobile = isMobileDevice();
 	
 	if (currentStep === 2 || (currentStep === 1 && totalPlayerPages > 1)) {
 		if (totalPlayerPages > 1) {
@@ -71,7 +72,7 @@ export function wizard(mode: string) {
 	playerSetupFlexContainer.id = "playerSetupContainer";
 	playerSetupContainer.appendChild(playerSetupFlexContainer);
 
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	const isMobile = isMobileDevice();
 	const gameSettingsFlexContainer = createFlexContainer();
 	if (isMobile) {
 		gameSettingsFlexContainer.style.display = "none";
@@ -99,7 +100,7 @@ export function wizard(mode: string) {
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
 			if (currentStep === 2) {
-				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+				const isMobile = isMobileDevice();
 				const playersPerPage = isMobile ? 1 : 2;
 				if (currentPlayerPage < totalPlayerPages - 1) {
 					currentPlayerPage++;
@@ -127,7 +128,7 @@ export function wizard(mode: string) {
 			e.preventDefault();
 			if (currentStep === 2) {
 				if (currentPlayerPage > 0) {
-					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+					const isMobile = isMobileDevice();
 					const playersPerPage = isMobile ? 1 : 2;
 					currentPlayerPage--;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
@@ -169,7 +170,7 @@ export function wizard(mode: string) {
 			
 			(window as any).allPlayerData = allPlayerData;
 			
-			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			const isMobile = isMobileDevice();
 			const playersPerPage = isMobile ? 1 : 2;
 			totalPlayerPages = Math.ceil(4 / playersPerPage);
 			currentPlayerPage = 0;
@@ -187,7 +188,7 @@ export function wizard(mode: string) {
 				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" }
 			];
 			
-			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			const isMobile = isMobileDevice();
 			const playersPerPage = isMobile ? 1 : 2;
 			totalPlayerPages = Math.ceil(2 / playersPerPage);
 			currentPlayerPage = 0;
@@ -208,7 +209,7 @@ export function wizard(mode: string) {
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
 			if (currentStep === 1 && totalPlayerPages > 1) {
-				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+				const isMobile = isMobileDevice();
 				const playersPerPage = isMobile ? 1 : 2;
 				if (currentPlayerPage < totalPlayerPages - 1) {
 					currentPlayerPage++;
@@ -223,7 +224,7 @@ export function wizard(mode: string) {
 			e.preventDefault();
 			if (currentStep === 1 && totalPlayerPages > 1) {
 				if (currentPlayerPage > 0) {
-					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+					const isMobile = isMobileDevice();
 					const playersPerPage = isMobile ? 1 : 2;
 					currentPlayerPage--;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
@@ -248,7 +249,7 @@ export function wizard(mode: string) {
 }
 
 function createPlayerBoxes(numPlayers: number) {
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	const isMobile = isMobileDevice();
 	const playersPerPage = isMobile ? 1 : 2;
 	totalPlayerPages = Math.ceil(numPlayers / playersPerPage);
 	currentPlayerPage = 0;

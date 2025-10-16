@@ -7,6 +7,7 @@ import { controlKeys, enterFullscreen, showFullscreenPrompt, setupFullscreenTogg
 import { countdown } from "./pong";
 import { t } from "./i18n";
 import { wizard, allPlayerData } from "./wizard";
+import { isMobileDevice } from "./utils/mobile";
 
 export type playerData = {
   name: string;
@@ -74,14 +75,6 @@ export let data: gameData;
 
 let pendingTournamentId: string | null = null;
 export function setPendingTournamentId(id: string) { pendingTournamentId = id;}
-
-export function getSecondPlayerData(): any {
-  return (window as any).gamePlayer2 || null;
-}
-
-export function clearSecondPlayerData(): void {
-  (window as any).gamePlayer2 = null;
-}
 
 function loadPlayer(
   name: string,
@@ -377,7 +370,7 @@ export async function loadConfig(mode: string): Promise<void> {
         ),
       );
     }
-  	}	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  	}	const isMobile = isMobileDevice();
 	
 	const resizeCanvas = () => {
 		canvas.width = isMobile ? window.innerWidth : screen.width;

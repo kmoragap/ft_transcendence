@@ -49,5 +49,12 @@
   "exit_tournament": "Turnier verlassen",
   "press_any_key": "Beliebige Taste drücken...",
   "keys_disabled_mobile": "Tastenbelegung ist auf Mobilgeräten nicht verfügbar",
-  "match_controls": "Spielsteuerung"
+  "match_controls": "Spielsteuerung",
+  "key_already_used_by": "Taste wird bereits verwendet von",
+  "ai_name_reserved": "Name ist für KI-Spieler reserviert",
+  "key_restricted": "Taste ist eingeschränkt",
+  "key_restricted_browser_function": "Taste ist eingeschränkt (Browserfunktion)",
+  "key_restricted_modifier": "Taste ist eingeschränkt (Modifikatortaste)",
+  "key_restricted_navigation": "Taste ist eingeschränkt (Navigation)",
+  "key_restricted_function_key": "Taste ist eingeschränkt (Funktionstaste)"
 }

@@ -4,7 +4,7 @@ using functions from menus.ts.
 */
 
 import { loadConfig } from "./gameData";
-import { t } from "./i18n";
+import { t, updateHTMLTranslations } from "./i18n";
 import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode, clearSavedPlayerData } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
 import { isMobileDevice } from "./utils/mobile";
@@ -14,12 +14,10 @@ let currentStep = 1;
 let currentPlayerPage = 0;
 let totalPlayerPages = 0;
 let currentGameSettingsPage = 0;
-let wizardMode: string = "";
 
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
-	settingsForm.style.display = "none";
-	bgColorsForm.style.display = "flex";
-	currentGameSettingsPage = 1;
+    settingsForm.style.display = "flex";
+    bgColorsForm.style.display = "flex";
 }
 
 function updateButtonText() {
@@ -27,23 +25,18 @@ function updateButtonText() {
 	
 	if (currentStep === 2 || (currentStep === 1 && totalPlayerPages > 1)) {
 		if (totalPlayerPages > 1) {
-			nextButton.textContent = currentPlayerPage < totalPlayerPages - 1 ? `Next (${currentPlayerPage + 1}/${totalPlayerPages})` : "Next";
-			backButton.textContent = currentPlayerPage > 0 ? `Back (${currentPlayerPage + 1}/${totalPlayerPages})` : "Back";
+			nextButton.textContent = currentPlayerPage < totalPlayerPages - 1 ? `${t("next")} (${currentPlayerPage + 1}/${totalPlayerPages})` : `${t("next")}`;
+			backButton.textContent = currentPlayerPage > 0 ? `${t("back")} (${currentPlayerPage + 1}/${totalPlayerPages})` : `${t("back")}`;
 		} else {
-			nextButton.textContent = "Next";
-			backButton.textContent = "Back";
+			nextButton.textContent = `${t("next")}`;
+			backButton.textContent = `${t("back")}`;
 		}
 	} else if (currentStep === 3 && isMobile) {
-		if (wizardMode === "tournament") {
-			nextButton.textContent = "Next";
-			backButton.textContent = "Back";
-		} else {
-			nextButton.textContent = currentGameSettingsPage === 0 ? "Next (1/2)" : "Next";
-			backButton.textContent = currentGameSettingsPage === 1 ? "Back (2/2)" : "Back";
-		}
+		nextButton.textContent = currentGameSettingsPage === 0 ? `${t("next")} (1/2)` : `${t("next")}`;
+		backButton.textContent = currentGameSettingsPage === 1 ? `${t("back")} (2/2)` : `${t("back")}`;
 	} else {
-		nextButton.textContent = "Next";
-		backButton.textContent = "Back";
+		nextButton.textContent = `${t("next")}`;
+		backButton.textContent = `${t("back")}`;
 	}
 }
 
@@ -54,8 +47,7 @@ backButton.classList.add("hidden");
 finishButton.classList.add("hidden");
 
 export function wizard(mode: string) {
-    setGameMode(mode);
-    wizardMode = mode;
+	setGameMode(mode);
 	clearSavedPlayerData();
 	const card = document.getElementById("card") as HTMLDivElement;
 	const urlParams = new URLSearchParams(window.location.search);
@@ -80,17 +72,15 @@ export function wizard(mode: string) {
 	playerSetupFlexContainer.id = "playerSetupContainer";
 	playerSetupContainer.appendChild(playerSetupFlexContainer);
 
-	const isMobile = isMobileDevice();
+	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	const gameSettingsFlexContainer = createFlexContainer();
 	if (isMobile) {
-			gameSettingsFlexContainer.style.display = "none";
-			gameSettingsContainer.appendChild(settingsForm);
-			gameSettingsContainer.appendChild(bgColorsForm);
-			createGameSettingsNavigation(settingsForm, bgColorsForm, gameSettingsContainer);
+		gameSettingsFlexContainer.style.display = "none";
+		gameSettingsContainer.appendChild(settingsForm);
+		gameSettingsContainer.appendChild(bgColorsForm);
+		createGameSettingsNavigation(settingsForm, bgColorsForm, gameSettingsContainer);
 	} else {
-		if (mode !== "tournament") {
-			gameSettingsFlexContainer.appendChild(settingsForm);
-		}
+		gameSettingsFlexContainer.appendChild(settingsForm);
 		gameSettingsFlexContainer.appendChild(bgColorsForm);
 		gameSettingsContainer.appendChild(gameSettingsFlexContainer);
 	}
@@ -110,7 +100,7 @@ export function wizard(mode: string) {
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
 			if (currentStep === 2) {
-				const isMobile = isMobileDevice();
+				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 				const playersPerPage = isMobile ? 1 : 2;
 				if (currentPlayerPage < totalPlayerPages - 1) {
 					currentPlayerPage++;
@@ -120,12 +110,17 @@ export function wizard(mode: string) {
 				}
 			}
 			if (currentStep === 3 && isMobile) {
-				const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
-				if (bgColorsForm) {
-					bgColorsForm.style.display = "flex";
-					updateButtonText();
+				if (currentGameSettingsPage === 0) {
+					currentGameSettingsPage = 1;
+					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
+					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
+					if (settingsForm && bgColorsForm) {
+						settingsForm.style.display = "none";
+						bgColorsForm.style.display = "flex";
+						updateButtonText();
+					}
+					return;
 				}
-				return;
 			}
 			if (currentStep < 3) showStep(currentStep + 1, false);
 		});
@@ -133,7 +128,7 @@ export function wizard(mode: string) {
 			e.preventDefault();
 			if (currentStep === 2) {
 				if (currentPlayerPage > 0) {
-					const isMobile = isMobileDevice();
+					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 					const playersPerPage = isMobile ? 1 : 2;
 					currentPlayerPage--;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
@@ -141,9 +136,18 @@ export function wizard(mode: string) {
 					return;
 				}
 			}
-			if (currentStep === 3) {
-				showStep(2, false);
-				return;
+			if (currentStep === 3 && isMobile) {
+				if (currentGameSettingsPage === 1) {
+					currentGameSettingsPage = 0;
+					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
+					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
+					if (settingsForm && bgColorsForm) {
+						settingsForm.style.display = "flex";
+						bgColorsForm.style.display = "none";
+						updateButtonText();
+					}
+					return;
+				}
 			}
 			if (currentStep > 1) showStep(currentStep - 1, false);
 		});
@@ -166,7 +170,7 @@ export function wizard(mode: string) {
 			
 			(window as any).allPlayerData = allPlayerData;
 			
-			const isMobile = isMobileDevice();
+			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 			const playersPerPage = isMobile ? 1 : 2;
 			totalPlayerPages = Math.ceil(4 / playersPerPage);
 			currentPlayerPage = 0;
@@ -184,7 +188,7 @@ export function wizard(mode: string) {
 				{ index: 2, name: "Roger Federror", id: "", isAi: true, keys: { up: "ArrowUp", down: "ArrowDown" }, innerCol: "#ffffff", outerCol: "#808080", cornerCol: "#ff0000" }
 			];
 			
-			const isMobile = isMobileDevice();
+			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 			const playersPerPage = isMobile ? 1 : 2;
 			totalPlayerPages = Math.ceil(2 / playersPerPage);
 			currentPlayerPage = 0;
@@ -205,7 +209,7 @@ export function wizard(mode: string) {
 		nextButton.addEventListener("click", (e) => {
 			e.preventDefault();
 			if (currentStep === 1 && totalPlayerPages > 1) {
-				const isMobile = isMobileDevice();
+				const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 				const playersPerPage = isMobile ? 1 : 2;
 				if (currentPlayerPage < totalPlayerPages - 1) {
 					currentPlayerPage++;
@@ -220,7 +224,7 @@ export function wizard(mode: string) {
 			e.preventDefault();
 			if (currentStep === 1 && totalPlayerPages > 1) {
 				if (currentPlayerPage > 0) {
-					const isMobile = isMobileDevice();
+					const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 					const playersPerPage = isMobile ? 1 : 2;
 					currentPlayerPage--;
 					renderPlayerPage(currentPlayerPage, playersPerPage);
@@ -242,6 +246,13 @@ export function wizard(mode: string) {
 	card.appendChild(wizardContainer);
 	
 	updateButtonText();
+	updateHTMLTranslations();
+
+	const onLangChange = () => {
+		updateButtonText();
+		updateHTMLTranslations();
+	};
+	window.addEventListener("languageChanged", onLangChange);
 }
 
 function createPlayerBoxes(numPlayers: number) {
@@ -375,12 +386,14 @@ function showStep(step: number, singleMatch: boolean) {
 
 function btn(ts: string, alt: string, id: string): HTMLButtonElement {
 	const button =  Object.assign(document.createElement("button"), {className: "",
-		textContent: t(ts) || alt,
+        textContent: t(ts) || alt,
 		id: id,
 	}) as HTMLButtonElement;
-	button.classList.add("btn", "py-2", "px-6", "text-lg", "font-bold");
+    button.setAttribute('data-i18n', ts);
+    button.classList.add("btn", "py-2", "px-6", "text-lg", "font-bold");
 	if (id === "finishBtn") {
-		button.textContent = button.textContent?.toUpperCase() || "START";
+        button.textContent = t("start");
+        button.setAttribute('data-i18n', 'start');
 	}
 	return button;
 }

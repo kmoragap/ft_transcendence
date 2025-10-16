@@ -49,6 +49,13 @@
   "exit_tournament": "Вийти з турніру",
   "press_any_key": "Натисніть будь-яку клавішу...",
   "keys_disabled_mobile": "Налаштування клавіш недоступне на мобільних",
-  "match_controls": "Керування матчем"
+  "match_controls": "Керування матчем",
+  "key_already_used_by": "Клавішу вже використано гравцем",
+  "ai_name_reserved": "Ім'я зарезервовано для AI гравців",
+  "key_restricted": "Клавіша обмежена",
+  "key_restricted_browser_function": "Клавіша обмежена (функція браузера)",
+  "key_restricted_modifier": "Клавіша обмежена (модифікатор)",
+  "key_restricted_navigation": "Клавіша обмежена (навігація)",
+  "key_restricted_function_key": "Клавіша обмежена (функціональна клавіша)"
 }
 

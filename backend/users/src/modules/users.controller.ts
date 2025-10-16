@@ -439,3 +439,50 @@ export async function toggle2faHandler(
     return reply.code(500).send({ error: "Failed to toggle 2FA" });
   }
 }
+
+export async function changePasswordHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { currentPassword, newPassword } = request.body as {
+    currentPassword: string;
+    newPassword: string;
+  };
+
+  const userId = request.user?.id;
+  if (!userId) return reply.code(401).send({ error: "Unauthorized" });
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true, isOAuthUser: true },
+    });
+
+    if (!user) {
+      return reply.code(404).send({ error: "User not found" });
+    }
+
+    if (user.isOAuthUser) {
+      return reply.code(400).send({ error: "OAuth users cannot change their password" });
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return reply.code(400).send({ error: "Current password is incorrect" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
+    });
+
+    return reply.send({
+      message: "Password changed successfully",
+    });
+  } catch (error: unknown) {
+    console.error("Error changing password:", error);
+    return reply.code(500).send({ error: "Failed to change password" });
+  }
+}

@@ -17,6 +17,7 @@ import {
   getUsersByIds,
   toggle2faHandler,
   getUserProfile,
+  changePasswordHandler,
 } from "../modules/users.controller";
 import {
   sendFriendRequestHandler,
@@ -59,6 +60,11 @@ export default async function userRoutes(fastify: FastifyInstance) {
     "/me/2fa",
     { preHandler: [authenticateToken, validateBody(userSchemas.toggle2fa)] },
     toggle2faHandler,
+  );
+  fastify.put(
+    "/me/password",
+    { preHandler: [authenticateToken, validateBody(userSchemas.changePassword)] },
+    changePasswordHandler,
   );
   // internal service route for auth service
   fastify.put("/:userId/online-status", updateOnlineStatusByIdHandler);

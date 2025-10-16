@@ -928,6 +928,7 @@ export function gameSetupMenu(mode: string): {
   const e11 = Object.assign(document.createElement("label"), {
     className: "game-text",
     htmlFor: "multiball",
+    title: t("multiball_description"),
     textContent: ` ${t("multiball")}`,
   }) as HTMLLabelElement;
   const e12 = Object.assign(document.createElement("input"), {
@@ -939,6 +940,7 @@ export function gameSetupMenu(mode: string): {
   const e13 = Object.assign(document.createElement("label"), {
     className: "game-text",
     htmlFor: "doublePaddle",
+    title: t("doublePaddle_description"),
     textContent: ` ${t("doublePaddle")}`,
   }) as HTMLLabelElement;
   const e14 = Object.assign(document.createElement("input"), {
@@ -1024,7 +1026,6 @@ export function gameSetupMenu(mode: string): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
 
-
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -1079,7 +1080,6 @@ export function gameSetupMenu(mode: string): {
   ul.appendChild(settings);
   ul.appendChild(bgColors);
   container.appendChild(ul);
-
 
   return { form: container, startButton: e22 };
 }

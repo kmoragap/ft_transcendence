@@ -16,8 +16,9 @@ let totalPlayerPages = 0;
 let currentGameSettingsPage = 0;
 
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
-	settingsForm.style.display = "flex";
-	bgColorsForm.style.display = "none";
+	settingsForm.style.display = "none";
+	bgColorsForm.style.display = "flex";
+	currentGameSettingsPage = 1;
 }
 
 function updateButtonText() {
@@ -75,12 +76,14 @@ export function wizard(mode: string) {
 	const isMobile = isMobileDevice();
 	const gameSettingsFlexContainer = createFlexContainer();
 	if (isMobile) {
-		gameSettingsFlexContainer.style.display = "none";
-		gameSettingsContainer.appendChild(settingsForm);
-		gameSettingsContainer.appendChild(bgColorsForm);
-		createGameSettingsNavigation(settingsForm, bgColorsForm, gameSettingsContainer);
+			gameSettingsFlexContainer.style.display = "none";
+			gameSettingsContainer.appendChild(settingsForm);
+			gameSettingsContainer.appendChild(bgColorsForm);
+			createGameSettingsNavigation(settingsForm, bgColorsForm, gameSettingsContainer);
 	} else {
-		gameSettingsFlexContainer.appendChild(settingsForm);
+		if (mode !== "tournament") {
+			gameSettingsFlexContainer.appendChild(settingsForm);
+		}
 		gameSettingsFlexContainer.appendChild(bgColorsForm);
 		gameSettingsContainer.appendChild(gameSettingsFlexContainer);
 	}
@@ -142,8 +145,8 @@ export function wizard(mode: string) {
 					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
 					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
 					if (settingsForm && bgColorsForm) {
-						settingsForm.style.display = "flex";
-						bgColorsForm.style.display = "none";
+						settingsForm.style.display = "none";
+						bgColorsForm.style.display = "flex";
 						updateButtonText();
 					}
 					return;

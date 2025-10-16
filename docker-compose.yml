@@ -36,12 +36,17 @@ services:
       - OAUTH_42_CLIENT_ID=${OAUTH_42_CLIENT_ID}
       - OAUTH_42_CLIENT_SECRET=${OAUTH_42_CLIENT_SECRET}
       - OAUTH_42_REDIRECT_URI=${OAUTH_42_REDIRECT_URI}
+      - OAUTH_42_AUTH_URL=${OAUTH_42_AUTH_URL}
+      - OAUTH_42_TOKEN_URL=${OAUTH_42_TOKEN_URL}
+      - OAUTH_42_USER_URL=${OAUTH_42_USER_URL}
       - FRONTEND_URL=${FRONTEND_URL}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - MAIL_FROM=${MAIL_FROM}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     depends_on:
       - users
       - logstash
@@ -57,6 +62,8 @@ services:
     build: ./backend/pong-db
     #ports:
     # - "3003:3000"
+    environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     volumes:
       - pong-db-data:/app/prisma
     depends_on:
@@ -100,6 +107,9 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - USERS_URL=${USERS_URL}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     networks:
       - app-network
     logging:

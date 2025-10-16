@@ -5,9 +5,11 @@ the targets using the normal player movement logic.
 */
 
 import { data, playerData } from "./gameData";
-import { pad, balls, isMobile } from "./pong";
+import { pad, balls } from "./pong";
 import Ball from "./Ball";
-import { quarterCorner, halfCorner, debugOutline } from "./Paddle.draw";
+import { quarterCorner, halfCorner } from "./Paddle.draw";
+import { isMobile } from "./utils/mobile";
+
 
 export default class Paddle {
 	private _x: number;
@@ -108,7 +110,7 @@ export default class Paddle {
 	}
 
 	public hitY(ball: Ball): boolean {
-		const ballCenterY = ball.getY() + ball.getSize();
+		const ballCenterY = ball.getY() + ball.getSize() / 2;
 		return ballCenterY > this._y && ballCenterY < this.getY2() + ball.getSize();
 	}
 
@@ -203,7 +205,7 @@ export default class Paddle {
 			if (y != balls[t].getY()) {
 				var dir = 1;
 				if (Math.floor(Math.random() * 2)) dir = -1;
-				var deviation = (Math.random() * data.paddleHeight * 0.75) * dir;
+				var deviation = (Math.random() * data.paddleHeight * 1.25) * dir;
 				this._aiTarget = y + deviation;
 			}
 		}

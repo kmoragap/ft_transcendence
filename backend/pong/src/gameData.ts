@@ -4,9 +4,10 @@ and handles loading and initialization.
 */
 
 import { controlKeys, enterFullscreen, showFullscreenPrompt, setupFullscreenToggle } from "./controls";
-import { countdown } from "./pong";
+import { countdown } from "./Paddle.draw";
 import { t } from "./i18n";
 import { wizard, allPlayerData } from "./wizard";
+import { isMobileDevice } from "./utils/mobile";
 
 export type playerData = {
   name: string;
@@ -74,14 +75,6 @@ export let data: gameData;
 
 let pendingTournamentId: string | null = null;
 export function setPendingTournamentId(id: string) { pendingTournamentId = id;}
-
-export function getSecondPlayerData(): any {
-  return (window as any).gamePlayer2 || null;
-}
-
-export function clearSecondPlayerData(): void {
-  (window as any).gamePlayer2 = null;
-}
 
 function loadPlayer(
   name: string,
@@ -377,7 +370,7 @@ export async function loadConfig(mode: string): Promise<void> {
         ),
       );
     }
-  	}	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  	}	const isMobile = isMobileDevice();
 	
 	const resizeCanvas = () => {
 		canvas.width = isMobile ? window.innerWidth : screen.width;
@@ -465,32 +458,30 @@ export async function loadConfig(mode: string): Promise<void> {
 	loadData.bg.addColorStop(1, loadData.outerBg);
 
 	switch (loadIn("paddleSpeed")) {
-		case "glacial":	loadData.paddleSpeed = 80;	break;
+		case "glacial":	loadData.paddleSpeed = 80;break;
 		case "slow":	loadData.paddleSpeed = 60;	break;
-		case "standard":loadData.paddleSpeed = 40;	break;
+		case "standard":loadData.paddleSpeed = 40;break;
 		case "fast":	loadData.paddleSpeed = 35;	break;
-		case "insane":	loadData.paddleSpeed = 30;	break;
-		default:		loadData.paddleSpeed = 40;	break;
+		case "insane":	loadData.paddleSpeed = 30;break;
+		default:		loadData.paddleSpeed = 40;	  break;
 	}
 	switch (loadIn("ballSpeed")) {
-		case "glacial":	loadData.ballSpeed = 12;	break;
-		case "slow":	loadData.ballSpeed = 10;	break;
-		case "standard":loadData.ballSpeed = 8;	break;
-		case "fast":	loadData.ballSpeed = 6;		break;
-		case "insane":	loadData.ballSpeed = 4;		break;
-		default:		loadData.ballSpeed = 8;	break;
+		case "glacial":	loadData.ballSpeed = 15;break;
+		case "slow":	loadData.ballSpeed = 12;	break;
+		case "standard":loadData.ballSpeed = 10;break;
+		case "fast":	loadData.ballSpeed = 8;		break;
+		case "insane":	loadData.ballSpeed = 6;	break;
+		default:		loadData.ballSpeed = 8;	    break;
 	}
 	switch (loadIn("ballSize")) {
-		case "tiny":	loadData.ballSize = 160;	break;
-		case "small":	loadData.ballSize = 120;	break;
-		case "normal":	loadData.ballSize = 80;		break;
-		case "big":		loadData.ballSize = 60;		break;
+		case "tiny":	loadData.ballSize = 200;	break;
+		case "small":	loadData.ballSize = 160;	break;
+		case "normal":	loadData.ballSize = 120;break;
+		case "big":		loadData.ballSize = 80;		break;
 		case "huge":	loadData.ballSize = 40;		break;
-		default:		loadData.ballSize = 80;		break;
+		default:		loadData.ballSize = 120;		break;
 	}
 
-
-  console.log(loadData.ballCol);
   loadData.ballCol = checkColors(loadData.ballCol, "#0000FFFF");
   loadData.innerBg = checkColors(loadData.innerBg, "#1a4d4d");
   loadData.outerBg = checkColors(loadData.outerBg, "#001a1a");

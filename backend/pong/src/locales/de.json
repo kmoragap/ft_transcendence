@@ -16,7 +16,9 @@
   "ballSpeed": "Ballgeschwindigkeit",
   "ballSize": "Ballgröße",
   "multiball": "Multiball",
+  "multiball_description": "Alle 5 bis 10 Paddle-treffer erscheint ein neuer Ball. Nur der letzte verbleibende Ball zählt für das Match.",
   "doublePaddle": "Doppelte Paddles",
+  "doublePaddle_description": "Spiele mit 2 Paddles gleichzeitig. Die inneren Paddles haben leicht eingeschränkte Bewegungsfreiheit, damit die äußeren auch zum Zug kommen.",
   "uiCol": "UI-Farbe",
   "ballCol": "Ballfarbe",
   "innerBg": "innere Hintergrundfarbe",
@@ -44,5 +46,15 @@
   "tournament_complete": "Turnier beendet!",
   "winner": "Gewinner",
   "congratulations_victory": "Gratuliere zum Sieg!",
-  "exit_tournament": "Turnier verlassen"
+  "exit_tournament": "Turnier verlassen",
+  "press_any_key": "Beliebige Taste drücken...",
+  "keys_disabled_mobile": "Tastenbelegung ist auf Mobilgeräten nicht verfügbar",
+  "match_controls": "Spielsteuerung",
+  "key_already_used_by": "Taste wird bereits verwendet von",
+  "ai_name_reserved": "Name ist für KI-Spieler reserviert",
+  "key_restricted": "Taste ist eingeschränkt",
+  "key_restricted_browser_function": "Taste ist eingeschränkt (Browserfunktion)",
+  "key_restricted_modifier": "Taste ist eingeschränkt (Modifikatortaste)",
+  "key_restricted_navigation": "Taste ist eingeschränkt (Navigation)",
+  "key_restricted_function_key": "Taste ist eingeschränkt (Funktionstaste)"
 }

@@ -4,6 +4,7 @@ The functions in menus.ts are used for generating the menu boxes for setting up 
 
 import { t } from "./i18n";
 import { allPlayerData } from "./wizard";
+import { isMobileDevice } from "./utils/mobile";
 
 let currentGameMode: string = "single";
 
@@ -54,19 +55,42 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
     id: id,
     value: initialValue,
     readonly: true,
-    placeholder: "Press any key..."
+    placeholder: t("press_any_key") || "Press any key..."
   }) as HTMLInputElement;
 
+  const isMobile = isMobileDevice();
+  if (isMobile) {
+    input.disabled = true;
+    input.title = t("keys_disabled_mobile") || "Key bindings are not configurable on mobile";
+    input.classList.add("opacity-50", "cursor-not-allowed");
+    return input;
+  }
+
+  let previousValue = initialValue;
+  const placeholderText = t("press_any_key") || "Press any key...";
+
   input.addEventListener("focus", () => {
-    input.value = "Press any key...";
+    previousValue = input.value;
+    input.value = placeholderText;
     input.style.backgroundColor = "rgba(102,252,241,0.2)";
   });
 
   input.addEventListener("blur", () => {
     input.style.backgroundColor = "";
+    if (input.value === placeholderText || input.value.trim() === "") {
+      input.value = previousValue;
+    }
   });
 
   input.addEventListener("keydown", (event) => {
+    if (event.key === "Tab") {
+      return;
+    }
+    if (event.key === "Escape") {
+      input.value = previousValue;
+      input.blur();
+      return;
+    }
     event.preventDefault();
     
     let keyName = event.key;
@@ -77,13 +101,30 @@ function createKeyCaptureInput(id: string, initialValue: string): HTMLInputEleme
       keyName = "Cmd";
     }
     
-    if (keyName === "Control" || keyName === "Shift" || keyName === "Alt" || keyName === "Meta" || keyName === "Cmd") {
+    const restrictedKeys = [
+      "Control", "Shift", "Alt", "Meta", "Cmd",
+      "F5", "F11", "F12", "Escape", "Tab",
+      "F1", "F2", "F3", "F4", "F6", "F7", "F8", "F9", "F10",
+      "Backspace", "Delete", "Insert", "Home", "End", "PageUp", "PageDown"
+    ];
+    
+    const problematicKeys = ["Space"];
+    
+    if (restrictedKeys.includes(keyName)) {
       showKeyRestrictedWarning(keyName);
       input.style.backgroundColor = "rgba(255,0,0,0.2)";
       setTimeout(() => {
         input.style.backgroundColor = "";
       }, 500);
       return;
+    }
+    
+    if (problematicKeys.includes(keyName)) {
+      showKeyProblematicWarning(keyName);
+      input.style.backgroundColor = "rgba(255,165,0,0.2)";
+      setTimeout(() => {
+        input.style.backgroundColor = "";
+      }, 500);
     }
     
     if (checkKeyConflict(id, keyName)) {
@@ -141,80 +182,113 @@ function checkKeyConflict(currentInputId: string, newKeyName: string): boolean {
     }
   }
   
+  try {
+    const currentMatch = currentInputId.match(/^p(\d+)(Up|Down)$/);
+    const currentPlayerIndex = currentMatch ? parseInt(currentMatch[1], 10) : null;
+    if (allPlayerData && Array.isArray(allPlayerData)) {
+      for (let i = 0; i < allPlayerData.length; i++) {
+        const playerIndex = i + 1;
+        if (currentPlayerIndex && playerIndex === currentPlayerIndex) continue;
+        const keys = allPlayerData[i]?.keys;
+        if (!keys) continue;
+        if (keys.up === newKeyName) {
+          showKeyConflictWarning(`p${playerIndex}Up`, newKeyName);
+          return true;
+        }
+        if (keys.down === newKeyName) {
+          showKeyConflictWarning(`p${playerIndex}Down`, newKeyName);
+          return true;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error in checkKeyConflict:", err);
+  }
+  
   return false;
 }
 
 function showKeyConflictWarning(conflictingInputId: string, keyName: string): void {
-  const warning = document.createElement("div");
-  warning.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-family: 'jura', sans-serif;
-    font-weight: bold;
-    z-index: 10000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-  `;
-  warning.textContent = `Key "${keyName}" is already used by ${getPlayerNameFromInputId(conflictingInputId)}`;
-  
-  document.body.appendChild(warning);
-  
-  setTimeout(() => {
-    if (warning.parentNode) {
-      warning.parentNode.removeChild(warning);
-    }
-  }, 2000);
+  const msg = `${t("key_already_used_by")} ${getPlayerNameFromInputId(conflictingInputId)} (${keyName})`;
+  showKeyAlert(msg, 'error');
 }
 
 function showAINameWarning(aiName: string): void {
-  const warning = document.createElement("div");
-  warning.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-family: 'jura', sans-serif;
-    font-weight: bold;
-    z-index: 10000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-  `;
-  warning.textContent = `Name "${aiName}" is reserved for AI players`;
-  
-  document.body.appendChild(warning);
-  
-  setTimeout(() => {
-    if (warning.parentNode) {
-      warning.parentNode.removeChild(warning);
-    }
-  }, 2000);
+  const msg = `${t("ai_name_reserved")} (${aiName})`;
+  showKeyAlert(msg, 'warning');
 }
 
 function showKeyRestrictedWarning(keyName: string): void {
+  let message = `${t("key_restricted")} (${keyName})`;
+  if (["F5", "F11", "F12"].includes(keyName)) {
+    message = `${t("key_restricted_browser_function")} (${keyName})`;
+  } else if (["Control", "Shift", "Alt", "Meta", "Cmd"].includes(keyName)) {
+    message = `${t("key_restricted_modifier")} (${keyName})`;
+  } else if (["Escape", "Tab", "Backspace"].includes(keyName)) {
+    message = `${t("key_restricted_navigation")} (${keyName})`;
+  } else if (keyName.startsWith("F")) {
+    message = `${t("key_restricted_function_key")} (${keyName})`;
+  }
+  showKeyAlert(message, 'error');
+}
+
+function showKeyAlert(message: string, type: 'warning' | 'error'): void {
+  const isHighContrast = document.documentElement.classList.contains('hc');
+  const bgColor = isHighContrast
+    ? 'rgba(102, 252, 241, 0.95)'
+    : (type === 'warning' ? 'rgba(255, 165, 0, 0.95)' : 'rgba(255, 0, 0, 0.95)');
+  const textColor = isHighContrast ? '#031b1b' : '#ffffff';
+  const shadowColor = isHighContrast
+    ? 'rgba(102, 252, 241, 0.5)'
+    : (type === 'warning' ? 'rgba(255, 165, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)');
+
+  const alert = document.createElement('div');
+  alert.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: ${bgColor};
+    color: ${textColor};
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-family: 'jura', sans-serif;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 0 20px ${shadowColor};
+    text-align: center;
+  `;
+  alert.textContent = message;
+
+  document.body.appendChild(alert);
+  setTimeout(() => {
+    if (alert.parentNode) alert.parentNode.removeChild(alert);
+  }, 2000);
+}
+
+function showKeyProblematicWarning(keyName: string): void {
   const warning = document.createElement("div");
   warning.style.cssText = `
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
+    background: rgba(255, 165, 0, 0.9);
     color: white;
     padding: 10px 20px;
     border-radius: 5px;
     font-family: 'jura', sans-serif;
     font-weight: bold;
     z-index: 10000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
   `;
-  warning.textContent = `"${keyName}" key is restricted (interferes with browser shortcuts)`;
+  
+  let message = `"${keyName}" key may cause issues`;
+  if (keyName === "Space") {
+    message = `"${keyName}" key may scroll the page (use with caution)`;
+  }
+  
+  warning.textContent = message;
   
   document.body.appendChild(warning);
   
@@ -222,7 +296,7 @@ function showKeyRestrictedWarning(keyName: string): void {
     if (warning.parentNode) {
       warning.parentNode.removeChild(warning);
     }
-  }, 2000);
+  }, 3000);
 }
 
 function getPlayerNameFromInputId(inputId: string): string {
@@ -387,7 +461,7 @@ export function tournamentSetupMenu(): {
   
   const controlsTitle = Object.assign(document.createElement("h3"), {
     className: "game-text font-bold mt-4 mb-2 text-center",
-    textContent: "Match Controls",
+    textContent: t("match_controls") || "Match Controls",
   }) as HTMLHeadingElement;
   
   const row3 = Object.assign(document.createElement("div"), {
@@ -819,6 +893,7 @@ export function gameSetupMenu(mode: string): {
   const e11 = Object.assign(document.createElement("label"), {
     className: "game-text",
     htmlFor: "multiball",
+    title: t("multiball_description"),
     textContent: ` ${t("multiball")}`,
   }) as HTMLLabelElement;
   const e12 = Object.assign(document.createElement("input"), {
@@ -830,6 +905,7 @@ export function gameSetupMenu(mode: string): {
   const e13 = Object.assign(document.createElement("label"), {
     className: "game-text",
     htmlFor: "doublePaddle",
+    title: t("doublePaddle_description"),
     textContent: ` ${t("doublePaddle")}`,
   }) as HTMLLabelElement;
   const e14 = Object.assign(document.createElement("input"), {
@@ -915,7 +991,6 @@ export function gameSetupMenu(mode: string): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
 
-
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -970,7 +1045,6 @@ export function gameSetupMenu(mode: string): {
   ul.appendChild(settings);
   ul.appendChild(bgColors);
   container.appendChild(ul);
-
 
   return { form: container, startButton: e22 };
 }

@@ -6,14 +6,6 @@ export function t(key: string): string {
   return translations[key] || key;
 }
 
-export function setLanguage(lang: string): void {
-  currentLanguage = lang;
-}
-
-export function getCurrentLanguage(): string {
-  return currentLanguage;
-}
-
 export async function initI18n(lang: string = 'en'): Promise<void> {
   currentLanguage = lang;
   

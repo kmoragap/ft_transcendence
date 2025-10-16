@@ -4,23 +4,41 @@ Also contains functions to handle fullscreen mode.
 */
 
 import { data } from "./gameData";
-import { pad, balls } from "./pong";
-
-var lastX: number;
+import { pad } from "./pong";
 
 export function controlKeys(): void {
 	document.addEventListener("keydown", (ev) => {
 		ev.preventDefault();
-		if (ev.key == "Shift" || ev.key == "Control") {
-			if (ev.location == 1) data.keys[ev.key] = true;
+		
+		let keyName = ev.key;
+		if (ev.key === " ") {
+			keyName = "Space";
+		} else if (ev.key === "Meta") {
+			keyName = "Cmd";
 		}
-		else data.keys[ev.key] = true;
+		
+		if (keyName == "Shift" || keyName == "Control") {
+			if (ev.location == 1) data.keys[keyName] = true;
+		}
+		else data.keys[keyName] = true;
 	});
 	
 	document.addEventListener("keyup", (ev) => {
+		let keyName = ev.key;
+		if (ev.key === " ") {
+			keyName = "Space";
+		} else if (ev.key === "Meta") {
+			keyName = "Cmd";
+		}
+		
+		if (keyName == "Shift" || keyName == "Control") {
+			if (ev.location == 1) data.keys[keyName] = false;
+		}
+		else data.keys[keyName] = false;
+		
 		if (pad.length) {
 			for (let i: number = 0; i < data.p.length; i++) {
-				if (ev.key == data.p[i].up || ev.key == data.p[i].down) {
+				if (keyName == data.p[i].up || keyName == data.p[i].down) {
 					if (data.mode == "multi") {
 						if (i < pad.length) {
 							pad[i].setDir(0);
@@ -38,20 +56,7 @@ export function controlKeys(): void {
 							pad[i].setDir(0);
 						}
 					}
-					data.keys[ev.key] = false;
 					break;
-				}
-			}
-			if (ev.key == "Escape") {//debug
-				data.keys[ev.key] = false;
-				data.go = false;
-				while (pad.length) {
-					pad[0].stop();
-					pad.shift();
-				}
-				while (balls.length) {
-					balls[0].stop();
-					balls.shift();
 				}
 			}
 		}

@@ -2,24 +2,30 @@ import fastify from "fastify";
 import jwt from "@fastify/jwt";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
-
 import authRoutes from "./modules/auth.routes";
 import prisma from "./utils/prisma";
 
+const JWT_SECRET = process.env.JWT_SECRET;
+const COOKIE_SECRET = process.env.COOKIE_SECRET;
+if (!JWT_SECRET || !COOKIE_SECRET) {
+  throw new Error(
+    "Missing required environment variables: JWT_SECRET or COOKIE_SECRET",
+  );
+}
 const server = fastify({ logger: true });
 server.register(cookie, {
-  secret: process.env.COOKIE_SECRET || "change-this-in-prod",
-  parseOptions: {}, // options for cookie parsing
+  secret: COOKIE_SECRET,
+  parseOptions: {},
 });
 server.register(cors, {
-  origin: ["https://10.12.200.27"],
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"], //TODO: probably should be only available get and post
+  origin: process.env.ALLOWED_ORIGINS,
+  methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
 
 server.register(jwt, {
-  secret: process.env.JWT_SECRET || "change-this-in-prod",
+  secret: JWT_SECRET,
 });
 
 declare module "fastify" {
@@ -46,19 +52,19 @@ server.decorate("authenticate", async function (request, reply) {
         request.user = decoded;
         return;
       } catch (cookieErr) {
-        console.error('Cookie token verification failed:', cookieErr);
+        console.error("Cookie token verification failed:", cookieErr);
       }
     }
 
     // no valid token found
-    return reply.code(401).send({ error: 'No authentication token provided' });
+    return reply.code(401).send({ error: "No authentication token provided" });
   } catch (err) {
-    console.error('Authentication failed:', err);
-    return reply.code(401).send({ error: 'Authentication failed' });
+    console.error("Authentication failed:", err);
+    return reply.code(401).send({ error: "Authentication failed" });
   }
 });
 
-server.register(authRoutes, { prefix: '/api/auth' });
+server.register(authRoutes, { prefix: "/api/auth" });
 
 server.get("/", async (request, reply) => {
   return { message: "Auth service is up!" } as const;

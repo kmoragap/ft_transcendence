@@ -7,6 +7,11 @@ import cookie from "@fastify/cookie";
 import path from "node:path";
 import userRoutes from "../modules/users.routes";
 
+const COOKIE_SECRET = process.env.COOKIE_SECRET;
+if (!COOKIE_SECRET) {
+  throw new Error("Missing required environment variable: COOKIE_SECRET");
+}
+
 export async function buildServer(): Promise<FastifyInstance> {
   const server = fastify({
     logger: {
@@ -28,13 +33,13 @@ export async function buildServer(): Promise<FastifyInstance> {
   }).withTypeProvider<TypeBoxTypeProvider>();
   // Cookie support
   server.register(cookie, {
-    secret: process.env.COOKIE_SECRET || "change-this-in-prod",
+    secret: COOKIE_SECRET,
     parseOptions: {},
   });
 
   // CORS
   server.register(cors, {
-    origin: ["https://10.12.200.27"],
+    origin: process.env.ALLOWED_ORIGINS,
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

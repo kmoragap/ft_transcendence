@@ -255,6 +255,27 @@ export async function toggle2fa(is2faEnabled: boolean): Promise<void> {
   }
 }
 
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const res = await fetch("/api/users/me/password", {
+    method: "PUT",
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Password change failed (${res.status})`);
+  }
+}
+
 export interface GameHistoryEntry {
   id: string;
   gameId: string;

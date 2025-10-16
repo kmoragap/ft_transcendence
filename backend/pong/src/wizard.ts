@@ -4,9 +4,10 @@ using functions from menus.ts.
 */
 
 import { loadConfig } from "./gameData";
-import { t } from "./i18n";
+import { t, updateHTMLTranslations } from "./i18n";
 import { gameSetupMenu, playerSetupMenu, tournamentSetupMenu, setGameMode, clearSavedPlayerData } from "./menus";
 import { createAndStartTournament } from "./tournamentData";
+import { isMobileDevice } from "./utils/mobile";
 
 export let allPlayerData: any[] = [];
 let currentStep = 1;
@@ -15,27 +16,27 @@ let totalPlayerPages = 0;
 let currentGameSettingsPage = 0;
 
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
-	settingsForm.style.display = "flex";
-	bgColorsForm.style.display = "none";
+    settingsForm.style.display = "flex";
+    bgColorsForm.style.display = "flex";
 }
 
 function updateButtonText() {
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	const isMobile = isMobileDevice();
 	
 	if (currentStep === 2 || (currentStep === 1 && totalPlayerPages > 1)) {
 		if (totalPlayerPages > 1) {
-			nextButton.textContent = currentPlayerPage < totalPlayerPages - 1 ? `Next (${currentPlayerPage + 1}/${totalPlayerPages})` : "Next";
-			backButton.textContent = currentPlayerPage > 0 ? `Back (${currentPlayerPage + 1}/${totalPlayerPages})` : "Back";
+			nextButton.textContent = currentPlayerPage < totalPlayerPages - 1 ? `${t("next")} (${currentPlayerPage + 1}/${totalPlayerPages})` : `${t("next")}`;
+			backButton.textContent = currentPlayerPage > 0 ? `${t("back")} (${currentPlayerPage + 1}/${totalPlayerPages})` : `${t("back")}`;
 		} else {
-			nextButton.textContent = "Next";
-			backButton.textContent = "Back";
+			nextButton.textContent = `${t("next")}`;
+			backButton.textContent = `${t("back")}`;
 		}
 	} else if (currentStep === 3 && isMobile) {
-		nextButton.textContent = currentGameSettingsPage === 0 ? "Next (1/2)" : "Next";
-		backButton.textContent = currentGameSettingsPage === 1 ? "Back (2/2)" : "Back";
+		nextButton.textContent = currentGameSettingsPage === 0 ? `${t("next")} (1/2)` : `${t("next")}`;
+		backButton.textContent = currentGameSettingsPage === 1 ? `${t("back")} (2/2)` : `${t("back")}`;
 	} else {
-		nextButton.textContent = "Next";
-		backButton.textContent = "Back";
+		nextButton.textContent = `${t("next")}`;
+		backButton.textContent = `${t("back")}`;
 	}
 }
 
@@ -245,10 +246,17 @@ export function wizard(mode: string) {
 	card.appendChild(wizardContainer);
 	
 	updateButtonText();
+	updateHTMLTranslations();
+
+	const onLangChange = () => {
+		updateButtonText();
+		updateHTMLTranslations();
+	};
+	window.addEventListener("languageChanged", onLangChange);
 }
 
 function createPlayerBoxes(numPlayers: number) {
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	const isMobile = isMobileDevice();
 	const playersPerPage = isMobile ? 1 : 2;
 	totalPlayerPages = Math.ceil(numPlayers / playersPerPage);
 	currentPlayerPage = 0;
@@ -378,12 +386,14 @@ function showStep(step: number, singleMatch: boolean) {
 
 function btn(ts: string, alt: string, id: string): HTMLButtonElement {
 	const button =  Object.assign(document.createElement("button"), {className: "",
-		textContent: t(ts) || alt,
+        textContent: t(ts) || alt,
 		id: id,
 	}) as HTMLButtonElement;
-	button.classList.add("btn", "py-2", "px-6", "text-lg", "font-bold");
+    button.setAttribute('data-i18n', ts);
+    button.classList.add("btn", "py-2", "px-6", "text-lg", "font-bold");
 	if (id === "finishBtn") {
-		button.textContent = button.textContent?.toUpperCase() || "START";
+        button.textContent = t("start");
+        button.setAttribute('data-i18n', 'start');
 	}
 	return button;
 }

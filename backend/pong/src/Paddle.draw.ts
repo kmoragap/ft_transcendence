@@ -6,23 +6,12 @@ paddles, the scoring texts and the mobile control arrows.
 import { data } from "./gameData";
 import Paddle from "./Paddle";
 import { t } from "./i18n";
-import { endRound, pad } from "./pong";
+import { endRound, pad, startRound } from "./pong";
 
 const upImg = new Image();
 upImg.src = "img/up_arrow.svg";
 const downImg = new Image();
 downImg.src = "img/down_arrow.svg";
-
-export function debugOutline(pad: Paddle) {
-	data.ctx.beginPath();
-	data.ctx.strokeStyle = data.uiCol;
-	data.ctx.moveTo(pad.getX(), pad.getY());
-	data.ctx.lineTo(pad.getX(), pad.getY2());
-	data.ctx.lineTo(pad.getX2(), pad.getY2());
-	data.ctx.lineTo(pad.getX2(), pad.getY());
-	data.ctx.lineTo(pad.getX(), pad.getY());
-	data.ctx.stroke();
-}
 
 export function quarterCorner(pad: Paddle) {
 	//left paddle corner
@@ -85,6 +74,12 @@ export function midline(): void {
 
 export function scoreText(p: Paddle, playerName: string, wins: boolean): void {
 	data.showingText = true;
+	data.ctx.fillStyle = data.bg;
+	data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+	data.ctx.fill();
+	nameAndScore();
+	midline();
+	for (var i: number = 0; i < pad.length; i++) pad[i].draw();
 	data.ctx.font = `bold ${data.canvas.height/6}px jura, sans-serif`;
 	data.ctx.fillStyle = "#66fcf1";
 	data.ctx.strokeStyle = "#0b4f47";
@@ -149,3 +144,44 @@ export function touchControlArrows(): void {
 	}
 }
 
+export function countdown(nr: number, ms: number) {
+  data.showingText = true;
+  data.ctx.fillStyle = data.bg;
+  data.ctx.rect(0, 0, data.canvas.width, data.canvas.height);
+  data.ctx.fill();
+  data.ctx.font = `bold ${data.canvas.height * 0.75}px jura, sans-serif`;
+  data.ctx.fillStyle = "#66fcf1";
+  data.ctx.strokeStyle = "#0b4f47";
+  data.ctx.lineWidth = data.canvas.height / 60;
+  data.ctx.textAlign = "center";
+  data.ctx.textBaseline = "middle";
+  data.ctx.strokeText(
+    String(nr),
+    data.canvas.width / 2,
+    data.canvas.height / 2
+  );
+  data.ctx.fillText(String(nr), data.canvas.width / 2, data.canvas.height / 2);
+  if (nr - 1) setTimeout(() => countdown(nr - 1, ms), ms);
+  else setTimeout(() => startRound(), ms);
+}
+
+export function nameAndScore() {
+	var p1NameAndScore: string;
+	var p2NameAndScore: string;
+	var margin: string = "   ";
+	if (data.mode != "multi") {
+		p1NameAndScore = data.p[0].name + " - " + data.p[0].score + margin;
+		p2NameAndScore = margin + data.p[1].score + " - " + data.p[1].name;
+	} else {
+		p1NameAndScore = "Team 1  - " + data.p[0].score + margin;
+		p2NameAndScore = margin + data.p[2].score + " - Team 2";
+	}
+	data.ctx.font = `bold ${data.canvas.height / 24}px jura, sans-serif`;
+	data.ctx.fillStyle = "rgba(102, 252, 241, 0.5)";
+	data.ctx.textBaseline = "top";
+	data.ctx.textAlign = "right";
+	data.ctx.fillText(p1NameAndScore, data.canvas.width / 2, 20);
+	data.ctx.textAlign = "left";
+	data.ctx.fillText(p2NameAndScore, data.canvas.width / 2, 20);
+	midline();
+}

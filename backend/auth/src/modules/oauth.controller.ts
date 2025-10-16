@@ -12,12 +12,10 @@ import { authSchemas } from "./auth.schema";
 const OAUTH_CONFIG = {
   clientId: process.env.OAUTH_42_CLIENT_ID!,
   clientSecret: process.env.OAUTH_42_CLIENT_SECRET!,
-  redirectUri:
-    process.env.OAUTH_42_REDIRECT_URI ||
-    "http://localhost/api/auth/callback/42",
-  authUrl: "https://api.intra.42.fr/oauth/authorize",
-  tokenUrl: "https://api.intra.42.fr/oauth/token",
-  userUrl: "https://api.intra.42.fr/v2/me",
+  redirectUri: process.env.OAUTH_42_REDIRECT_URI!,
+  authUrl: process.env.OAUTH_42_AUTH_URL!,
+  tokenUrl: process.env.OAUTH_42_TOKEN_URL!,
+  userUrl: process.env.OAUTH_42_USER_URL!,
 };
 
 export async function oauth42Handler(
@@ -127,7 +125,7 @@ export async function oauth42CallbackHandler(
       const parsed = authSchemas.register.safeParse(oauthUser);
       if (!parsed.success) {
         console.error("Invalid OAuth user data:", parsed.error.format());
-        const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080/"}/#/login?error=invalid_user_data`;
+        const errorUrl = `${process.env.FRONTEND_URL}/#/login?error=invalid_user_data`;
         return reply.redirect(errorUrl);
       }
 
@@ -177,11 +175,12 @@ export async function oauth42CallbackHandler(
       path: "/",
     });
 
-    const frontendUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login/callback?success=true`;
-    return reply.redirect(frontendUrl);
+    const frontendUrl = process.env.FRONTEND_URL!;
+    return reply.redirect(`${frontendUrl}/#/oauth?success=true`);
   } catch (error) {
+    const frontendUrl = process.env.FRONTEND_URL!;
     console.error("42 OAuth error:", error);
-    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:8080"}/#/login?error=oauth_failed`;
+    const errorUrl = `${frontendUrl}/#/login?error=oauth_failed`;
     return reply.redirect(errorUrl);
   }
 }

@@ -45,6 +45,7 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - MAIL_FROM=${MAIL_FROM}
       - COOKIE_SECRET=${COOKIE_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     depends_on:
       - users
       - logstash
@@ -60,6 +61,8 @@ services:
     build: ./backend/pong-db
     #ports:
     # - "3003:3000"
+    environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     volumes:
       - pong-db-data:/app/prisma
     depends_on:
@@ -105,6 +108,7 @@ services:
       - USERS_URL=${USERS_URL}
       - COOKIE_SECRET=${COOKIE_SECRET}
       - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     networks:
       - app-network
     logging:

@@ -14,6 +14,7 @@ let currentStep = 1;
 let currentPlayerPage = 0;
 let totalPlayerPages = 0;
 let currentGameSettingsPage = 0;
+let wizardMode: string = "";
 
 function createGameSettingsNavigation(settingsForm: HTMLFormElement, bgColorsForm: HTMLFormElement, container: HTMLElement) {
 	settingsForm.style.display = "none";
@@ -33,8 +34,13 @@ function updateButtonText() {
 			backButton.textContent = "Back";
 		}
 	} else if (currentStep === 3 && isMobile) {
-		nextButton.textContent = currentGameSettingsPage === 0 ? "Next (1/2)" : "Next";
-		backButton.textContent = currentGameSettingsPage === 1 ? "Back (2/2)" : "Back";
+		if (wizardMode === "tournament") {
+			nextButton.textContent = "Next";
+			backButton.textContent = "Back";
+		} else {
+			nextButton.textContent = currentGameSettingsPage === 0 ? "Next (1/2)" : "Next";
+			backButton.textContent = currentGameSettingsPage === 1 ? "Back (2/2)" : "Back";
+		}
 	} else {
 		nextButton.textContent = "Next";
 		backButton.textContent = "Back";
@@ -48,7 +54,8 @@ backButton.classList.add("hidden");
 finishButton.classList.add("hidden");
 
 export function wizard(mode: string) {
-	setGameMode(mode);
+    setGameMode(mode);
+    wizardMode = mode;
 	clearSavedPlayerData();
 	const card = document.getElementById("card") as HTMLDivElement;
 	const urlParams = new URLSearchParams(window.location.search);
@@ -113,17 +120,12 @@ export function wizard(mode: string) {
 				}
 			}
 			if (currentStep === 3 && isMobile) {
-				if (currentGameSettingsPage === 0) {
-					currentGameSettingsPage = 1;
-					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
-					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
-					if (settingsForm && bgColorsForm) {
-						settingsForm.style.display = "none";
-						bgColorsForm.style.display = "flex";
-						updateButtonText();
-					}
-					return;
+				const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
+				if (bgColorsForm) {
+					bgColorsForm.style.display = "flex";
+					updateButtonText();
 				}
+				return;
 			}
 			if (currentStep < 3) showStep(currentStep + 1, false);
 		});
@@ -139,18 +141,9 @@ export function wizard(mode: string) {
 					return;
 				}
 			}
-			if (currentStep === 3 && isMobile) {
-				if (currentGameSettingsPage === 1) {
-					currentGameSettingsPage = 0;
-					const settingsForm = document.querySelector("#settings") as HTMLFormElement;
-					const bgColorsForm = document.querySelector("#bgColors") as HTMLFormElement;
-					if (settingsForm && bgColorsForm) {
-						settingsForm.style.display = "none";
-						bgColorsForm.style.display = "flex";
-						updateButtonText();
-					}
-					return;
-				}
+			if (currentStep === 3) {
+				showStep(2, false);
+				return;
 			}
 			if (currentStep > 1) showStep(currentStep - 1, false);
 		});

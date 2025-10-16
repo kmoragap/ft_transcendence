@@ -1,7 +1,7 @@
 SSL_SCRIPT := tools/ssl_generator.sh
 PROJECT := backend/nginx
-COMPOSE_ALL := docker-compose -f docker-compose.yml -f devops/elk/compose.elk.yml
-COMPOSE_APP := docker-compose -f compose-app.yml
+COMPOSE_ALL := docker compose -f docker-compose.yml -f devops/elk/compose.elk.yml
+COMPOSE_APP := docker compose -f compose-app.yml
 SSL := backend/nginx
 
 .PHONY: all up down rebuild clean show-url rebuild_game
@@ -11,8 +11,8 @@ all: ssl up show-url
 
 show-url:
 	@echo "Access the website at:"
-	@echo "https://$$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $$2}')"
-	@echo "or https://localhost:8080"
+	@echo "https://$(ip route get 1.1.1.1 | grep -oP 'src \K[^ ]+' | head -1)"
+
 ssl:
 	@echo "Generating SSL certificates..."
 	@bash $(SSL_SCRIPT)

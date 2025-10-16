@@ -4,7 +4,7 @@
 mkdir -p backend/nginx/ssl
 
 # get the local IP that can access from others machines in the local network
-LOCAL_IP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $2}')
+LOCAL_IP=$(ip route get 1.1.1.1 | grep -oP 'src \K[^ ]+' | head -1)
 
 echo "Generating SSL certificates for IP: $LOCAL_IP"
 

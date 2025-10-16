@@ -137,6 +137,7 @@
   "password_requirements_not_met": "Пароль повинен містити великі, малі літери, цифру та спеціальний символ",
   "passwords_do_not_match": "Паролі не співпадають",
   "changing_password": "Зміна пароля...",
+  "new_password_cannot_be_the_same_as_current_password": "Новий пароль не може бути таким самим, як поточний пароль",
   "password_changed_successfully": "Пароль успішно змінено",
   "password_change_failed": "Не вдалося змінити пароль",
   "change_password_confirm": "Ви впевнені, що хочете змінити свій пароль?",

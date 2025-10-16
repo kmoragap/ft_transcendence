@@ -183,7 +183,7 @@ export default class Ball {
 	}
 
 	private checkEdge(): void {
-		const bS = balls[0].getSize() * 2;
+		const bS = this.getSize() * 2;
 		if (this._y > data.canvas.height + bS * 1.5) {
 			this._y = data.canvas.height - bS;
 			if (this._x < data.canvas.width / 2)

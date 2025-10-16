@@ -47,7 +47,7 @@ function createModal(options: ModalOptions): HTMLElement {
       ` : ''}
       
       <p class="text-[#66fcf1] mb-6 text-lg font-[jura] leading-relaxed">
-        ${options.message}
+        ${options.message.replace(/\n/g, '<br>')}
       </p>
       
       <div class="flex flex-col sm:flex-row gap-3 w-full">

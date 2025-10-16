@@ -42,6 +42,7 @@ build/
 uploads/
 backend/users/uploads/*
 !backend/users/uploads/.gitkeep
+data/
 
 # Prisma
 **/prisma/migrations/

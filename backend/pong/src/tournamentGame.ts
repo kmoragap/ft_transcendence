@@ -8,6 +8,7 @@ import { tournamentService } from "./services/tournamentService";
 import { t } from "./i18n";
 import { enterFullscreen, exitFullscreen } from "./controls";
 import { allPlayerData } from "./wizard";
+import { countdown } from "./Paddle.draw";
 
 export interface TournamentBracket {
   id: string;
@@ -212,7 +213,6 @@ export class TournamentManager {
     data.go = false;
 
     enterFullscreen();
-    const { countdown } = await import("./pong");
     setTimeout(() => countdown(3, 500), 500);
 
     return true;

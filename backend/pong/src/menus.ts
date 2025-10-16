@@ -209,95 +209,60 @@ function checkKeyConflict(currentInputId: string, newKeyName: string): boolean {
 }
 
 function showKeyConflictWarning(conflictingInputId: string, keyName: string): void {
-  const warning = document.createElement("div");
-  warning.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-family: 'jura', sans-serif;
-    font-weight: bold;
-    z-index: 10000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-  `;
-  warning.textContent = `Key "${keyName}" is already used by ${getPlayerNameFromInputId(conflictingInputId)}`;
-  
-  document.body.appendChild(warning);
-  
-  setTimeout(() => {
-    if (warning.parentNode) {
-      warning.parentNode.removeChild(warning);
-    }
-  }, 2000);
+  const msg = `${t("key_already_used_by")} ${getPlayerNameFromInputId(conflictingInputId)} (${keyName})`;
+  showKeyAlert(msg, 'error');
 }
 
 function showAINameWarning(aiName: string): void {
-  const warning = document.createElement("div");
-  warning.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-family: 'jura', sans-serif;
-    font-weight: bold;
-    z-index: 10000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-  `;
-  warning.textContent = `Name "${aiName}" is reserved for AI players`;
-  
-  document.body.appendChild(warning);
-  
-  setTimeout(() => {
-    if (warning.parentNode) {
-      warning.parentNode.removeChild(warning);
-    }
-  }, 2000);
+  const msg = `${t("ai_name_reserved")} (${aiName})`;
+  showKeyAlert(msg, 'warning');
 }
 
 function showKeyRestrictedWarning(keyName: string): void {
-  const warning = document.createElement("div");
-  warning.style.cssText = `
+  let message = `${t("key_restricted")} (${keyName})`;
+  if (["F5", "F11", "F12"].includes(keyName)) {
+    message = `${t("key_restricted_browser_function")} (${keyName})`;
+  } else if (["Control", "Shift", "Alt", "Meta", "Cmd"].includes(keyName)) {
+    message = `${t("key_restricted_modifier")} (${keyName})`;
+  } else if (["Escape", "Tab", "Backspace"].includes(keyName)) {
+    message = `${t("key_restricted_navigation")} (${keyName})`;
+  } else if (keyName.startsWith("F")) {
+    message = `${t("key_restricted_function_key")} (${keyName})`;
+  }
+  showKeyAlert(message, 'error');
+}
+
+function showKeyAlert(message: string, type: 'warning' | 'error'): void {
+  const isHighContrast = document.documentElement.classList.contains('hc');
+  const bgColor = isHighContrast
+    ? 'rgba(102, 252, 241, 0.95)'
+    : (type === 'warning' ? 'rgba(255, 165, 0, 0.95)' : 'rgba(255, 0, 0, 0.95)');
+  const textColor = isHighContrast ? '#031b1b' : '#ffffff';
+  const shadowColor = isHighContrast
+    ? 'rgba(102, 252, 241, 0.5)'
+    : (type === 'warning' ? 'rgba(255, 165, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)');
+
+  const alert = document.createElement('div');
+  alert.style.cssText = `
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
-    color: white;
+    background: ${bgColor};
+    color: ${textColor};
     padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 6px;
     font-family: 'jura', sans-serif;
     font-weight: bold;
     z-index: 10000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    box-shadow: 0 0 20px ${shadowColor};
+    text-align: center;
   `;
-  
-  let message = `"${keyName}" key is restricted`;
-  if (["F5", "F11", "F12"].includes(keyName)) {
-    message = `"${keyName}" key is restricted (browser function)`;
-  } else if (["Control", "Shift", "Alt", "Meta", "Cmd"].includes(keyName)) {
-    message = `"${keyName}" key is restricted (modifier key)`;
-  } else if (["Escape", "Tab", "Backspace"].includes(keyName)) {
-    message = `"${keyName}" key is restricted (browser navigation)`;
-  } else if (keyName.startsWith("F")) {
-    message = `"${keyName}" key is restricted (function key)`;
-  }
-  
-  warning.textContent = message;
-  
-  document.body.appendChild(warning);
-  
+  alert.textContent = message;
+
+  document.body.appendChild(alert);
   setTimeout(() => {
-    if (warning.parentNode) {
-      warning.parentNode.removeChild(warning);
-    }
+    if (alert.parentNode) alert.parentNode.removeChild(alert);
   }, 2000);
 }
 
@@ -928,6 +893,7 @@ export function gameSetupMenu(mode: string): {
   const e11 = Object.assign(document.createElement("label"), {
     className: "game-text",
     htmlFor: "multiball",
+    title: t("multiball_description"),
     textContent: ` ${t("multiball")}`,
   }) as HTMLLabelElement;
   const e12 = Object.assign(document.createElement("input"), {
@@ -939,6 +905,7 @@ export function gameSetupMenu(mode: string): {
   const e13 = Object.assign(document.createElement("label"), {
     className: "game-text",
     htmlFor: "doublePaddle",
+    title: t("doublePaddle_description"),
     textContent: ` ${t("doublePaddle")}`,
   }) as HTMLLabelElement;
   const e14 = Object.assign(document.createElement("input"), {
@@ -1024,7 +991,6 @@ export function gameSetupMenu(mode: string): {
     className: "flex justify-between items-center mb-2",
   }) as HTMLDivElement;
 
-
   row1.appendChild(e3);
   row1.appendChild(e1);
   row2.appendChild(e6);
@@ -1079,7 +1045,6 @@ export function gameSetupMenu(mode: string): {
   ul.appendChild(settings);
   ul.appendChild(bgColors);
   container.appendChild(ul);
-
 
   return { form: container, startButton: e22 };
 }

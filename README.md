@@ -31,22 +31,6 @@ Everything runs through **Docker** with one command.
 
 ---
 
-## 🧩 Implemented by me/with me Modules (per subject)
-
-### Web
-- **Frontend framework**: Tailwind CSS (Minor)
-
-### User Management
-- **Standard user management, authentication, and cross-tournament accounts** (Major)
-
-### Accessibility
-- **Support on all devices** (Minor)
-- **Browser compatibility** (Minor)
-- **Multi-language support (EN/DE/RU)** (Minor)
-- **Accessibility features for visually impaired users** (Minor)
-
----
-
 ## Core Features
 
 - **Real-time Pong gameplay** 1vs1 or 2vs2 modes.
@@ -65,3 +49,4 @@ Everything runs through **Docker** with one command.
 @<a href="https://github.com/owa-geh">owa-geh</a> - Game<br>
 @<a href="https://github.com/elcomzer0">elcomzer0</a> - DevOps<br>
 @<a href="https://github.com/rybarska">rybarska</a> - Security, 2FA
+

@@ -37,7 +37,7 @@ export async function initI18n(lang: string = 'en'): Promise<void> {
   updateHTMLTranslations();
 }
 
-function updateHTMLTranslations(): void {
+export function updateHTMLTranslations(): void {
   document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (key && translations[key]) {

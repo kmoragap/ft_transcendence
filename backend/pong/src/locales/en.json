@@ -16,7 +16,9 @@
   "ballSpeed": "Ball speed",
   "ballSize": "Ball size",
   "multiball": "Multiball",
+  "multiball_description": "Every 5 to 10 paddle hits, another ball spawns at the location of the ball. Only the last remaining ball can score a point.",
   "doublePaddle": "Double paddles",
+  "doublePaddle_description": "Play using two paddles simultaneously. The inner paddles' movement is restricted a little to keep it interesting.",
   "uiCol": "UI color",
   "ballCol": "Ball color",
   "innerBg": "Inner background color",
@@ -47,5 +49,12 @@
   "exit_tournament": "Exit Tournament",
   "press_any_key": "Press any key...",
   "keys_disabled_mobile": "Key bindings are not configurable on mobile",
-  "match_controls": "Match Controls"
+  "match_controls": "Match Controls",
+  "key_already_used_by": "Key already used by",
+  "ai_name_reserved": "Name is reserved for AI players",
+  "key_restricted": "Key is restricted",
+  "key_restricted_browser_function": "Key is restricted (browser function)",
+  "key_restricted_modifier": "Key is restricted (modifier key)",
+  "key_restricted_navigation": "Key is restricted (browser navigation)",
+  "key_restricted_function_key": "Key is restricted (function key)"
 }
